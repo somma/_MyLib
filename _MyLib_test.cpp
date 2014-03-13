@@ -531,7 +531,6 @@ bool test_bin_to_hex()
 **/
 bool test_str_to_xxx()
 {
-	char	buf[256];
 	INT32	int32 = 0;
 	UINT32	uint32 = 0;
 	INT64	int64 = 0;
