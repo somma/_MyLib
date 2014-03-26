@@ -3151,7 +3151,39 @@ bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ UINT64& uint64_val)
 	return str_to_uint64(WcsToMbsEx(uint64_string).c_str(), uint64_val);
 }
 
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+UINT16 swap_endian_16(_In_ UINT16 value)
+{
+	return (value >> 8) | (value << 8);
+}
 
+UINT32 swap_endian_32(_In_ UINT32 value)
+{
+	return	( value >> 24)				| 
+			((value << 8) & 0x00FF0000) | 
+			((value >> 8) & 0x0000FF00) | 
+			( value << 24);
+}
+
+UINT64 swap_endian_64(_In_ UINT64 value);
+{
+	return  ( value >> 56)						|
+            ((value << 40) & 0x00FF000000000000)|
+            ((value << 24) & 0x0000FF0000000000)|
+            ((value << 8 ) & 0x000000FF00000000)|
+            ((value >> 8 ) & 0x00000000FF000000)|
+            ((value >> 24) & 0x0000000000FF0000)|
+            ((value >> 40) & 0x000000000000FF00)|
+            ( value << 56);
+}
 
 
 /**	---------------------------------------------------------------------------

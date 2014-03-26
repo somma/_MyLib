@@ -450,6 +450,9 @@ bool wstr_to_uint32(_In_ const wchar_t* uint32_string, _Out_ UINT32& uint32_val)
 bool wstr_to_int64(_In_ const wchar_t* int64_string, _Out_ INT64& int64_val);
 bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ UINT64& uint64_val);
 
+UINT16 swap_endian_16(_In_ UINT16 value); 
+UINT32 swap_endian_32(_In_ UINT32 value); 
+UINT64 swap_endian_64(_In_ UINT64 value);
 
 
 
