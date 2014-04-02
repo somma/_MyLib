@@ -3173,7 +3173,7 @@ UINT32 swap_endian_32(_In_ UINT32 value)
 			( value << 24);
 }
 
-UINT64 swap_endian_64(_In_ UINT64 value);
+UINT64 swap_endian_64(_In_ UINT64 value)
 {
 	return  ( value >> 56)						|
             ((value << 40) & 0x00FF000000000000)|

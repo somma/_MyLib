@@ -1,23 +1,13 @@
-/**************************************************************************************
-*
-*	Copyright (C) 2007 AhnLab, Inc. All rights reserved.
-*
-*	This program is strictly confidential and not be used in outside the office...and 
-*	some other copywrite agreement etc.
-*
-*	File:
-*		D:\SVN.AHNLAB.CO.KR\Engine\Project\Ringer\1.0\Trunk\Src\downloader\Common\Singleton.h
-*
-*	Author:
-*		Yonghwan.Noh ( somma@ahnlab.com )
-*
-*	DESCRIPTION :
-*       reference count 기능을 가진 싱글톤 패턴 템플릿 클래스
-*
-*	HISTORY :
-*  	2012-6-18 by Yonghwan.Noh
-* 		1. file created
-/**************************************************************************************/
+/**----------------------------------------------------------------------------
+ * Singleton.h
+ *-----------------------------------------------------------------------------
+ *
+ *-----------------------------------------------------------------------------
+ * All rights reserved by Noh,Yonghwan (fixbrain@gmail.com, unsorted@msn.com)
+ *-----------------------------------------------------------------------------
+ * 26:8:2011   15:34 created
+**---------------------------------------------------------------------------*/
+
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
