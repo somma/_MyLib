@@ -484,7 +484,7 @@ HANDLE open_file_to_write(_In_ const wchar_t* file_path)
 /**
 * @brief	파일을 읽기모드로 오픈한다.
 */
-HANDLE OpenFileToRead(LPCWCH file_path)
+HANDLE open_file_to_read(LPCWCH file_path)
 {
 	_ASSERTE(NULL != file_path);
 	_ASSERTE(TRUE != IsBadStringPtrW(file_path, MAX_PATH));
@@ -513,9 +513,34 @@ HANDLE OpenFileToRead(LPCWCH file_path)
 }
 
 /**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool get_file_size(_In_ HANDLE file_handle, _Out_ LARGE_INTEGER& size)
+{
+	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
+	if (INVALID_HANDLE_VALUE == file_handle) return false;
+
+	if (TRUE != GetFileSizeEx(file_handle, &size))
+	{
+		log_err 
+			L"GetFileSizeEx( file = 0x%p ), gle = %u", file_handle, GetLastError() 
+		log_end
+		return false;
+	}
+
+	return true;
+}
+
+/**
 * @brief	파일에 포맷문자열을 쓴다.
 */
-BOOL WriteToFileW(LPCWCH file_path, LPCWCH format,...)
+BOOL write_to_filew(LPCWCH file_path, LPCWCH format,...)
 {
 	_ASSERTE(NULL != file_path);
 	_ASSERTE(TRUE != IsBadStringPtrW(file_path, MAX_PATH));
@@ -587,7 +612,7 @@ BOOL WriteToFileW(LPCWCH file_path, LPCWCH format,...)
 /**
 * @brief	파일에 포맷 문자열을 쓴다
 */
-BOOL WriteToFileW(HANDLE hFile,LPCWCH format,...)
+BOOL write_to_filew(HANDLE hFile,LPCWCH format,...)
 {
 	DWORD pos = SetFilePointer (hFile, 0, NULL, FILE_END);
 	if (INVALID_SET_FILE_POINTER == pos) return FALSE;
@@ -631,7 +656,7 @@ BOOL WriteToFileW(HANDLE hFile,LPCWCH format,...)
 /**
 * @brief	파일에 포맷 문자열을 쓴다
 */
-BOOL WriteToFileA(HANDLE hFile,LPCCH format,...)
+BOOL write_to_filea(HANDLE hFile,LPCCH format,...)
 {
 	DWORD pos = SetFilePointer (hFile, 0, NULL, FILE_END);
 	if (INVALID_SET_FILE_POINTER == pos) return FALSE;

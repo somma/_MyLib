@@ -56,7 +56,7 @@ class SmrtPtr: public UnCopyable
 {
 public:
 	SmrtPtr(T& Ptr): m_ptr(Ptr) {};
-	~SmrtPtr(){ FreeAndNil(m_ptr);};
+	~SmrtPtr(){ free_and_nil(m_ptr);};
 private:
 	T& m_ptr;
 };

@@ -63,9 +63,10 @@ typedef struct _continuous_memory
 	#define LINE1(x)	#x
 	#define LINE(x)		LINE1(x)
 	#define TODO(msg)	message(  __FILE__"(" LINE(__LINE__) ") [TODO] " msg )
+	#define todo TODO
 #endif
 
-#define FreeAndNil(p)     do { if (NULL != p) { free(p); p = NULL;} } while(p != NULL);
+#define free_and_nil(p)     do { if (NULL != p) { free(p); p = NULL;} } while(p != NULL);
 
 
 
@@ -119,10 +120,11 @@ bool nt_name_to_dos_name(_In_ const wchar_t* nt_name, _Out_ std::wstring& dos_na
 bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_device);
 
 HANDLE open_file_to_write(_In_ const wchar_t* file_path);
-HANDLE OpenFileToRead(LPCWCH file_path);
-BOOL WriteToFileW(LPCWCH file_path, LPCWCH format,...);
-BOOL WriteToFileW(HANDLE hFile, LPCWCH format, ...);
-BOOL WriteToFileA(HANDLE hFile, LPCCH format, ...);
+HANDLE open_file_to_read(LPCWCH file_path);
+bool get_file_size(_In_ HANDLE file_handle, _Out_ LARGE_INTEGER& size);
+BOOL write_to_filew(LPCWCH file_path, LPCWCH format,...);
+BOOL write_to_filew(HANDLE hFile, LPCWCH format, ...);
+BOOL write_to_filea(HANDLE hFile, LPCCH format, ...);
 
 BOOL SaveToFileAsUTF8A(
                 IN LPCWSTR FilePathDoesNotExists, 
