@@ -394,7 +394,7 @@ bool test_get_filepath_by_handle()
 {
 	typedef boost::shared_ptr< boost::remove_pointer<HANDLE>::type > shared_file_handle;
 	shared_file_handle file_handle(
-							OpenFileToRead(L"c:\\windows\\system32\\drivers\\etc\\hosts"), 
+							open_file_to_read(L"c:\\windows\\system32\\drivers\\etc\\hosts"), 
 							CloseHandle
 							);
 	std::wstring file_path;

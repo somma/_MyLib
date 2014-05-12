@@ -80,9 +80,9 @@ bool boost_shared_ptr_void()
  * @return	
 **/
 bool boost_shared_ptr_handle_01()
-{
+{	
 	boost::shared_ptr< boost::remove_pointer<HANDLE>::type > file_handle(
-		OpenFileToRead(L"c:\\windows\\system32\\drivers\\etc\\hosts"), 
+		open_file_to_read(L"c:\\windows\\system32\\drivers\\etc\\hosts"), 
 		CloseHandle
 		);
 	if (INVALID_HANDLE_VALUE == file_handle.get()) 
@@ -132,7 +132,7 @@ bool boost_shared_ptr_handle_02()
 {
 	typedef boost::shared_ptr< boost::remove_pointer<HANDLE>::type > shared_handle;
 	shared_handle file_handle (
-		OpenFileToRead(L"c:\\windows\\system32\\drivers\\etc\\hosts"), 
+		open_file_to_read(L"c:\\windows\\system32\\drivers\\etc\\hosts"), 
 		MyCloseHandle
 		);
 	if (INVALID_HANDLE_VALUE == file_handle.get()) return false;
@@ -154,7 +154,7 @@ bool boost_shared_ptr_handle_02()
 
 /**
  * @brief	boost::shared_ptr 로 HANDLE 처리하기 #3
- * @brief	file_hanele 이 NULL 인 경우에 대한 처리 
+ * @brief	file_hanele 이 NULL 인 경우에 대한 처리
  * @param	
  * @see		
  * @remarks	
@@ -166,7 +166,7 @@ bool boost_shared_ptr_handle_03()
 {
 	typedef boost::shared_ptr< boost::remove_pointer<HANDLE>::type > shared_handle;
 	shared_handle file_handle (
-		OpenFileToRead(L"c:\\windows\\system32\\drivers\\etc\\hosts\\file_doesnot_exists"), 
+		open_file_to_read(L"c:\\windows\\system32\\drivers\\etc\\hosts\\file_doesnot_exists"), 
 		MyCloseHandle
 		);
 	if (INVALID_HANDLE_VALUE == file_handle.get()) 
