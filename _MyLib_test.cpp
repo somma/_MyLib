@@ -8,15 +8,19 @@
  * 2014:1:25 13:34 created
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
+#include "process_tree.h"
 
+bool test_print_64int();
 bool test_x64_calling_convension();
 bool test_std_string_find_and_substr();
 bool test_to_lower_uppper_string();
 //bool test_const_position();
 bool test_initialize_string();
+bool test_process_tree();     
 
 // _test_cpp_test.cpp
 bool test_cpp_class();
+
 
 // win32utils.cpp
 bool test_get_filepath_by_handle();
@@ -24,6 +28,8 @@ bool test_nt_name_to_dos_name();
 bool test_query_dos_device();
 bool test_bin_to_hex();
 bool test_str_to_xxx();
+bool test_set_get_file_position();
+
 
 // _test_boost.cpp
 extern bool boost_lexical_cast();
@@ -32,6 +38,7 @@ extern bool boost_shared_ptr_handle_01();
 extern bool boost_shared_ptr_handle_02();
 extern bool boost_shared_ptr_handle_03();
 extern bool boost_tuple();
+extern bool boost_format();
 
 // _test_boost_bind.cpp
 extern bool boost_bind();
@@ -70,39 +77,41 @@ int _tmain(int argc, _TCHAR* argv[])
 	UINT32 _fail_count = 0;
 
 	//assert_bool(true, test_x64_calling_convension);
+	//assert_bool(true , test_print_64int);
 	//assert_bool(true, test_std_string_find_and_substr);
 	//assert_bool(true, test_to_lower_uppper_string);
 	////assert_bool(true, test_const_position);
 	//assert_bool(true, test_initialize_string);
-	
-	//assert_bool(true, test_cpp_class);
+	assert_bool(true, test_process_tree);
 
+	//assert_bool(true, test_cpp_class);
+	
 	//assert_bool(true, test_nt_name_to_dos_name);
 	//assert_bool(true, test_query_dos_device);
 	//assert_bool(true, test_get_filepath_by_handle);
 	//assert_bool(true, test_bin_to_hex);
-	assert_bool(true, test_str_to_xxx);
+	//assert_bool(true, test_str_to_xxx);
+	//assert_bool(true, test_set_get_file_position);
 
 	//assert_bool(true, boost_lexical_cast);
-	/*
-	assert_bool(true, boost_shared_ptr_void);
-	assert_bool(true, boost_shared_ptr_handle_01);
-	assert_bool(true, boost_shared_ptr_handle_02);
-	assert_bool(true, boost_shared_ptr_handle_03);
+	//assert_bool(true, boost_shared_ptr_void);
+	//assert_bool(true, boost_shared_ptr_handle_01);
+	//assert_bool(true, boost_shared_ptr_handle_02);
+	//assert_bool(true, boost_shared_ptr_handle_03);
+	//assert_bool(true, boost_tuple);
 
-	assert_bool(true, boost_tuple);
+	//assert_bool(true, boost_format);
 
-	assert_bool(true, boost_bind);
-	assert_bool(true, boost_bind2);
-	assert_bool(true, boost_bind3);
-	assert_bool(true, boost_bind4);
+	//assert_bool(true, boost_bind);
+	//assert_bool(true, boost_bind2);
+	//assert_bool(true, boost_bind3);
+	//assert_bool(true, boost_bind4);
 
-	assert_bool(true, test_std_map);
-	assert_bool(true, test_map_plus_algorithm_1);
-	assert_bool(true, test_map_plus_algorithm_2);
-	assert_bool(true, test_map_plus_algorithm_3);
-	assert_bool(true, test_map_plus_algorithm_4);
-	*/
+	//assert_bool(true, test_std_map);
+	//assert_bool(true, test_map_plus_algorithm_1);
+	//assert_bool(true, test_map_plus_algorithm_2);
+	//assert_bool(true, test_map_plus_algorithm_3);
+	//assert_bool(true, test_map_plus_algorithm_4);
 
 	log_info
 		L"-------------------------------------------------------------------------------"
@@ -275,6 +284,25 @@ bool test_x64_calling_convension()
  * @endcode	
  * @return	
 **/
+bool test_print_64int()
+{
+	uint64_t val = 0xffffffffffffffff;
+	log_msg L"%%I64d = %I64d, %%I64u = %I64u, %%I64x = %I64x", val, val, val log_end
+
+	// %I64d = -1, %I64u = 18446744073709551615, %I64x = ffffffffffffffff
+
+	return true;
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
 bool test_to_lower_uppper_string()
 {
 	std::wstring str = L"ABCDEFGh1234";
@@ -379,7 +407,27 @@ bool test_initialize_string()
 	return true;
 }
 
+/**
+ * @brief	test for cprocess_tree class 
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool test_process_tree()
+{
+	cprocess_tree proc_tree;
+	if (!proc_tree.build_process_tree()) return false;
 
+	
+	//proc_tree.print_process_tree(L"explorer.exe");
+	proc_tree.print_process_tree(L"taskmgr.exe");
+	proc_tree.kill_process_tree( proc_tree.find_process(L"taskmgr.exe") );
+
+	return true;
+}
 
 /**
  * @brief	
@@ -628,5 +676,58 @@ bool test_str_to_xxx()
 	if (false != str_to_uint64("9999999223372036854775807", uint64)) return false;
 	
 
+	return true;
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+static std::wstring _test_file;
+
+void _CloseHandle(_In_ HANDLE handle)
+{
+	if (NULL == handle || INVALID_HANDLE_VALUE == handle) return;
+	CloseHandle(handle);
+
+
+	DeleteFileW(_test_file.c_str());
+}
+
+bool test_set_get_file_position()
+{
+	if (!get_current_module_dir(_test_file)) return false;
+	_test_file += L"\\testfile.dat";
+
+	raii_handle file_handle(
+					open_file_to_write(_test_file.c_str()), 
+					_CloseHandle
+					);
+	if (NULL == file_handle.get()) return false;
+
+	DWORD bytes_written = 0;
+	for(int i = 0; i < 254; ++i)
+	{
+		if (!WriteFile(file_handle.get(), &i, 1, &bytes_written, NULL)) return false;
+	}
+
+	uint64_t pos = 0;
+	uint64_t new_pos = 0;
+	
+	// get file position
+	if (true != get_file_position(file_handle.get(), pos)) return false;
+	if (254 != pos) return false;
+
+	// set file position
+	pos = 128;
+	if (true != set_file_position(file_handle.get(), pos, &new_pos)) return false;
+	if (true != get_file_position(file_handle.get(), pos)) return false;
+
+	if (128 != pos) return false;
 	return true;
 }

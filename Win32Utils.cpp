@@ -10,6 +10,9 @@
 #include "stdafx.h"
 #include <errno.h>
 
+#include <io.h>			// _setmode()
+#include <fcntl.h>		// _O_U8TEXT, ...
+
 #include "Win32Utils.h"
 
 #include <time.h>
@@ -521,12 +524,14 @@ HANDLE open_file_to_read(LPCWCH file_path)
  * @endcode	
  * @return	
 **/
-bool get_file_size(_In_ HANDLE file_handle, _Out_ LARGE_INTEGER& size)
+bool get_file_size(_In_ HANDLE file_handle, _Out_ uint64_t& size)
 {
 	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
 	if (INVALID_HANDLE_VALUE == file_handle) return false;
 
-	if (TRUE != GetFileSizeEx(file_handle, &size))
+	LARGE_INTEGER size_tmp = {0};
+	
+	if (TRUE != GetFileSizeEx(file_handle, &size_tmp))
 	{
 		log_err 
 			L"GetFileSizeEx( file = 0x%p ), gle = %u", file_handle, GetLastError() 
@@ -534,6 +539,7 @@ bool get_file_size(_In_ HANDLE file_handle, _Out_ LARGE_INTEGER& size)
 		return false;
 	}
 
+	size = size_tmp.QuadPart;
 	return true;
 }
 
@@ -707,6 +713,86 @@ BOOL write_to_filea(HANDLE hFile,LPCCH format,...)
 	}
 	
 	return TRUE;		// for success
+}
+
+/**
+ * @brief	retrieve current file position
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool get_file_position(_In_ HANDLE file_handle, _Out_ uint64_t& position)
+{
+	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
+	if (INVALID_HANDLE_VALUE == file_handle) return false;
+
+	DWORD file_type = GetFileType(file_handle);
+	if (FILE_TYPE_DISK != file_type)
+	{
+		log_err 
+			L"invalid file type = %u, FILE_TYPE_DISK (1) only", file_type 
+		log_end
+		return false;
+	}
+
+	LARGE_INTEGER li_new_pos = {0};
+	LARGE_INTEGER li_distance= {0};
+	if (!SetFilePointerEx(file_handle, li_distance, &li_new_pos, FILE_CURRENT))
+	{
+		log_err
+			L"SetFilePointerEx() failed, gle = %u", GetLastError()
+		log_end
+		return false;
+	}
+
+	position = li_new_pos.QuadPart;
+	return true;
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool 
+set_file_position(
+	_In_ HANDLE file_handle, 
+	_In_ uint64_t distance, 
+	_Out_opt_ uint64_t* new_position
+	)
+{
+	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
+	if (INVALID_HANDLE_VALUE == file_handle) return false;
+
+	DWORD file_type = GetFileType(file_handle);
+	if (FILE_TYPE_DISK != file_type)
+	{
+		log_err 
+			L"invalid file type = %u, FILE_TYPE_DISK (1) only", file_type 
+		log_end
+		return false;
+	}
+
+	LARGE_INTEGER li_distance = {0}; li_distance.QuadPart = distance;
+	LARGE_INTEGER li_new_pos = {0};
+
+	if (!SetFilePointerEx(file_handle, li_distance, &li_new_pos, FILE_BEGIN))
+	{
+		log_err
+			L"SetFilePointerEx() failed, gle = %u", GetLastError()
+		log_end
+		return false;
+	}
+
+	if (NULL != new_position) { *new_position = li_new_pos.QuadPart; }
+	return true;
 }
 
 /**
@@ -1000,7 +1086,8 @@ SaveBinaryFile(
 }
 
 /**----------------------------------------------------------------------------
-    \brief  
+    \brief  DirectoryPath 디렉토리를 생성한다. 중간에 없는 디렉토리 경로가 존재하면
+	\brief  생성한다. 
     
     \param  
     \return
@@ -1008,10 +1095,10 @@ SaveBinaryFile(
     
     \endcode        
 -----------------------------------------------------------------------------*/
-BOOL WUCreateDirectory(const LPCWSTR DirectoryPath)
+bool WUCreateDirectory(const LPCWSTR DirectoryPath)
 {
 	_ASSERTE(NULL != DirectoryPath);
-	if (NULL==DirectoryPath) return FALSE;
+	if (NULL==DirectoryPath) return false;
 
 	if (true != is_file_existsW(DirectoryPath))
 	{
@@ -1021,11 +1108,11 @@ BOOL WUCreateDirectory(const LPCWSTR DirectoryPath)
 				L"SHCreateDirectoryExW( path=%ws ) failed. gle=0x%08x", 
 				DirectoryPath, GetLastError()
 			log_end
-			return FALSE;
+			return false;
 		}
 	}
 
-	return TRUE;
+	return true;
 }
 
 /**----------------------------------------------------------------------------
@@ -1037,10 +1124,10 @@ BOOL WUCreateDirectory(const LPCWSTR DirectoryPath)
     
     \endcode        
 -----------------------------------------------------------------------------*/
-BOOL WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete)
+bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete)
 {
 	_ASSERTE(NULL != DirctoryPathToDelete);
-	if (NULL == DirctoryPathToDelete) return FALSE;
+	if (NULL == DirctoryPathToDelete) return false;
 
 	SHFILEOPSTRUCTW FileOp={0};
 	
@@ -1048,9 +1135,9 @@ BOOL WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete)
 	// 
 	size_t len = (wcslen(DirctoryPathToDelete) + 2) * sizeof(WCHAR);
 	WCHAR* tmp= (WCHAR*)malloc(len);
-	if (NULL == tmp) return FALSE;
+	if (NULL == tmp) return false;
 	RtlZeroMemory(tmp, len);
-	if (TRUE != SUCCEEDED( StringCbPrintfW(tmp, len, L"%s", DirctoryPathToDelete) )) return FALSE;
+	if (TRUE != SUCCEEDED( StringCbPrintfW(tmp, len, L"%s", DirctoryPathToDelete) )) return false;
 
 	FileOp.hwnd = NULL;
 	FileOp.wFunc = FO_DELETE;       // 삭제 속성 설정
@@ -1067,12 +1154,11 @@ BOOL WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete)
 		log_err
 			L"SHFileOperation(path=%S) failed, ret=0x%08x", 
 			DirctoryPathToDelete, ret
-			log_end
-			return FALSE;
+		log_end
+		return false;
 	}
 
-	return TRUE;
-
+	return true;
 }
 
 /**
@@ -1506,7 +1592,7 @@ std::wstring MbsToWcsEx(_In_ const char *mbs)
     std::auto_ptr<wchar_t> tmp( MbsToWcs(mbs) );
     if (NULL == tmp.get())
     {
-        return L"";
+        return _null_stringw;
     }
     else
     {
@@ -1529,7 +1615,7 @@ std::string WcsToMbsEx(_In_ const wchar_t *wcs)
     std::auto_ptr<char> tmp( WcsToMbs(wcs) );
     if (NULL == tmp.get())
     {
-        return "";
+        return _null_stringa;
     }
     else
     {
@@ -1551,7 +1637,7 @@ std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs)
     std::auto_ptr<char> tmp( WcsToMbsUTF8(wcs) );
     if (NULL == tmp.get())
     {
-        return "";
+        return _null_stringa;
     }
     else
     {
@@ -2465,7 +2551,6 @@ BOOL GetTimeStringA(OUT std::string& TimeString)
     struct tm newtime={0};
 
     // Get time as 64-bit integer.
-    //
     _time64(&long_time);
 
     errno_t err=_localtime64_s(&newtime, &long_time ); 
@@ -2684,9 +2769,9 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege)
 {
 	// enable SeDebugPrivilege		
-	if (TRUE == raise_privilege)
+	if (true == raise_privilege)
 	{
-		if (TRUE != set_privilege(SE_DEBUG_NAME, TRUE) )
+		if (true != set_privilege(SE_DEBUG_NAME, TRUE) )
 		{
 			log_err L"set_privilege() failed. " log_end			
 			return NULL;
@@ -2702,9 +2787,9 @@ HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool rais
 	}
 	
 	// disable SeDebugPrivilege
-	if (TRUE == raise_privilege)
+	if (true == raise_privilege)
 	{
-		if (TRUE != set_privilege(SE_DEBUG_NAME, FALSE))
+		if (true != set_privilege(SE_DEBUG_NAME, FALSE))
 		{
 			log_err L"set_privilege() failed. " log_end
 			

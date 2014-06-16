@@ -121,10 +121,14 @@ bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_dev
 
 HANDLE open_file_to_write(_In_ const wchar_t* file_path);
 HANDLE open_file_to_read(LPCWCH file_path);
-bool get_file_size(_In_ HANDLE file_handle, _Out_ LARGE_INTEGER& size);
+
 BOOL write_to_filew(LPCWCH file_path, LPCWCH format,...);
 BOOL write_to_filew(HANDLE hFile, LPCWCH format, ...);
 BOOL write_to_filea(HANDLE hFile, LPCCH format, ...);
+
+bool get_file_size(_In_ HANDLE file_handle, _Out_ uint64_t& size);
+bool get_file_position(_In_ HANDLE file_handle, _Out_ uint64_t& position);
+bool set_file_position(_In_ HANDLE file_handle, _In_ uint64_t distance, _Out_opt_ uint64_t* new_position);
 
 BOOL SaveToFileAsUTF8A(
                 IN LPCWSTR FilePathDoesNotExists, 
@@ -173,8 +177,8 @@ bool get_current_module_dir(_Out_ std::wstring& module_dir);
 bool get_current_module_file(_Out_ std::wstring& module_file);
 bool get_system_directory(_Out_ std::wstring& system_dir);
 
-BOOL WUCreateDirectory(const LPCWSTR DirectoryPath);
-BOOL WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete);
+bool WUCreateDirectory(const LPCWSTR DirectoryPath);
+bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete);
 BOOL GetSystemRootDirectory(DWORD Len, LPTSTR Buffer);
 BOOL DeleteDirectory(IN LPCWSTR  DirctoryPathToDelete);
 BOOL GetImageFullPathFromPredefinedPathW(
@@ -199,6 +203,10 @@ BOOL GetImageFullPathFromPredefinedPathA(
 wchar_t* MbsToWcs(_In_ const char* mbs);
 char* WcsToMbs(_In_ const wchar_t* wcs);
 char* WcsToMbsUTF8(IN const wchar_t* wcs);
+
+static const std::wstring _null_stringw(L"");
+static const std::string  _null_stringa("");
+
 std::wstring MbsToWcsEx(_In_ const char *mbs);
 std::string WcsToMbsEx(_In_ const wchar_t *wcs);
 std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs);
@@ -340,7 +348,6 @@ bool get_local_ip_list(_In_ std::wstring& host_name, _In_ std::vector<std::wstri
 bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
 HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege);
 
-
 /******************************************************************************
  * console stuff
 ******************************************************************************/
@@ -363,7 +370,6 @@ HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool rais
 */
 void SetConsoleCoords(COORD xy);
 COORD GetCurCoords(void);
-
 
 #define LL_DEBG		0
 #define LL_INFO		1

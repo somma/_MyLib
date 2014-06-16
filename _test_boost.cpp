@@ -215,3 +215,27 @@ bool boost_tuple()
 
 	return true;
 }
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool boost_format()
+{
+	boost::wformat f = boost::wformat(L"msg = %s, int = %d, float = %f") % L"string..." % 100 % 3.14;
+
+	// to cout
+	std::wcout << L"f = " << f << std::endl;
+
+	// to string
+	std::wstring& fs = f.str();
+	std::wcout << L"fs = " << fs << std::endl;				
+
+	return true;
+
+}

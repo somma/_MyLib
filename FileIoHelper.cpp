@@ -11,9 +11,7 @@
 #include "stdafx.h"
 #include <crtdbg.h>
 
-#include "DebugMessage.h"
 #include "Win32Utils.h"
-
 #include "FileIoHelper.h"
 
 
@@ -26,20 +24,20 @@
     \code
     \endcode        
 -----------------------------------------------------------------------------*/
-DTSTATUS OpenFileContext(IN PCWSTR FilePath, IN OUT PFILE_CTX& Ctx)
+bool OpenFileContext(IN PCWSTR FilePath, OUT PFILE_CTX& Ctx)
 {
     _ASSERTE(NULL != FilePath);
-    if (NULL == FilePath) return DTS_INVALID_PARAMETER;
-    if (TRUE != IsFileExistW(FilePath)) return DTS_INVALID_PARAMETER;
+    if (NULL == FilePath) return false;
+    if (!is_file_existsW(FilePath)) return false;;
 
 	_ASSERT(NULL == Ctx);
-	if (NULL != Ctx) return DTS_INVALID_PARAMETER;
+	if (NULL != Ctx) return false;;
 
-    DTSTATUS status = DTS_WINAPI_FAILED;
-	Ctx = (PFILE_CTX) malloc(sizeof(FILE_CTX));
-	if (NULL == Ctx) return DTS_INSUFFICIENT_RESOURCES;
+    Ctx = (PFILE_CTX) malloc(sizeof(FILE_CTX));
+	if (NULL == Ctx) return false;
 
     RtlZeroMemory(Ctx, sizeof(FILE_CTX));
+	bool ret = false;
 
 #pragma warning(disable: 4127)
     do 
@@ -55,12 +53,11 @@ DTSTATUS OpenFileContext(IN PCWSTR FilePath, IN OUT PFILE_CTX& Ctx)
                             );
         if (INVALID_HANDLE_VALUE == Ctx->FileHandle)
         {
-            DBG_OPN 
-                "[ERR ]", 
-                "CreateFile(%ws) failed, gle=0x%08x", 
+            log_err
+                L"CreateFile(%ws) failed, gle = %u", 
                 FilePath, 
                 GetLastError()
-            DBG_END
+            log_end
             break;
         }
 
@@ -69,12 +66,11 @@ DTSTATUS OpenFileContext(IN PCWSTR FilePath, IN OUT PFILE_CTX& Ctx)
         LARGE_INTEGER fileSize;
         if (TRUE != GetFileSizeEx(Ctx->FileHandle, &fileSize))
         {
-            DBG_OPN
-                "[ERR ]", 
-                "%ws, can not get file size, gle=0x%08x", 
+            log_err
+                L"%ws, can not get file size, gle = %u", 
                 FilePath, 
                 GetLastError() 
-            DBG_END
+            log_end
             break;
         }
 
@@ -87,10 +83,10 @@ DTSTATUS OpenFileContext(IN PCWSTR FilePath, IN OUT PFILE_CTX& Ctx)
         _ASSERTE(fileSize.HighPart == 0);
 		if (fileSize.HighPart > 0) 
 		{
-			DBG_ERR
-				"file size = %I64d (over 4GB) can not handle. use FileIoHelperClass",
+			log_err
+				L"file size = %I64d (over 4GB) can not handle. use FileIoHelperClass",
 				fileSize.QuadPart
-			DBG_END
+			log_end
 			break;
 		}
 
@@ -105,12 +101,11 @@ DTSTATUS OpenFileContext(IN PCWSTR FilePath, IN OUT PFILE_CTX& Ctx)
                                 );
         if (NULL == Ctx->FileMap)
         {
-            DBG_OPN
-                "[ERR ]", 
-                "CreateFileMapping(%ws) failed, gle=0x%08x", 
+            log_err
+                L"CreateFileMapping(%ws) failed, gle = %u", 
                 FilePath, 
                 GetLastError() 
-            DBG_END
+            log_end
             break;
         }
 
@@ -123,20 +118,19 @@ DTSTATUS OpenFileContext(IN PCWSTR FilePath, IN OUT PFILE_CTX& Ctx)
                                         );
         if(Ctx->FileView == NULL)
         {
-            DBG_OPN
-                "[ERR ]", 
-                "MapViewOfFile(%ws) failed, gle=0x%08x", 
+            log_err
+                L"MapViewOfFile(%ws) failed, gle = %u", 
                 FilePath, 
                 GetLastError() 
-            DBG_END
+            log_end
             break;
         }    
-
-        status = DTS_SUCCESS;
+        
+		ret = true;
     } while (FALSE);
 #pragma warning(default: 4127)
 
-    if (TRUE != DT_SUCCEEDED(status))
+    if (!ret)
     {
         if (INVALID_HANDLE_VALUE != Ctx->FileHandle) CloseHandle(Ctx->FileHandle);
         if (NULL!= Ctx->FileMap) CloseHandle(Ctx->FileMap);
@@ -144,7 +138,7 @@ DTSTATUS OpenFileContext(IN PCWSTR FilePath, IN OUT PFILE_CTX& Ctx)
         free(Ctx);
     }
 
-    return status;
+    return ret;
 }
 
 

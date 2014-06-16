@@ -30,6 +30,9 @@
     <ClInclude Include="mini_test.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
+    <ClInclude Include="process_tree.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="_test_cpp_class.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="process_tree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

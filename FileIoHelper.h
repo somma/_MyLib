@@ -14,7 +14,6 @@
 #define _fileio_helper_h_
 
 #include "Win32Utils.h"
-#include "StatusCode.h"
 
 typedef struct _FILE_CTX
 {
@@ -25,7 +24,7 @@ typedef struct _FILE_CTX
 
 }FILE_CTX, *PFILE_CTX;
  
-DTSTATUS OpenFileContext(IN PCWSTR FilePath, IN OUT PFILE_CTX& Ctx);
+bool OpenFileContext(IN PCWSTR FilePath, OUT PFILE_CTX& Ctx);
 void CloseFileContext(IN PFILE_CTX& Ctx);
 
 class SmrtFileCtx
