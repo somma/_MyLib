@@ -88,7 +88,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/I "d:\work.libs\_MyLib" /I "c:\Boost_x86\include\boost-1_55" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/I "d:\work.libs\_MyLib" /I "c:\Boost_x86\include\boost-1_56" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -102,7 +102,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/I "d:\work.libs\_MyLib" /I "c:\Boost_x64\include\boost-1_55" </AdditionalOptions>
+      <AdditionalOptions>/I "d:\work.libs\_MyLib" /I "c:\Boost_x64\include\boost-1_56" </AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -118,7 +118,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/I "d:\work.libs\_MyLib" /I "c:\Boost_x86\include\boost-1_55" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/I "d:\work.libs\_MyLib" /I "c:\Boost_x86\include\boost-1_56" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,7 +136,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/I "d:\work.libs\_MyLib" /I "c:\Boost_x64\include\boost-1_55" </AdditionalOptions>
+      <AdditionalOptions>/I "d:\work.libs\_MyLib" /I "c:\Boost_x64\include\boost-1_56" </AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
