@@ -57,7 +57,7 @@ void my_free(_In_ void* memory)
 {
 	if (NULL != memory) return;
 
-	log_msg L"trying to free void pointer at 0x%p", memory log_end
+	log_msg "trying to free void pointer at 0x%p", memory log_end
 	free(memory);
 }
 
@@ -66,7 +66,7 @@ bool boost_shared_ptr_void()
 	boost::shared_ptr< boost::remove_pointer<void*>::type > void_ptr( malloc(128), my_free );
 	if (NULL == void_ptr.get()) return false;
 
-	log_msg L"void pointer allocated at 0x%p", void_ptr.get() log_end
+	log_msg "void pointer allocated at 0x%p", void_ptr.get() log_end
 	return true;
 }
 
@@ -93,7 +93,7 @@ bool boost_shared_ptr_handle_01()
 	DWORD bytes_read=0;
 	unsigned char buffer[128]={0};
 	if (!ReadFile(file_handle.get(), buffer, 128, &bytes_read, NULL)) return false;
-	log_msg L"ReadFile, buffer = %S", buffer log_end
+	log_msg "ReadFile, buffer = %S", buffer log_end
 
 	file_handle.reset();	//!
 
@@ -121,7 +121,7 @@ void MyCloseHandle(_In_ HANDLE file_handle)
 	if (INVALID_HANDLE_VALUE == file_handle || NULL == file_handle) return;
 
 	log_msg 
-		L"file handle = 0x%08x is closing...", 
+		"file handle = 0x%08x is closing...", 
 		file_handle
 	log_end
 	
@@ -140,7 +140,7 @@ bool boost_shared_ptr_handle_02()
 	DWORD bytes_read=0;
 	unsigned char buffer[128]={0};
 	if (!ReadFile(file_handle.get(), buffer, 128, &bytes_read, NULL)) return false;
-	log_msg L"ReadFile, buffer = %S", buffer log_end
+	log_msg "ReadFile, buffer = %S", buffer log_end
 
 	file_handle.reset();	//!
 

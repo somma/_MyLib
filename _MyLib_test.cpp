@@ -58,7 +58,7 @@ class ccc
 public:
 	~ccc ()
 	{
-		log_info L"..." log_end
+		log_info "..." log_end
 	}
 };
 /**
@@ -76,48 +76,48 @@ int _tmain(int argc, _TCHAR* argv[])
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
 
-	//assert_bool(true, test_x64_calling_convension);
-	//assert_bool(true , test_print_64int);
-	//assert_bool(true, test_std_string_find_and_substr);
-	//assert_bool(true, test_to_lower_uppper_string);
-	////assert_bool(true, test_const_position);
-	//assert_bool(true, test_initialize_string);
+	assert_bool(true, test_x64_calling_convension);
+	assert_bool(true , test_print_64int);
+	assert_bool(true, test_std_string_find_and_substr);
+	assert_bool(true, test_to_lower_uppper_string);
+	//assert_bool(true, test_const_position);		// 컴파일 불가 테스트
+	assert_bool(true, test_initialize_string);
 	assert_bool(true, test_process_tree);
 
-	//assert_bool(true, test_cpp_class);
+	assert_bool(true, test_cpp_class);
 	
-	//assert_bool(true, test_nt_name_to_dos_name);
-	//assert_bool(true, test_query_dos_device);
-	//assert_bool(true, test_get_filepath_by_handle);
-	//assert_bool(true, test_bin_to_hex);
-	//assert_bool(true, test_str_to_xxx);
-	//assert_bool(true, test_set_get_file_position);
+	assert_bool(true, test_nt_name_to_dos_name);
+	assert_bool(true, test_query_dos_device);
+	assert_bool(true, test_get_filepath_by_handle);
+	assert_bool(true, test_bin_to_hex);
+	assert_bool(true, test_str_to_xxx);
+	assert_bool(true, test_set_get_file_position);
 
-	//assert_bool(true, boost_lexical_cast);
-	//assert_bool(true, boost_shared_ptr_void);
-	//assert_bool(true, boost_shared_ptr_handle_01);
-	//assert_bool(true, boost_shared_ptr_handle_02);
-	//assert_bool(true, boost_shared_ptr_handle_03);
-	//assert_bool(true, boost_tuple);
+	assert_bool(true, boost_lexical_cast);
+	assert_bool(true, boost_shared_ptr_void);
+	assert_bool(true, boost_shared_ptr_handle_01);
+	assert_bool(true, boost_shared_ptr_handle_02);
+	assert_bool(true, boost_shared_ptr_handle_03);
+	assert_bool(true, boost_tuple);
 
-	//assert_bool(true, boost_format);
+	assert_bool(true, boost_format);
 
-	//assert_bool(true, boost_bind);
-	//assert_bool(true, boost_bind2);
-	//assert_bool(true, boost_bind3);
-	//assert_bool(true, boost_bind4);
+	assert_bool(true, boost_bind);
+	assert_bool(true, boost_bind2);
+	assert_bool(true, boost_bind3);
+	assert_bool(true, boost_bind4);
 
-	//assert_bool(true, test_std_map);
-	//assert_bool(true, test_map_plus_algorithm_1);
-	//assert_bool(true, test_map_plus_algorithm_2);
-	//assert_bool(true, test_map_plus_algorithm_3);
-	//assert_bool(true, test_map_plus_algorithm_4);
+	assert_bool(true, test_std_map);
+	assert_bool(true, test_map_plus_algorithm_1);
+	assert_bool(true, test_map_plus_algorithm_2);
+	assert_bool(true, test_map_plus_algorithm_3);
+	assert_bool(true, test_map_plus_algorithm_4);
 
 	log_info
-		L"-------------------------------------------------------------------------------"
+		"-------------------------------------------------------------------------------"
 	log_end
 	log_info
-		L"total test = %u, pass = %u, fail = %u", 
+		"total test = %u, pass = %u, fail = %u", 
 		_pass_count + _fail_count, 
 		_pass_count, 
 		_fail_count
@@ -151,7 +151,7 @@ bool test_std_string_find_and_substr()
 						nt_name.substr(pos + nt_device_name.size(), nt_name.size());
 	
 	log_dbg
-		L"\nnt_name = %s \ndos_device_name = %s \nnt_device_name = %s \nresult = %s",
+		"\nnt_name = %s \ndos_device_name = %s \nnt_device_name = %s \nresult = %s",
 		nt_name.c_str(),
 		dos_device_name.c_str(),
 		nt_device_name.c_str(),
@@ -287,7 +287,7 @@ bool test_x64_calling_convension()
 bool test_print_64int()
 {
 	uint64_t val = 0xffffffffffffffff;
-	log_msg L"%%I64d = %I64d, %%I64u = %I64u, %%I64x = %I64x", val, val, val log_end
+	log_msg "%%I64d = %I64d, %%I64u = %I64u, %%I64x = %I64x", val, val, val log_end
 
 	// %I64d = -1, %I64u = 18446744073709551615, %I64x = ffffffffffffffff
 
@@ -305,13 +305,13 @@ bool test_print_64int()
 **/
 bool test_to_lower_uppper_string()
 {
-	std::wstring str = L"ABCDEFGh1234";
-	log_msg L"str = %s", str.c_str() log_end
+	std::wstring str = L"ABCDEFGh1234";	
+	log_msg "str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
 	to_lower_string(str);
-	log_msg L"after to_lower, str = %s", str.c_str() log_end
+	log_msg "after to_lower, str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
 
 	to_upper_string(str);
-	log_msg L"after to_upper, str = %s", str.c_str() log_end
+	log_msg "after to_upper, str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
 
 	return true;
 }
@@ -387,20 +387,20 @@ bool test_const_position()
 bool test_initialize_string()
 {
 	std::wstring str = L"";
-	log_dbg L"str = %s", str.c_str() log_end
+	log_dbg "str = %s", str.c_str() log_end
 
 	//> invalid null point exception 발생 
 	//> try-except 로 못 잡음... 
-	//> 초기화시 NULL 이면 L"" 로 바꿔서 초기화 해야 함
+	//> 초기화시 NULL 이면 "" 로 바꿔서 초기화 해야 함
 /*
 	try
 	{
 		std::wstring str2 = NULL;
-		log_dbg L"str2 = %s", str2.c_str() log_end
+		log_dbg "str2 = %s", str2.c_str() log_end
 	}
 	catch (...)
 	{
-		log_err L"oops" log_end
+		log_err "oops" log_end
 	}
 */	
 	
@@ -422,7 +422,7 @@ bool test_process_tree()
 	if (!proc_tree.build_process_tree()) return false;
 
 	
-	//proc_tree.print_process_tree(L"explorer.exe");
+	//proc_tree.print_process_tree("explorer.exe");
 	proc_tree.print_process_tree(L"taskmgr.exe");
 	proc_tree.kill_process_tree( proc_tree.find_process(L"taskmgr.exe") );
 
@@ -449,7 +449,7 @@ bool test_get_filepath_by_handle()
 	bool ret = get_filepath_by_handle(file_handle.get(), file_path);
 	if (true == ret)
 	{
-		log_dbg L"file path = %s", file_path.c_str() log_end
+		log_dbg "file path = %s", file_path.c_str() log_end
 	}
 
 	return ret;
@@ -474,7 +474,7 @@ bool test_nt_name_to_dos_name()
 	if (true == ret) 
 	{
 		log_dbg 
-			L"nt_name = %s -> dos_name = %s", 
+			"nt_name = %S -> dos_name = %S", 
 			nt_name,
 			dos_name.c_str()
 		log_end
@@ -500,7 +500,7 @@ bool test_query_dos_device()
 	if (true == ret) 
 	{
 		log_dbg 
-			L"dos_device( %s ) -> nt_device ( %s )", 
+			"dos_device( %S ) -> nt_device ( %S )", 
 			dos_device, 
 			nt_device.c_str()
 		log_end

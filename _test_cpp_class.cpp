@@ -14,12 +14,12 @@ class base
 public: 
 	base(int param1)
 	{
-		log_msg L"" log_end
+		log_msg "" log_end
 	}
 
 	virtual ~base()
 	{
-		log_msg L"" log_end
+		log_msg "" log_end
 	}
 
 public:
@@ -31,11 +31,11 @@ class child : public base
 public:
 	child(int param1):base(param1)
 	{
-		log_msg L"" log_end
+		log_msg "" log_end
 	}
 	virtual ~child()
 	{
-		log_msg L"" log_end
+		log_msg "" log_end
 	}
 };
 
@@ -45,11 +45,11 @@ class child_has_diff_creator : public base
 public:
 	child_has_diff_creator(int param1, int param2): base(param1)
 	{
-		log_msg L"" log_end
+		log_msg "" log_end
 	}
 	virtual ~child_has_diff_creator()
 	{
-		log_msg L"" log_end
+		log_msg "" log_end
 	}
 };
 

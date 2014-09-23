@@ -13,12 +13,12 @@
 	ret = return_bool_test_func();	\
 	if (expected_bool == ret) \
 	{ \
-		log_info L"[pass] %s", L#return_bool_test_func log_end \
+		log_info "[pass] %s", #return_bool_test_func log_end \
 		_pass_count ++; \
 	} \
 	else \
 	{ \
-		log_err L"[fail] %s", L#return_bool_test_func log_end \
+		log_err "[fail] %s", #return_bool_test_func log_end \
 		_fail_count ++; \
 	} \
 }
@@ -28,12 +28,12 @@
 	ret = return_bool_test_func(param);	\
 	if (expected_bool == ret) \
 	{ \
-		log_info L"[pass] %s", L#return_bool_test_func log_end \
+		log_info "[pass] %s", #return_bool_test_func log_end \
 		_pass_count ++; \
 	} \
 	else \
 	{ \
-		log_err L"[fail] %s", L#return_bool_test_func log_end \
+		log_err "[fail] %s", #return_bool_test_func log_end \
 		_fail_count ++; \
 	} \
 }

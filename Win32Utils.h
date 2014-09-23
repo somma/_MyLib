@@ -16,6 +16,7 @@
 
 #include <iosfwd>
 #include <sstream>
+
 #include <vector>
 
 #define WIN32_LEAN_AND_MEAN
@@ -371,28 +372,39 @@ HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool rais
 void SetConsoleCoords(COORD xy);
 COORD GetCurCoords(void);
 
-#define LL_DEBG		0
-#define LL_INFO		1
-#define LL_ERRR		2
-#define LL_NONE		3
+typedef enum _LOG_TO_XXX 
+{
+	LOG_TO_DEBUGGER		= 0,
+	LOG_TO_CONSOLE		= 1
+} LOG_TO_XXX;
 
-#define con_err		write_to_console( LL_ERRR, __FUNCTIONW__, 
-#define con_info	write_to_console( LL_INFO, __FUNCTIONW__, 
-#define con_dbg		write_to_console( LL_DEBG, __FUNCTIONW__, 
-#define con_msg		write_to_console( LL_NONE, __FUNCTIONW__, 
+
+#define LL_DEBG				0
+#define LL_INFO				1
+#define LL_ERRR				2
+#define LL_NONE				3
+
+// console 에 로그를 출력한다.
+#define con_err		write_log( LOG_TO_CONSOLE, LL_ERRR, __FUNCTION__, 
+#define con_info	write_log( LOG_TO_CONSOLE, LL_INFO, __FUNCTION__, 
+#define con_dbg		write_log( LOG_TO_CONSOLE, LL_DEBG, __FUNCTION__, 
+#define con_msg		write_log( LOG_TO_CONSOLE, LL_NONE, __FUNCTION__, 
 #define con_end		);
 
+// debugger 에 로그를 출력한다.
+// slogger 를 사용하지 않는 경우 log_xxx 를 write_log(LOG_TO_DEBUGGER 로 치환한다.
 #ifndef _slogger_included
-	//> slogger 를 사용하지 않는 경우
-	#define log_err		con_err
-	#define log_dbg		con_dbg
-	#define log_info	con_info
-	#define	log_msg		con_msg
-	#define log_end		con_end
+	#define log_err		write_log(LOG_TO_DEBUGGER, LL_ERRR, __FUNCTION__, 
+	#define log_dbg		write_log(LOG_TO_DEBUGGER, LL_DEBG, __FUNCTION__, 
+	#define log_info	write_log(LOG_TO_DEBUGGER, LL_INFO, __FUNCTION__, 
+	#define	log_msg		write_log(LOG_TO_DEBUGGER, LL_NONE, __FUNCTION__, 
+	#define log_end		);
 	
 #endif //_slogger_included
 
-void write_to_console(_In_ DWORD log_level, _In_ wchar_t* function, _In_ wchar_t* format, ...);
+void write_log(_In_ LOG_TO_XXX log_to, _In_ DWORD log_level, _In_ const char* function, _In_ const char* format, ...);
+void write_to_console(_In_ DWORD log_level, _In_ const char* log_text);
+
 
 
 

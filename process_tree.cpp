@@ -31,7 +31,7 @@ cprocess_tree::build_process_tree()
 	HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (snap == INVALID_HANDLE_VALUE)
 	{
-		log_err L"CreateToolhelp32Snapshot() failed, gle = %u", GetLastError() log_end
+		log_err "CreateToolhelp32Snapshot() failed, gle = %u", GetLastError() log_end
 		return false;
 	}
 
@@ -44,7 +44,7 @@ cprocess_tree::build_process_tree()
 		proc_entry.dwSize = sizeof(PROCESSENTRY32W);
 		if (!Process32First(snap, &proc_entry))
 		{
-			log_err L"CreateToolhelp32Snapshot() failed, gle = %u", GetLastError() log_end
+			log_err "CreateToolhelp32Snapshot() failed, gle = %u", GetLastError() log_end
 			break;
 		}
 
@@ -59,9 +59,9 @@ cprocess_tree::build_process_tree()
 			if(NULL == process_handle)
 			{
 				log_err 
-					L"OpenProcess() failed, pid = %u, proc = %s, gle = %u", 
+					"OpenProcess() failed, pid = %u, proc = %s, gle = %u", 
 					proc_entry.th32ProcessID, 
-					proc_entry.szExeFile, 
+					WcsToMbsEx(proc_entry.szExeFile).c_str(),
 					GetLastError() 
 				log_end
 				// use create time 0!
@@ -71,7 +71,7 @@ cprocess_tree::build_process_tree()
 				FILETIME dummy_time;
 				if (!GetProcessTimes(process_handle, &create_time, &dummy_time, &dummy_time, &dummy_time))
 				{
-					log_err L"GetProcessTimes() failed, gle = %u", GetLastError() log_end
+					log_err "GetProcessTimes() failed, gle = %u", GetLastError() log_end
 					// use create time 0!
 				}
 
@@ -231,11 +231,11 @@ void cprocess_tree::print_process_tree(_In_ process& p, _In_ DWORD& depth)
 	std::wstringstream prefix;
 	for(DWORD i = 0; i < depth; ++i)
 	{
-		prefix << L"    ";
+		prefix << "    ";
 	}
 
 	log_info 
-		L"%spid = %u (ppid = %u), %s ", prefix.str().c_str(), 
+		"%spid = %u (ppid = %u), %s ", prefix.str().c_str(), 
 		p.pid(), 
 		p.ppid(), 
 		p.process_name().c_str() 
@@ -277,7 +277,7 @@ void cprocess_tree::kill_process(_In_ DWORD pid, _In_ DWORD exit_code)
 		if (NULL == h)
 		{
 			log_err 
-				L"OpenProcess() failed, pid = %u, gle = %u", 
+				"OpenProcess() failed, pid = %u, gle = %u", 
 				pid,
 				GetLastError()
 			log_end
@@ -287,14 +287,14 @@ void cprocess_tree::kill_process(_In_ DWORD pid, _In_ DWORD exit_code)
 		if (!TerminateProcess(h, exit_code))
 		{
 			log_err 
-				L"TerminateProcess() failed, pid = %u, gle = %u", 
+				"TerminateProcess() failed, pid = %u, gle = %u", 
 				pid,
 				GetLastError()
 			log_end
 			break;			
 		}
 	
-		log_dbg L"pid = %u, terminated", pid log_end
+		log_dbg "pid = %u, terminated", pid log_end
 	} while (false);
 	
 	if (NULL!=h) 

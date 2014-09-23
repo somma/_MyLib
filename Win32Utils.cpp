@@ -155,7 +155,7 @@ get_filepath_by_handle(
 	if (TRUE != GetFileSizeEx(file_handle, &file_size))
 	{
 		log_err
-			L"GetFileSize( file handle = 0x%08x ), gle = %u", 
+			"GetFileSize( file handle = 0x%08x ), gle = %u", 
 			file_handle, 
 			GetLastError()
 		log_end
@@ -164,7 +164,7 @@ get_filepath_by_handle(
 
 	if (0 == file_size.QuadPart)
 	{
-		log_err L"zero length file" log_end
+		log_err "zero length file" log_end
 		return false;
 	}
 	
@@ -174,7 +174,7 @@ get_filepath_by_handle(
 					);
 	if (NULL == map_handle.get())
 	{
-		log_err L"CreateFileMapping(), gle = %u", GetLastError() log_end
+		log_err "CreateFileMapping(), gle = %u", GetLastError() log_end
 		return false;
 	}
 
@@ -184,7 +184,7 @@ get_filepath_by_handle(
 					);
 	if (NULL == map_ptr.get())
 	{
-		log_err L"MapViewOfFile(), gle = %u", GetLastError() log_end
+		log_err "MapViewOfFile(), gle = %u", GetLastError() log_end
 		return false;
 	}
 
@@ -194,13 +194,13 @@ get_filepath_by_handle(
 					map_ptr.get(), 
 					nt_device_name))
 	{
-		log_err L"get_mapped_file_name()" log_end
+		log_err "get_mapped_file_name()" log_end
 		return false;
 	}
 
 	if (true != nt_name_to_dos_name(nt_device_name.c_str(), file_path))
 	{
-		log_err L"nt_name_to_dos_name( nt name = %s )", nt_device_name.c_str() log_end
+		log_err "nt_name_to_dos_name( nt name = %s )", nt_device_name.c_str() log_end
 		return false;
 	}
 	
@@ -238,7 +238,7 @@ get_mapped_file_name(
 		if (NULL == buf) 
 		{
 			log_err 
-				L"insufficient memory, malloc( %u )", 
+				"insufficient memory, malloc( %u )", 
 				(cch_buf + 1) * sizeof(wchar_t) 
 			log_end
 			return false;
@@ -253,7 +253,7 @@ get_mapped_file_name(
 		if (0 == ret_cch_buf)
 		{
 			log_err 
-				L"GetMappedFileNameW( process handle = 0x%08x, addr = 0x%p ), gle = %u",
+				"GetMappedFileNameW( process handle = 0x%08x, addr = 0x%p ), gle = %u",
 				process_handle, 
 				mapped_addr, 
 				GetLastError()
@@ -278,7 +278,7 @@ get_mapped_file_name(
 		else
 		{
 			log_err 
-				L"unexpected ret_cch_buf(%u) : cch_buf(%u), GetMappedFileNameW()",
+				"unexpected ret_cch_buf(%u) : cch_buf(%u), GetMappedFileNameW()",
 				ret_cch_buf,
 				cch_buf
 			log_end
@@ -326,7 +326,7 @@ nt_name_to_dos_name(
 	if ( 0 == length)
 	{
 		log_err 
-			L"GetLogicalDriveStringsW(), gle = %u", GetLastError()
+			"GetLogicalDriveStringsW(), gle = %u", GetLastError()
 		log_end
 		return false;
 	}
@@ -345,7 +345,7 @@ nt_name_to_dos_name(
 		if (true != query_dos_device(dos_device_name, nt_device))
 		{
 			log_err 
-				L"query_dos_device( dos_device_name = %s )", 
+				"query_dos_device( dos_device_name = %s )", 
 				dos_device_name
 			log_end
 			return false;
@@ -403,7 +403,7 @@ bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_dev
 		if (NULL == buf)
 		{
 			log_err
-				L"insufficient memory, malloc( %u )", 
+				"insufficient memory, malloc( %u )", 
 				(cch_buf + 1) * sizeof(wchar_t)
 			log_end
 			return false;
@@ -416,7 +416,7 @@ bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_dev
 			if(ERROR_INSUFFICIENT_BUFFER != gle)
 			{
 				log_err 
-					L"QueryDosDevice( dos = %s ), gle = %u", 
+					"QueryDosDevice( dos = %s ), gle = %u", 
 					dos_device, 
 					GetLastError()
 				log_end
@@ -438,7 +438,7 @@ bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_dev
 		{
 			// opps! unknown error 
 			log_err 
-				L"unexpected cch_ret(%u) : cch_buf(%u), QueryDosDevice( %s )",
+				"unexpected cch_ret(%u) : cch_buf(%u), QueryDosDevice( %s )",
 				cch_ret,
 				cch_buf, 
 				dos_device
@@ -475,7 +475,7 @@ HANDLE open_file_to_write(_In_ const wchar_t* file_path)
 	if(hFile == INVALID_HANDLE_VALUE)
 	{						
         log_err
-            L"CreateFile(path=%S), gle=0x%08x", 
+            "CreateFile(path=%S), gle=0x%08x", 
             file_path, 
             GetLastError()
         log_end
@@ -506,7 +506,7 @@ HANDLE open_file_to_read(LPCWCH file_path)
 	if(hFile == INVALID_HANDLE_VALUE)
 	{						
         log_err
-            L"CreateFile(path=%S), gle=0x%08x", 
+            "CreateFile(path=%S), gle=0x%08x", 
             file_path, 
             GetLastError()
         log_end
@@ -534,7 +534,7 @@ bool get_file_size(_In_ HANDLE file_handle, _Out_ uint64_t& size)
 	if (TRUE != GetFileSizeEx(file_handle, &size_tmp))
 	{
 		log_err 
-			L"GetFileSizeEx( file = 0x%p ), gle = %u", file_handle, GetLastError() 
+			"GetFileSizeEx( file = 0x%p ), gle = %u", file_handle, GetLastError() 
 		log_end
 		return false;
 	}
@@ -566,7 +566,7 @@ BOOL write_to_filew(LPCWCH file_path, LPCWCH format,...)
 	if(hFile == INVALID_HANDLE_VALUE)
 	{						
         log_err
-            L"CreateFile(%S), gle=0x%08x", 
+            "CreateFile(%S), gle=0x%08x", 
             file_path, GetLastError()
         log_end
         return FALSE;
@@ -733,7 +733,7 @@ bool get_file_position(_In_ HANDLE file_handle, _Out_ uint64_t& position)
 	if (FILE_TYPE_DISK != file_type)
 	{
 		log_err 
-			L"invalid file type = %u, FILE_TYPE_DISK (1) only", file_type 
+			"invalid file type = %u, FILE_TYPE_DISK (1) only", file_type 
 		log_end
 		return false;
 	}
@@ -743,7 +743,7 @@ bool get_file_position(_In_ HANDLE file_handle, _Out_ uint64_t& position)
 	if (!SetFilePointerEx(file_handle, li_distance, &li_new_pos, FILE_CURRENT))
 	{
 		log_err
-			L"SetFilePointerEx() failed, gle = %u", GetLastError()
+			"SetFilePointerEx() failed, gle = %u", GetLastError()
 		log_end
 		return false;
 	}
@@ -775,7 +775,7 @@ set_file_position(
 	if (FILE_TYPE_DISK != file_type)
 	{
 		log_err 
-			L"invalid file type = %u, FILE_TYPE_DISK (1) only", file_type 
+			"invalid file type = %u, FILE_TYPE_DISK (1) only", file_type 
 		log_end
 		return false;
 	}
@@ -786,7 +786,7 @@ set_file_position(
 	if (!SetFilePointerEx(file_handle, li_distance, &li_new_pos, FILE_BEGIN))
 	{
 		log_err
-			L"SetFilePointerEx() failed, gle = %u", GetLastError()
+			"SetFilePointerEx() failed, gle = %u", GetLastError()
 		log_end
 		return false;
 	}
@@ -847,7 +847,7 @@ SaveToFileAsUTF8W(
     if (INVALID_HANDLE_VALUE == hFile) 
     {
         log_err
-            L"OpenFileToWrite(path=%S) failed",
+            "OpenFileToWrite(path=%S) failed",
             FilePathDoesNotExists
         log_end
         return FALSE;
@@ -865,7 +865,7 @@ SaveToFileAsUTF8W(
                     NULL))
     {
         log_err
-            L"WriteFile(BOM) failed, gle=0x%08x", 
+            "WriteFile(BOM) failed, gle=0x%08x", 
             GetLastError()
         log_end
 
@@ -881,7 +881,7 @@ SaveToFileAsUTF8W(
                     NULL))
     {
         log_err
-            L"WriteFile(Utf8String) failed, gle=0x%08x", 
+            "WriteFile(Utf8String) failed, gle=0x%08x", 
             GetLastError()
         log_end
         CloseHandle(hFile); hFile = NULL;
@@ -918,7 +918,7 @@ LoadFileToMemory(
     if (INVALID_HANDLE_VALUE == hFile)
     {
         log_err
-            L"CreateFile(%ws) failed, gle=0x%08x", 
+            "CreateFile(%ws) failed, gle=0x%08x", 
             FilePath, 
             GetLastError()
         log_end
@@ -932,7 +932,7 @@ LoadFileToMemory(
     if (TRUE != GetFileSizeEx(hFile, &fileSize))
     {
         log_err
-            L"%ws, can not get file size, gle=0x%08x", 
+            "%ws, can not get file size, gle=0x%08x", 
             FilePath, 
             GetLastError() 
         log_end
@@ -941,7 +941,7 @@ LoadFileToMemory(
 
 	if (0 == fileSize.QuadPart)
 	{
-		log_err L"can not map zero length file" log_end
+		log_err "can not map zero length file" log_end
 		return FALSE;
 	}
    
@@ -956,7 +956,7 @@ LoadFileToMemory(
     if (NULL == hImageMap)
     {
         log_err
-            L"CreateFileMapping(%ws) failed, gle=0x%08x", 
+            "CreateFileMapping(%ws) failed, gle=0x%08x", 
             FilePath, 
             GetLastError() 
         log_end
@@ -975,7 +975,7 @@ LoadFileToMemory(
     if(ImageView == NULL)
     {
         log_err
-            L"MapViewOfFile(%ws) failed, gle=0x%08x", 
+            "MapViewOfFile(%ws) failed, gle=0x%08x", 
             FilePath, 
             GetLastError() 
         log_end
@@ -1022,7 +1022,7 @@ SaveBinaryFile(
     if (ERROR_SUCCESS != ret && ERROR_ALREADY_EXISTS != ret)
     {
         log_err
-            L"SHCreateDirectoryExW(path=%S) failed, ret=0x%08x",
+            "SHCreateDirectoryExW(path=%S) failed, ret=0x%08x",
             Directory, ret
         log_end
         return FALSE;
@@ -1038,7 +1038,7 @@ SaveBinaryFile(
                                 )))
     {
         log_err
-            L"can not generate target path, dir=%S, file=%S", 
+            "can not generate target path, dir=%S, file=%S", 
             Directory, FileName
         log_end
         return FALSE;
@@ -1049,7 +1049,7 @@ SaveBinaryFile(
     if (TRUE == is_file_existsW(DataPath))
     {
         log_err
-            L"same file exists, file=%S will be replaced by new file",
+            "same file exists, file=%S will be replaced by new file",
             DataPath
         log_end
         
@@ -1060,7 +1060,7 @@ SaveBinaryFile(
     if (INVALID_HANDLE_VALUE == hFile)
     {
         log_err
-            L"can not create file=%S, check path or privilege", 
+            "can not create file=%S, check path or privilege", 
             DataPath
         log_end
         return FALSE;
@@ -1076,7 +1076,7 @@ SaveBinaryFile(
                         NULL))
     {
         log_err
-            L"WriteFile(path=%S) failed, gle=0x%08x",
+            "WriteFile(path=%S) failed, gle=0x%08x",
             DataPath, GetLastError()
         log_end
         return FALSE;
@@ -1105,7 +1105,7 @@ bool WUCreateDirectory(const LPCWSTR DirectoryPath)
 		if (ERROR_SUCCESS != SHCreateDirectoryExW(NULL, DirectoryPath, NULL))
 		{
 			log_err
-				L"SHCreateDirectoryExW( path=%ws ) failed. gle=0x%08x", 
+				"SHCreateDirectoryExW( path=%ws ) failed. gle=0x%08x", 
 				DirectoryPath, GetLastError()
 			log_end
 			return false;
@@ -1152,7 +1152,7 @@ bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete)
 	if(0!=ret)
 	{
 		log_err
-			L"SHFileOperation(path=%S) failed, ret=0x%08x", 
+			"SHFileOperation(path=%S) failed, ret=0x%08x", 
 			DirctoryPathToDelete, ret
 		log_end
 		return false;
@@ -1216,7 +1216,7 @@ GetImageFullPathFromPredefinedPathA(
     size_t len = wcslen(buf);
     if (FullPathBufferLen <= len)
     {
-        log_err L"buffer overflow" log_end
+        log_err "buffer overflow" log_end
         return FALSE;
     }
 
@@ -1270,7 +1270,7 @@ GetImageFullPathFromPredefinedPathW(
 								    sizeof(SysRootDir), 
 								    SysRootDir))
             {
-                log_err L"GetSystemRootDirectory() failed" log_end                    
+                log_err "GetSystemRootDirectory() failed" log_end                    
                 return FALSE;
             }    
 
@@ -1280,7 +1280,7 @@ GetImageFullPathFromPredefinedPathW(
                                 L"%s\\drivers", 
                                 SysRootDir)) )
             {
-                log_err L"StringCbPrintf() failed" log_end
+                log_err "StringCbPrintf() failed" log_end
                 return FALSE;
             }    
         }    
@@ -1307,10 +1307,10 @@ GetImageFullPathFromPredefinedPathW(
  * @brief      하위 디렉토리에 존재하는 모든 파일들을 enum 하는 함수
 
 				아래 형태 4가지는 모두 동일한 결과를 출력함
-				L"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData",
-				L"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\",
-				L"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*",
-				L"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.*"	
+				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData",
+				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\",
+				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*",
+				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.*"	
  * @param	
  * @see		
  * @remarks	
@@ -1345,7 +1345,7 @@ bool find_file_recursive(_In_ const wchar_t* root, _In_ fnFindFilesCallback cb, 
     if(INVALID_HANDLE_VALUE == hSrch) 
     {
         log_err
-            L"FindFirstFileW(path=%S) failed, gle=0x%08x", 
+            "FindFirstFileW(path=%S) failed, gle=0x%08x", 
             root_dir.c_str(), GetLastError()
         log_end
         return false;
@@ -1395,10 +1395,10 @@ bool find_file_recursive(_In_ const wchar_t* root, _In_ fnFindFilesCallback cb, 
     \brief  RootPath 하위디렉토리 경로를 enum 하는 함수
 			
 			아래 형태 4가지는 모두 동일한 결과를 출력함
-			L"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData",
-			L"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\",
-			L"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*",
-			L"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.*"
+			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData",
+			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\",
+			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*",
+			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.*"
 
     \param  
     \return         
@@ -1446,7 +1446,7 @@ FindSubDirectory(
     if(INVALID_HANDLE_VALUE == hSrch) 
     {
         log_err
-            L"FindFirstFileW(path=%S) failed, gle=0x%08x", 
+            "FindFirstFileW(path=%S) failed, gle=0x%08x", 
             RootDir.c_str(), GetLastError()
         log_end
         return FALSE;
@@ -1506,7 +1506,7 @@ wchar_t* MbsToWcs(_In_ const char* mbs)
 
     if(0==MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mbs, -1, outWchar, outLen))
     {
-        log_err L"MultiByteToWideChar() failed, errcode=0x%08x", GetLastError() log_end
+        log_err "MultiByteToWideChar() failed, errcode=0x%08x", GetLastError() log_end
 
         free(outWchar);
         return NULL;
@@ -1538,7 +1538,7 @@ char* WcsToMbs(_In_ const wchar_t* wcs)
 
     if(0==WideCharToMultiByte(CP_ACP, 0, wcs, -1, outChar, outLen, NULL, NULL))
     {
-        log_err L"WideCharToMultiByte() failed, errcode=0x%08x", GetLastError() log_end
+        log_err "WideCharToMultiByte() failed, errcode=0x%08x", GetLastError() log_end
         free(outChar);
         return NULL;
     }
@@ -1569,7 +1569,7 @@ char* WcsToMbsUTF8(_In_ const wchar_t* wcs)
 
     if(0==WideCharToMultiByte(CP_UTF8, 0, wcs, -1, outChar, outLen, NULL, NULL))
     {
-        log_err L"WideCharToMultiByte() failed, errcode=0x%08x", GetLastError() log_end
+        log_err "WideCharToMultiByte() failed, errcode=0x%08x", GetLastError() log_end
 
         free(outChar);
         return NULL;
@@ -2031,7 +2031,7 @@ BOOL WUGetCurrentDirectoryW(IN OUT std::wstring& CurrentDir)
 	if (0 == buflen)
 	{
 		log_err
-			L"GetCurrentDirectoryW() failed. gle=0x%08x", 
+			"GetCurrentDirectoryW() failed. gle=0x%08x", 
 			GetLastError()
 		log_end
 		return FALSE;
@@ -2043,7 +2043,7 @@ BOOL WUGetCurrentDirectoryW(IN OUT std::wstring& CurrentDir)
 	if (0 == GetCurrentDirectoryW(buflen, buf))
 	{
 		log_err
-			L"GetCurrentDirectoryW() failed, gle=0x%08x", 
+			"GetCurrentDirectoryW() failed, gle=0x%08x", 
 			GetLastError()
 		log_end
 
@@ -2131,13 +2131,13 @@ bool get_current_module_dir(_Out_ std::wstring& module_dir)
 	std::wstring module_path;
 	if (true != get_current_module_path(module_path))
 	{
-		log_err L"get_current_module_path()" log_end
+		log_err "get_current_module_path()" log_end
 		return false;
 	}
 	
 	if (true != extract_last_tokenW(module_path, L"\\", module_dir, true, false))
 	{
-		log_err L"extract_last_tokenW( org=%s )", module_path.c_str() log_end
+		log_err "extract_last_tokenW( org=%s )", module_path.c_str() log_end
 		module_dir = L"";
 		return false;
 	}
@@ -2159,13 +2159,13 @@ bool get_current_module_file(_Out_ std::wstring& module_file)
 	std::wstring module_path;
 	if (true != get_current_module_path(module_path))
 	{
-		log_err L"get_current_module_path()" log_end
+		log_err "get_current_module_path()" log_end
 		return false;
 	}
 	
 	if (true != extract_last_tokenW(module_path, L"\\", module_file, false, false))
 	{
-		log_err L"extract_last_tokenW( org=%s )", module_path.c_str() log_end
+		log_err "extract_last_tokenW( org=%s )", module_path.c_str() log_end
 		module_file = L"";
 		return false;
 	}
@@ -2293,7 +2293,7 @@ BOOL DumpMemory(DWORD Length, BYTE* Buf)
 {
 	if ( (0 < Length) && (NULL != Buf) && (TRUE != IsBadReadPtr(Buf, Length)) )
 	{
-        log_info L"length = %u, buffer=0x%08x", Length, Buf log_end
+        log_info "length = %u, buffer=0x%08x", Length, Buf log_end
 
 		CHAR print_buf[128 * sizeof(CHAR)] = {0};
 		DWORD i = 0, x = 0, ib = 0;		
@@ -2319,7 +2319,7 @@ BOOL DumpMemory(DWORD Length, BYTE* Buf)
 								"0x%08p    ", 
 								&Addr[i])))
 			{
-                log_err L"StringCbPrintfEx() failed" log_end
+                log_err "StringCbPrintfEx() failed" log_end
 				break;
 			}	
 
@@ -2338,7 +2338,7 @@ BOOL DumpMemory(DWORD Length, BYTE* Buf)
 									"%02X ", 
 									Addr[i])))
 				{
-                    log_err L"StringCbPrintfEx() failed" log_end
+                    log_err "StringCbPrintfEx() failed" log_end
 					break;
 				}		
 			}
@@ -2356,7 +2356,7 @@ BOOL DumpMemory(DWORD Length, BYTE* Buf)
 								    "%s",
 								    "  ")))
 			    {
-                    log_err L"StringCbPrintfEx() failed" log_end
+                    log_err "StringCbPrintfEx() failed" log_end
 				    break;
 			    }
             }
@@ -2376,7 +2376,7 @@ BOOL DumpMemory(DWORD Length, BYTE* Buf)
 									"%02X ", 
 									Addr[i])))
 				{
-                    log_err L"StringCbPrintfEx() failed" log_end
+                    log_err "StringCbPrintfEx() failed" log_end
 					break;
 				}		
 			}
@@ -2399,7 +2399,7 @@ BOOL DumpMemory(DWORD Length, BYTE* Buf)
                                         "%c", 
                                         Addr[ib])))
                     {
-                        log_err L"StringCbPrintfEx() failed" log_end
+                        log_err "StringCbPrintfEx() failed" log_end
 					    break;
                     }
                 }
@@ -2414,7 +2414,7 @@ BOOL DumpMemory(DWORD Length, BYTE* Buf)
                                         "%c",
                                         '.')))                                        
                     {
-                        log_err L"StringCbPrintfEx() failed" log_end
+                        log_err "StringCbPrintfEx() failed" log_end
 					    break;
                     }                
                 }
@@ -2424,15 +2424,15 @@ BOOL DumpMemory(DWORD Length, BYTE* Buf)
             
 			// print string..
 			//
-            log_info L"  %s   %s", print_buf, tmp log_end            
+            log_info "  %s   %s", print_buf, tmp log_end            
 			memset(print_buf, 0x00, sizeof(print_buf));
 		}
 
-		log_info L"  %s\n\n", print_buf log_end
+		log_info "  %s\n\n", print_buf log_end
 		return TRUE;
 	}
 
-    log_err L"invalid parameters" log_end
+    log_err "invalid parameters" log_end
 	return FALSE;
 }
 
@@ -2556,7 +2556,7 @@ BOOL GetTimeStringA(OUT std::string& TimeString)
     errno_t err=_localtime64_s(&newtime, &long_time ); 
     if (err)
     {
-        log_err L"_localtime64_s() failed" log_end
+        log_err "_localtime64_s() failed" log_end
         return FALSE;
     }
 
@@ -2574,7 +2574,7 @@ BOOL GetTimeStringA(OUT std::string& TimeString)
                         newtime.tm_min,
                         newtime.tm_sec)))
     {
-        log_err L"StringCbPrintfEx() failed" log_end
+        log_err "StringCbPrintfEx() failed" log_end
         return FALSE;
     }
 
@@ -2594,7 +2594,7 @@ BOOL GetTimeStringW(IN std::wstring& TimeString)
     errno_t err=_localtime64_s(&newtime, &long_time ); 
     if (err)
     {
-        log_err L"_localtime64_s() failed" log_end
+        log_err "_localtime64_s() failed" log_end
         return FALSE;
     }
 
@@ -2612,7 +2612,7 @@ BOOL GetTimeStringW(IN std::wstring& TimeString)
                         newtime.tm_min,
                         newtime.tm_sec)))
     {
-        log_err L"StringCbPrintfEx() failed" log_end
+        log_err "StringCbPrintfEx() failed" log_end
         return FALSE;
     }
 
@@ -2646,7 +2646,7 @@ bool get_local_ip_list(_In_ std::wstring& host_name, _In_ std::vector<std::wstri
 
 			if(0 == GetComputerNameExA(ComputerNameNetBIOS, netbios_name_a, &NetbiosNameLen))
 			{
-				log_err L"GetComputerNameExA( ComputerNameNetBIOS ) failed, gle = %u", GetLastError() log_end
+				log_err "GetComputerNameExA( ComputerNameNetBIOS ) failed, gle = %u", GetLastError() log_end
 				WSACleanup();
 				return false;
 			}
@@ -2664,7 +2664,7 @@ bool get_local_ip_list(_In_ std::wstring& host_name, _In_ std::vector<std::wstri
 	PADDRINFOW Result=NULL;
 	if( 0 != GetAddrInfoW(host_name.c_str(), NULL, &hints, &Result) || NULL == Result )
 	{
-		log_err L"GetAddrInfoW(host_name = %s) failed, wserr=0x%08x", host_name.c_str(), WSAGetLastError() log_end
+		log_err "GetAddrInfoW(host_name = %s) failed, wserr=0x%08x", host_name.c_str(), WSAGetLastError() log_end
 		WSACleanup();
 		return false;
 	}
@@ -2703,19 +2703,19 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 			{
 				if (ImpersonateSelf(SecurityImpersonation)	!= TRUE ) 
 				{
-					log_err L"ImpersonateSelf( ) failed. gle=0x%08x", GetLastError() log_end
+					log_err "ImpersonateSelf( ) failed. gle=0x%08x", GetLastError() log_end
 					return false;
 				}
 
 				if (TRUE != OpenThreadToken(GetCurrentThread(),TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,FALSE,&hToken))
 				{
-					log_err L"OpenThreadToken() failed. gle=0x%08x", GetLastError() log_end
+					log_err "OpenThreadToken() failed. gle=0x%08x", GetLastError() log_end
 					return false;
 				}
 			}
 			else
 			{
-				log_err L"OpenThread() failed. gle=0x%08x", GetLastError() log_end
+				log_err "OpenThread() failed. gle=0x%08x", GetLastError() log_end
 				return false;
 			}
 		}  
@@ -2725,7 +2725,7 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 		DWORD cb = sizeof(TOKEN_PRIVILEGES);
 		if(!LookupPrivilegeValue( NULL, privilege, &luid ))
 		{		
-			log_err L"LookupPrivilegeValue() failed. gle=0x%08x", GetLastError() log_end
+			log_err "LookupPrivilegeValue() failed. gle=0x%08x", GetLastError() log_end
 			CloseHandle(hToken);
 			return false;
 		}
@@ -2745,7 +2745,7 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
             DWORD gle=GetLastError();
 		    if (gle != ERROR_SUCCESS)
 		    {		
-				log_err L"AdjustTokenPrivileges() failed. gle=0x%08x", GetLastError() log_end
+				log_err "AdjustTokenPrivileges() failed. gle=0x%08x", GetLastError() log_end
 				CloseHandle(hToken);				
 			    return false;
 		    }		
@@ -2773,7 +2773,7 @@ HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool rais
 	{
 		if (true != set_privilege(SE_DEBUG_NAME, TRUE) )
 		{
-			log_err L"set_privilege() failed. " log_end			
+			log_err "set_privilege() failed. " log_end			
 			return NULL;
 		}
 	}
@@ -2791,7 +2791,7 @@ HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool rais
 	{
 		if (true != set_privilege(SE_DEBUG_NAME, FALSE))
 		{
-			log_err L"set_privilege() failed. " log_end
+			log_err "set_privilege() failed. " log_end
 			
 			if (NULL != proc_handle) { CloseHandle(proc_handle); }
 		}
@@ -2839,7 +2839,68 @@ COORD GetCurCoords(void)
  * @endcode	
  * @return	
 **/
-void write_to_console(_In_ DWORD log_level, _In_ wchar_t* function, _In_ wchar_t* format, ...)
+void write_log(_In_ LOG_TO_XXX log_to, _In_ DWORD log_level, _In_ const char* function, _In_ const char* format, ...)
+{
+	std::stringstream log_stream;
+	switch (log_level)
+	{
+	case LL_DEBG: 
+		{
+			log_stream << "[DEBG] " << function << ", "; 
+			break;
+		}
+	case LL_INFO: 
+		{
+			log_stream << "[INFO] " << function << ", "; 			
+			break;
+		}
+	case LL_ERRR: 
+		{
+			log_stream << "[ERR ] " << function << ", "; 
+			break;
+		}
+	case LL_NONE:
+	default:
+		{
+			log_stream << function << ", ";
+			break;
+		}
+	}
+	
+	va_list args;
+	char msg[4096];
+
+	va_start(args, format);
+	if(TRUE != SUCCEEDED(StringCchVPrintfA(msg, sizeof(msg), format, args))){ return; }
+	va_end(args);
+
+	log_stream << msg;
+
+	switch(log_to)
+	{
+	case LOG_TO_DEBUGGER:
+		OutputDebugStringA(log_stream.str().c_str());
+		break;
+	case LOG_TO_CONSOLE:
+		write_to_console(log_level, log_stream.str().c_str());
+		break;
+	default:
+		//oops!
+		break;
+	}	
+}
+
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+void write_to_console(_In_ DWORD log_level, _In_ const char* log_text)
 {
 	static HANDLE	_stdout_handle = INVALID_HANDLE_VALUE;
 	static WORD		_old_color = 0x0000;
@@ -2853,59 +2914,12 @@ void write_to_console(_In_ DWORD log_level, _In_ wchar_t* function, _In_ wchar_t
 		GetConsoleScreenBufferInfo(_stdout_handle, &csbi);
 		_old_color = csbi.wAttributes;
 	}
-
-	std::wstringstream strm_prefix;
-	switch (log_level)
-	{
-	case LL_DEBG: 
-		{
-			strm_prefix << L"[DEBG] " << function << L", "; 
-			break;
-		}
-	case LL_INFO: 
-		{
-			strm_prefix << L"[INFO] " << function << L", "; 
-			SetConsoleTextAttribute(_stdout_handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-			break;
-		}
-	case LL_ERRR: 
-		{
-			strm_prefix << L"[ERR ] " << function << L", "; 
-			SetConsoleTextAttribute(_stdout_handle, FOREGROUND_RED | FOREGROUND_INTENSITY);
-			break;
-		}
-	case LL_NONE:
-	default:
-		{
-			strm_prefix << function << L", ";
-			break;
-		}
-	}
-
-	DWORD len;
-	va_list args;
-	WCHAR msg[4096];	
-	
-	va_start(args, format);
-	if(TRUE != SUCCEEDED(StringCchVPrintf(msg, sizeof(msg), format, args))){ return; }
-	va_end(args);
-
-	WriteConsole(_stdout_handle, strm_prefix.str().c_str(), (DWORD)strm_prefix.str().size(), &len, NULL);
-	WriteConsole(_stdout_handle, msg, (DWORD)wcslen(msg), &len, NULL);	
-	WriteConsole(_stdout_handle, L"\n", (DWORD)wcslen(L"\n"), &len, NULL);
+		
+	DWORD len = 0;
+	WriteConsole(_stdout_handle, log_text, (DWORD)((strlen(log_text) + 1) * sizeof(char)), &len, NULL);	
+	WriteConsole(_stdout_handle, "\n", (DWORD)strlen("\n"), &len, NULL);
 	
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), _old_color);
-
-#ifdef _USE_AHNTRACE_
-	switch (log_level)
-	{
-	case LL_DEBG: DEBUGLOG(msg); break;
-	case LL_INFO: INFOLOG(msg); break;	
-	case LL_ERRR: ERRORLOG(msg); break;
-	default:
-		break;		
-	}
-#endif//_USE_AHNTRACE_
 }
 
 /** ---------------------------------------------------------------------------
@@ -2935,7 +2949,7 @@ BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
                     NULL);
     if (INVALID_HANDLE_VALUE == hFile)
     {
-        log_err L"access denied or invalid path, %ws", path log_end
+        log_err "access denied or invalid path, %ws", path log_end
         return FALSE;
     }
     SmrtHandle sfFile(hFile);
@@ -2945,7 +2959,7 @@ BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
     LARGE_INTEGER fileSize;
     if (TRUE != GetFileSizeEx(hFile, &fileSize))
     {
-        log_err L"%ws, can not get file size, errorcode=0x%08x", path, GetLastError() log_end
+        log_err "%ws, can not get file size, errorcode=0x%08x", path, GetLastError() log_end
         return FALSE;
     }
     if (sizeof(IMAGE_DOS_HEADER) > fileSize.QuadPart) return TRUE;
@@ -2979,7 +2993,7 @@ BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
     DWORD dosSize = (idh->e_cp * 512);
     if (dosSize > fileSize.QuadPart) 
     {
-        log_err L"%ws, invalid file size, size=%lu", path, fileSize.QuadPart log_end
+        log_err "%ws, invalid file size, size=%lu", path, fileSize.QuadPart log_end
         return TRUE;
     }
 
@@ -2990,7 +3004,7 @@ BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
     if (TRUE == IsBadReadPtr((void*)p, sizeof(DWORD)/* sizeof (IMAGE_NT_SIGNATURE) */))
     {
         log_err
-            L"%s, 0x%08x, invalid e_lfanew offset, idh=0x%08x, e_lfanew=0x%08x", 
+            "%s, 0x%08x, invalid e_lfanew offset, idh=0x%08x, e_lfanew=0x%08x", 
             path, idh, idh->e_lfanew 
         log_end        
         return TRUE;    
@@ -3016,7 +3030,7 @@ BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
     }
 
     // never called.. ???
-    // if ((characteristics & IMAGE_FILE_SYSTEM) == IMAGE_FILE_SYSTEM){OutputDebugStringW(L" IMAGE_FILE_SYSTEM");}
+    // if ((characteristics & IMAGE_FILE_SYSTEM) == IMAGE_FILE_SYSTEM){OutputDebugStringW(" IMAGE_FILE_SYSTEM");}
 
     
     // subsystem check
@@ -3101,7 +3115,7 @@ bin_to_hexa(
 		if(!SUCCEEDED(hr))
 		{
 			log_err 
-				L"StringCbPrintfExW(pos = 0x%p, remain = %u), hr = 0x%08x",
+				"StringCbPrintfExW(pos = 0x%p, remain = %u), hr = 0x%08x",
 				pos, remain, hr
 			log_end
 			return false;
