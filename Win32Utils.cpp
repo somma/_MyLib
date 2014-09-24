@@ -2874,7 +2874,7 @@ void write_log(_In_ LOG_TO_XXX log_to, _In_ DWORD log_level, _In_ const char* fu
 	if(TRUE != SUCCEEDED(StringCchVPrintfA(msg, sizeof(msg), format, args))){ return; }
 	va_end(args);
 
-	log_stream << msg;
+	log_stream << msg << std::endl;
 
 	switch(log_to)
 	{

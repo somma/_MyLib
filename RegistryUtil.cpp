@@ -28,13 +28,14 @@ private:
 
 
 /**----------------------------------------------------------------------------
-    \brief  
-    
+    \brief      
     \param      RootKey     HKEY_CLASSES_ROOT
                             HKEY_CURRENT_CONFIG
                             HKEY_CURRENT_USER
                             HKEY_LOCAL_MACHINE
                             HKEY_USERS
+				SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+							'\' 로 시작하면 안됨
     \return
     \code
     
@@ -87,8 +88,13 @@ RUCloseKey(
 
 /**----------------------------------------------------------------------------
     \brief  
-    
-    \param  
+    \param      RootKey     HKEY_CLASSES_ROOT
+                            HKEY_CURRENT_CONFIG
+                            HKEY_CURRENT_USER
+                            HKEY_LOCAL_MACHINE
+                            HKEY_USERS
+				SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+							'\' 로 시작하면 안됨
     \return
     \code
     
@@ -121,7 +127,13 @@ RUCreateKey(
 /**----------------------------------------------------------------------------
     \brief  
     
-    \param  
+    \param      RootKey     HKEY_CLASSES_ROOT
+                            HKEY_CURRENT_CONFIG
+                            HKEY_CURRENT_USER
+                            HKEY_LOCAL_MACHINE
+                            HKEY_USERS
+				SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+							'\' 로 시작하면 안됨
     \return
     \code
     
@@ -162,8 +174,13 @@ RUReadDword(
 
 /** ---------------------------------------------------------------------------
     \brief  
-
-    \param  
+    \param      RootKey     HKEY_CLASSES_ROOT
+                            HKEY_CURRENT_CONFIG
+                            HKEY_CURRENT_USER
+                            HKEY_LOCAL_MACHINE
+                            HKEY_USERS
+				SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+							'\' 로 시작하면 안됨
     \return         
     \code
     \endcode        
@@ -199,7 +216,13 @@ RUWriteDword(
 
 /**
  * @brief	
- * @param	
+ * @param	RootKey     HKEY_CLASSES_ROOT
+                            HKEY_CURRENT_CONFIG
+                            HKEY_CURRENT_USER
+                            HKEY_LOCAL_MACHINE
+                            HKEY_USERS
+			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+						'\' 로 시작하면 안됨
  * @see		
  * @remarks	
  * @code		
@@ -278,15 +301,21 @@ RUReadString(
     return true;
 }
 
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
+/**
+ * @brief	
+ * @param	RootKey     HKEY_CLASSES_ROOT
+                            HKEY_CURRENT_CONFIG
+                            HKEY_CURRENT_USER
+                            HKEY_LOCAL_MACHINE
+                            HKEY_USERS
+			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+						'\' 로 시작하면 안됨
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
 bool
 RUSetString(
     HKEY		RootKey,
@@ -317,14 +346,21 @@ RUSetString(
     return true;
 }
 
-/** ---------------------------------------------------------------------------
-    \brief  
-
-    \param  
-    \return         
-    \code
-    \endcode        
------------------------------------------------------------------------------*/
+/**
+ * @brief	
+ * @param	RootKey     HKEY_CLASSES_ROOT
+                            HKEY_CURRENT_CONFIG
+                            HKEY_CURRENT_USER
+                            HKEY_LOCAL_MACHINE
+                            HKEY_USERS
+			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+						'\' 로 시작하면 안됨
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
 bool
 RUSetExpandString(
     HKEY    RootKey,
@@ -357,7 +393,13 @@ RUSetExpandString(
 
 /**
  * @brief	
- * @param	
+ * @param	RootKey     HKEY_CLASSES_ROOT
+                            HKEY_CURRENT_CONFIG
+                            HKEY_CURRENT_USER
+                            HKEY_LOCAL_MACHINE
+                            HKEY_USERS
+			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+						'\' 로 시작하면 안됨
  * @see		
  * @remarks	
  * @code		
@@ -393,8 +435,14 @@ RUDeleteValue(
 }
 
 /**
- * @brief	SubKey 내의 Value 들 포함, 키를 삭제한다.
- * @param	
+ * @brief	key 를 삭제한다. 대상 키의 내부에 있는 value 들도 함께 삭제된다.
+ * @param	RootKey     HKEY_CLASSES_ROOT
+                            HKEY_CURRENT_CONFIG
+                            HKEY_CURRENT_USER
+                            HKEY_LOCAL_MACHINE
+                            HKEY_USERS
+			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+						'\' 로 시작하면 안됨
  * @see		
  * @remarks	
  * @code		
@@ -417,17 +465,21 @@ RUDeleteKey(
 	return true;
 }
 
-
-
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
+/**
+ * @brief	
+ * @param	RootKey     HKEY_CLASSES_ROOT
+                            HKEY_CURRENT_CONFIG
+                            HKEY_CURRENT_USER
+                            HKEY_LOCAL_MACHINE
+                            HKEY_USERS
+			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+						'\' 로 시작하면 안됨
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
 bool
 RUIsKeyExists(
     HKEY RootKey, 
