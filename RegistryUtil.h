@@ -9,6 +9,8 @@
 **---------------------------------------------------------------------------*/
 #pragma once
 
+#include <string>
+
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
@@ -21,10 +23,10 @@ HKEY
 RUOpenKey(
     HKEY    RootKey,
     LPCWSTR SubKey,
-    BOOL    ReadOnly
+    bool    ReadOnly
     );
 
-BOOL
+bool
 RUCloseKey(
     HKEY Key
     );
@@ -33,7 +35,7 @@ HKEY
 RUCreateKey(
     HKEY    RootKey,
     LPCWSTR SubKey,
-    BOOL    ReadOnly
+    bool    ReadOnly
     );
 
 
@@ -45,7 +47,7 @@ RUReadDword(
     DWORD   DefaultValue
     );
 
-BOOL 
+bool 
 RUWriteDword(
     HKEY    RootKey,
     LPCWSTR SubKey,
@@ -54,25 +56,24 @@ RUWriteDword(
     );
 
 
-BOOL
+bool
 RUReadString(
-    IN HKEY         RootKey,
-    IN LPCWSTR      SubKey,
-    IN PCWCH        ValueName,
-    IN OUT PWCHAR&  Value,
-    IN OUT DWORD&   cbValue
+    IN HKEY				RootKey,
+    IN LPCWSTR			SubKey,
+    IN PCWCH			ValueName,
+    OUT std::wstring&	Value
     );
 
-BOOL
+bool
 RUSetString(
-    HKEY    RootKey,
-    LPCWSTR SubKey,
-    PCWCH   ValueName,
-    PWCHAR  Value,           // byte buffer
-    DWORD   cbValue          // count byte
+    HKEY		RootKey,
+    LPCWSTR		SubKey,
+    PCWCH		ValueName,
+    PCWCHAR		Value,           // byte buffer
+    DWORD		cbValue          // count byte
     );
 
-BOOL
+bool
 RUSetExpandString(
     HKEY    RootKey,
     LPCWSTR SubKey,
@@ -84,7 +85,7 @@ RUSetExpandString(
 
 // 이건 그냥 string 으로 읽으면 됨
 // 
-//BOOL
+//bool
 //RUReadExpandString(
 //    HKEY    key,
 //    PCWCH   value_name,
@@ -93,8 +94,23 @@ RUSetExpandString(
 //    )
 
 
-BOOL
+bool
+RUDeleteValue(
+	_In_ HKEY		RootKey,
+	_In_ LPCWSTR	SubKey,
+	_In_ LPCWSTR	ValueName
+	);
+
+bool 
+RUDeleteKey(
+	_In_ HKEY		RootKey,
+	_In_ LPCWSTR	SubKey
+	);
+
+
+bool
 RUIsKeyExists(
     HKEY RootKey, 
     PCWCH TargetKey
     );
+

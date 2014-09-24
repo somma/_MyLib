@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="process_tree.h" />
+    <ClInclude Include="RegistryUtil.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Win32Utils.h" />
@@ -155,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="process_tree.cpp" />
+    <ClCompile Include="RegistryUtil.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -166,6 +168,7 @@
     <ClCompile Include="_test_boost.cpp" />
     <ClCompile Include="_test_boost_bind.cpp" />
     <ClCompile Include="_test_cpp_class.cpp" />
+    <ClCompile Include="_test_registry_util.cpp" />
     <ClCompile Include="_test_std_map.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

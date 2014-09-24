@@ -53,6 +53,9 @@ extern bool test_map_plus_algorithm_2();
 extern bool test_map_plus_algorithm_3();
 extern bool test_map_plus_algorithm_4();
 
+// _test_regstry_util.cpp
+extern bool test_registry_util();
+
 class ccc
 {
 public:
@@ -112,6 +115,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	assert_bool(true, test_map_plus_algorithm_2);
 	assert_bool(true, test_map_plus_algorithm_3);
 	assert_bool(true, test_map_plus_algorithm_4);
+
+	assert_bool(true, test_registry_util);
 
 	log_info
 		"-------------------------------------------------------------------------------"

@@ -88,7 +88,7 @@ bool scm_context::install_driver()
 	SC_HANDLE scm_handle = OpenSCManagerW(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 	if (NULL == scm_handle)
 	{
-		log_err L"OpenSCManagerW() faield. gle = %u", GetLastError() log_end
+		log_err "OpenSCManagerW() faield. gle = %u", GetLastError() log_end
 		return false;
 	}
 	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
@@ -97,7 +97,7 @@ bool scm_context::install_driver()
 	SC_HANDLE service_handle = OpenServiceW(scm_handle, _service_name.c_str(), SERVICE_QUERY_CONFIG);
 	if (NULL != service_handle)
 	{
-		log_dbg L"service=%ws. already exists", _service_name.c_str() log_end
+		log_dbg "service=%ws. already exists", _service_name.c_str() log_end
 		CloseServiceHandle(service_handle);
 	}
 	else
@@ -121,13 +121,13 @@ bool scm_context::install_driver()
 		if (service_handle == NULL)
 		{	
 			log_err 
-				L"CreateServcieW(path=%ws, svc_name=%ws, svc_display=%ws) failed. gle = %u",
+				"CreateServcieW(path=%ws, svc_name=%ws, svc_display=%ws) failed. gle = %u",
 				_driver_path.c_str(), _service_name.c_str(), _service_display_name.c_str(), GetLastError()
 			log_end
 			return false;
 		}
 		CloseServiceHandle(service_handle);
-		log_info L"service=%ws installed successfully", _service_name.c_str() log_end
+		log_info "service=%ws installed successfully", _service_name.c_str() log_end
 	}
 
 	_installed = true;
@@ -151,7 +151,7 @@ bool scm_context::uninstall_driver()
 	{
 		if(true != stop_driver())
 		{
-			log_err L"scm_context::stop_driver() failed, can not uninstall driver..." log_end
+			log_err "scm_context::stop_driver() failed, can not uninstall driver..." log_end
 			
 			//> stop_driver() 가 실패해도 삭제시도를 해야 한다. 
 			//    - driver :: DriverEntry() 에서 STATUS_SUCCESS 를 리턴했으나 아무짓도 안하고, 리턴한 경우
@@ -168,7 +168,7 @@ bool scm_context::uninstall_driver()
 	SC_HANDLE scm_handle = OpenSCManagerW(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 	if (NULL == scm_handle)
 	{
-		log_err L"OpenSCManagerW() faield. gle = %u", GetLastError() log_end
+		log_err "OpenSCManagerW() faield. gle = %u", GetLastError() log_end
 		return false;
 	}
 	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
@@ -181,7 +181,7 @@ bool scm_context::uninstall_driver()
 	if (NULL == service_handle)
 	{
 		log_err 
-			L"OpenServiceW( service_name=%ws ) failed. gle = %u", 
+			"OpenServiceW( service_name=%ws ) failed. gle = %u", 
 			_service_name.c_str(), GetLastError() 
 		log_end
 		return false;
@@ -194,7 +194,7 @@ bool scm_context::uninstall_driver()
 		if (ERROR_SERVICE_MARKED_FOR_DELETE != err)
 		{
 			log_err 
-				L"DeleteService( service name=%ws ) failed, gle = %u", 
+				"DeleteService( service name=%ws ) failed, gle = %u", 
 				_service_name.c_str(), err
 			log_end
 			return false;
@@ -202,7 +202,7 @@ bool scm_context::uninstall_driver()
 	}
 
 	_installed = false;
-	log_info L"service=%ws deleted successfully", _service_name.c_str() log_end
+	log_info "service=%ws deleted successfully", _service_name.c_str() log_end
 	return true;
 }
 
@@ -224,7 +224,7 @@ bool scm_context::start_driver()
 	SC_HANDLE scm_handle = OpenSCManagerW(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 	if (NULL == scm_handle)
 	{
-		log_err L"OpenSCManagerW() faield. gle = %u", GetLastError() log_end
+		log_err "OpenSCManagerW() faield. gle = %u", GetLastError() log_end
 		return false;
 	}
 	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
@@ -237,7 +237,7 @@ bool scm_context::start_driver()
 	if (NULL == service_handle)
 	{
 		log_err 
-			L"OpenServiceW( service_name=%ws ) failed. gle = %u", 
+			"OpenServiceW( service_name=%ws ) failed. gle = %u", 
 			_service_name.c_str(), GetLastError() 
 		log_end
 		return false;
@@ -250,7 +250,7 @@ bool scm_context::start_driver()
 		if (err != ERROR_SERVICE_ALREADY_RUNNING)
 		{
             log_err 
-				L"StartService( service name=%ws ) failed, gle = %u", 
+				"StartService( service name=%ws ) failed, gle = %u", 
 				_service_name.c_str(), err
 			log_end
 			return false;
@@ -258,7 +258,7 @@ bool scm_context::start_driver()
 	}
 
 	_running = true;
-	log_info L"service=%ws started successfully", _service_name.c_str() log_end
+	log_info "service=%ws started successfully", _service_name.c_str() log_end
 	return true;
 }
 
@@ -279,7 +279,7 @@ bool scm_context::stop_driver()
 	SC_HANDLE scm_handle = OpenSCManagerW(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 	if (NULL == scm_handle)
 	{
-		log_err L"OpenSCManagerW() faield. gle = %u", GetLastError() log_end
+		log_err "OpenSCManagerW() faield. gle = %u", GetLastError() log_end
 		return false;
 	}
 	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
@@ -292,7 +292,7 @@ bool scm_context::stop_driver()
 	if (NULL == service_handle)
 	{
 		log_err 
-			L"OpenServiceW( service_name=%ws ) failed. gle = %u", 
+			"OpenServiceW( service_name=%ws ) failed. gle = %u", 
 			_service_name.c_str(), GetLastError() 
 		log_end
 		return false;
@@ -308,14 +308,14 @@ bool scm_context::stop_driver()
 	if (FALSE == ControlService(service_handle, SERVICE_CONTROL_STOP, &service_status))
 	{
 		log_err
-			L"ControlService( service name=%ws ) failed, gle = %u", 
+			"ControlService( service name=%ws ) failed, gle = %u", 
 			_service_name.c_str(), GetLastError()
 		log_end
 		return false;
 	}
 
 	_running = false;
-	log_info L"service=%ws stopped successfully", _service_name.c_str() log_end
+	log_info "service=%ws stopped successfully", _service_name.c_str() log_end
 	return true;
 }
 
@@ -348,7 +348,7 @@ scm_context::send_command(
 		_driver_handle = open_driver();
 		if (INVALID_HANDLE_VALUE == _driver_handle)
 		{
-			log_err L"scm_context::open_driver() failed" log_end
+			log_err "scm_context::open_driver() failed" log_end
 			return false;
 		}
 	}
@@ -365,7 +365,7 @@ scm_context::send_command(
 					);
 	if(TRUE != ret)
 	{
-		log_err L"DeviceIoControl( io_code=0x%08x ) failed", io_code log_end
+		log_err "DeviceIoControl( io_code=0x%08x ) failed", io_code log_end
 		return false;
 	}
 	return true;
@@ -403,7 +403,7 @@ HANDLE scm_context::open_driver()
 	if (INVALID_HANDLE_VALUE == driver_handle)
 	{
 		log_err
-			L"CreateFileW(driver name=%ws) failed, gle = %u", 
+			"CreateFileW(driver name=%ws) failed, gle = %u", 
 			driver_object_name.c_str(), GetLastError()
 		log_end
 		return INVALID_HANDLE_VALUE;

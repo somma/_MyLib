@@ -9,11 +9,9 @@
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
 #include "RegistryUtil.h"
-#include "DebugMessage.h"
 
 #include <crtdbg.h>
 #include <stdlib.h>
-
 
 class RegHandle
 {
@@ -46,18 +44,16 @@ HKEY
 RUOpenKey(
     HKEY    RootKey,
     LPCWSTR SubKey, 
-    BOOL    ReadOnly
+    bool    ReadOnly
     )
 {
     HKEY hSubKey = NULL;
-    REGSAM sam = (TRUE == ReadOnly) ? KEY_READ : KEY_ALL_ACCESS;
+    REGSAM sam = (true == ReadOnly) ? KEY_READ : KEY_ALL_ACCESS;
 
     DWORD ret = RegOpenKeyExW(RootKey, SubKey, 0, sam, &hSubKey);
     if (ERROR_SUCCESS != ret)
     {
-        DBG_ERR
-            "RegOpenKeyExW(%ws) failed, ret=0x%08x", SubKey, ret
-        DBG_END        
+        log_err "RegOpenKeyExW(%ws) failed, ret = %u", SubKey, ret log_end        
         return NULL;
     }
 
@@ -74,7 +70,7 @@ RUOpenKey(
     
     \endcode        
 -----------------------------------------------------------------------------*/
-BOOL
+bool
 RUCloseKey(
     HKEY Key
     )
@@ -82,13 +78,11 @@ RUCloseKey(
     DWORD ret = RegCloseKey(Key);
     if (ERROR_SUCCESS != ret)
     {
-        DBG_ERR
-            "RegCloseKey() failed, ret=0x%08x", ret
-        DBG_END        
-        return FALSE;
+        log_err "RegCloseKey() failed, ret = %u", ret log_end        
+        return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 /**----------------------------------------------------------------------------
@@ -104,20 +98,18 @@ HKEY
 RUCreateKey(
     HKEY    RootKey,
     LPCWSTR SubKey,
-    BOOL    ReadOnly
+    bool    ReadOnly
     )
 {
     DWORD ret = ERROR_SUCCESS;
     DWORD disposition=0;
     HKEY sub_key_handle = NULL;
-    REGSAM sam = (TRUE == ReadOnly) ? KEY_READ : KEY_ALL_ACCESS;
+    REGSAM sam = (true == ReadOnly) ? KEY_READ : KEY_ALL_ACCESS;
 
     ret = RegCreateKeyExW(RootKey, SubKey, 0, NULL, 0, sam, NULL, &sub_key_handle, &disposition);
     if (ERROR_SUCCESS != ret)
     {
-        DBG_ERR
-            "RegCreateKeyExW(%ws) failed, ret=0x%08x", SubKey, ret
-        DBG_END        
+        log_err "RegCreateKeyExW(%ws) failed, ret = %u", SubKey, ret log_end        
         return NULL;
     }
     else
@@ -146,10 +138,10 @@ RUReadDword(
     DWORD value = DefaultValue;
     DWORD value_size = sizeof(value);
 
-    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, TRUE);
+    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, true);
     if (NULL == sub_key_handle)
     {
-        DBG_ERR "RUOpenKey(%ws) failed", SubKey DBG_END
+        log_err "RUOpenKey(%ws) failed", SubKey log_end
         return DefaultValue;
     }
 
@@ -160,10 +152,7 @@ RUReadDword(
     DWORD ret = RegQueryValueExW(sub_key_handle, ValueName, 0, NULL, (PBYTE)&value, &value_size);
     if (ERROR_SUCCESS != ret)
     {
-        DBG_ERR
-            "RegQueryValueExW(%ws) failed, ret=0x%08x", SubKey, ret
-        DBG_END
-
+        log_err "RegQueryValueExW(%ws) failed, ret = %u", SubKey, ret log_end
         return DefaultValue;
     }
 
@@ -179,7 +168,7 @@ RUReadDword(
     \code
     \endcode        
 -----------------------------------------------------------------------------*/
-BOOL 
+bool 
 RUWriteDword(
     HKEY    RootKey,
     LPCWSTR SubKey,
@@ -187,11 +176,11 @@ RUWriteDword(
     DWORD   Value
     )
 {
-    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, FALSE);
+    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
     if (NULL == sub_key_handle)
     {
-        DBG_ERR "RUOpenKey(%ws) failed", SubKey DBG_END        
-        return FALSE;
+        log_err "RUOpenKey(%ws) failed", SubKey log_end        
+        return false;
     }
 
     // assign key handle
@@ -201,83 +190,75 @@ RUWriteDword(
     DWORD ret = RegSetValueExW(sub_key_handle, ValueName, 0, REG_DWORD, (PBYTE)&Value, sizeof(DWORD));
     if (ERROR_SUCCESS != ret)
     {
-        DBG_ERR
-            "RegSetValueExW(%ws) failed, ret=0x%08x", ValueName, ret
-        DBG_END
-        return FALSE;
+        log_err "RegSetValueExW(%ws) failed, ret = %u", ValueName, ret log_end
+        return false;
     }
 
-    return TRUE;
+    return true;
 }
 
-/**----------------------------------------------------------------------------
-    \brief  [ WARN ]
-            리턴되는 Value 버퍼는 Caller 가 free 해 주어야 함
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
-BOOL
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool
 RUReadString(
-    IN HKEY         RootKey,
-    IN LPCWSTR      SubKey,
-    IN PCWCH        ValueName,
-    IN OUT PWCHAR&  Value,
-    IN OUT DWORD&   cbValue
+    IN HKEY				RootKey,
+    IN LPCWSTR			SubKey,
+    IN PCWCH			ValueName,
+	OUT std::wstring&	Value
     )
 {
-    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, TRUE);
+    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, true);
     if (NULL == sub_key_handle)
     {
-        DBG_ERR "RUOpenKey(%ws) failed", SubKey DBG_END
-        return FALSE;
+        log_err "RUOpenKey(%ws) failed", SubKey log_end
+        return false;
     }
 
     // assign key handle
     //
     RegHandle rh(sub_key_handle);
-
-    _ASSERTE(NULL == Value);
-    if(NULL != Value) free(Value);
-
-    void* old=NULL;
-
-    cbValue = 1024;
-    Value = (PWCHAR) malloc(cbValue);
-    if (NULL == Value) return FALSE;
-    RtlZeroMemory(Value, cbValue);
+    void* old = NULL;	
+    DWORD cbValue = 1024;
+    wchar_t* buffer = (PWCHAR) malloc(cbValue);
+    if (NULL == buffer) return false;
+    RtlZeroMemory(buffer, cbValue);
 
     DWORD ret = RegQueryValueExW(
                         sub_key_handle, 
                         ValueName, 
                         0, 
                         NULL, 
-                        (LPBYTE) Value, 
+                        (LPBYTE) buffer, 
                         &cbValue
                         );
     while (ERROR_MORE_DATA  == ret)
     {
         cbValue *= 2;
-        old = Value;        // save pointer for realloc faild
+        old = buffer;        // save pointer for realloc faild
 
-        Value = (PWCHAR) realloc(Value, cbValue);
-        if (NULL == Value)
+        Value = (PWCHAR) realloc(buffer, cbValue);
+        if (NULL == buffer)
         {
             free(old); 
 
             cbValue = 0;
-            return FALSE;
+            return false;
         }
+		RtlZeroMemory(buffer, cbValue);
 
         ret = RegQueryValueExW(
                         sub_key_handle, 
                         ValueName, 
                         0, 
                         NULL, 
-                        (LPBYTE) Value, 
+                        (LPBYTE) buffer, 
                         &cbValue
                         );
     }
@@ -286,12 +267,15 @@ RUReadString(
     {
         // Value 가 없는 경우
         //
-        //DBG_ERR "RegQueryValueExW(%ws) failed, ret=0x%08x", ValueName, ret DBG_END
-        free(Value); Value=NULL;cbValue=0;
-        return FALSE;    
+        //log_err "RegQueryValueExW(%ws) failed, ret = %u", ValueName, ret log_end
+        free(buffer); buffer=NULL;
+        return false;    
     }
     
-    return TRUE;
+	// buffer -> wstring 
+	Value = buffer;
+	free(buffer); buffer = NULL;
+    return true;
 }
 
 /**----------------------------------------------------------------------------
@@ -303,20 +287,20 @@ RUReadString(
     
     \endcode        
 -----------------------------------------------------------------------------*/
-BOOL
+bool
 RUSetString(
-    HKEY    RootKey,
-    LPCWSTR SubKey,
-    PCWCH   ValueName,
-    PWCHAR  Value,           // byte buffer
-    DWORD   cbValue          // count byte
+    HKEY		RootKey,
+    LPCWSTR		SubKey,
+    PCWCH		ValueName,
+    PCWCHAR		Value,           // byte buffer
+    DWORD		cbValue          // count byte
     )
 {
-    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, FALSE);
+    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
     if (NULL == sub_key_handle)
     {
-        DBG_ERR "RUOpenKey(%ws) failed", SubKey DBG_END        
-        return FALSE;
+        log_err "RUOpenKey(%ws) failed", SubKey log_end        
+        return false;
     }
 
     // assign key handle
@@ -326,11 +310,11 @@ RUSetString(
     DWORD ret = RegSetValueExW(sub_key_handle, ValueName, 0, REG_SZ, (LPBYTE)Value, cbValue);
     if (ERROR_SUCCESS != ret)
     {
-        //DBG_ERR "RegSetValueExW(%ws) failed, ret=0x%08x", ValueName, ret DBG_END
-        return FALSE;
+        //log_err "RegSetValueExW(%ws) failed, ret = %u", ValueName, ret log_end
+        return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 /** ---------------------------------------------------------------------------
@@ -341,7 +325,7 @@ RUSetString(
     \code
     \endcode        
 -----------------------------------------------------------------------------*/
-BOOL
+bool
 RUSetExpandString(
     HKEY    RootKey,
     LPCWSTR SubKey,
@@ -350,11 +334,11 @@ RUSetExpandString(
     DWORD   cbValue          // count byte
     )
 {
-    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, FALSE);
+    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
     if (NULL == sub_key_handle)
     {
-        DBG_ERR "RUOpenKey(%ws) failed", SubKey DBG_END
-        return FALSE;
+        log_err "RUOpenKey(%ws) failed", SubKey log_end
+        return false;
     }
 
     // assign key handle
@@ -364,12 +348,75 @@ RUSetExpandString(
     DWORD ret = RegSetValueExW(sub_key_handle, value_name, 0, REG_EXPAND_SZ, (LPBYTE)value, cbValue);
     if (ERROR_SUCCESS != ret)
     {
-        DBG_ERR "RegSetValueExW(%ws) failed, ret=0x%08x", value_name, ret DBG_END
-        return FALSE;
+        log_err "RegSetValueExW(%ws) failed, ret = %u", value_name, ret log_end
+        return false;
     }
 
-    return TRUE;
+    return true;
 }
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool
+RUDeleteValue(
+	_In_ HKEY		RootKey,
+	_In_ LPCWSTR	SubKey,
+	_In_ LPCWSTR	ValueName
+	)
+{
+	HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
+    if (NULL == sub_key_handle)
+    {
+        log_err "RUOpenKey(%ws) failed", SubKey log_end
+        return false;
+    }
+
+    // assign key handle
+    //
+    RegHandle rh(sub_key_handle);
+
+	DWORD ret = RegDeleteValueW(sub_key_handle, ValueName);
+	if (ERROR_SUCCESS != ret)
+	{
+		log_err "RegDeleteValueW( %ws ) failed. ret = %u", ValueName, ret log_end
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * @brief	SubKey 내의 Value 들 포함, 키를 삭제한다.
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool 
+RUDeleteKey(
+	_In_ HKEY		RootKey,
+	_In_ LPCWSTR	SubKey
+	)
+{
+	DWORD ret = RegDeleteKeyW(RootKey, SubKey);
+	if (ERROR_SUCCESS != ret)
+	{
+		log_err "RegDeleteKeyW( root = %ws, sub = %ws ) failed. ret = %u", RootKey, SubKey, ret log_end
+		return false;
+	}
+
+	return true;
+}
+
 
 
 /**----------------------------------------------------------------------------
@@ -381,12 +428,12 @@ RUSetExpandString(
     
     \endcode        
 -----------------------------------------------------------------------------*/
-BOOL
+bool
 RUIsKeyExists(
     HKEY RootKey, 
     PCWCH TargetKey
     )
 {
-    RegHandle reg (RUOpenKey(RootKey, TargetKey, TRUE));    
-    return (NULL == reg.get()) ? FALSE : TRUE;
+    RegHandle reg (RUOpenKey(RootKey, TargetKey, true));    
+    return (NULL == reg.get()) ? false : true;
 }
