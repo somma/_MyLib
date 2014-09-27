@@ -36,6 +36,9 @@
     <ClInclude Include="RegistryUtil.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
+    <ClInclude Include="base64.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -67,6 +70,9 @@
     </ClCompile>
     <ClCompile Include="_test_registry_util.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="base64.cpp">
+      <Filter>_MyLib</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -173,6 +173,9 @@ FindSubDirectory(
 BOOL WUGetCurrentDirectoryW(IN OUT std::wstring& CurrentDir);
 BOOL WUGetCurrentDirectoryA(IN OUT std::string& CurrentDir);
 
+bool get_temp_dirW(_Out_ std::wstring& temp_dir);
+bool get_temp_dirA(_Out_ std::string& temp_dir);
+
 bool get_current_module_path(_Out_ std::wstring& module_path);
 bool get_current_module_dir(_Out_ std::wstring& module_dir);
 bool get_current_module_file(_Out_ std::wstring& module_file);
@@ -204,6 +207,7 @@ BOOL GetImageFullPathFromPredefinedPathA(
 wchar_t* MbsToWcs(_In_ const char* mbs);
 char* WcsToMbs(_In_ const wchar_t* wcs);
 char* WcsToMbsUTF8(IN const wchar_t* wcs);
+wchar_t* Utf8MbsToWcs(_In_ const char* utf8);
 
 static const std::wstring _null_stringw(L"");
 static const std::string  _null_stringa("");
@@ -211,6 +215,8 @@ static const std::string  _null_stringa("");
 std::wstring MbsToWcsEx(_In_ const char *mbs);
 std::string WcsToMbsEx(_In_ const wchar_t *wcs);
 std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs);
+std::wstring Utf8MbsToWcsEx(_In_ const char* utf8);
+
 
 //> T = std::string || std::wstring
 template <typename T> void to_upper_string(_Inout_ T& input){ boost::algorithm::to_upper(input);}
@@ -344,7 +350,7 @@ BOOL DumpMemory(DWORD Length, BYTE* Buf);
 BOOL DumpMemory(FILE* stream,DWORD Length,BYTE* Buf);
 BOOL GetTimeStringA(OUT std::string& TimeString);
 BOOL GetTimeStringW(IN std::wstring& TimeString);
-bool get_local_ip_list(_In_ std::wstring& host_name, _In_ std::vector<std::wstring>& ip_list);
+bool get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wstring>& ip_list);
 
 bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
 HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege);

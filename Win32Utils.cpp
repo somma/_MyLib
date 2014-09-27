@@ -1579,6 +1579,38 @@ char* WcsToMbsUTF8(_In_ const wchar_t* wcs)
 }
 
 /**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+wchar_t* Utf8MbsToWcs(_In_ const char* utf8)
+{
+    _ASSERTE(NULL!=utf8);
+    if(NULL==utf8) return NULL;
+
+    int outLen=MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8, -1, NULL, 0);
+    if(0==outLen) return NULL;
+
+    wchar_t* outWchar=(wchar_t*) malloc(outLen * (sizeof(wchar_t)));  // outLen contains NULL char 
+    if(NULL==outWchar) return NULL;
+    RtlZeroMemory(outWchar, outLen);
+
+    if(0==MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8, -1, outWchar, outLen))
+    {
+        log_err "MultiByteToWideChar() failed, errcode=0x%08x", GetLastError() log_end
+
+        free(outWchar);
+        return NULL;
+    }
+
+    return outWchar;
+}
+
+/**
 * @brief	
 * @param	
 * @see		
@@ -1642,6 +1674,28 @@ std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs)
     else
     {
         return std::string(tmp.get());
+    }
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
+{
+    std::auto_ptr<wchar_t> tmp( Utf8MbsToWcs(utf8) );
+    if (NULL == tmp.get())
+    {
+        return _null_stringw;
+    }
+    else
+    {
+        return std::wstring(tmp.get());
     }
 }
 
@@ -2075,6 +2129,58 @@ BOOL WUGetCurrentDirectoryA(IN OUT std::string& CurrentDir)
 	std::string _cura = WcsToMbsEx(_cur.c_str() );
 	CurrentDir = _cura;
 	return true;
+}
+
+/**
+ * @brief	GetTempPath() wrapper.
+			%TMP% > %TEMP% > %USERPROFILE% 환경변수 순서대로 가져옴
+			마지막에 '\' 붙여서 리턴한다.
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool get_temp_dirW(_Out_ std::wstring& temp_dir)
+{
+	WCHAR path[MAX_PATH + 1] = {0};
+
+	DWORD ret = GetTempPathW(MAX_PATH, path);
+	if (ret > MAX_PATH || 0 == ret)
+	{
+		log_err "GetTempPathW() failed. gle = %u", GetLastError() log_end
+		return false;
+	}
+
+	temp_dir = path;
+	return true;
+}
+
+/**
+ * @brief	GetTempPath() wrapper.
+			%TMP% > %TEMP% > %USERPROFILE% 환경변수 순서대로 가져옴
+			마지막에 '\' 붙여서 리턴한다.
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool get_temp_dirA(_Out_ std::string& temp_dir)
+{
+	char path[MAX_PATH + 1] = {0};
+
+	DWORD ret = GetTempPathA(MAX_PATH, path);
+	if (ret > MAX_PATH || 0 == ret)
+	{
+		log_err "GetTempPathA() failed. gle = %u", GetLastError() log_end
+		return false;
+	}
+
+	temp_dir = path;
+	return true;	
 }
 
 /**
@@ -2629,32 +2735,40 @@ BOOL GetTimeStringW(IN std::wstring& TimeString)
  * @endcode	
  * @return	
 **/
-bool get_local_ip_list(_In_ std::wstring& host_name, _In_ std::vector<std::wstring>& ip_list)
+bool get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wstring>& ip_list)
 {
 	WSADATA wsaData={0};
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 
 	DWORD NetbiosNameLen = 0;
-	char* netbios_name_a = NULL;
+	wchar_t* netbios_name = NULL;
 
-	if(0 == GetComputerNameExA(ComputerNameNetBIOS, netbios_name_a, &NetbiosNameLen))
+	if(0 == GetComputerNameExW(ComputerNameNetBIOS, netbios_name, &NetbiosNameLen))
 	{
-		if(ERROR_BUFFER_OVERFLOW == GetLastError())
+		if(ERROR_MORE_DATA == GetLastError())
 		{
-			netbios_name_a = (char*) malloc(NetbiosNameLen);
-			if (NULL == netbios_name_a) return false;
+			// GetComputerNameExW() 가 리턴하는 NetbiosNameLen 은 null 을 포함한다.
+			netbios_name = (wchar_t*) malloc(NetbiosNameLen * sizeof(wchar_t));
+			if (NULL == netbios_name) return false;
 
-			if(0 == GetComputerNameExA(ComputerNameNetBIOS, netbios_name_a, &NetbiosNameLen))
+			if(0 == GetComputerNameExW(ComputerNameNetBIOS, netbios_name, &NetbiosNameLen))
 			{
-				log_err "GetComputerNameExA( ComputerNameNetBIOS ) failed, gle = %u", GetLastError() log_end
+				log_err "GetComputerNameExW( ComputerNameNetBIOS ) failed, gle = %u", GetLastError() log_end
+
+				free(netbios_name); netbios_name = NULL;
 				WSACleanup();
 				return false;
+			}
+			else
+			{
+				// enforce null terminate string.
+				netbios_name[NetbiosNameLen] = 0x0000;
 			}
 		}
 	}
 
-	host_name = MbsToWcsEx(netbios_name_a);
-	free(netbios_name_a); netbios_name_a = NULL;
+	host_name = netbios_name;
+	free(netbios_name); netbios_name = NULL;
 
 	ADDRINFOW hints={0};
 	hints.ai_family = AF_INET;

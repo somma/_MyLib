@@ -9,6 +9,7 @@
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
 #include "process_tree.h"
+#include "base64.h"
 
 bool test_print_64int();
 bool test_x64_calling_convension();
@@ -17,6 +18,8 @@ bool test_to_lower_uppper_string();
 //bool test_const_position();
 bool test_initialize_string();
 bool test_process_tree();     
+bool test_base64();
+bool test_get_local_ip_list();
 
 // _test_cpp_test.cpp
 bool test_cpp_class();
@@ -86,6 +89,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_const_position);		// 컴파일 불가 테스트
 	assert_bool(true, test_initialize_string);
 	assert_bool(true, test_process_tree);
+	assert_bool(true, test_base64);
+	assert_bool(true, test_get_local_ip_list);
 
 	assert_bool(true, test_cpp_class);
 	
@@ -443,6 +448,70 @@ bool test_process_tree()
  * @endcode	
  * @return	
 **/
+bool test_base64()
+{
+// http://www.opinionatedgeek.com/dotnet/tools/base64encode/
+#define _base64_encoded	"64yA7ZWc66+86rWt"
+
+	std::wstring string_to_encodeW = L"대한민국";
+	std::string string_to_encodeA = "대한민국";
+
+	std::wstring wide_str;
+	std::string utf8_str;
+	std::string base64_str;
+	
+	// base 64 encode
+	// 
+	// #1) multibyte -> ucs16 -> utf8 -> base64 순서로...
+	// #2) ucs16 -> utf8 -> base64 
+	wide_str = MbsToWcsEx(string_to_encodeA.c_str());
+	utf8_str = WcsToMbsUTF8Ex(wide_str.c_str());
+	base64_str = base64_encode((unsigned char*)utf8_str.c_str(), (int)utf8_str.size());
+	if (0 != base64_str.compare(_base64_encoded)) return false;
+
+	wide_str = string_to_encodeW;
+	utf8_str = WcsToMbsUTF8Ex(wide_str.c_str());
+	base64_str = base64_encode((unsigned char*)utf8_str.c_str(), (int)utf8_str.size());
+	if (0 != base64_str.compare(_base64_encoded)) return false;
+	
+	// base64 decode	
+	std::string f = base64_decode(_base64_encoded);
+	wide_str = Utf8MbsToWcsEx(f.c_str());
+	if (0 != wide_str.compare(string_to_encodeW.c_str())) return false;
+	
+	return true;
+}
+
+/**
+ * @brief	
+**/
+bool test_get_local_ip_list()
+{
+	std::wstring host_name;
+	std::vector<std::wstring> ip_list;
+	if (true != get_local_ip_list(host_name, ip_list)) return false;
+
+	log_info "host_name = %ws", host_name.c_str() log_end
+	std::vector<std::wstring>::iterator its = ip_list.begin();
+	std::vector<std::wstring>::iterator ite = ip_list.end();
+	for(; its != ite; ++its)
+	{
+		log_info "ip = %ws", its->c_str() log_end
+	}
+
+	return true;
+}
+
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
 bool test_get_filepath_by_handle()
 {
 	typedef boost::shared_ptr< boost::remove_pointer<HANDLE>::type > shared_file_handle;
@@ -450,6 +519,7 @@ bool test_get_filepath_by_handle()
 							open_file_to_read(L"c:\\windows\\system32\\drivers\\etc\\hosts"), 
 							CloseHandle
 							);
+	if(INVALID_HANDLE_VALUE == file_handle.get()) return false;
 	std::wstring file_path;
 	bool ret = get_filepath_by_handle(file_handle.get(), file_path);
 	if (true == ret)
