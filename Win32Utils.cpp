@@ -1621,8 +1621,8 @@ wchar_t* Utf8MbsToWcs(_In_ const char* utf8)
 */
 std::wstring MbsToWcsEx(_In_ const char *mbs)
 {
-    std::auto_ptr<wchar_t> tmp( MbsToWcs(mbs) );
-    if (NULL == tmp.get())
+    raii_wchar_ptr tmp( MbsToWcs(mbs), raii_free );
+    if (NULL == tmp)
     {
         return _null_stringw;
     }
@@ -1644,7 +1644,7 @@ std::wstring MbsToWcsEx(_In_ const char *mbs)
 */
 std::string WcsToMbsEx(_In_ const wchar_t *wcs)
 {
-    std::auto_ptr<char> tmp( WcsToMbs(wcs) );
+	raii_char_ptr tmp( WcsToMbs(wcs), raii_free );
     if (NULL == tmp.get())
     {
         return _null_stringa;
@@ -1666,7 +1666,7 @@ std::string WcsToMbsEx(_In_ const wchar_t *wcs)
 */
 std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs)
 {
-    std::auto_ptr<char> tmp( WcsToMbsUTF8(wcs) );
+    raii_char_ptr tmp( WcsToMbsUTF8(wcs), raii_free);
     if (NULL == tmp.get())
     {
         return _null_stringa;
