@@ -2808,7 +2808,7 @@ bool get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wst
 */
 bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 {
-	if ( ISNTFAMILY( OsVersion() ) )
+	if ( is_nt_family( OsVersion() ) )
 	{
 		HANDLE hToken;
 		if ( TRUE != OpenThreadToken(GetCurrentThread(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, FALSE, &hToken) )
@@ -2876,7 +2876,7 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 * @param	
 * @see		
 * @remarks	
-* @code		
+* @code		HANDLE process_handle = privileged_open_process(pid, PROCESS_ALL_ACCESS, true);
 * @endcode	
 * @return	
 */

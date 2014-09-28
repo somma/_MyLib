@@ -10,6 +10,60 @@
 #include "stdafx.h"
 #include "process_tree.h"
 
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool process::kill(_In_ DWORD exit_code)
+{
+	_ASSERTE(true != _killed);	
+	if (true == _killed) return true;
+
+	set_privilege(SE_DEBUG_NAME, TRUE);
+	
+	HANDLE h = NULL;
+	do 
+	{
+		h = OpenProcess(PROCESS_TERMINATE, FALSE, _pid);
+		if (NULL == h)
+		{
+			log_err 
+				"OpenProcess() failed, pid = %u, gle = %u", 
+				_pid,
+				GetLastError()
+			log_end
+			break;
+		}
+	
+		if (!TerminateProcess(h, exit_code))
+		{
+			log_err 
+				"TerminateProcess() failed, pid = %u, gle = %u", 
+				_pid,
+				GetLastError()
+			log_end
+			break;			
+		}
+	
+
+		_killed = true;	
+		log_dbg "pid = %u, %ws terminated", _pid, _process_name.c_str() log_end
+	} while (false);
+	
+	if (NULL!=h) 
+	{
+		CloseHandle(h); // TerminateProcess() is asynchronous, so must call CloseHandle()
+	}
+
+	set_privilege(SE_DEBUG_NAME, FALSE);
+
+	return (true == _killed) ? true : false;
+}
 
 /**
  * @brief	
@@ -35,9 +89,7 @@ cprocess_tree::build_process_tree()
 		return false;
 	}
 
-
 	set_privilege(SE_DEBUG_NAME, TRUE);
-
 
 	do
 	{
@@ -120,6 +172,28 @@ DWORD cprocess_tree::find_process(_In_ const wchar_t* process_name)
 }
 
 /**
+ * @brief	모든 프로세스를 콜백 함수를 통해 열거한다.
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+void cprocess_tree::iterate_process(_In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag)
+{
+	_ASSERTE(NULL != callback);		
+	if (NULL == callback) return;
+	
+	process_map::iterator its = _proc_map.begin();
+	process_map::iterator ite= _proc_map.end();
+	for(; its != ite; ++its)
+	{
+		if (true != callback(its->second, callback_tag)) break;
+	}
+}
+
+/**
  * @brief	
  * @param	
  * @see		
@@ -128,31 +202,16 @@ DWORD cprocess_tree::find_process(_In_ const wchar_t* process_name)
  * @endcode	
  * @return	
 **/
-bool cprocess_tree::kill_process_tree(_In_ DWORD root_pid)
+void cprocess_tree::iterate_process_tree(_In_ DWORD root_pid, _In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag)
 {
-	if (root_pid == 0 || root_pid == 4) return false;
+	_ASSERTE(NULL != callback);		
+	if (NULL == callback) return;
 
 	process_map::iterator it = _proc_map.find(root_pid);
-	if (it == _proc_map.end()) return true;
+	if (it == _proc_map.end()) return;
 	process root = it->second;
-	
-	// terminate child processes
-	process_map::iterator its = _proc_map.begin();
-	process_map::iterator ite= _proc_map.end();
-	for(; its != ite; ++its)
-	{
-		// ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, ppid 를 할당받은 경우가 
-		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다. 
-		if ( its->second.ppid() == root.pid() && 
-			 its->second.creation_time() > root.creation_time())
-		{
-			kill_process(its->second.pid(), 0);
-		}
-	}
 
-	// terminate root process
-	kill_process(root_pid, 0);
-	return true;
+	iterate_process_tree(root, callback, callback_tag);
 }
 
 /**
@@ -197,6 +256,36 @@ void cprocess_tree::print_process_tree(_In_ const wchar_t* root_process_name)
 }
 
 /**
+ * @brief	root_pid 와 그 자식 프로세스를 모두 종료한다. 
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool cprocess_tree::kill_process_tree(_In_ DWORD root_pid)
+{
+	if (root_pid == 0 || root_pid == 4) return false;
+
+	process_map::iterator it = _proc_map.find(root_pid);
+	if (it == _proc_map.end()) return true;
+	process root = it->second;
+
+	// check process is already killed.
+	if (true == root.killed()) 
+	{
+		log_info "already killed. pid = %u, %ws", root.pid(), root.process_name().c_str() log_end
+		return true;
+	}
+
+	// kill process tree include root.
+	kill_process_tree(root);
+	
+	return true;
+}
+
+/**
  * @brief	
  * @param	
  * @see		
@@ -213,7 +302,7 @@ cprocess_tree::add_process(
 	_In_ const wchar_t* process_name
 	)
 {
-	process p(process_name, ppid, pid, *(uint64_t*)&creation_time);
+	process p(process_name, ppid, pid, *(uint64_t*)&creation_time, false);
 	_proc_map.insert( std::make_pair(pid, p) );
 }
 
@@ -235,7 +324,7 @@ void cprocess_tree::print_process_tree(_In_ process& p, _In_ DWORD& depth)
 	}
 
 	log_info 
-		"%spid = %u (ppid = %u), %s ", prefix.str().c_str(), 
+		"%spid = %u (ppid = %u), %ws ", prefix.str().c_str(), 
 		p.pid(), 
 		p.ppid(), 
 		p.process_name().c_str() 
@@ -258,7 +347,10 @@ void cprocess_tree::print_process_tree(_In_ process& p, _In_ DWORD& depth)
 }
 
 /**
- * @brief	
+ * @brief	자식의 자식의 자식까지... 재귀적으로 죽이고, 나도 죽는다. :-)
+ 
+			중간에 권한 문제라든지 뭔가 문제가 있는 프로세스가 있을 수도 있다. 
+			못죽이는 놈은 냅두고, 죽일 수 있는 놈은 다 죽이려고, 리턴값을 void 로 했음
  * @param	
  * @see		
  * @remarks	
@@ -266,41 +358,53 @@ void cprocess_tree::print_process_tree(_In_ process& p, _In_ DWORD& depth)
  * @endcode	
  * @return	
 **/
-void cprocess_tree::kill_process(_In_ DWORD pid, _In_ DWORD exit_code)
+void cprocess_tree::kill_process_tree(_In_ process& root)
 {
-	set_privilege(SE_DEBUG_NAME, TRUE);
-	
-	HANDLE h = NULL;
-	do 
+	// terminate child processes first if exists.
+	process_map::iterator its = _proc_map.begin();
+	process_map::iterator ite= _proc_map.end();
+	for(; its != ite; ++its)
 	{
-		h = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
-		if (NULL == h)
+		// ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, ppid 를 할당받은 경우가 
+		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다. 
+		if ( its->second.ppid() == root.pid() && 
+			 its->second.creation_time() > root.creation_time())
 		{
-			log_err 
-				"OpenProcess() failed, pid = %u, gle = %u", 
-				pid,
-				GetLastError()
-			log_end
-			break;
+			kill_process_tree(its->second);
 		}
-	
-		if (!TerminateProcess(h, exit_code))
-		{
-			log_err 
-				"TerminateProcess() failed, pid = %u, gle = %u", 
-				pid,
-				GetLastError()
-			log_end
-			break;			
-		}
-	
-		log_dbg "pid = %u, terminated", pid log_end
-	} while (false);
-	
-	if (NULL!=h) 
-	{
-		CloseHandle(h); // TerminateProcess() is asynchronous, so must call CloseHandle()
 	}
 
-	set_privilege(SE_DEBUG_NAME, FALSE);                     
+	// terminate parent process
+	root.kill(0);
+}
+
+
+/**
+ * @brief	process map 을 순회하면서 콜백함수를 호출한다. 
+			콜백함수가 false 를 리턴하면 순회를 즉시 멈춘다.
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+void cprocess_tree::iterate_process_tree(_In_ process& root, _In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag)
+{
+	// parent first
+	if (true != callback(root, callback_tag)) return;
+
+	// childs
+	process_map::iterator its = _proc_map.begin();
+	process_map::iterator ite= _proc_map.end();
+	for(; its != ite; ++its)
+	{
+		// ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, ppid 를 할당받은 경우가 
+		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다. 
+		if ( its->second.ppid() == root.pid() && 
+			 its->second.creation_time() > root.creation_time())
+		{
+			iterate_process_tree(its->second, callback, callback_tag);
+		}
+	}
 }

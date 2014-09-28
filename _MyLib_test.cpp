@@ -18,6 +18,7 @@ bool test_to_lower_uppper_string();
 //bool test_const_position();
 bool test_initialize_string();
 bool test_process_tree();     
+
 bool test_base64();
 bool test_get_local_ip_list();
 
@@ -419,6 +420,10 @@ bool test_initialize_string()
 
 /**
  * @brief	test for cprocess_tree class 
+			
+			테스트를 위해서는 
+			cmd.exe -> procexp.exe -> procexp64.exe(자동으로 만들어짐) -> notepad.exe
+			순서로 프로세스를 생성해 두고 해야 한다. 
  * @param	
  * @see		
  * @remarks	
@@ -426,15 +431,26 @@ bool test_initialize_string()
  * @endcode	
  * @return	
 **/
+bool proc_tree_callback(_In_ process& process_info, _In_ DWORD_PTR callback_tag)
+{
+	log_info "pid = %u, %ws", process_info.pid(), process_info.process_name().c_str() log_end
+	return true;
+}
+
 bool test_process_tree()
 {
 	cprocess_tree proc_tree;
 	if (!proc_tree.build_process_tree()) return false;
 
+	// 프로세스 열거 테스트 (by callback)
+	proc_tree.iterate_process(proc_tree_callback, 0);
+	proc_tree.iterate_process_tree(proc_tree.find_process(L"cmd.exe"), proc_tree_callback, 0);
 	
-	//proc_tree.print_process_tree("explorer.exe");
-	proc_tree.print_process_tree(L"taskmgr.exe");
-	proc_tree.kill_process_tree( proc_tree.find_process(L"taskmgr.exe") );
+	// print 
+	proc_tree.print_process_tree(L"cmd.exe");
+
+	// 프로세스 종료 테스트	
+	proc_tree.kill_process_tree( proc_tree.find_process(L"cmd.exe") );	
 
 	return true;
 }

@@ -505,7 +505,8 @@ UINT64 swap_endian_64(_In_ UINT64 value);
 #define OSTYPE_WIN_SERVER_2012		0x0011      // 6.2
 
 
-#define	ISNTFAMILY(_OSTYPE_WIN_XXX_)	((_OSTYPE_WIN_XXX_) >= OSTYPE_WIN_NT ? TRUE : FALSE)
+#define	is_nt_family(_OSTYPE_WIN_XXX_)	((_OSTYPE_WIN_XXX_) >= OSTYPE_WIN_NT ? true : false)
+#define	is_vista_later(_OSTYPE_WIN_XXX_)	((_OSTYPE_WIN_XXX_) >= OSTYPE_WIN_VISTA ? true : false)
 
 WORD OsVersion();
 

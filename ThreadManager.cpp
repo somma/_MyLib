@@ -10,7 +10,6 @@
 #include "stdafx.h"
 #include "ThreadManager.h"
 #include "Win32Utils.h"
-#include "slogger.h"
 
 /**----------------------------------------------------------------------------
     \brief  
@@ -49,11 +48,7 @@ CreateThreadContext(
     _ASSERTE(NULL != ctx->ThreadHandle);
     if (NULL == ctx->ThreadHandle)
     {
-        DBG_ERR
-            "can not create ReconnectDtServerThread, gle=0x%08x", 
-            GetLastError()
-        DBG_END
-
+        log_err "can not create ReconnectDtServerThread, gle = %u", GetLastError() log_end
         free(ctx);
         return NULL;
     }
@@ -83,11 +78,7 @@ void DestroyThreadContext(IN PDTTHREAD_CONTEXT& ctx)
     // 
     if (GetCurrentThreadId() == ctx->ThreadId)
     {
-        DBG_ERR
-            "!!CRITICAL!! DEAD LOCK DETECTED, invalid function call, caller tid=0x%08x, ctx tid=0x%08x", 
-            GetCurrentThreadId(), ctx->ThreadId
-        DBG_END
-
+        log_err "!!CRITICAL!! DEAD LOCK DETECTED, invalid function call, caller tid=0x%08x, ctx tid=0x%08x", GetCurrentThreadId(), ctx->ThreadId log_end
         return;
     }
 
@@ -100,10 +91,7 @@ void DestroyThreadContext(IN PDTTHREAD_CONTEXT& ctx)
     DWORD ExitCode=STILL_ACTIVE;
     if (TRUE != GetExitCodeThread(ctx->ThreadHandle, &ExitCode))
     {
-        DBG_ERR
-            "GetExitCodeThread(tid=0x%08x, handle=0x%08x) failed, gle=0x%08x",
-            ctx->ThreadId, ctx->ThreadHandle, GetLastError()
-        DBG_END
+        log_err "GetExitCodeThread(tid=0x%08x, handle=0x%08x) failed, gle = %u", ctx->ThreadId, ctx->ThreadHandle, GetLastError() log_end
 
         // progream 이 크래시 되도 별 수 없다. 
         // 
@@ -127,10 +115,7 @@ void DestroyThreadContext(IN PDTTHREAD_CONTEXT& ctx)
                                 CONTEXT_TERMINATED_EVENT_TIMEOUT
                                 ))
         {
-            DBG_ERR
-                "!!CRITICAL!! thread is not responding, tid=0x%08x, handle=0x%08x", 
-                ctx->ThreadId, ctx->ThreadHandle
-            DBG_END
+            log_err "!!CRITICAL!! thread is not responding, tid=0x%08x, handle=0x%08x",  ctx->ThreadId, ctx->ThreadHandle log_end
         }
 
         CloseHandle(ctx->KillEvent);
