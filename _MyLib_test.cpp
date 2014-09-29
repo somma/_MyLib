@@ -11,6 +11,8 @@
 #include "process_tree.h"
 #include "base64.h"
 
+
+
 bool test_print_64int();
 bool test_x64_calling_convension();
 bool test_std_string_find_and_substr();
@@ -33,7 +35,8 @@ bool test_query_dos_device();
 bool test_bin_to_hex();
 bool test_str_to_xxx();
 bool test_set_get_file_position();
-
+bool test_get_module_path();
+bool test_dump_memory();
 
 // _test_boost.cpp
 extern bool boost_lexical_cast();
@@ -101,6 +104,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	assert_bool(true, test_bin_to_hex);
 	assert_bool(true, test_str_to_xxx);
 	assert_bool(true, test_set_get_file_position);
+	assert_bool(true, test_get_module_path);
+	assert_bool(true, test_dump_memory);
 
 	assert_bool(true, boost_lexical_cast);
 	assert_bool(true, boost_shared_ptr_void);
@@ -162,7 +167,7 @@ bool test_std_string_find_and_substr()
 						nt_name.substr(pos + nt_device_name.size(), nt_name.size());
 	
 	log_dbg
-		"\nnt_name = %s \ndos_device_name = %s \nnt_device_name = %s \nresult = %s",
+		"\nnt_name = %ws \ndos_device_name = %ws \nnt_device_name = %ws \nresult = %ws",
 		nt_name.c_str(),
 		dos_device_name.c_str(),
 		nt_device_name.c_str(),
@@ -398,7 +403,7 @@ bool test_const_position()
 bool test_initialize_string()
 {
 	std::wstring str = L"";
-	log_dbg "str = %s", str.c_str() log_end
+	log_dbg "str = %ws", str.c_str() log_end
 
 	//> invalid null point exception 발생 
 	//> try-except 로 못 잡음... 
@@ -820,5 +825,40 @@ bool test_set_get_file_position()
 	if (true != get_file_position(file_handle.get(), pos)) return false;
 
 	if (128 != pos) return false;
+	return true;
+}
+
+/**
+ * @brief	
+**/
+bool test_get_module_path()
+{
+	std::wstring module_path;
+	if (true != get_module_path(L"ntdll.dll", module_path)) return false;
+
+	to_lower_string(module_path);	
+	if (0 != module_path.compare(L"c:\\windows\\system32\\ntdll.dll")) return false;
+	return true;
+}
+
+/**
+ * @brief	
+**/
+bool test_dump_memory()
+{
+	unsigned char buf[512] = {0};
+	RtlCopyMemory(buf, GetModuleHandle(NULL), 512);
+
+	std::vector<std::string> dump;
+	if (true != dump_memory(buf, sizeof(buf), dump)) return false;
+
+	std::vector<std::string>::iterator its = dump.begin();
+	std::vector<std::string>::iterator ite = dump.end();
+	for(; its != ite; ++its)
+	{
+		log_msg "%s", its->c_str() log_end
+	}
+
+	dump.clear();
 	return true;
 }

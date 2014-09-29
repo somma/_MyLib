@@ -2184,7 +2184,7 @@ bool get_temp_dirA(_Out_ std::string& temp_dir)
 }
 
 /**
- * @brief	현재 모듈의 full path 를 구한다. 
+ * @brief	
  * @param	
  * @see		
  * @remarks	
@@ -2192,7 +2192,7 @@ bool get_temp_dirA(_Out_ std::string& temp_dir)
  * @endcode	
  * @return	
 **/
-bool get_current_module_path(_Out_ std::wstring& module_path)
+bool get_module_path(_In_ const wchar_t* module_name, _Out_ std::wstring& module_path)
 {
 	DWORD  ret = 0;
 	DWORD  buf_len = MAX_PATH;
@@ -2201,7 +2201,7 @@ bool get_current_module_path(_Out_ std::wstring& module_path)
 	
 	for(;;)
 	{
-		ret = GetModuleFileName(GetModuleHandle(NULL), buf, buf_len);
+		ret = GetModuleFileName(GetModuleHandle(module_name), buf, buf_len);
 		if (ret == buf_len)
 		{
 			// buf 가 작은 경우 buf_len 만큼 버퍼가 잘리고, buf_len 리턴 (에러로 간주)
@@ -2221,6 +2221,20 @@ bool get_current_module_path(_Out_ std::wstring& module_path)
 	}
 
 	//return false;	// never reach here!
+}
+
+/**
+ * @brief	현재 모듈의 full path 를 구한다. 
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool get_current_module_path(_Out_ std::wstring& module_path)
+{
+	return get_module_path(NULL, module_path);
 }
 
 /**
@@ -2642,6 +2656,173 @@ BOOL DumpMemory(FILE* stream,DWORD Length,BYTE* Buf)
 	return FALSE;
 }
 
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool dump_memory(_In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump)
+{
+	_ASSERTE(NULL!=buf);
+	_ASSERTE(0 < buf_len);
+	if (NULL == buf || 0 == buf_len) return false;
+	
+	// !주의! - 한 라인이 line_dump 보다 큰 경우 (설마 그런일이...?!) 문제가 발생 할 수 있음
+	char line_dump[1024];
+
+	if ( (0 < buf_len) && (NULL != buf) && (TRUE != IsBadReadPtr(buf, buf_len)) )
+	{
+		StringCbPrintfA(line_dump, sizeof(line_dump), "buf_len = %u, buffer=0x%08x", buf_len, buf);
+		dump.push_back(line_dump);
+		
+		CHAR print_buf[128 * sizeof(CHAR)] = {0};
+		DWORD i = 0, x = 0, ib = 0;		
+		UCHAR*  Addr = buf;
+		CHAR*	Pos = NULL;
+		size_t	Remain = 0;
+		for(;;)
+		{
+			if (i >= buf_len) break;
+            ib = i;
+
+			// reset all
+			//
+			Pos = print_buf;
+			Remain = sizeof(print_buf);
+
+			if (! SUCCEEDED(StringCbPrintfExA(
+                                Pos, 
+								Remain, 
+								&Pos, 
+								&Remain, 
+								0, 
+								"0x%08p    ", 
+								&Addr[i])))
+			{
+                log_err "StringCbPrintfEx() failed" log_end
+				break;
+			}	
+
+			// first 8 bytes
+			//
+			for (x = 0; x < 8; x++, i++)
+			{
+                if (x == buf_len) break;
+
+				if (! SUCCEEDED(StringCbPrintfExA(
+                                    Pos, 
+									Remain, 
+									&Pos, 
+									&Remain, 
+									0, 
+									"%02X ", 
+									Addr[i])))
+				{
+                    log_err "StringCbPrintfEx() failed" log_end
+					break;
+				}		
+			}
+
+			if (x != buf_len)
+            {
+                // insert space between first 8bytes and last 8 bytes.
+			    //
+			    if (! SUCCEEDED(StringCbPrintfExA(
+                                    Pos, 
+								    Remain, 
+								    &Pos, 
+								    &Remain, 
+								    0,
+								    "%s",
+								    "  ")))
+			    {
+                    log_err "StringCbPrintfEx() failed" log_end
+				    break;
+			    }
+            }
+            
+            // last 8 bytes
+			//
+			for (x = 0; x < 8; x++, i++)
+			{
+                if (x == buf_len) break;
+
+				if (! SUCCEEDED(StringCbPrintfExA(
+                                    Pos, 
+									Remain, 
+									&Pos, 
+									&Remain, 
+									0, 
+									"%02X ", 
+									Addr[i])))
+				{
+                    log_err "StringCbPrintfEx() failed" log_end
+					break;
+				}		
+			}
+
+            char tmp[64] = {0};
+            Pos = tmp;
+            Remain = sizeof(tmp) - sizeof(char);
+            for(DWORD p = 0; p < 16; ++p)
+            {
+                if (p == buf_len) break;
+
+                if (0x20 <= Addr[ib] &&  0x7F > Addr[ib])
+                {
+                    if(!SUCCEEDED(StringCbPrintfExA(
+                                        Pos, 
+                                        Remain, 
+                                        &Pos, 
+                                        &Remain, 
+                                        0, 
+                                        "%c", 
+                                        Addr[ib])))
+                    {
+                        log_err "StringCbPrintfEx() failed" log_end
+					    break;
+                    }
+                }
+                else
+                {
+                    if(!SUCCEEDED(StringCbPrintfExA(
+                                        Pos, 
+                                        Remain, 
+                                        &Pos, 
+                                        &Remain, 
+                                        0,
+                                        "%c",
+                                        '.')))                                        
+                    {
+                        log_err "StringCbPrintfEx() failed" log_end
+					    break;
+                    }                
+                }
+                
+                ++ib;
+            }
+            
+			// add line dump string..
+			StringCbPrintfA(line_dump, sizeof(line_dump), "%s   %s", print_buf, tmp);
+			dump.push_back(line_dump);
+            
+			memset(print_buf, 0x00, sizeof(print_buf));
+		}
+
+		// add rest of dump
+		StringCbPrintfA(line_dump, sizeof(line_dump), "%s", print_buf );
+		dump.push_back(line_dump);
+		
+		return true;
+	}
+
+	return FALSE;
+}
+
 /**----------------------------------------------------------------------------
     \brief  
     
@@ -2872,7 +3053,11 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 }
 
 /**
-* @brief	
+* @brief	raise_privilege 가 true 인 경우 SE_DEBUG_NAME 권한을 획득한 후 프로세스를 오픈한다. 
+			획득한 권한은 명시적으로 제거해줄때까지 계속 유지 된다. 
+			SE_DEBUG_NAME 가 원래 있었을 수도 있었기 때문에 제거하면 문제가 생길 수 있고,
+			이 함수가 리턴한 핸들에 I/O 가 발생할 때 오픈할 때 있던 SE_DEBUG_NAME 가 없어서 문제가 
+			생길 수 있다 (빡신 버그 생성...)
 * @param	
 * @see		
 * @remarks	
@@ -2892,24 +3077,17 @@ HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool rais
 		}
 	}
 
-	// open the process
-	HANDLE proc_handle = OpenProcess(rights, FALSE, pid);
-	if (NULL == proc_handle)
+	HANDLE proc_handle = NULL;
+	do 
 	{
-		// 보안 프로그램등의 경우 OpenProcess() 가 실패할 수 있음
-		return NULL;
-	}
-	
-	// disable SeDebugPrivilege
-	if (true == raise_privilege)
-	{
-		if (true != set_privilege(SE_DEBUG_NAME, FALSE))
+		// open the process
+		proc_handle = OpenProcess(rights, FALSE, pid);
+		if (NULL == proc_handle)
 		{
-			log_err "set_privilege() failed. " log_end
-			
-			if (NULL != proc_handle) { CloseHandle(proc_handle); }
+			// 보안 프로그램등의 경우 OpenProcess() 가 실패할 수 있음
+			break;
 		}
-	}
+	} while(false);
 
 	return proc_handle;
 }
@@ -2955,31 +3133,40 @@ COORD GetCurCoords(void)
 **/
 void write_log(_In_ LOG_TO_XXX log_to, _In_ DWORD log_level, _In_ const char* function, _In_ const char* format, ...)
 {
+	// 현재 모듈의 이름을 구하고 16글자만 잘라서 로그의 prefix 로 사용한다. 
+	std::wstring module_file;
+	get_current_module_file(module_file);
+	
+	char module_filea[16];
+	StringCbPrintfA(module_filea, sizeof(module_filea), "%ws", module_file.c_str());
+	
+	// [DEBG] notepad.exe (100:1111), InternalFunction(), xxxxx
 	std::stringstream log_stream;
 	switch (log_level)
 	{
 	case LL_DEBG: 
 		{
-			log_stream << "[DEBG] " << function << ", "; 
+			log_stream << "[DEBG] " << WcsToMbsEx(module_file.c_str()) << " (" << GetCurrentProcessId() << ":" << GetCurrentThreadId() << "), " << function << "(), "; 
 			break;
 		}
 	case LL_INFO: 
 		{
-			log_stream << "[INFO] " << function << ", "; 			
+			log_stream << "[INFO] " << WcsToMbsEx(module_file.c_str()) << " (" << GetCurrentProcessId() << ":" << GetCurrentThreadId() << "), " << function << "(), "; 
 			break;
 		}
 	case LL_ERRR: 
 		{
-			log_stream << "[ERR ] " << function << ", "; 
+			log_stream << "[ERR ] " << WcsToMbsEx(module_file.c_str()) << " (" << GetCurrentProcessId() << ":" << GetCurrentThreadId() << "), " << function << "(), "; 
 			break;
 		}
 	case LL_NONE:
 	default:
-		{
-			log_stream << function << ", ";
+		{		
 			break;
 		}
 	}
+
+
 	
 	va_list args;
 	char msg[4096];

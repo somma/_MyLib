@@ -9,6 +9,9 @@
 **---------------------------------------------------------------------------*/
 #pragma once
 
+
+#pragma warning(disable: 4819)	// warning C4819: The file contains a character that cannot be represented in the current code page (949). Save the file in Unicode format to prevent data loss
+
 #include "targetver.h"
 
 #include "boost/lexical_cast.hpp"
