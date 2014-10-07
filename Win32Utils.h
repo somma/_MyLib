@@ -360,6 +360,8 @@ bool get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wst
 bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
 HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege);
 
+bool get_active_window_pid(_Out_ DWORD& pid);
+
 /******************************************************************************
  * console stuff
 ******************************************************************************/

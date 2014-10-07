@@ -3093,6 +3093,25 @@ HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool rais
 }
 
 /**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool get_active_window_pid(_Out_ DWORD& pid, _Out_ DWORD& tid)
+{
+	HWND active = GetForegroundWindow();
+	if (NULL == active) return false;
+
+	tid = 0;
+	tid = GetWindowThreadProcessId(active, &pid);
+	return (0 != tid) ? true : false;
+}
+
+/**
 * @brief	
 * @param	
 * @see		
