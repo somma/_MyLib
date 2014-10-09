@@ -151,7 +151,7 @@ BOOL SaveBinaryFile(
                 IN PBYTE    Data
                 );
 
-typedef BOOL (__stdcall *fnFindFilesCallback)(IN DWORD_PTR Tag, IN LPCWSTR path);
+typedef BOOL (WINAPI *fnFindFilesCallback)(IN DWORD_PTR Tag, IN LPCWSTR path);
 
 bool 
 find_file_recursive(
@@ -234,6 +234,13 @@ extract_first_tokenW(
 	_In_ bool delete_token
 	);
 
+std::wstring 
+extract_first_tokenExW(
+	_In_ const wchar_t* org,
+	_In_ const wchar_t* token,	
+	_In_ bool forward
+	);
+
 bool
 extract_first_tokenA(
 		_In_ std::string& org_string,
@@ -242,6 +249,14 @@ extract_first_tokenA(
 		_In_ bool forward,
 		_In_ bool delete_token
 		);
+
+std::string
+extract_first_tokenExA(
+		_In_ const char* org,
+		_In_ const char* token,		
+		_In_ bool forward
+		);
+
 
 bool 
 extract_last_tokenW(
@@ -252,6 +267,13 @@ extract_last_tokenW(
 	_In_ bool delete_token
 	);
 
+std::wstring
+extract_last_tokenExW(
+	_In_ const wchar_t* org,
+	_In_ const wchar_t* token,	
+	_In_ bool forward
+	);
+
 bool 
 extract_last_tokenA(
 	_In_ std::string& org_string,
@@ -260,6 +282,14 @@ extract_last_tokenA(
 	_In_ bool forward,
 	_In_ bool delete_token
     );
+
+std::string
+extract_last_tokenExA(
+	_In_ const char* org,
+	_In_ const char* token,
+	_In_ bool forward
+    );
+
 
 std::string  trima(std::string& s, const std::string& drop = " ");
 std::string rtrima(std::string& s, const std::string& drop = " ");

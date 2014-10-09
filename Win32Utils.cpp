@@ -1803,61 +1803,40 @@ extract_first_tokenW(
 }
 
 /**
- * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
-			(org_string 의 뒤에서부터 token 을 검색)
+ * \brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
+			(org_string 의 앞에서부터 token 을 검색)
 
 			ABCDEFG.HIJ.KLMN	: org_string
-					   .		: token
-			ABCDEFG.HIJ			: out_string if forward = TRUE
-					    KLMN	: out_string if forward = FALSE
-
-			delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제
+				   .			: token
+			ABCDEFG             : out_string if forward = TRUE
+					HIJ.KLMN	: out_string if forward = FALSE
  * @param	
  * @see		
- * @remarks	
+ * @remarks 성공 시 분리된 문자열을 스트링 객체에 리턴
+			실패 시 _nullstringw 리턴
  * @code		
  * @endcode	
  * @return	
 **/
-bool 
-extract_last_tokenW(
-	_In_ std::wstring& org_string,
-	_In_ const std::wstring& token,
-	_Out_ std::wstring& out_string, 
-	_In_ bool forward,
-	_In_ bool delete_token
+std::wstring 
+extract_first_tokenExW(
+	_In_ const wchar_t* org,
+	_In_ const wchar_t* token,	
+	_In_ bool forward
 	)
 {
-    if (true== delete_token)
-    {
-        if (&org_string == &out_string) 
-        {
-#ifndef TEST_EXPORTS
-            _ASSERTE(!"prarameters conflict! ");
-#endif
-            return false;
-        }
-    }
+	_ASSERTE(NULL != org);
+	_ASSERTE(NULL != token);
+	if (NULL == org || NULL == token) return _null_stringw;
 
-    size_t pos = org_string.rfind(token);
-	if (std::wstring::npos == pos)
-	{
-        out_string = org_string;
-        return true;
-	}
-
-	if (true== forward)
-	{
-		out_string = org_string.substr(0, pos);
-        if (delete_token) org_string.erase(0, pos + token.size());
-	}
+	std::wstring org_string = org;
+	std::wstring out_string;
+	if (true != extract_first_tokenW(org_string, token, out_string, forward, false)) 
+		return _null_stringw;
 	else
-	{
-        out_string = org_string.substr(pos + token.size(), org_string.size());
-        if (delete_token) org_string.erase(pos, org_string.size());
-	}
-    return true;
+		return out_string;
 }
+
 
 /**
  * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
@@ -1916,6 +1895,131 @@ extract_first_tokenA(
     return true;
 }
 
+/**
+ * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
+			(org_string 의 앞에서부터 token 을 검색)
+			
+			ABCDEFG.HIJ.KLMN	: org_string
+			       .			: token
+		    ABCDEFG             : out_string if forward = TRUE
+			        HIJ.KLMN	: out_string if forward = FALSE
+
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+std::string
+extract_first_tokenExA(
+		_In_ const char* org,
+		_In_ const char* token,		
+		_In_ bool forward
+		)
+{
+	_ASSERTE(NULL != org);
+	_ASSERTE(NULL != token);
+	if (NULL == org || NULL == token) return _null_stringa;
+
+	std::string org_string = org;
+	std::string out_string;
+	if (true != extract_first_tokenA(org_string, token, out_string, forward, false)) 
+		return _null_stringa;
+	else
+		return out_string;
+}
+
+/**
+ * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
+			(org_string 의 뒤에서부터 token 을 검색)
+
+			ABCDEFG.HIJ.KLMN	: org_string
+					   .		: token
+			ABCDEFG.HIJ			: out_string if forward = TRUE
+					    KLMN	: out_string if forward = FALSE
+
+			delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool 
+extract_last_tokenW(
+	_In_ std::wstring& org_string,
+	_In_ const std::wstring& token,
+	_Out_ std::wstring& out_string, 
+	_In_ bool forward,
+	_In_ bool delete_token
+	)
+{
+    if (true== delete_token)
+    {
+        if (&org_string == &out_string) 
+        {
+#ifndef TEST_EXPORTS
+            _ASSERTE(!"prarameters conflict! ");
+#endif
+            return false;
+        }
+    }
+
+    size_t pos = org_string.rfind(token);
+	if (std::wstring::npos == pos)
+	{
+        out_string = org_string;
+        return true;
+	}
+
+	if (true== forward)
+	{
+		out_string = org_string.substr(0, pos);
+        if (delete_token) org_string.erase(0, pos + token.size());
+	}
+	else
+	{
+        out_string = org_string.substr(pos + token.size(), org_string.size());
+        if (delete_token) org_string.erase(pos, org_string.size());
+	}
+    return true;
+}
+
+/**
+ * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
+			(org_string 의 뒤에서부터 token 을 검색)
+
+			ABCDEFG.HIJ.KLMN	: org_string
+					   .		: token
+			ABCDEFG.HIJ			: out_string if forward = TRUE
+					    KLMN	: out_string if forward = FALSE
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+std::wstring
+extract_last_tokenExW(
+	_In_ const wchar_t* org,
+	_In_ const wchar_t* token,	
+	_In_ bool forward
+	)
+{
+	_ASSERTE(NULL != org);
+	_ASSERTE(NULL != token);
+	if (NULL == org || NULL == token) return _null_stringw;
+
+	std::wstring org_string = org;
+	std::wstring out_string;
+	if (true != extract_last_tokenW(org_string, token, out_string, forward, false))
+		return _null_stringw;
+	else
+		return out_string;
+}
 
 /**
  * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
@@ -1973,6 +2077,37 @@ extract_last_tokenA(
 	}
     return true;
 }
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+std::string
+extract_last_tokenExA(
+	_In_ const char* org,
+	_In_ const char* token,
+	_In_ bool forward
+    )
+{
+	_ASSERTE(NULL != org);
+	_ASSERTE(NULL != token);
+	if (NULL == org || NULL == token) return _null_stringa;
+
+	std::string org_string = org;
+	std::string out_string;
+	if (true != extract_last_tokenA(org_string, token, out_string, forward, false))
+		return _null_stringa;
+	else
+		return out_string;
+
+}
+
+
 
 /**
 * @brief	trim 함수들
