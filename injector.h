@@ -12,7 +12,7 @@
 
 typedef		void*	injector_context;
 
-bool inject_thread(_In_ DWORD pid, _In_ const char* dll_path);
+bool inject_dll(_In_ DWORD pid, _In_ const char* dll_path);
 
 
 

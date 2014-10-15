@@ -1364,6 +1364,7 @@ bool find_file_recursive(_In_ const wchar_t* root, _In_ fnFindFilesCallback cb, 
             // 
             if (wfd.dwReserved0 & IO_REPARSE_TAG_SYMLINK)
             {                
+				bResult=FindNextFile(hSrch,&wfd);
                 continue;                
             }
         }
@@ -2373,7 +2374,7 @@ bool get_current_module_path(_Out_ std::wstring& module_path)
 }
 
 /**
- * @brief	현재 모듈의 파일명을 제외한 디렉토리 경로를 구한다. 
+ * @brief	현재 모듈의 파일명을 제외한 디렉토리 경로를 구한다. ('\' 문자는 제외)
  * @param	
  * @see		
  * @remarks	
@@ -2426,6 +2427,94 @@ bool get_current_module_file(_Out_ std::wstring& module_file)
 	}
 
 	return true;
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+std::wstring get_module_pathEx(_In_ const wchar_t* module_name)
+{
+	std::wstring out;
+	if (true != get_module_path(module_name, out))
+	{
+		return _null_stringw;
+	}
+	else
+	{
+		return out;
+	}
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+std::wstring get_current_module_pathEx()
+{
+	std::wstring out;
+	if (true != get_current_module_path(out))
+	{
+		return _null_stringw;
+	}
+	else
+	{
+		return out;
+	}
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+std::wstring get_current_module_dirEx()
+{
+	std::wstring out;
+	if (true != get_current_module_dir(out))
+	{
+		return _null_stringw;
+	}
+	else
+	{
+		return out;
+	}
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+std::wstring get_current_module_fileEx()
+{
+	std::wstring out;
+	if (true != get_current_module_file(out))
+	{
+		return _null_stringw;
+	}
+	else
+	{
+		return out;
+	}
 }
 
 /**
@@ -3202,26 +3291,25 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 */
 HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege)
 {
-	// enable SeDebugPrivilege		
-	if (true == raise_privilege)
-	{
-		if (true != set_privilege(SE_DEBUG_NAME, TRUE) )
-		{
-			log_err "set_privilege() failed. " log_end			
-			return NULL;
-		}
-	}
-
 	HANDLE proc_handle = NULL;
 	do 
 	{
 		// open the process
 		proc_handle = OpenProcess(rights, FALSE, pid);
+		if (NULL != proc_handle) break;		// 성공!
+
+		// SeDebugPrivilege	권한을 활성화하고 재 시도 해본다. (권한이 없으면 안될 수도 있음)
+		if (true != raise_privilege) break;	// 실패!
+
+		if (true != set_privilege(SE_DEBUG_NAME, TRUE) ) break;
+		
+		// SeDebugPrivilege 를 얻었다면 다시 오픈 시도
+		proc_handle = OpenProcess(rights, FALSE, pid);
 		if (NULL == proc_handle)
 		{
-			// 보안 프로그램등의 경우 OpenProcess() 가 실패할 수 있음
-			break;
+			//log_info "OpenProcess( pid = %u ) failed. gle = %u", pid, GetLastError() log_end
 		}
+		
 	} while(false);
 
 	return proc_handle;
@@ -3244,6 +3332,69 @@ bool get_active_window_pid(_Out_ DWORD& pid, _Out_ DWORD& tid)
 	tid = 0;
 	tid = GetWindowThreadProcessId(active, &pid);
 	return (0 != tid) ? true : false;
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+DWORD	get_active_console_session_id()
+{
+	return WTSGetActiveConsoleSessionId();
+}
+
+/**
+ * @brief	get session id of specified process.
+ * @param	process_id 는 PROCESS_QUERY_INFORMATION 권한이 필요함
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id)
+{
+	if (!ProcessIdToSessionId(process_id, &session_id))
+	{
+		log_err "ProcessIdToSessionId( pid = %u ) failed. gle = %u", process_id, GetLastError() log_end
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * @brief	process_id 가 콘솔세션에서 실행중인 경우 true 리턴
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool	process_in_console_session(_In_ DWORD process_id)
+{
+	DWORD console_session = get_active_console_session_id();
+	DWORD session_id = 0xffffffff;
+	if (!get_session_id_by_pid(process_id, session_id)) 
+	{
+		log_err "get_session_id_by_pid() failed." log_end
+		return false;
+	}
+
+	if (console_session == session_id) 
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 /**
@@ -3357,6 +3508,8 @@ void write_log(_In_ LOG_TO_XXX log_to, _In_ DWORD log_level, _In_ const char* fu
 **/
 void write_to_console(_In_ DWORD log_level, _In_ const char* log_text)
 {
+	UNREFERENCED_PARAMETER(log_level);
+
 	static HANDLE	_stdout_handle = INVALID_HANDLE_VALUE;
 	static WORD		_old_color = 0x0000;
 	

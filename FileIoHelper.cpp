@@ -54,7 +54,7 @@ bool OpenFileContext(IN PCWSTR FilePath, OUT PFILE_CTX& Ctx)
         if (INVALID_HANDLE_VALUE == Ctx->FileHandle)
         {
             log_err
-                L"CreateFile(%ws) failed, gle = %u", 
+                "CreateFile(%ws) failed, gle = %u", 
                 FilePath, 
                 GetLastError()
             log_end
@@ -67,7 +67,7 @@ bool OpenFileContext(IN PCWSTR FilePath, OUT PFILE_CTX& Ctx)
         if (TRUE != GetFileSizeEx(Ctx->FileHandle, &fileSize))
         {
             log_err
-                L"%ws, can not get file size, gle = %u", 
+                "%ws, can not get file size, gle = %u", 
                 FilePath, 
                 GetLastError() 
             log_end
@@ -84,7 +84,7 @@ bool OpenFileContext(IN PCWSTR FilePath, OUT PFILE_CTX& Ctx)
 		if (fileSize.HighPart > 0) 
 		{
 			log_err
-				L"file size = %I64d (over 4GB) can not handle. use FileIoHelperClass",
+				"file size = %I64d (over 4GB) can not handle. use FileIoHelperClass",
 				fileSize.QuadPart
 			log_end
 			break;
@@ -102,7 +102,7 @@ bool OpenFileContext(IN PCWSTR FilePath, OUT PFILE_CTX& Ctx)
         if (NULL == Ctx->FileMap)
         {
             log_err
-                L"CreateFileMapping(%ws) failed, gle = %u", 
+                "CreateFileMapping(%ws) failed, gle = %u", 
                 FilePath, 
                 GetLastError() 
             log_end
@@ -119,7 +119,7 @@ bool OpenFileContext(IN PCWSTR FilePath, OUT PFILE_CTX& Ctx)
         if(Ctx->FileView == NULL)
         {
             log_err
-                L"MapViewOfFile(%ws) failed, gle = %u", 
+                "MapViewOfFile(%ws) failed, gle = %u", 
                 FilePath, 
                 GetLastError() 
             log_end

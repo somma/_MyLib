@@ -60,18 +60,25 @@ private:
 typedef std::map< DWORD, process >	process_map;
 typedef bool (*fnproc_tree_callback)(_In_ process& process_info, _In_ DWORD_PTR callback_tag);
 
+
 class cprocess_tree
 {
 public:
 	bool	clear_process_tree() { _proc_map.clear(); }
 	bool	build_process_tree();
-	DWORD	find_process(_In_ const wchar_t* process_name);
-
+	
+	DWORD			find_process(_In_ const wchar_t* process_name);
+	DWORD			get_parent_pid(_In_ DWORD child_pid);
+	const wchar_t*	get_parent_name(_In_ DWORD child_pid);
+	
 	void	iterate_process(_In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag);
 	void 	iterate_process_tree(_In_ DWORD root_pid, _In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag);
 
 	void	print_process_tree(_In_ DWORD root_pid);
 	void	print_process_tree(_In_ const wchar_t* root_process_name);
+
+	bool	kill_process(_In_ DWORD pid);
+	bool	kill_process(_In_ const wchar_t* process_name);
 
 	bool	kill_process_tree(_In_ DWORD root_pid);
 

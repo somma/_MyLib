@@ -89,7 +89,11 @@ cprocess_tree::build_process_tree()
 		return false;
 	}
 
-	set_privilege(SE_DEBUG_NAME, TRUE);
+	if (true != set_privilege(SE_DEBUG_NAME, TRUE))
+	{
+		log_info "set_privilege(SE_DEBUG_NAME) failed." log_end
+		// just info
+	}
 
 	do
 	{
@@ -110,12 +114,14 @@ cprocess_tree::build_process_tree()
 										);
 			if(NULL == process_handle)
 			{
-				log_err 
-					"OpenProcess() failed, pid = %u, proc = %s, gle = %u", 
-					proc_entry.th32ProcessID, 
-					WcsToMbsEx(proc_entry.szExeFile).c_str(),
-					GetLastError() 
-				log_end
+				// too much logs.
+				//log_err 
+				//	"OpenProcess() failed, pid = %u, proc = %s, gle = %u", 
+				//	proc_entry.th32ProcessID, 
+				//	WcsToMbsEx(proc_entry.szExeFile).c_str(),
+				//	GetLastError() 
+				//log_end
+
 				// use create time 0!
 			}
 			else
@@ -169,6 +175,44 @@ DWORD cprocess_tree::find_process(_In_ const wchar_t* process_name)
 	}
 
 	return 0;
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+DWORD cprocess_tree::get_parent_pid(_In_ DWORD child_pid)
+{
+	process_map::iterator it = _proc_map.find(child_pid);
+	if (it == _proc_map.end()) return 0;
+
+	process prcs = it->second;
+	return prcs.ppid();
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+const wchar_t* cprocess_tree::get_parent_name(_In_ DWORD child_pid)
+{
+	DWORD ppid = get_parent_pid(child_pid);
+	if (0 == ppid) return NULL;
+
+	process_map::iterator it = _proc_map.find(ppid);
+	if (it == _proc_map.end()) return 0;
+
+	return it->second.process_name().c_str();
 }
 
 /**
@@ -253,6 +297,44 @@ void cprocess_tree::print_process_tree(_In_ const wchar_t* root_process_name)
 	{
 		print_process_tree(pid);
 	}
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool cprocess_tree::kill_process(_In_ DWORD pid)
+{
+	if (pid == 0 || pid == 4) return false;
+
+	process_map::iterator it = _proc_map.find(pid);
+	if (it == _proc_map.end()) return true;
+	process prcs = it->second;
+
+	return prcs.kill(0);
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool cprocess_tree::kill_process(_In_ const wchar_t* process_name)
+{
+	_ASSERTE(NULL != process_name);
+	if (NULL == process_name) return false;
+	
+	DWORD pid = find_process(process_name);
+	return kill_process(pid);
 }
 
 /**

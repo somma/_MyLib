@@ -177,10 +177,14 @@ bool get_temp_dirW(_Out_ std::wstring& temp_dir);
 bool get_temp_dirA(_Out_ std::string& temp_dir);
 
 bool get_module_path(_In_ const wchar_t* module_name, _Out_ std::wstring& module_path);
-
 bool get_current_module_path(_Out_ std::wstring& module_path);
 bool get_current_module_dir(_Out_ std::wstring& module_dir);
 bool get_current_module_file(_Out_ std::wstring& module_file);
+
+std::wstring get_module_pathEx(_In_ const wchar_t* module_name);
+std::wstring get_current_module_pathEx();
+std::wstring get_current_module_dirEx();
+std::wstring get_current_module_fileEx();
 
 bool get_system_directory(_Out_ std::wstring& system_dir);
 
@@ -379,18 +383,21 @@ void raii_UnmapViewOfFile(_In_ void* void_ptr);
 std::string Win32ErrorToStringA(IN DWORD ErrorCode);
 std::wstring Win32ErrorToStringW(IN DWORD ErrorCode);
 
-BOOL DumpMemory(DWORD Length, BYTE* Buf);
-BOOL DumpMemory(FILE* stream,DWORD Length,BYTE* Buf);
-bool dump_memory(_In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump);
+BOOL	DumpMemory(DWORD Length, BYTE* Buf);
+BOOL	DumpMemory(FILE* stream,DWORD Length,BYTE* Buf);
+bool	dump_memory(_In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump);
 
-BOOL GetTimeStringA(OUT std::string& TimeString);
-BOOL GetTimeStringW(IN std::wstring& TimeString);
-bool get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wstring>& ip_list);
+BOOL	GetTimeStringA(OUT std::string& TimeString);
+BOOL	GetTimeStringW(IN std::wstring& TimeString);
+bool	get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wstring>& ip_list);
 
-bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
-HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege);
+bool	set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
+HANDLE	privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege);
 
-bool get_active_window_pid(_Out_ DWORD& pid);
+bool	get_active_window_pid(_Out_ DWORD& pid);
+DWORD	get_active_console_session_id();
+bool	get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id);
+bool	process_in_console_session(_In_ DWORD process_id);
 
 /******************************************************************************
  * console stuff
