@@ -6,6 +6,8 @@
  * All rights reserved by Noh,Yonghwan (fixbrain@gmail.com)
  *-----------------------------------------------------------------------------
  * 2014:6:16 8:48 created
+ *
+ * + lsass.exe 프로세스 컨텍스트에서 build() 하면 멈추는 현상 확인 (x64 win7 sp1)
 **---------------------------------------------------------------------------*/
 
 #include <sstream>
@@ -17,7 +19,7 @@
 #include <TlHelp32.h>
 
 /**
- * @brief	class for running process 
+ * @brief	class for running process
 **/
 class process
 {
@@ -25,7 +27,7 @@ public:
 	process()
 	:_process_name(L""), _ppid(0), _pid(0), _creation_time(0), _killed(false)
 	{
-		
+
 	}
 
 	process(_In_ const wchar_t* process_name, _In_ DWORD ppid, _In_ DWORD pid, _In_ uint64_t creation_time, _In_ bool killed)
@@ -55,7 +57,7 @@ private:
 
 
 /**
- * @brief	place holder for running processes			
+ * @brief	place holder for running processes
 **/
 typedef std::map< DWORD, process >	process_map;
 typedef bool (*fnproc_tree_callback)(_In_ process& process_info, _In_ DWORD_PTR callback_tag);
@@ -66,11 +68,13 @@ class cprocess_tree
 public:
 	bool	clear_process_tree() { _proc_map.clear(); }
 	bool	build_process_tree();
-	
+
 	DWORD			find_process(_In_ const wchar_t* process_name);
+	const wchar_t*	get_process_name(_In_ DWORD pid);
+
 	DWORD			get_parent_pid(_In_ DWORD child_pid);
 	const wchar_t*	get_parent_name(_In_ DWORD child_pid);
-	
+
 	void	iterate_process(_In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag);
 	void 	iterate_process_tree(_In_ DWORD root_pid, _In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag);
 

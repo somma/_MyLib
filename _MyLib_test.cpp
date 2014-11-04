@@ -11,8 +11,10 @@
 #include "process_tree.h"
 #include "base64.h"
 
+// _test_asm.cpp
+bool test_asm_func();
 
-
+bool test_2_complement();
 bool test_print_64int();
 bool test_x64_calling_convension();
 bool test_std_string_find_and_substr();
@@ -37,6 +39,7 @@ bool test_str_to_xxx();
 bool test_set_get_file_position();
 bool test_get_module_path();
 bool test_dump_memory();
+bool test_get_process_name_by_pid();
 
 // _test_boost.cpp
 extern bool boost_lexical_cast();
@@ -86,7 +89,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
 
+	assert_bool(true, test_asm_func);
 	assert_bool(true, test_x64_calling_convension);
+	assert_bool(true, test_2_complement);
 	assert_bool(true , test_print_64int);
 	assert_bool(true, test_std_string_find_and_substr);
 	assert_bool(true, test_to_lower_uppper_string);
@@ -106,6 +111,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	assert_bool(true, test_set_get_file_position);
 	assert_bool(true, test_get_module_path);
 	assert_bool(true, test_dump_memory);
+	assert_bool(true, test_get_process_name_by_pid);
+
 
 	assert_bool(true, boost_lexical_cast);
 	assert_bool(true, boost_shared_ptr_void);
@@ -288,6 +295,37 @@ bool test_x64_calling_convension()
 	int ret = func_few_param(1,2);
 	ret = func_four_param(1,2,3,4);
 	ret = func_many_param(1,2,3,4,5,6);
+	return true;
+}
+
+
+/**
+ * @brief	2's complement
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool test_2_complement()
+{
+	int i = -1;
+
+	// 결과: %d = -1, %x = ffffffff
+	// 1 = 0000 0001
+	//     1111 1110 + 1 (음수를 표현하기 위해 2의 보수를 취하면...)
+	//     1111	1111		= -1 = 0xff
+	// 
+	// 2 = 0000 0010
+	//     1111 1101 + 1
+	//     1111 1110		= -2 = 0xfe
+	//
+	// 3 = 0000 0011
+	//     1111 1100 + 1
+	//     1111 1101		= -3 = 0xfd
+	log_msg "%%d = %d, %%x = %x", i, i log_end
+
 	return true;
 }
 
@@ -860,5 +898,15 @@ bool test_dump_memory()
 	}
 
 	dump.clear();
+	return true;
+}
+
+/**
+ * @brief	
+**/
+bool test_get_process_name_by_pid()
+{
+	std::wstring name = get_process_name_by_pid(GetCurrentProcessId());
+	log_msg "name = %ws", name.c_str() log_end
 	return true;
 }

@@ -48,7 +48,7 @@ CreateThreadContext(
     _ASSERTE(NULL != ctx->ThreadHandle);
     if (NULL == ctx->ThreadHandle)
     {
-        log_err "can not create ReconnectDtServerThread, gle = %u", GetLastError() log_end
+        log_err "can not create CreateThread, gle = %u", GetLastError() log_end
         free(ctx);
         return NULL;
     }

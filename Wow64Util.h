@@ -12,6 +12,7 @@
 // Revision History
 // Date         Name								Description
 // 2004-02-18   Yoo, Byung In (hanlife7@hanmail.net)  Created
+// 2014-10-19	Noh, Yonghwan (fixbrain@gmail.com)  add IsWow64Process( pid ) added.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -41,6 +42,7 @@ class CWow64Util
 		// Is..
 		BOOL IsWow64Process();
 		BOOL IsWow64Process( HANDLE hProcess );
+		BOOL IsWow64Process( DWORD pid );
 		BOOL IsWow64Message();
 		BOOL IsProcessorIA64();
 		BOOL IsProcessorAMD64();

@@ -186,6 +186,24 @@ DWORD cprocess_tree::find_process(_In_ const wchar_t* process_name)
  * @endcode	
  * @return	
 **/
+const wchar_t* cprocess_tree::get_process_name(_In_ DWORD pid)
+{
+	process_map::iterator it = _proc_map.find(pid);
+	if (it == _proc_map.end()) return NULL;
+
+	return it->second.process_name().c_str();
+
+}
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
 DWORD cprocess_tree::get_parent_pid(_In_ DWORD child_pid)
 {
 	process_map::iterator it = _proc_map.find(child_pid);
@@ -210,7 +228,7 @@ const wchar_t* cprocess_tree::get_parent_name(_In_ DWORD child_pid)
 	if (0 == ppid) return NULL;
 
 	process_map::iterator it = _proc_map.find(ppid);
-	if (it == _proc_map.end()) return 0;
+	if (it == _proc_map.end()) return NULL;
 
 	return it->second.process_name().c_str();
 }

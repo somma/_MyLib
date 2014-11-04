@@ -449,6 +449,19 @@ typedef struct SEGMENT_DESCRIPTOR
 #define HA_DB			0x04
 #define HA_GRANULARITY	0x08
 
+//> Interrupt Descriptor Table Entry
+typedef struct _INTERRUPT_DESCRIPTOR
+{
+    UINT16	OffsetLow;
+    UINT16	Selector;
+    UINT8	Reserved;
+    UINT8	Type		:4;    //1111(Trap Gate), 1110(Interrupt Gate)
+    UINT8	Always0		:1;
+    UINT8	Dpl			:2;
+    UINT8	Present		:1;
+    UINT16	OffsetHigh;
+} INTERRUPT_DESCRIPTOR, *_INTERRUPT_DESCRIPTOR;
+
 
 //> Debug Status Register - DR6
 typedef struct _X86_DR6

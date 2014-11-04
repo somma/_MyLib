@@ -16,6 +16,9 @@
     <Filter Include="_MyLib">
       <UniqueIdentifier>{26662a08-88ae-4af9-85be-86000ab0c16b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\asm">
+      <UniqueIdentifier>{8d015123-a8cb-48f5-9bb0-ed8802272d50}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -74,5 +77,13 @@
     <ClCompile Include="base64.cpp">
       <Filter>_MyLib</Filter>
     </ClCompile>
+    <ClCompile Include="_test_asm.cpp">
+      <Filter>Source Files\asm</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <masm Include="x64.asm">
+      <Filter>Source Files\asm</Filter>
+    </masm>
   </ItemGroup>
 </Project>

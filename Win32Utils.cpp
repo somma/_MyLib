@@ -1318,7 +1318,14 @@ GetImageFullPathFromPredefinedPathW(
  * @endcode	
  * @return	
 **/
-bool find_file_recursive(_In_ const wchar_t* root, _In_ fnFindFilesCallback cb, _In_ DWORD_PTR tag)
+//bool find_file_recursive(_In_ const wchar_t* root, _In_ fnFindFilesCallback cb, _In_ DWORD_PTR tag)
+bool
+find_files(
+	_In_ const wchar_t* root, 
+	_In_ fnFindFilesCallback cb, 
+	_In_ DWORD_PTR tag, 
+	_In_ bool recursive
+	)
 { 
     _ASSERTE(NULL != root);
     _ASSERTE(TRUE != IsBadStringPtr(root, MAX_PATH));
@@ -1355,8 +1362,7 @@ bool find_file_recursive(_In_ const wchar_t* root, _In_ fnFindFilesCallback cb, 
     {
         WaitForSingleObject(NULL, 0);
 
-        _wsplitpath_s(root_dir.c_str(), drive, _MAX_DRIVE, dir, MAX_PATH, NULL, NULL, NULL, NULL);
-		//_wsplitpath(root_dir.c_str(), drive, dir, NULL, NULL);
+        _wsplitpath_s(root_dir.c_str(), drive, _MAX_DRIVE, dir, MAX_PATH, NULL, NULL, NULL, NULL);		
 
         if (wfd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) 
         {
@@ -1368,13 +1374,13 @@ bool find_file_recursive(_In_ const wchar_t* root, _In_ fnFindFilesCallback cb, 
                 continue;                
             }
         }
-        else if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
+        else if ( (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)  && true == recursive )
         {
-            if (0 != _wcsnicmp(&wfd.cFileName[0], L".", 1))
-            {
-                StringCbPrintfW(newpath, sizeof(newpath), L"%s%s%s\\*.*", drive, dir, wfd.cFileName);
-                find_file_recursive(newpath, cb, tag);
-            }
+			if (0 != _wcsnicmp(&wfd.cFileName[0], L".", 1))
+			{
+				StringCbPrintfW(newpath, sizeof(newpath), L"%s%s%s\\*.*", drive, dir, wfd.cFileName);
+				find_files(newpath, cb, tag, recursive);
+			}            
         } 
         else 
         {
@@ -2460,6 +2466,23 @@ std::wstring get_module_pathEx(_In_ const wchar_t* module_name)
  * @endcode	
  * @return	
 **/
+std::wstring get_module_dirEx(_In_ const wchar_t* module_name)
+{
+	std::wstring module_path = get_module_pathEx(module_name);
+	return extract_last_tokenExW(module_path.c_str(), L"\\", true);
+}
+	
+
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
 std::wstring get_current_module_pathEx()
 {
 	std::wstring out;
@@ -3396,6 +3419,72 @@ bool	process_in_console_session(_In_ DWORD process_id)
 		return false;
 	}
 }
+
+/**
+ * @brief	pid 로 프로세스의 전체 이름을 구한다. (vista 이상)
+			ZwQuerySystemInformation 처럼 length 를 0 을 넘겨주면 필요한 버퍼의 길이를...
+			리턴해 주지 않는다. 큼직하게 버퍼 잡아서 호출해야 함
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	c:\dbg\sound.dll 형태 (Win32 format) string 리턴
+**/
+#if _WIN32_WINNT >= 0x0600	// after vista
+
+std::wstring get_process_name_by_pid(_In_ DWORD process_id)
+{
+	raii_handle process_handle(
+					privileged_open_process(process_id, PROCESS_QUERY_INFORMATION, true),
+					raii_CloseHandle
+					);
+	if (NULL == process_handle.get()) return _null_stringw;
+
+	// get size
+	wchar_t*	name = NULL;
+	DWORD		name_len = 20;//MAX_PATH;
+	DWORD		ret = 0;
+	
+	for(int i = 0; i < 3; ++i)		// name buffer 를 두배씩 키우는것도 3회만 시도한다.
+	{
+		if (NULL != name) free(name);
+		name = (wchar_t*) malloc((name_len + 1) * sizeof(wchar_t));
+		if (NULL == name) return _null_stringw;
+
+		ret = QueryFullProcessImageNameW(
+					process_handle.get(), 
+					0,	// Win32 Format
+					name,
+					&name_len
+					);	
+		if (ret > 0)
+		{
+			name[name_len] = 0x00;
+			break;
+		}
+		else
+		{
+			DWORD gle = GetLastError();
+			if (ret == 0 && ERROR_INSUFFICIENT_BUFFER == gle)
+			{
+				name_len *= 2;
+				continue;
+			}
+			else 
+			{
+				log_err "QueryFullProcessImageName() failed. gle = %u", gle log_end
+				return _null_stringw;
+			}
+		}		
+	}
+
+	std::wstring name_str = name;
+	if (NULL != name) free(name); name = NULL;
+	return name_str;	
+}
+
+#endif
 
 /**
 * @brief	

@@ -113,7 +113,7 @@ LPCWSTR FAT2Str(IN FATTIME& fat);
  * 파일 처리
 ******************************************************************************/
 bool is_file_existsW(_In_ const wchar_t* file_path);
-bool IsFileExistA(const CHAR* FilePath);
+bool is_file_existsA(_In_ const char* file_path);
 
 bool get_filepath_by_handle(_In_ HANDLE file_handle, _Out_ std::wstring& file_name);
 bool get_mapped_file_name(_In_ HANDLE process_handle, _In_ const void* mapped_addr, _Out_ std::wstring& file_name);
@@ -153,11 +153,12 @@ BOOL SaveBinaryFile(
 
 typedef BOOL (WINAPI *fnFindFilesCallback)(IN DWORD_PTR Tag, IN LPCWSTR path);
 
-bool 
-find_file_recursive(
+bool
+find_files(
 	_In_ const wchar_t* root, 
 	_In_ fnFindFilesCallback cb, 
-	_In_ DWORD_PTR tag
+	_In_ DWORD_PTR tag, 
+	_In_ bool recursive = true
 	);
 
 BOOL 
@@ -182,6 +183,7 @@ bool get_current_module_dir(_Out_ std::wstring& module_dir);
 bool get_current_module_file(_Out_ std::wstring& module_file);
 
 std::wstring get_module_pathEx(_In_ const wchar_t* module_name);
+std::wstring get_module_dirEx(_In_ const wchar_t* module_name);
 std::wstring get_current_module_pathEx();
 std::wstring get_current_module_dirEx();
 std::wstring get_current_module_fileEx();
@@ -399,6 +401,9 @@ DWORD	get_active_console_session_id();
 bool	get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id);
 bool	process_in_console_session(_In_ DWORD process_id);
 
+#if _WIN32_WINNT >= 0x0600	// after vista
+std::wstring get_process_name_by_pid(_In_ DWORD process_id);
+#endif
 /******************************************************************************
  * console stuff
 ******************************************************************************/
