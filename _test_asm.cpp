@@ -10,11 +10,6 @@
 #include "stdafx.h"
 
 
-//ULONG64 sum64(ULONG64 a, ULONG64 b)
-//{
-//	return a+b;
-//}
-
 
 #ifdef __cplusplus 
 extern "C" {
@@ -25,7 +20,6 @@ void trampoline();
 ULONG64 direct_jump();
 ULONG64 indirect_jump();
 void push_mov_ret();
-void mov_rip()
 
 #ifdef __cplusplus 
 }
@@ -45,7 +39,6 @@ bool test_asm_func()
 	ret = direct_jump();
 	ret = indirect_jump();
 	push_mov_ret();
-	mov_rip();
 
 
 	ULONG64 addr = (ULONG64)test_asm_func;

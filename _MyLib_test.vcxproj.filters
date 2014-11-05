@@ -80,6 +80,9 @@
     <ClCompile Include="_test_asm.cpp">
       <Filter>Source Files\asm</Filter>
     </ClCompile>
+    <ClCompile Include="_test_x64.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">

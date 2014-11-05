@@ -175,6 +175,7 @@
     <ClCompile Include="_test_cpp_class.cpp" />
     <ClCompile Include="_test_registry_util.cpp" />
     <ClCompile Include="_test_std_map.cpp" />
+    <ClCompile Include="_test_x64.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

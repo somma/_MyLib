@@ -14,9 +14,11 @@
 // _test_asm.cpp
 bool test_asm_func();
 
+// _test_x64.cpp
+bool test_x64_calling_convension();
+
 bool test_2_complement();
 bool test_print_64int();
-bool test_x64_calling_convension();
 bool test_std_string_find_and_substr();
 bool test_to_lower_uppper_string();
 //bool test_const_position();
@@ -25,7 +27,6 @@ bool test_process_tree();
 
 bool test_base64();
 bool test_get_local_ip_list();
-
 // _test_cpp_test.cpp
 bool test_cpp_class();
 
@@ -187,117 +188,6 @@ bool test_std_string_find_and_substr()
 
 	return true;
 }
-
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-
-/*
-	int func_many_param(int a, int b, int c, int d, int e, int f)
-	{
-	000000013FA77530  mov         dword ptr [rsp+20h],r9d  
-	000000013FA77535  mov         dword ptr [rsp+18h],r8d  
-	000000013FA7753A  mov         dword ptr [rsp+10h],edx  
-	000000013FA7753E  mov         dword ptr [rsp+8],ecx  
-	000000013FA77542  push        rdi  
-		return 0;
-	000000013FA77543  xor         eax,eax  
-	}
-	000000013FA77545  pop         rdi  
-	000000013FA77546  ret 
-*/
-int func_many_param(int a, int b, int c, int d, int e, int f)
-{
-	return 0;
-}
-
-/*
-	int func_four_param(int a, int b, int c, int d)
-	{
-	000000013FA77550  mov         dword ptr [rsp+20h],r9d  
-	000000013FA77555  mov         dword ptr [rsp+18h],r8d  
-	000000013FA7755A  mov         dword ptr [rsp+10h],edx  
-	000000013FA7755E  mov         dword ptr [rsp+8],ecx  
-	000000013FA77562  push        rdi  
-		return 0;
-	000000013FA77563  xor         eax,eax  
-	}
-	000000013FA77565  pop         rdi  
-	000000013FA77566  ret  
-*/
-int func_four_param(int a, int b, int c, int d)
-{
-	return 0;
-}
-
-/*
-	int func_few_param(int a, int b)
-	{
-	000000013FA77570  mov         dword ptr [rsp+10h],edx  
-	000000013FA77574  mov         dword ptr [rsp+8],ecx  
-	000000013FA77578  push        rdi  
-		return 0;
-	000000013FA77579  xor         eax,eax  
-	}
-	000000013FA7757B  pop         rdi  
-	000000013FA7757C  ret  
-*/
-int func_few_param(int a, int b)
-{
-	return 0;
-}
-
-/*
-	bool test_x64_calling_convension()
-	{
-	000000013FA77590  push        rdi  
-	000000013FA77592  sub         rsp,40h  
-	000000013FA77596  mov         rdi,rsp  
-	000000013FA77599  mov         ecx,10h  
-	000000013FA7759E  mov         eax,0CCCCCCCCh  
-	000000013FA775A3  rep stos    dword ptr [rdi]  
-		int ret = func_few_param(1,2);
-	000000013FA775A5  mov         edx,2  
-	000000013FA775AA  mov         ecx,1  
-	000000013FA775AF  call        000000013FA532F1  
-	000000013FA775B4  mov         dword ptr [rsp+30h],eax  
-		ret = func_four_param(1,2,3,4);
-	000000013FA775B8  mov         r9d,4  
-	000000013FA775BE  mov         r8d,3  
-	000000013FA775C4  mov         edx,2  
-	000000013FA775C9  mov         ecx,1  
-	000000013FA775CE  call        000000013FA51A05  
-	000000013FA775D3  mov         dword ptr [rsp+30h],eax  
-		ret = func_many_param(1,2,3,4,5,6);
-	000000013FA775D7  mov         dword ptr [rsp+28h],6  
-	000000013FA775DF  mov         dword ptr [rsp+20h],5  
-	000000013FA775E7  mov         r9d,4  
-	000000013FA775ED  mov         r8d,3  
-	000000013FA775F3  mov         edx,2  
-	000000013FA775F8  mov         ecx,1  
-	000000013FA775FD  call        000000013FA52AEA  
-	000000013FA77602  mov         dword ptr [rsp+30h],eax  
-		return true;
-	000000013FA77606  mov         al,1  
-	}
-	000000013FA77608  add         rsp,40h  
-	000000013FA7760C  pop         rdi  
-	000000013FA7760D  ret  
-*/
-bool test_x64_calling_convension()
-{
-	int ret = func_few_param(1,2);
-	ret = func_four_param(1,2,3,4);
-	ret = func_many_param(1,2,3,4,5,6);
-	return true;
-}
-
 
 /**
  * @brief	2's complement
