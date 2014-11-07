@@ -9,8 +9,6 @@
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
 
-
-
 #ifdef __cplusplus 
 extern "C" {
 #endif
@@ -20,6 +18,8 @@ void trampoline();
 ULONG64 direct_jump();
 ULONG64 indirect_jump();
 void push_mov_ret();
+void push_mov_ret2();
+
 
 #ifdef __cplusplus 
 }
@@ -39,6 +39,7 @@ bool test_asm_func()
 	ret = direct_jump();
 	ret = indirect_jump();
 	push_mov_ret();
+	push_mov_ret2();			// crash!
 
 
 	ULONG64 addr = (ULONG64)test_asm_func;
