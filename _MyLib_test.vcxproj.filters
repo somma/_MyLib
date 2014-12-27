@@ -42,6 +42,9 @@
     <ClInclude Include="base64.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
+    <ClInclude Include="rc4.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -82,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="_test_x64.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rc4.cpp">
+      <Filter>_MyLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

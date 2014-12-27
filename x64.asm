@@ -90,10 +90,9 @@ push_mov_ret endp
 ; jump 0xaabbccdd11223344
 ;
 push_mov_ret2 proc	
-	push 011223344h
-	mov dword ptr [rsp+4], 0aabbccddh
+	;push 011223344h
+	;mov dword ptr [rsp+4], 0aabbccddh
 	ret
 push_mov_ret2 endp
-
 
 end

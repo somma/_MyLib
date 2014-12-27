@@ -10,6 +10,7 @@
 #include "stdafx.h"
 #include "process_tree.h"
 #include "base64.h"
+#include "rc4.h"
 
 // _test_asm.cpp
 bool test_asm_func();
@@ -26,6 +27,7 @@ bool test_initialize_string();
 bool test_process_tree();     
 
 bool test_base64();
+bool test_random();
 bool test_get_local_ip_list();
 // _test_cpp_test.cpp
 bool test_cpp_class();
@@ -41,6 +43,9 @@ bool test_set_get_file_position();
 bool test_get_module_path();
 bool test_dump_memory();
 bool test_get_process_name_by_pid();
+
+// rc4.cpp
+bool test_rc4_encrypt();
 
 // _test_boost.cpp
 extern bool boost_lexical_cast();
@@ -100,6 +105,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	assert_bool(true, test_initialize_string);
 	assert_bool(true, test_process_tree);
 	assert_bool(true, test_base64);
+	assert_bool(true, test_random);
 	assert_bool(true, test_get_local_ip_list);
 
 	assert_bool(true, test_cpp_class);
@@ -113,8 +119,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	assert_bool(true, test_get_module_path);
 	assert_bool(true, test_dump_memory);
 	assert_bool(true, test_get_process_name_by_pid);
-
-
+	assert_bool(true, test_rc4_encrypt);
+	
 	assert_bool(true, boost_lexical_cast);
 	assert_bool(true, boost_shared_ptr_void);
 	assert_bool(true, boost_shared_ptr_handle_01);
@@ -428,6 +434,15 @@ bool test_base64()
 	wide_str = Utf8MbsToWcsEx(f.c_str());
 	if (0 != wide_str.compare(string_to_encodeW.c_str())) return false;
 	
+	return true;
+}
+
+/**
+ * @brief	
+**/
+bool test_random()
+{
+	int var = rand() % 1000 + 1;
 	return true;
 }
 
@@ -798,5 +813,34 @@ bool test_get_process_name_by_pid()
 {
 	std::wstring name = get_process_name_by_pid(GetCurrentProcessId());
 	log_msg "name = %ws", name.c_str() log_end
+	return true;
+}
+
+
+/**
+ * @brief	
+**/
+bool test_rc4_encrypt()
+{
+	const char* key = "coresecurity";
+	const char plain[] = "abcdefghijklmnop1234567890!@#$%^&*()가나다라마바사아자차카타파하";
+	uint8_t enc[1024] = {0};
+	uint8_t dec[1024] = {0};
+
+
+	
+	rc4_state ctx={0};
+	
+	// encrypt
+	rc4_init(&ctx, (uint8_t*)key, strlen(key));
+	rc4_crypt(&ctx, (uint8_t*)plain, enc, sizeof(enc));
+
+	// decrypt
+	rc4_init(&ctx, (uint8_t*)key, strlen(key));
+	rc4_crypt(&ctx, enc, dec, sizeof(dec));
+
+	// compare
+	if (0 != memcmp(dec, plain, strlen(plain))) return false;
+
 	return true;
 }

@@ -134,7 +134,6 @@ bool test_x64_calling_convension()
 {
 	__int64 ra = func_a(10, 0.1, 20, 30, 40);
 
-
 	/*
 000000013F3DBC16 C7 44 24 28 05 00 00 00 mov         dword ptr [rsp+28h],5  
 000000013F3DBC1E C7 44 24 20 04 00 00 00 mov         dword ptr [rsp+20h],4  

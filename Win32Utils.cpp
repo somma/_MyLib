@@ -1318,7 +1318,6 @@ GetImageFullPathFromPredefinedPathW(
  * @endcode	
  * @return	
 **/
-//bool find_file_recursive(_In_ const wchar_t* root, _In_ fnFindFilesCallback cb, _In_ DWORD_PTR tag)
 bool
 find_files(
 	_In_ const wchar_t* root, 
