@@ -16,6 +16,7 @@ int f(int a, int b)
 {
     return a+b;
 }
+
 int g(int a, int b, int c)
 {
     return a+b+c;
@@ -27,9 +28,22 @@ bool boost_bind()
     std::cout << boost::bind(g, 1,2,3)() << std::endl;          // g(1,2,3) 과 동일한 함수객체
 
     // boost::function 을 사용하면 bind() 된 함수객체를 저장할 수 있다!!
-    // 
-    boost::function<int (int, int)> ff = boost::bind(f, _1, _2);
-    std::cout << ff(1,2) << boost::bind(f, 1, 2)() << std::endl;
+    //
+	boost::function<int (int, int)> ff = boost::bind(f, 1, 2);
+    std::cout	<< "ff(1,2) = "					<< ff(1,2) 
+				<< "boost::bind(f, 1, 2)() = "	<< boost::bind(f, 1, 2)() 
+				<< std::endl;
+
+	// <짱 중요!!>
+	// f 함수는 int(int, int) 타입이지만
+	// boost::bind(f, 1, _1) 로 파라미터를 고정해서 f(val) 형태로 호출이 가능하고, 
+	// 항상 (1+ val) 를 리턴하게 된다. 이런 특징을 이용해서 callback 함수에 부가적인 
+	// 파라미터를 전달하거나, 파라미터 순서를 조작하는 등의 일을 할 수 있다.
+	boost::function<int (int, int)> xf = boost::bind(f, 1, _1);
+    std::cout	<< "xf(1, 2) = "					<< ff(1, 2) 
+				<< "boost::bind(f, 1, _1)(2) = "	<< boost::bind(f, 1, _1)(2) 
+				<< std::endl;
+
 
     int x = 3;
     int y = 4;
@@ -42,6 +56,14 @@ bool boost_bind()
 
 	return true;
 }
+
+
+
+
+
+
+
+
 
 
 /**

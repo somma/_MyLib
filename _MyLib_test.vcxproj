@@ -173,6 +173,7 @@
     <ClCompile Include="_MyLib_test.cpp" />
     <ClCompile Include="_test_asm.cpp" />
     <ClCompile Include="_test_boost.cpp" />
+    <ClCompile Include="_test_boost_asio_timer.cpp" />
     <ClCompile Include="_test_boost_bind.cpp" />
     <ClCompile Include="_test_cpp_class.cpp" />
     <ClCompile Include="_test_registry_util.cpp" />

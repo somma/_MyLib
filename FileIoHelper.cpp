@@ -24,7 +24,7 @@
     \code
     \endcode        
 -----------------------------------------------------------------------------*/
-bool OpenFileContext(IN PCWSTR FilePath, OUT PFILE_CTX& Ctx)
+bool OpenFileContext(IN PCWSTR FilePath, IN bool ReadOnly, OUT PFILE_CTX& Ctx)
 {
     _ASSERTE(NULL != FilePath);
     if (NULL == FilePath) return false;
@@ -44,7 +44,7 @@ bool OpenFileContext(IN PCWSTR FilePath, OUT PFILE_CTX& Ctx)
     {
         Ctx->FileHandle = CreateFileW(
                             (LPCWSTR)FilePath, 
-                            GENERIC_READ, 
+                            (true == ReadOnly) ? GENERIC_READ : GENERIC_READ | GENERIC_WRITE, 
                             NULL,
                             NULL, 
                             OPEN_EXISTING, 
@@ -94,7 +94,7 @@ bool OpenFileContext(IN PCWSTR FilePath, OUT PFILE_CTX& Ctx)
         Ctx->FileMap = CreateFileMapping(
                                 Ctx->FileHandle, 
                                 NULL, 
-                                PAGE_READONLY, 
+                                (true == ReadOnly) ? PAGE_READONLY : PAGE_READWRITE, 
                                 0, 
                                 0, 
                                 NULL
@@ -111,7 +111,7 @@ bool OpenFileContext(IN PCWSTR FilePath, OUT PFILE_CTX& Ctx)
 
         Ctx->FileView = (PCHAR) MapViewOfFile(
                                         Ctx->FileMap, 
-                                        FILE_MAP_READ, 
+                                        (true == ReadOnly) ? FILE_MAP_READ : FILE_MAP_WRITE,
                                         0, 
                                         0, 
                                         0

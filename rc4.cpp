@@ -56,7 +56,7 @@ swap_bytes(uint8_t *a, uint8_t *b)
  * which can have arbitrary length.
  */
 void
-rc4_init(struct rc4_state *const state, const uint8_t *key, int keylen)
+rc4_init(rc4_state* const state, const uint8_t *key, int keylen)
 {
 	uint8_t j;
 	int i;
@@ -81,7 +81,7 @@ rc4_init(struct rc4_state *const state, const uint8_t *key, int keylen)
  * for both encryption and decryption.
  */
 void
-rc4_crypt(struct rc4_state *const state,
+rc4_crypt(rc4_state* const state,
 	const uint8_t *inbuf, uint8_t *outbuf, int buflen)
 {
 	int i;

@@ -35,17 +35,17 @@
  *
  * $FreeBSD: src/sys/crypto/rc4/rc4.h,v 1.2.2.1 2000/04/18 04:48:32 archie Exp $
  */
-
 #ifndef _SYS_CRYPTO_RC4_RC4_H_
 #define _SYS_CRYPTO_RC4_RC4_H_
 
-struct rc4_state {
+typedef struct _rc4_state 
+{
 	uint8_t	perm[256];
 	uint8_t	index1;
 	uint8_t	index2;
-};
+} rc4_state;
 
-void rc4_init(struct rc4_state *state, const uint8_t *key, int keylen);
-void rc4_crypt(struct rc4_state *state, const uint8_t *inbuf, uint8_t *outbuf, int buflen);
+void rc4_init(rc4_state* state, const uint8_t *key, int keylen);
+void rc4_crypt(rc4_state* state, const uint8_t *inbuf, uint8_t *outbuf, int buflen);
 
 #endif

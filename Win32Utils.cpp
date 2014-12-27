@@ -2380,11 +2380,6 @@ bool get_current_module_path(_Out_ std::wstring& module_path)
 
 /**
  * @brief	현재 모듈의 파일명을 제외한 디렉토리 경로를 구한다. ('\' 문자는 제외)
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
  * @return	
 **/
 bool get_current_module_dir(_Out_ std::wstring& module_dir)
@@ -3524,6 +3519,7 @@ COORD GetCurCoords(void)
  * @endcode	
  * @return	
 **/
+#ifndef __do_not_write_log__
 void write_log(_In_ LOG_TO_XXX log_to, _In_ DWORD log_level, _In_ const char* function, _In_ const char* format, ...)
 {
 	// 현재 모듈의 이름을 구하고 16글자만 잘라서 로그의 prefix 로 사용한다. 
@@ -3583,7 +3579,7 @@ void write_log(_In_ LOG_TO_XXX log_to, _In_ DWORD log_level, _In_ const char* fu
 		break;
 	}	
 }
-
+#endif//__do_not_write_log__
 
 /**
  * @brief	
@@ -3612,8 +3608,8 @@ void write_to_console(_In_ DWORD log_level, _In_ const char* log_text)
 	}
 		
 	DWORD len = 0;
-	WriteConsole(_stdout_handle, log_text, (DWORD)((strlen(log_text) + 1) * sizeof(char)), &len, NULL);	
-	WriteConsole(_stdout_handle, "\n", (DWORD)strlen("\n"), &len, NULL);
+	WriteConsoleA(_stdout_handle, log_text, (DWORD)((strlen(log_text) + 1) * sizeof(char)), &len, NULL);	
+	WriteConsoleA(_stdout_handle, "\n", (DWORD)strlen("\n"), &len, NULL);
 	
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), _old_color);
 }

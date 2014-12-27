@@ -331,7 +331,7 @@ FindAndReplace(IN T& source, IN T& find, IN T replace)
 }
 
 /******************************************************************************
- * RAII (Resource Acquisition Is Initialization )
+ * RAII (Resource Acquisition Is Initialization ), raii
 ******************************************************************************/
 /*	ex)
 	raii_handle map_handle(
@@ -457,8 +457,14 @@ typedef enum _LOG_TO_XXX
 	
 #endif //_slogger_included
 
+#ifndef __do_not_write_log__
 void write_log(_In_ LOG_TO_XXX log_to, _In_ DWORD log_level, _In_ const char* function, _In_ const char* format, ...);
+#else
+__inline void write_log(_In_ LOG_TO_XXX log_to, _In_ DWORD log_level, _In_ const char* function, _In_ const char* format, ...){}
+#endif//__do_not_write_log__
+
 void write_to_console(_In_ DWORD log_level, _In_ const char* log_text);
+
 
 
 

@@ -24,7 +24,7 @@ typedef struct _FILE_CTX
 
 }FILE_CTX, *PFILE_CTX;
  
-bool OpenFileContext(IN PCWSTR FilePath, OUT PFILE_CTX& Ctx);
+bool OpenFileContext(IN PCWSTR FilePath, IN bool ReadOnly, OUT PFILE_CTX& Ctx);
 void CloseFileContext(IN PFILE_CTX& Ctx);
 
 class SmrtFileCtx

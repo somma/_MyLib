@@ -12,6 +12,9 @@
 #include "base64.h"
 #include "rc4.h"
 
+
+bool test_for_each();
+
 // _test_asm.cpp
 bool test_asm_func();
 
@@ -47,6 +50,9 @@ bool test_get_process_name_by_pid();
 // rc4.cpp
 bool test_rc4_encrypt();
 
+// _test_boost_asio_timer.cpp
+extern bool test_boost_asio_timer();
+
 // _test_boost.cpp
 extern bool boost_lexical_cast();
 extern bool boost_shared_ptr_void();
@@ -72,6 +78,9 @@ extern bool test_map_plus_algorithm_4();
 // _test_regstry_util.cpp
 extern bool test_registry_util();
 
+
+
+
 class ccc
 {
 public:
@@ -94,6 +103,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	bool ret = false;
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
+	
+	assert_bool(true, test_boost_asio_timer);	
+
+	assert_bool(true, test_for_each);
 
 	assert_bool(true, test_asm_func);
 	assert_bool(true, test_x64_calling_convension);
@@ -154,6 +167,46 @@ int _tmain(int argc, _TCHAR* argv[])
 	log_end
 
 	return 0;
+}
+
+/**
+ * @brief	 std::for_each, lambda expression
+**/ 
+
+// functor that overrides () opeator.
+struct Sum 
+{
+    Sum() { sum = 0; }
+    void operator()(int n) { sum += n; }
+ 
+    int sum;
+};
+
+bool test_for_each()
+{
+	std::vector<int> nums;
+	for(int i = 0; i < 11; ++i)
+	{
+		nums.push_back(i);
+	}
+
+	std::for_each(
+		nums.begin(), 
+		nums.end(), 
+		[](int& num)
+		{
+			printf("%d\n",num);
+		}
+		);
+
+	Sum s = std::for_each(
+		nums.begin(), 
+		nums.end(),
+		Sum()
+		);
+	printf("sum of nums = %u\n", s.sum);
+
+	return true;
 }
 
 /**
@@ -832,15 +885,23 @@ bool test_rc4_encrypt()
 	rc4_state ctx={0};
 	
 	// encrypt
-	rc4_init(&ctx, (uint8_t*)key, strlen(key));
-	rc4_crypt(&ctx, (uint8_t*)plain, enc, sizeof(enc));
+	rc4_init(&ctx, (uint8_t*)key, (int)strlen(key));
+	rc4_crypt(&ctx, (uint8_t*)plain, enc, (int)sizeof(enc));
 
 	// decrypt
-	rc4_init(&ctx, (uint8_t*)key, strlen(key));
-	rc4_crypt(&ctx, enc, dec, sizeof(dec));
+	rc4_init(&ctx, (uint8_t*)key, (int)strlen(key));
+	rc4_crypt(&ctx, enc, dec, (int)sizeof(dec));
 
 	// compare
-	if (0 != memcmp(dec, plain, strlen(plain))) return false;
+	if (0 != memcmp(dec, plain, (int)strlen(plain))) return false;
 
 	return true;
 }
+
+
+
+
+
+
+
+
