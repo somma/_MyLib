@@ -161,8 +161,8 @@ bool boost_bind4()
     A a(100);
     boost::function <int (int)> functor_add_value = boost::bind( &A::add_value, a, _1);
     std::for_each(vint.begin(), vint.end(), functor_add_value);
+    //std::for_each(vint.begin(), vint.end(), boost::bind( &A::add_value, a, _1));
     
-
     
     /*    
     - class method 바인딩할때는 첫번째 파라미터가 class instance 이어야 함
@@ -187,6 +187,63 @@ bool boost_bind4()
     
     int value = 0;
     std::for_each(vA.begin(), vA.end(), boost::bind(&A::start, _1, ++value) );    
+
+	return true;
+}
+
+//=============================================================================
+// boost bind 를 이용한 콜백함수 처리 예제
+// 일반 함수 포인터를 선언하면 boost::bind() 로 처리가 안됨
+// boost::function 으로 선언해주어야 함
+// 
+
+class A5
+{
+public:
+    void print(const std::string &s) 
+	{
+        std::cout << s << std::endl;
+    }
+};
+
+
+typedef boost::function<void()> callback;
+
+class B5
+{
+public:
+    void set_callback(callback cb) 
+	{
+        m_cb = cb;
+    }
+
+    void do_callback() 
+	{
+        m_cb();
+    }
+
+private:
+    callback m_cb;
+};
+
+void regular_function() 
+{
+    std::cout << "regular!" << std::endl;
+}
+
+bool boost_bind5()
+{
+    A5 a;
+    B5 b;
+    std::string s("message");
+
+    // you forget the "&" here before A::print!
+    b.set_callback(boost::bind(&A5::print, &a, s));
+    b.do_callback();
+
+    // this will work for regular function pointers too, yay!
+    b.set_callback(regular_function);
+    b.do_callback();
 
 	return true;
 }

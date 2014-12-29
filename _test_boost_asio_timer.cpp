@@ -100,16 +100,27 @@ bool test_boost_asio_timer_2()
 /**
  * @brief	v3 - lamda + 타이머이벤트 계속 발생하기, 취소
 **/
-void print(const boost::system::error_code& e, boost::asio::steady_timer& timer, int& count)
+void print(const boost::system::error_code& error, boost::asio::steady_timer& timer, int& count)
 {
-	if (count < 5)
+	if (!error)
 	{
-		std::cout << count << "\n";
-		++(count);
+		if (count < 5)
+		{
+			std::cout << count << "\n";
+			++(count);
 
-		timer.expires_from_now(boost::chrono::seconds(1));
-		timer.async_wait(boost::bind(print, boost::asio::placeholders::error, boost::ref(timer), boost::ref(count)));
+			timer.expires_from_now(boost::chrono::seconds(1));
+			timer.async_wait(boost::bind(print, boost::asio::placeholders::error, boost::ref(timer), boost::ref(count)));		
+			
+			// for timer cancel
+			//timer.cancel();
+		}
 	}
+	else if (boost::asio::error::operation_aborted == error.value())
+	{
+		std::cout << "timer canceled." << std::endl;
+	}
+	
 }
 
 bool test_boost_asio_timer_3()
@@ -124,7 +135,9 @@ bool test_boost_asio_timer_3()
 								boost::ref(timer),
 								boost::ref(count)));
 	io_service.run();
-
 	std::cout << "count = " << count << std::endl;
 	return true;
 }
+
+
+

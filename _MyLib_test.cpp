@@ -67,6 +67,7 @@ extern bool boost_bind();
 extern bool boost_bind2();
 extern bool boost_bind3();
 extern bool boost_bind4();
+extern bool boost_bind5();
 
 // _test_std_map.cpp
 extern bool test_std_map();
@@ -147,6 +148,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	assert_bool(true, boost_bind2);
 	assert_bool(true, boost_bind3);
 	assert_bool(true, boost_bind4);
+	assert_bool(true, boost_bind5);
 
 	assert_bool(true, test_std_map);
 	assert_bool(true, test_map_plus_algorithm_1);
