@@ -206,6 +206,7 @@ bool test_for_each()
 		nums.end(),
 		Sum()
 		);
+
 	printf("sum of nums = %u\n", s.sum);
 
 	return true;

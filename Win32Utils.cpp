@@ -1350,10 +1350,16 @@ find_files(
     hSrch=FindFirstFileW(root_dir.c_str(),&wfd);
     if(INVALID_HANDLE_VALUE == hSrch) 
     {
-        log_err
-            "FindFirstFileW(path=%S) failed, gle=0x%08x", 
-            root_dir.c_str(), GetLastError()
-        log_end
+		DWORD gle = GetLastError();
+
+		if (ERROR_ACCESS_DENIED != gle)
+		{
+			log_err
+				"FindFirstFileW(path=%S) failed, gle=0x%08x", 
+				root_dir.c_str(), GetLastError()
+			log_end
+		}
+        
         return false;
     }
 
