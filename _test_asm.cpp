@@ -9,6 +9,25 @@
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
 
+
+#if !defined(_WIN64)
+
+bool test_asm_func(){return true;}
+
+ULONG64 sum64(ULONG64 a, ULONG64 b, ULONG64 c, ULONG64 d){return 0;}
+void trampoline(){}
+ULONG64 direct_jump(){ return 0; }
+ULONG64 indirect_jump() {return 0; }
+void push_mov_ret() {}
+void push_mov_ret2() {}
+
+#else
+
+//
+// x64 only
+// 
+	
+
 #ifdef __cplusplus 
 extern "C" {
 #endif
@@ -49,3 +68,5 @@ bool test_asm_func()
 
 	return true;
 }
+
+#endif//#if !defined(_WIN64)

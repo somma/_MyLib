@@ -105,8 +105,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
 	
-	assert_bool(true, test_boost_asio_timer);	
-
+	assert_bool(true, test_boost_asio_timer);
 	assert_bool(true, test_for_each);
 
 	assert_bool(true, test_asm_func);
@@ -161,6 +160,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	log_info
 		"-------------------------------------------------------------------------------"
 	log_end
+
 	log_info
 		"total test = %u, pass = %u, fail = %u", 
 		_pass_count + _fail_count, 
@@ -168,6 +168,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		_fail_count
 	log_end
 
+	con_info "press any key to terminate..." con_end
+	getchar();
 	return 0;
 }
 

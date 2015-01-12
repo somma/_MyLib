@@ -3525,99 +3525,27 @@ COORD GetCurCoords(void)
  * @endcode	
  * @return	
 **/
-#ifndef __do_not_write_log__
-void write_log(_In_ LOG_TO_XXX log_to, _In_ DWORD log_level, _In_ const char* function, _In_ const char* format, ...)
+void write_to_console(_In_z_ const char* log_message)
 {
-	// 현재 모듈의 이름을 구하고 16글자만 잘라서 로그의 prefix 로 사용한다. 
-	std::wstring module_file;
-	get_current_module_file(module_file);
-	
-	char module_filea[16];
-	StringCbPrintfA(module_filea, sizeof(module_filea), "%ws", module_file.c_str());
-	
-	// [DEBG] notepad.exe (100:1111), InternalFunction(), xxxxx
-	std::stringstream log_stream;
-	switch (log_level)
-	{
-	case LL_DEBG: 
-		{
-			log_stream << "[DEBG] " << WcsToMbsEx(module_file.c_str()) << " (" << GetCurrentProcessId() << ":" << GetCurrentThreadId() << "), " << function << "(), "; 
-			break;
-		}
-	case LL_INFO: 
-		{
-			log_stream << "[INFO] " << WcsToMbsEx(module_file.c_str()) << " (" << GetCurrentProcessId() << ":" << GetCurrentThreadId() << "), " << function << "(), "; 
-			break;
-		}
-	case LL_ERRR: 
-		{
-			log_stream << "[ERR ] " << WcsToMbsEx(module_file.c_str()) << " (" << GetCurrentProcessId() << ":" << GetCurrentThreadId() << "), " << function << "(), "; 
-			break;
-		}
-	case LL_NONE:
-	default:
-		{		
-			break;
-		}
-	}
+	_ASSERTE(NULL != log_message);
+	if (NULL == log_message) return;
 
+	static HANDLE	con_stdout_handle = INVALID_HANDLE_VALUE;
+	static WORD		con_old_color = 0;
 
-	
-	va_list args;
-	char msg[4096];
-
-	va_start(args, format);
-	if(TRUE != SUCCEEDED(StringCchVPrintfA(msg, sizeof(msg), format, args))){ return; }
-	va_end(args);
-
-	log_stream << msg << std::endl;
-
-	switch(log_to)
-	{
-	case LOG_TO_DEBUGGER:
-		OutputDebugStringA(log_stream.str().c_str());
-		break;
-	case LOG_TO_CONSOLE:
-		write_to_console(log_level, log_stream.str().c_str());
-		break;
-	default:
-		//oops!
-		break;
-	}	
-}
-#endif//__do_not_write_log__
-
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-void write_to_console(_In_ DWORD log_level, _In_ const char* log_text)
-{
-	UNREFERENCED_PARAMETER(log_level);
-
-	static HANDLE	_stdout_handle = INVALID_HANDLE_VALUE;
-	static WORD		_old_color = 0x0000;
-	
-	//> initialization for console text color manipulation.
-	if (INVALID_HANDLE_VALUE == _stdout_handle)
+	if (INVALID_HANDLE_VALUE == con_stdout_handle)
 	{
 		CONSOLE_SCREEN_BUFFER_INFO csbi;
 
-		_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-		GetConsoleScreenBufferInfo(_stdout_handle, &csbi);
-		_old_color = csbi.wAttributes;
+		con_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+		GetConsoleScreenBufferInfo(con_stdout_handle, &csbi);
+		con_old_color = csbi.wAttributes;
 	}
-		
-	DWORD len = 0;
-	WriteConsoleA(_stdout_handle, log_text, (DWORD)((strlen(log_text) + 1) * sizeof(char)), &len, NULL);	
-	WriteConsoleA(_stdout_handle, "\n", (DWORD)strlen("\n"), &len, NULL);
-	
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), _old_color);
+
+	DWORD len;
+	SetConsoleTextAttribute(con_stdout_handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);	
+	WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);	
+	SetConsoleTextAttribute(con_stdout_handle, con_old_color);
 }
 
 /** ---------------------------------------------------------------------------

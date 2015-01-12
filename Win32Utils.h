@@ -32,6 +32,7 @@
 #include <intsafe.h>
 #pragma warning(default:4005)
 
+#include "log.h"
 
 
 // | size | _______data_______ | 형태의 메모리 구조
@@ -426,46 +427,7 @@ std::wstring get_process_name_by_pid(_In_ DWORD process_id);
 */
 void SetConsoleCoords(COORD xy);
 COORD GetCurCoords(void);
-
-typedef enum _LOG_TO_XXX 
-{
-	LOG_TO_DEBUGGER		= 0,
-	LOG_TO_CONSOLE		= 1
-} LOG_TO_XXX;
-
-
-#define LL_DEBG				0
-#define LL_INFO				1
-#define LL_ERRR				2
-#define LL_NONE				3
-
-// console 에 로그를 출력한다.
-#define con_err		write_log( LOG_TO_CONSOLE, LL_ERRR, __FUNCTION__, 
-#define con_info	write_log( LOG_TO_CONSOLE, LL_INFO, __FUNCTION__, 
-#define con_dbg		write_log( LOG_TO_CONSOLE, LL_DEBG, __FUNCTION__, 
-#define con_msg		write_log( LOG_TO_CONSOLE, LL_NONE, __FUNCTION__, 
-#define con_end		);
-
-// debugger 에 로그를 출력한다.
-// slogger 를 사용하지 않는 경우 log_xxx 를 write_log(LOG_TO_DEBUGGER 로 치환한다.
-#ifndef _slogger_included
-	#define log_err		write_log(LOG_TO_DEBUGGER, LL_ERRR, __FUNCTION__, 
-	#define log_dbg		write_log(LOG_TO_DEBUGGER, LL_DEBG, __FUNCTION__, 
-	#define log_info	write_log(LOG_TO_DEBUGGER, LL_INFO, __FUNCTION__, 
-	#define	log_msg		write_log(LOG_TO_DEBUGGER, LL_NONE, __FUNCTION__, 
-	#define log_end		);
-	
-#endif //_slogger_included
-
-#ifndef __do_not_write_log__
-void write_log(_In_ LOG_TO_XXX log_to, _In_ DWORD log_level, _In_ const char* function, _In_ const char* format, ...);
-#else
-__inline void write_log(_In_ LOG_TO_XXX log_to, _In_ DWORD log_level, _In_ const char* function, _In_ const char* format, ...){}
-#endif//__do_not_write_log__
-
-void write_to_console(_In_ DWORD log_level, _In_ const char* log_text);
-
-
+void write_to_console(_In_z_ const char* log_message);
 
 
 

@@ -45,6 +45,12 @@
     <ClInclude Include="rc4.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
+    <ClInclude Include="log.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="AKSyncObjs.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -91,6 +97,12 @@
     </ClCompile>
     <ClCompile Include="_test_boost_asio_timer.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="log.cpp">
+      <Filter>_MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="AKSyncObjs.cpp">
+      <Filter>_MyLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
