@@ -31,7 +31,6 @@ static bool			_show_function_name = true;
 bool 
 initialize_log(
 	_In_ LogLevel log_level, 
-	_In_ uint32_t log_to, 
 	_In_opt_z_ const wchar_t* log_file_path
 	)
 {

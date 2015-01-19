@@ -57,8 +57,7 @@ enum	LogLevel
 
 bool 
 initialize_log(
-	_In_ LogLevel log_level, 
-	_In_ uint32_t log_to, 
+	_In_ LogLevel log_level,
 	_In_opt_z_ const wchar_t* log_file_path
 	);
 

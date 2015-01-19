@@ -17,13 +17,11 @@
 #define MAX_KEY_LENGTH 255
 #define MAX_VALUE_NAME 16383
 
-
-
 HKEY 
 RUOpenKey(
-    HKEY    RootKey,
-    LPCWSTR SubKey,
-    bool    ReadOnly
+    HKEY  RootKey,
+    const wchar_t* SubKey,
+    bool ReadOnly
     );
 
 bool
@@ -33,84 +31,73 @@ RUCloseKey(
 
 HKEY
 RUCreateKey(
-    HKEY    RootKey,
-    LPCWSTR SubKey,
-    bool    ReadOnly
+    HKEY RootKey,
+    const wchar_t* SubKey,
+    bool ReadOnly
     );
 
 
 DWORD 
 RUReadDword(
-    HKEY    RootKey,
-    LPCWSTR SubKey,
-    PCWCH   ValueName, 
-    DWORD   DefaultValue
+    HKEY RootKey,
+    const wchar_t* SubKey,
+    const wchar_t* ValueName, 
+    DWORD DefaultValue
     );
 
 bool 
 RUWriteDword(
-    HKEY    RootKey,
-    LPCWSTR SubKey,
-    PCWCH   ValueName, 
-    DWORD   DefaultValue
+    HKEY RootKey,
+    const wchar_t* SubKey,
+    const wchar_t* ValueName, 
+    DWORD DefaultValue
     );
 
 
 bool
 RUReadString(
-    IN HKEY				RootKey,
-    IN LPCWSTR			SubKey,
-    IN PCWCH			ValueName,
-    OUT std::wstring&	Value
+    IN HKEY	RootKey,
+    IN const wchar_t* SubKey,
+    IN const wchar_t* ValueName,
+    OUT std::wstring& Value
     );
 
 bool
 RUSetString(
-    HKEY		RootKey,
-    LPCWSTR		SubKey,
-    PCWCH		ValueName,
-    PCWCHAR		Value,           // byte buffer
-    DWORD		cbValue          // count byte
+    HKEY RootKey,
+    const wchar_t* SubKey,
+    const wchar_t* ValueName,
+    const wchar_t* Value,           // byte buffer
+    DWORD cbValue          // count byte
     );
+
 
 bool
 RUSetExpandString(
-    HKEY    RootKey,
-    LPCWSTR SubKey,
-    PCWCH   value_name,
-    PWCHAR  value,           // byte buffer
-    DWORD   cbValue          // count byte
+    HKEY RootKey,
+    const wchar_t* SubKey,
+    const wchar_t* value_name,
+    const wchar_t* value,           // byte buffer
+    DWORD cbValue          // count byte
     );
-
-
-// 이건 그냥 string 으로 읽으면 됨
-// 
-//bool
-//RUReadExpandString(
-//    HKEY    key,
-//    PCWCH   value_name,
-//    PWCHAR  value,           // byte buffer
-//    DWORD   cbValue          // count byte
-//    )
-
 
 bool
 RUDeleteValue(
-	_In_ HKEY		RootKey,
-	_In_ LPCWSTR	SubKey,
-	_In_ LPCWSTR	ValueName
+	_In_ HKEY RootKey,
+	_In_ const wchar_t* SubKey,
+	_In_ const wchar_t* ValueName
 	);
 
 bool 
 RUDeleteKey(
-	_In_ HKEY		RootKey,
-	_In_ LPCWSTR	SubKey
+	_In_ HKEY RootKey,
+	_In_ const wchar_t* SubKey
 	);
 
 
 bool
 RUIsKeyExists(
     HKEY RootKey, 
-    PCWCH TargetKey
+    const wchar_t* TargetKey
     );
 

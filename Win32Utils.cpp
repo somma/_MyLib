@@ -689,25 +689,12 @@ BOOL write_to_filea(HANDLE hFile,LPCCH format,...)
 	}
 	va_end(args);
 
-    if (!SUCCEEDED(StringCbPrintfExA(
-                                pszDestEnd, 
-                                cbRemaining,
-                                &pszDestEnd, 
-                                &cbRemaining, 
-                                0, 
-                                "%s", 
-                                "\r\n")))
-    {
-        _ASSERTE(!"StringCbPrintfEx()");
-        return FALSE;
-    }	
-
 	if(TRUE != WriteFile(	
-								hFile, 
-								temp, 
-								(DWORD)((DWORD_PTR)pszDestEnd - (DWORD_PTR)temp), 
-								&dw, 
-								NULL))
+					hFile, 
+					temp, 
+					(DWORD)((DWORD_PTR)pszDestEnd - (DWORD_PTR)temp), 
+					&dw, 
+					NULL))
 	{
 		return FALSE;
 	}

@@ -43,9 +43,9 @@ private:
 -----------------------------------------------------------------------------*/
 HKEY 
 RUOpenKey(
-    HKEY    RootKey,
-    LPCWSTR SubKey, 
-    bool    ReadOnly
+    HKEY RootKey,
+    const wchar_t* SubKey, 
+    bool ReadOnly
     )
 {
     HKEY hSubKey = NULL;
@@ -102,9 +102,9 @@ RUCloseKey(
 -----------------------------------------------------------------------------*/
 HKEY
 RUCreateKey(
-    HKEY    RootKey,
-    LPCWSTR SubKey,
-    bool    ReadOnly
+    HKEY RootKey,
+    const wchar_t* SubKey,
+    bool ReadOnly
     )
 {
     DWORD ret = ERROR_SUCCESS;
@@ -141,10 +141,10 @@ RUCreateKey(
 -----------------------------------------------------------------------------*/
 DWORD 
 RUReadDword(
-    HKEY    RootKey,
-    LPCWSTR SubKey,
-    PCWCH   ValueName, 
-    DWORD   DefaultValue
+    HKEY RootKey,
+    const wchar_t* SubKey,
+    const wchar_t* ValueName, 
+    DWORD DefaultValue
     )
 {
     DWORD value = DefaultValue;
@@ -187,9 +187,9 @@ RUReadDword(
 -----------------------------------------------------------------------------*/
 bool 
 RUWriteDword(
-    HKEY    RootKey,
-    LPCWSTR SubKey,
-    PCWCH   ValueName, 
+    HKEY RootKey,
+    const wchar_t* SubKey,
+    const wchar_t*    ValueName, 
     DWORD   Value
     )
 {
@@ -232,8 +232,8 @@ RUWriteDword(
 bool
 RUReadString(
     IN HKEY				RootKey,
-    IN LPCWSTR			SubKey,
-    IN PCWCH			ValueName,
+    IN const wchar_t* 			SubKey,
+    IN const wchar_t* 			ValueName,
 	OUT std::wstring&	Value
     )
 {
@@ -318,11 +318,11 @@ RUReadString(
 **/
 bool
 RUSetString(
-    HKEY		RootKey,
-    LPCWSTR		SubKey,
-    PCWCH		ValueName,
-    PCWCHAR		Value,           // byte buffer
-    DWORD		cbValue          // count byte
+    HKEY RootKey,
+    const wchar_t* SubKey,
+    const wchar_t* ValueName,
+    const wchar_t* Value,           // byte buffer
+    DWORD cbValue          // count byte
     )
 {
     HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
@@ -363,11 +363,11 @@ RUSetString(
 **/
 bool
 RUSetExpandString(
-    HKEY    RootKey,
-    LPCWSTR SubKey,
-    PCWCH   value_name,
-    PWCHAR  value,           // byte buffer
-    DWORD   cbValue          // count byte
+    HKEY RootKey,
+    const wchar_t* SubKey,
+    const wchar_t* value_name,
+    const wchar_t* value,           // byte buffer
+    DWORD cbValue          // count byte
     )
 {
     HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
@@ -408,9 +408,9 @@ RUSetExpandString(
 **/
 bool
 RUDeleteValue(
-	_In_ HKEY		RootKey,
-	_In_ LPCWSTR	SubKey,
-	_In_ LPCWSTR	ValueName
+	_In_ HKEY RootKey,
+	_In_ const wchar_t* SubKey,
+	_In_ const wchar_t* ValueName
 	)
 {
 	HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
@@ -451,8 +451,8 @@ RUDeleteValue(
 **/
 bool 
 RUDeleteKey(
-	_In_ HKEY		RootKey,
-	_In_ LPCWSTR	SubKey
+	_In_ HKEY RootKey,
+	_In_ const wchar_t* SubKey
 	)
 {
 	DWORD ret = RegDeleteKeyW(RootKey, SubKey);
@@ -483,7 +483,7 @@ RUDeleteKey(
 bool
 RUIsKeyExists(
     HKEY RootKey, 
-    PCWCH TargetKey
+    const wchar_t* TargetKey
     )
 {
     RegHandle reg (RUOpenKey(RootKey, TargetKey, true));    
