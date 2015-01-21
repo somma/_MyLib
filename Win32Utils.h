@@ -189,8 +189,6 @@ std::wstring get_current_module_pathEx();
 std::wstring get_current_module_dirEx();
 std::wstring get_current_module_fileEx();
 
-bool get_system_directory(_Out_ std::wstring& system_dir);
-
 bool WUCreateDirectory(const LPCWSTR DirectoryPath);
 bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete);
 BOOL GetSystemRootDirectory(DWORD Len, LPTSTR Buffer);
@@ -210,6 +208,12 @@ BOOL GetImageFullPathFromPredefinedPathA(
 #else
 #define GetImageFullPathFromPredefinedPath  GetImageFullPathFromPredefinedPathA	
 #endif//UNICODE
+
+
+bool get_system_directory(_Out_ std::wstring& system_dir);
+bool get_environment_value(_In_ const wchar_t* env_variable, _Out_ std::wstring& env_value);
+bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring& short_file_name);
+
 
 /******************************************************************************
  * 문자열 처리
@@ -520,7 +524,6 @@ UINT64 swap_endian_64(_In_ UINT64 value);
 #define OSTYPE_WIN_SERVER_2008_R2   0x000F      // 6.1
 #define OSTYPE_WIN_8                0x0010      // 6.2
 #define OSTYPE_WIN_SERVER_2012		0x0011      // 6.2
-
 
 #define	is_nt_family(_OSTYPE_WIN_XXX_)	((_OSTYPE_WIN_XXX_) >= OSTYPE_WIN_NT ? true : false)
 #define	is_vista_later(_OSTYPE_WIN_XXX_)	((_OSTYPE_WIN_XXX_) >= OSTYPE_WIN_VISTA ? true : false)

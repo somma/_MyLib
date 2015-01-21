@@ -47,10 +47,10 @@ RUReadDword(
 
 bool 
 RUWriteDword(
-    HKEY RootKey,
+HKEY RootKey,
     const wchar_t* SubKey,
     const wchar_t* ValueName, 
-    DWORD DefaultValue
+    DWORD Value
     );
 
 

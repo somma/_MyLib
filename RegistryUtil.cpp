@@ -189,8 +189,8 @@ bool
 RUWriteDword(
     HKEY RootKey,
     const wchar_t* SubKey,
-    const wchar_t*    ValueName, 
-    DWORD   Value
+    const wchar_t* ValueName, 
+    DWORD Value
     )
 {
     HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);

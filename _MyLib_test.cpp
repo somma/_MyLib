@@ -46,6 +46,7 @@ bool test_set_get_file_position();
 bool test_get_module_path();
 bool test_dump_memory();
 bool test_get_process_name_by_pid();
+bool test_get_environment_value();
 
 // rc4.cpp
 bool test_rc4_encrypt();
@@ -132,6 +133,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	assert_bool(true, test_get_module_path);
 	assert_bool(true, test_dump_memory);
 	assert_bool(true, test_get_process_name_by_pid);
+	assert_bool(true, test_get_environment_value);
+
 	assert_bool(true, test_rc4_encrypt);
 	
 	assert_bool(true, boost_lexical_cast);
@@ -874,6 +877,30 @@ bool test_get_process_name_by_pid()
 	return true;
 }
 
+/**
+ * @brief	
+**/
+bool test_get_environment_value()
+{
+	wchar_t* env_variables[] = 
+	{
+		L"%homepath%",
+		L"%temp%",
+		L"%username%",
+		L"invalid_variable"
+	};
+
+	std::wstring env_value;
+	for(int i = 0; i < sizeof(env_variables) / sizeof(wchar_t*); ++i)
+	{
+		if (true != get_environment_value(env_variables[i], env_value)) 
+			return false;
+		else
+			log_msg "%ws = %ws", env_variables[i], env_value.c_str() log_end
+	}
+
+	return true;
+}
 
 /**
  * @brief	

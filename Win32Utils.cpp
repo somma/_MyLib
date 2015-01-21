@@ -1291,6 +1291,157 @@ GetImageFullPathFromPredefinedPathW(
 }
 
 /**
+ * @brief	system directory 경로를 리턴하는 함수
+ * @param	
+ * @see		
+ * @remarks	경로가 c:\ 인 경우를 제외하고, '\' 를 붙이지 않음. (GetWindowsDirectory() 함수 스펙)
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool get_system_directory(_Out_ std::wstring& system_dir)
+{
+	bool ret = false;
+	UINT32 buf_len = MAX_PATH;
+	wchar_t* buf = (wchar_t*) malloc(buf_len);
+	if (NULL == buf) return false;
+	RtlZeroMemory(buf, buf_len);
+
+	for(;;)
+	{
+		UINT32 len = GetWindowsDirectoryW(buf, buf_len);
+		if (0 == len) 
+		{
+			break;				// error
+		}
+
+		if (len == buf_len)
+		{
+			// GetWindowsDirectoryW( ) 는 null char 를 포함하지 않는 길이를 리턴함
+			// 버퍼가 더 필요하다.
+			buf_len *= 2;
+			free(buf);
+			buf = (wchar_t*) malloc(buf_len);
+			if (NULL == buf) return false;			
+			RtlZeroMemory(buf, buf_len);
+			
+			continue;				// re-try
+		}
+		else
+		{
+			system_dir = buf;
+			ret = true;				// success
+			break;
+		}
+	}
+
+	free(buf); buf = NULL;
+	return ret;
+}
+
+/**
+ * @brief	현재 사용자 windows 환경변수를 읽어서 리턴한다.
+			%home% = \Users\somma
+			%path% = c:\python27\;xx.....
+			%temp% = \Users\somma\AppData\Loal\Temp
+			...
+ * @param	env_variable	환경 변수 문자열 (e.g. %home%, %path%)
+ * @param	env_value		환경 변수 값     (\Users\somma 문자열)
+ * @return	성공시 true, 실패시 false
+**/
+bool 
+get_environment_value(
+	_In_ const wchar_t* env_variable, 
+	_Out_ std::wstring& env_value
+	)
+{
+	_ASSERTE(NULL != env_variable);
+	if (NULL == env_variable) return false;
+
+	wchar_t* buf = NULL;
+	uint32_t buf_len = 0;
+	DWORD char_count_plus_null = ExpandEnvironmentStrings(env_variable, buf, buf_len);
+	if (0 == char_count_plus_null)
+	{
+		log_err 
+			"ExpandEnvironmentStrings( %ws ) failed. gle = %u", 
+			env_variable, 
+			GetLastError() 
+		log_end
+		return false;
+	}
+
+	buf_len = char_count_plus_null * sizeof(wchar_t);
+	buf = (wchar_t*) malloc(buf_len);
+	if (NULL == buf)
+	{
+		log_err "malloc() failed." log_end
+		return false;
+	}
+
+	char_count_plus_null = ExpandEnvironmentStrings(env_variable, buf, buf_len);
+	if (0 == char_count_plus_null)
+	{
+		log_err 
+			"ExpandEnvironmentStrings( %ws ) failed. gle = %u", 
+			env_variable, 
+			GetLastError() 
+		log_end
+
+		free(buf);
+		return false;
+	}
+
+	env_value = buf;
+	free(buf);
+	return true;
+}
+
+/**
+ * @brief	이미 존재하는 파일의 short file name 을 구한다. 
+ * @param	
+ * @see		
+ * @remarks	https://msdn.microsoft.com/en-us/library/aa365247(v=vs.85).aspx
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring& short_file_name)
+{
+	_ASSERTE(NULL != long_file_name);
+	if (NULL == long_file_name) return false;
+
+	wchar_t* short_path = NULL;
+	uint32_t char_count_and_null = 0;
+	char_count_and_null  = GetShortPathNameW(long_file_name, short_path, char_count_and_null);
+	if (0 == char_count_and_null)
+	{
+		log_err "GetShortPathNameW( %ws ) failed. gle = %u", long_file_name, GetLastError() log_end
+		return false;
+	}
+
+	short_path = (wchar_t*) malloc( sizeof(wchar_t*) * char_count_and_null );
+	if (NULL == short_path) 
+	{
+		log_err "malloc() failed." log_end
+		return false;
+	}
+
+	if (0 == GetShortPathNameW(long_file_name, short_path, char_count_and_null))
+	{
+		log_err "GetShortPathNameW( %ws ) failed.", long_file_name log_end
+		free(short_path);
+		return false;
+	}
+
+	short_file_name = short_path;
+	free(short_path);
+	return true;
+}
+
+
+
+/**
  * @brief      하위 디렉토리에 존재하는 모든 파일들을 enum 하는 함수
 
 				아래 형태 4가지는 모두 동일한 결과를 출력함
@@ -2525,55 +2676,6 @@ std::wstring get_current_module_fileEx()
 	{
 		return out;
 	}
-}
-
-/**
- * @brief	system directory 경로를 리턴하는 함수
- * @param	
- * @see		
- * @remarks	경로가 c:\ 인 경우를 제외하고, '\' 를 붙이지 않음. (GetWindowsDirectory() 함수 스펙)
- * @code		
- * @endcode	
- * @return	
-**/
-bool get_system_directory(_Out_ std::wstring& system_dir)
-{
-	bool ret = false;
-	UINT32 buf_len = MAX_PATH;
-	wchar_t* buf = (wchar_t*) malloc(buf_len);
-	if (NULL == buf) return false;
-	RtlZeroMemory(buf, buf_len);
-
-	for(;;)
-	{
-		UINT32 len = GetWindowsDirectoryW(buf, buf_len);
-		if (0 == len) 
-		{
-			break;				// error
-		}
-
-		if (len == buf_len)
-		{
-			// GetWindowsDirectoryW( ) 는 null char 를 포함하지 않는 길이를 리턴함
-			// 버퍼가 더 필요하다.
-			buf_len *= 2;
-			free(buf);
-			buf = (wchar_t*) malloc(buf_len);
-			if (NULL == buf) return false;			
-			RtlZeroMemory(buf, buf_len);
-			
-			continue;				// re-try
-		}
-		else
-		{
-			system_dir = buf;
-			ret = true;				// success
-			break;
-		}
-	}
-
-	free(buf); buf = NULL;
-	return ret;
 }
 
 /**
