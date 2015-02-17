@@ -87,7 +87,7 @@ RUCloseKey(
 }
 
 /**----------------------------------------------------------------------------
-    \brief  
+    \brief	SubKey 를 생성한다. 이미 존재하는 경우 오픈한다.
     \param      RootKey     HKEY_CLASSES_ROOT
                             HKEY_CURRENT_CONFIG
                             HKEY_CURRENT_USER
@@ -458,7 +458,7 @@ RUDeleteKey(
 	DWORD ret = RegDeleteKeyW(RootKey, SubKey);
 	if (ERROR_SUCCESS != ret)
 	{
-		log_err "RegDeleteKeyW( root = %ws, sub = %ws ) failed. ret = %u", RootKey, SubKey, ret log_end
+		log_err "RegDeleteKeyW( sub = %ws ) failed. ret = %u", SubKey, ret log_end
 		return false;
 	}
 

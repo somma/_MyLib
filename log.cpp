@@ -36,20 +36,22 @@ initialize_log(
 {
 	if (NULL != _logger) return true;
 
-	_logger = new slogger();
-	if (NULL == _logger) 
+	slogger* local_slogger = new slogger();
+	if (NULL == local_slogger) 
 	{
 		OutputDebugStringA("[ERR ] initialize_log(), insufficient resource for slogger.\n");
 		return false;
 	}
 
-	if (true != _logger->slog_start(log_level, log_file_path))
+	if (true != local_slogger->slog_start(log_level, log_file_path))
 	{
-		delete _logger;  _logger = NULL;
-
 		OutputDebugStringA("[ERR ] initialize_log(), _logger->slog_start() failed.\n");
 		return false;
 	}
+
+	// exchange instance
+	InterlockedExchangePointer(&_logger, local_slogger);
+	local_slogger = NULL;
 
 	return true;
 }

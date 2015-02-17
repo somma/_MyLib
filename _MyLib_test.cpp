@@ -105,7 +105,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	bool ret = false;
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
-	
+
 	assert_bool(true, test_boost_asio_timer);
 	assert_bool(true, test_for_each);
 

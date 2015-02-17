@@ -3191,7 +3191,7 @@ BOOL GetTimeStringA(OUT std::string& TimeString)
                         20 * sizeof(CHAR), 
                         "%.4d.%.2d.%.2d_%.2d.%.2d.%.2d", 
                         newtime.tm_year + 1900,
-                        newtime.tm_mon,
+                        newtime.tm_mon + 1,			// 1©Ы = 0, 2©Ы = 1, ... юс
                         newtime.tm_mday,
                         newtime.tm_hour,
                         newtime.tm_min,
