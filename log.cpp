@@ -50,7 +50,7 @@ initialize_log(
 	}
 
 	// exchange instance
-	InterlockedExchangePointer(&_logger, local_slogger);
+	InterlockedExchangePointer((PVOID*)&_logger, local_slogger);
 	local_slogger = NULL;
 
 	return true;

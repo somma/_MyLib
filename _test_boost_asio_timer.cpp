@@ -61,9 +61,9 @@ bool test_boost_asio_timer_1()
 {
 	boost::asio::io_service io_service;
 
-	boost::asio::steady_timer timer(io_service);
-	timer.expires_from_now( boost::chrono::seconds(1) );
-
+	boost::asio::steady_timer timer(io_service);	
+	timer.expires_from_now(std::chrono::steady_clock::duration(1));
+	
 	timer.async_wait( asio_on_timer );
 	io_service.run();
 	return true;
@@ -78,7 +78,7 @@ bool test_boost_asio_timer_2()
 	boost::asio::io_service io_service;
 
 	boost::asio::steady_timer timer(io_service);
-	timer.expires_from_now( boost::chrono::seconds(1) );
+	timer.expires_from_now(std::chrono::steady_clock::duration(1));
 	timer.async_wait( 
 				[](const boost::system::error_code& error)
 				{	
@@ -109,7 +109,8 @@ void print(const boost::system::error_code& error, boost::asio::steady_timer& ti
 			std::cout << count << "\n";
 			++(count);
 
-			timer.expires_from_now(boost::chrono::seconds(1));
+			
+			timer.expires_from_now(std::chrono::steady_clock::duration(1));
 			timer.async_wait(boost::bind(print, boost::asio::placeholders::error, boost::ref(timer), boost::ref(count)));		
 			
 			// for timer cancel
