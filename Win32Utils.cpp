@@ -15,6 +15,7 @@
 
 #include "Win32Utils.h"
 
+#include <VersionHelpers.h>
 #include <time.h>
 #include <Shellapi.h>
 #include <Shlobj.h>
@@ -3304,8 +3305,19 @@ bool get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wst
 	{
 		if (AF_INET == p->ai_family)
 		{
-			sockaddr_in* sa = (sockaddr_in*) p->ai_addr;			
-			ip_list.push_back( MbsToWcsEx(inet_ntoa(sa->sin_addr)) );
+            sockaddr_in* sa = (sockaddr_in*) p->ai_addr;			
+
+#if (NTDDI_VERSION >= NTDDI_VISTA)
+            wchar_t addr[16] = {0};
+            if (NULL == InetNtop(AF_INET, (PVOID)&sa->sin_addr, addr, 16))
+            {
+                log_err "InetNtop() failed. gle = %u", WSAGetLastError() log_end
+                continue;
+            }            
+            ip_list.push_back( addr );
+#else
+            ip_list.push_back( MbsToWcsEx(inet_ntoa(sa->sin_addr)) );
+#endif
 		}            
 	}
 
@@ -3325,7 +3337,7 @@ bool get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wst
 */
 bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 {
-	if ( is_nt_family( OsVersion() ) )
+    if (IsWindowsXPOrGreater())
 	{
 		HANDLE hToken;
 		if ( TRUE != OpenThreadToken(GetCurrentThread(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, FALSE, &hToken) )
@@ -4023,163 +4035,6 @@ UINT64 swap_endian_64(_In_ UINT64 value)
             ((value >> 40) & 0x000000000000FF00)|
             ( value << 56);
 }
-
-
-/**	---------------------------------------------------------------------------
-	\brief	
-                http://msdn.microsoft.com/en-us/library/ms724833(v=VS.85).aspx
-
-                Operating system	                Version number	dwMajorVersion	dwMinorVersion	Other
-				Windows 8	                        6.2	            6	            2	            OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
-				Windows Server 2012                 6.2             6               2				OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
-                Windows 7	                        6.1	            6	            1	            OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
-                Windows Server 2008 R2	            6.1		        6	            1	            OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
-                Windows Server 2008	                6.0		        6	            0	            OSVERSIONINFOEX.wProductType != VER_NT_WORKSTATION
-                Windows Vista	                    6.0		        6	            0	            OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION
-                Windows Server 2003 R2	            5.2		        5	            2	            GetSystemMetrics(SM_SERVERR2) != 0
-                Windows Home Server	                5.2		        5	            2	            OSVERSIONINFOEX.wSuiteMask & VER_SUITE_WH_SERVER
-                Windows Server 2003	                5.2		        5	            2	            GetSystemMetrics(SM_SERVERR2) == 0
-                Windows XP Professional x64 Edition	5.2		        5	            2	            (OSVERSIONINFOEX.wProductType == VER_NT_WORKSTATION) && (SYSTEM_INFO.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_AMD64)
-                Windows XP	                        5.1		        5	            1	            Not applicable
-                Windows 2000	                    5.0		        5	            0	            Not applicable
-	\param	
-	\return			
-	\code
-	\endcode		
------------------------------------------------------------------------------*/
-WORD OsVersion(void)
-{
-	OSVERSIONINFOEX osvi;
-	BOOL bOsVersionInfoEx;
-
-	// Try calling GetVersionEx using the OSVERSIONINFOEX structure.
-	// If that fails, try using the OSVERSIONINFO structure.
-	//
-	ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-
-	bOsVersionInfoEx = GetVersionEx ((OSVERSIONINFO *) &osvi);
-	if( bOsVersionInfoEx == FALSE )
-	{
-		osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-		if (! GetVersionEx ( (OSVERSIONINFO *) &osvi) )  return 0;
-	}
-
-	switch (osvi.dwPlatformId)
-	{
-		// Test for the Windows NT product family.
-	case VER_PLATFORM_WIN32_NT:
-		if ( osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 2 )
-        {
-            if(osvi.wProductType != VER_NT_WORKSTATION)
-            {
-                return OSTYPE_WIN_SERVER_2012;
-            }
-            else
-            {
-                return OSTYPE_WIN_8;
-            }
-        }
-		
-        if ( osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 1 )
-        {
-            if(osvi.wProductType != VER_NT_WORKSTATION)
-            {
-                return OSTYPE_WIN_SERVER_2008_R2;
-            }
-            else
-            {
-                return OSTYPE_WIN_7;
-            }
-        }
-
-		if ( osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 0 )
-        {
-            if (osvi.wProductType == VER_NT_WORKSTATION)
-            {
-                return OSTYPE_WIN_VISTA;
-            }
-            else
-            {
-                return OSTYPE_WIN_SERVER_2008;
-            }
-        }		
-        if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 2 )
-        {
-            SYSTEM_INFO siSysInfo;
-            GetSystemInfo(&siSysInfo);
-
-            if (osvi.wProductType == VER_NT_WORKSTATION && 
-                siSysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
-            {
-                return OSTYPE_WIN_XP_64;
-            }
-            else if (GetSystemMetrics(SM_SERVERR2) != 0)
-            {
-                return OSTYPE_WIN_2003;
-            }
-            else if (osvi.wSuiteMask & VER_SUITE_WH_SERVER)
-            {
-                return OSTYPE_WIN_HOME_SERVER;
-            }
-            else 
-                return OSTYPE_WIN_XP;            
-        }	
-
-		if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 1 )
-			return OSTYPE_WIN_XP ;
-
-		if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 0 )
-			return OSTYPE_WIN_2000 ;
-
-		if ( osvi.dwMajorVersion <= 4 )
-			return OSTYPE_WIN_NT ;			
-
-	case VER_PLATFORM_WIN32_WINDOWS:
-
-		if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 0)
-		{
-			/*
-			printf ("Microsoft Windows 95 ");
-			if ( osvi.szCSDVersion[1] == 'C' || osvi.szCSDVersion[1] == 'B' )
-				printf("OSR2 " );
-			*/
-			return OSTYPE_WIN_95 ;
-		} 
-
-		if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 10)
-		{
-			
-			// printf ("Microsoft Windows 98 ");
-			
-			if ( osvi.szCSDVersion[1] == 'A' ) {
-				return OSTYPE_WIN_SE ;
-				// printf("SE " );
-			}
-			
-			return OSTYPE_WIN_98 ;
-		} 
-
-		if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 90)
-		{
-			return OSTYPE_WIN_ME ;
-			/*
-			printf ("Microsoft Windows Millennium Edition\n");
-			*/
-		} 
-		break;
-
-	case VER_PLATFORM_WIN32s:
-
-		/*
-		printf ("Microsoft Win32s\n");
-		*/
-		break;
-	}
-
-	return 0;
-}
-
 
 /**
 * @brief	cpu 정보를 수집한다. 

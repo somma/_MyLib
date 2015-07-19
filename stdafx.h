@@ -22,12 +22,14 @@
 #include "boost/shared_ptr.hpp"
 #include <sstream>
 #include <list>
+#include <string>
 
 #include <stdio.h>
 #include <tchar.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <VersionHelpers.h>
 #include <crtdbg.h>
 
 #include "Win32Utils.h"

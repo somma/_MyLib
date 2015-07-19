@@ -106,59 +106,62 @@ int _tmain(int argc, _TCHAR* argv[])
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
 
-	assert_bool(true, test_boost_asio_timer);
-	assert_bool(true, test_for_each);
+    set_log_format(false, false, true);
 
-	assert_bool(true, test_asm_func);
-	assert_bool(true, test_x64_calling_convension);
-	assert_bool(true, test_2_complement);
-	assert_bool(true , test_print_64int);
-	assert_bool(true, test_std_string_find_and_substr);
-	assert_bool(true, test_to_lower_uppper_string);
-	//assert_bool(true, test_const_position);		// 컴파일 불가 테스트
-	assert_bool(true, test_initialize_string);
-	assert_bool(true, test_process_tree);
-	assert_bool(true, test_base64);
-	assert_bool(true, test_random);
+	//assert_bool(true, test_boost_asio_timer);
+	//assert_bool(true, test_for_each);
+
+	//assert_bool(true, test_asm_func);
+	//assert_bool(true, test_x64_calling_convension);
+	//assert_bool(true, test_2_complement);
+	//assert_bool(true , test_print_64int);
+	//assert_bool(true, test_std_string_find_and_substr);
+	//assert_bool(true, test_to_lower_uppper_string);
+	////assert_bool(true, test_const_position);		// 컴파일 불가 테스트
+	//assert_bool(true, test_initialize_string);
+	//assert_bool(true, test_process_tree);
+	//assert_bool(true, test_base64);
+	//assert_bool(true, test_random);
 	assert_bool(true, test_get_local_ip_list);
 
-	assert_bool(true, test_cpp_class);
-	
-	assert_bool(true, test_nt_name_to_dos_name);
-	assert_bool(true, test_query_dos_device);
-	assert_bool(true, test_get_filepath_by_handle);
-	assert_bool(true, test_bin_to_hex);
-	assert_bool(true, test_str_to_xxx);
-	assert_bool(true, test_set_get_file_position);
-	assert_bool(true, test_get_module_path);
-	assert_bool(true, test_dump_memory);
-	assert_bool(true, test_get_process_name_by_pid);
-	assert_bool(true, test_get_environment_value);
+	//assert_bool(true, test_cpp_class);
+	//
+	//assert_bool(true, test_nt_name_to_dos_name);
+	//assert_bool(true, test_query_dos_device);
+	//assert_bool(true, test_get_filepath_by_handle);
+	//assert_bool(true, test_bin_to_hex);
+	//assert_bool(true, test_str_to_xxx);
+	//assert_bool(true, test_set_get_file_position);
+	//assert_bool(true, test_get_module_path);
+	//assert_bool(true, test_dump_memory);
+	//assert_bool(true, test_get_process_name_by_pid);
+	//assert_bool(true, test_get_environment_value);
+ //   assert_bool(true, test_get_local_ip_list);
 
-	assert_bool(true, test_rc4_encrypt);
-	
-	assert_bool(true, boost_lexical_cast);
-	assert_bool(true, boost_shared_ptr_void);
-	assert_bool(true, boost_shared_ptr_handle_01);
-	assert_bool(true, boost_shared_ptr_handle_02);
-	assert_bool(true, boost_shared_ptr_handle_03);
-	assert_bool(true, boost_tuple);
+	//assert_bool(true, test_rc4_encrypt);
+	//
+	//assert_bool(true, boost_lexical_cast);
+	//assert_bool(true, boost_shared_ptr_void);
+	//assert_bool(true, boost_shared_ptr_handle_01);
+	//assert_bool(true, boost_shared_ptr_handle_02);
+	//assert_bool(true, boost_shared_ptr_handle_03);
+	//assert_bool(true, boost_tuple);
 
-	assert_bool(true, boost_format);
+	//assert_bool(true, boost_format);
 
-	assert_bool(true, boost_bind);
-	assert_bool(true, boost_bind2);
-	assert_bool(true, boost_bind3);
-	assert_bool(true, boost_bind4);
-	assert_bool(true, boost_bind5);
+	//assert_bool(true, boost_bind);
+	//assert_bool(true, boost_bind2);
+	//assert_bool(true, boost_bind3);
+	//assert_bool(true, boost_bind4);
+	//assert_bool(true, boost_bind5);
 
-	assert_bool(true, test_std_map);
-	assert_bool(true, test_map_plus_algorithm_1);
-	assert_bool(true, test_map_plus_algorithm_2);
-	assert_bool(true, test_map_plus_algorithm_3);
-	assert_bool(true, test_map_plus_algorithm_4);
+	//assert_bool(true, test_std_map);
+	//assert_bool(true, test_map_plus_algorithm_1);
+	//assert_bool(true, test_map_plus_algorithm_2);
+	//assert_bool(true, test_map_plus_algorithm_3);
+	//assert_bool(true, test_map_plus_algorithm_4);
 
-	assert_bool(true, test_registry_util);
+	//assert_bool(true, test_registry_util);
 
 	log_info
 		"-------------------------------------------------------------------------------"
@@ -198,19 +201,19 @@ bool test_for_each()
 	}
 
 	std::for_each(
-		nums.begin(), 
-		nums.end(), 
-		[](int& num)
-		{
-			printf("%d\n",num);
-		}
-		);
+		    nums.begin(), 
+		    nums.end(), 
+		    [](int& num)
+		    {
+			    printf("%d\n",num);
+		    }
+		    );
 
 	Sum s = std::for_each(
-		nums.begin(), 
-		nums.end(),
-		Sum()
-		);
+		    nums.begin(), 
+		    nums.end(),
+		    Sum()
+		    );
 
 	printf("sum of nums = %u\n", s.sum);
 
@@ -517,12 +520,21 @@ bool test_get_local_ip_list()
 	if (true != get_local_ip_list(host_name, ip_list)) return false;
 
 	log_info "host_name = %ws", host_name.c_str() log_end
-	std::vector<std::wstring>::iterator its = ip_list.begin();
+	/*std::vector<std::wstring>::iterator its = ip_list.begin();
 	std::vector<std::wstring>::iterator ite = ip_list.end();
 	for(; its != ite; ++its)
 	{
 		log_info "ip = %ws", its->c_str() log_end
-	}
+	}*/
+    std::for_each(
+        ip_list.begin(), 
+        ip_list.end(),
+		[](std::wstring& ip)
+		    {
+			    log_info "ip = %ws", ip.c_str() log_end
+		    }
+		);
+
 
 	return true;
 }
