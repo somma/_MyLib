@@ -1501,11 +1501,11 @@ find_files(
         return false;
     }
 
+	_wsplitpath_s(root_dir.c_str(), drive, _MAX_DRIVE, dir, MAX_PATH, NULL, NULL, NULL, NULL);
+
     while (bResult) 
     {
         WaitForSingleObject(NULL, 0);
-
-        _wsplitpath_s(root_dir.c_str(), drive, _MAX_DRIVE, dir, MAX_PATH, NULL, NULL, NULL, NULL);		
 
         if (wfd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) 
         {

@@ -132,9 +132,10 @@ bool OpenFileContext(IN PCWSTR FilePath, IN bool ReadOnly, OUT PFILE_CTX& Ctx)
 
     if (!ret)
     {
-        if (INVALID_HANDLE_VALUE != Ctx->FileHandle) CloseHandle(Ctx->FileHandle);
-        if (NULL!= Ctx->FileMap) CloseHandle(Ctx->FileMap);
         if (NULL!= Ctx->FileView) UnmapViewOfFile(Ctx->FileView);
+        if (NULL!= Ctx->FileMap) CloseHandle(Ctx->FileMap);
+        if (INVALID_HANDLE_VALUE != Ctx->FileHandle) CloseHandle(Ctx->FileHandle);        
+        
         free(Ctx);
     }
 

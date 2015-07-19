@@ -10,13 +10,7 @@
 #include "stdafx.h"
 
 #include "Win32Utils.h"
-#include "DebugMessage.h"
-
 #include "FileIoHelperClass.h"
-
-
-
-
 
 /**----------------------------------------------------------------------------
     \brief  
@@ -67,11 +61,11 @@ FileIoHelper::FIOpenForRead(
 	if (TRUE == Initialized()) { FIOClose(); }
 
 	mReadOnly = TRUE;	
-	if (TRUE != IsFileExistW(FilePath.c_str()))
+	if (TRUE != is_file_existsW(FilePath.c_str()))
 	{
-		DBG_ERR
+		log_err
 			"no file exists. file=%ws", FilePath.c_str()
-		DBG_END
+		log_end
 		return DTS_NO_FILE_EXIST;
 	}
 
@@ -90,12 +84,11 @@ FileIoHelper::FIOpenForRead(
                             );
         if (INVALID_HANDLE_VALUE == mFileHandle)
         {
-            DBG_OPN 
-                "[ERR ]", 
+            log_err
                 "CreateFile(%ws) failed, gle=0x%08x", 
                 FilePath.c_str(), 
                 GetLastError()
-            DBG_END
+            log_end
             break;
         }
 
@@ -103,12 +96,11 @@ FileIoHelper::FIOpenForRead(
         // 
 		if (TRUE != GetFileSizeEx(mFileHandle, &mFileSize))
         {
-            DBG_OPN
-                "[ERR ]", 
+            log_err
                 "%ws, can not get file size, gle=0x%08x", 
                 FilePath.c_str(), 
                 GetLastError() 
-            DBG_END
+            log_end
             break;
         }
         
@@ -122,12 +114,11 @@ FileIoHelper::FIOpenForRead(
                                 );
         if (NULL == mFileMap)
         {
-            DBG_OPN
-                "[ERR ]", 
+            log_err
                 "CreateFileMapping(%ws) failed, gle=0x%08x", 
                 FilePath.c_str(), 
                 GetLastError() 
-            DBG_END
+            log_end
             break;
         }
 				
@@ -185,12 +176,11 @@ FileIoHelper::FIOCreateFile(
                             );
         if (INVALID_HANDLE_VALUE == mFileHandle)
         {
-            DBG_OPN 
-                "[ERR ]", 
+            log_err
                 "CreateFile(%ws) failed, gle=0x%08x", 
                 FilePath.c_str(), 
                 GetLastError()
-            DBG_END
+            log_end
             break;
         }
 
@@ -198,16 +188,16 @@ FileIoHelper::FIOCreateFile(
 		// 
 		if (TRUE != SetFilePointerEx(mFileHandle, mFileSize, NULL, FILE_BEGIN))
 		{
-			DBG_ERR
+			log_err
 				"SetFilePointerEx( move to %I64d ) failed, gle=0x%08x", 
 				FileSize.QuadPart, GetLastError()
-			DBG_END
+			log_end
 			break;
 		}
 		
 		if (TRUE != SetEndOfFile(mFileHandle))
 		{
-			DBG_ERR "SetEndOfFile( ) failed, gle=0x%08x",  GetLastError() DBG_END
+			log_err "SetEndOfFile( ) failed, gle=0x%08x",  GetLastError() log_end
 			break;
 		}
         
@@ -221,12 +211,11 @@ FileIoHelper::FIOCreateFile(
                                 );
         if (NULL == mFileMap)
         {
-            DBG_OPN
-                "[ERR ]", 
+            log_err
                 "CreateFileMapping(%ws) failed, gle=0x%08x", 
                 FilePath.c_str(), 
                 GetLastError() 
-            DBG_END
+            log_end
             break;
         }
 				
@@ -289,7 +278,7 @@ FileIoHelper::FIOReference(
 	{
 		if (TRUE != ReadOnly) 
 		{
-			DBG_ERR "file handle is read-only!" DBG_END
+			log_err "file handle is read-only!" log_end
 			return DTS_INVALID_PARAMETER;
 		}
 	}
@@ -299,10 +288,10 @@ FileIoHelper::FIOReference(
 
 	if (Offset.QuadPart + Size > mFileSize.QuadPart)
 	{
-		DBG_ERR
+		log_err
 			"invalid offset. file size=%I64d, req offset=%I64d", 
 			mFileSize.QuadPart, Offset.QuadPart
-		DBG_END
+		log_end
 		return DTS_INVALID_PARAMETER;
 	}
 
@@ -339,10 +328,10 @@ FileIoHelper::FIOReference(
 								);
 	if (NULL == mFileView)
 	{
-		DBG_ERR
+		log_err
 			"MapViewOfFile(high=0x%08x, log=0x%08x, bytes to map=%u) failed, gle=0x%08x", 
 			AdjustOffset.HighPart, AdjustOffset.LowPart, BytesToMap, GetLastError()
-		DBG_END
+		log_end
 		return DTS_WINAPI_FAILED;
 	}
 	
@@ -393,10 +382,10 @@ FileIoHelper::FIOReadFromFile(
 	DTSTATUS status = FIOReference(TRUE, Offset, Size, p);
 	if(TRUE != DT_SUCCEEDED(status))
 	{
-		DBG_ERR
+		log_err
 			"FIOReference() failed. status=0x%08x", 
 			status
-		DBG_END
+		log_end
 		return status;
 	}
 
@@ -406,9 +395,9 @@ FileIoHelper::FIOReadFromFile(
 	}
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
-		DBG_ERR
+		log_err
 			"exception. code=0x%08x", GetExceptionCode()
-		DBG_END		
+		log_end		
 		status = DTS_EXCEPTION_RAISED;
 	}
 
@@ -441,10 +430,10 @@ FileIoHelper::FIOWriteToFile(
 	DTSTATUS status = FIOReference(FALSE, Offset, Size, p);
 	if(TRUE != DT_SUCCEEDED(status))
 	{
-		DBG_ERR
+		log_err
 			"FIOReference() failed. status=0x%08x", 
 			status
-		DBG_END
+		log_end
 		return status;
 	}
 
@@ -454,9 +443,9 @@ FileIoHelper::FIOWriteToFile(
 	}
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
-		DBG_ERR
+		log_err
 			"exception. code=0x%08x", GetExceptionCode()
-		DBG_END		
+		log_end		
 		status = DTS_EXCEPTION_RAISED;
 	}
 

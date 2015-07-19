@@ -51,6 +51,12 @@
     <ClInclude Include="AKSyncObjs.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
+    <ClInclude Include="FileIoHelper.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="FileIoHelperClass.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -102,6 +108,12 @@
       <Filter>_MyLib</Filter>
     </ClCompile>
     <ClCompile Include="AKSyncObjs.cpp">
+      <Filter>_MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="FileIoHelper.cpp">
+      <Filter>_MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="FileIoHelperClass.cpp">
       <Filter>_MyLib</Filter>
     </ClCompile>
   </ItemGroup>
