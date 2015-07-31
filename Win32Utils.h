@@ -501,36 +501,6 @@ UINT16 swap_endian_16(_In_ UINT16 value);
 UINT32 swap_endian_32(_In_ UINT32 value); 
 UINT64 swap_endian_64(_In_ UINT64 value);
 
-
-
-// Window ÇÃ·§ÆûÄÚµå
-//
-#define OSTYPE_WIN_95		        0x0001
-#define OSTYPE_WIN_98		        0x0002
-#define OSTYPE_WIN_SE		        0x0003
-#define OSTYPE_WIN_ME		        0x0004
-
-#define	OSTYPE_WIN_NT		        0x0005      // 4.0
-
-#define OSTYPE_WIN_2000		        0x0006      // 5.0
-#define OSTYPE_WIN_XP		        0x0007      // 5.1
-#define OSTYPE_WIN_XP_64            0x0008      // 5.2
-#define OSTYPE_WIN_2003		        0x0009      // 5.2
-#define OSTYPE_WIN_HOME_SERVER      0x000A      // 5.2
-#define OSTYPE_WIN_2003_R2		    0x000B      // 5.2
-#define OSTYPE_WIN_VISTA	        0x000C      // 6.0  
-#define OSTYPE_WIN_SERVER_2008      0x000D      // 6.0  
-#define OSTYPE_WIN_7				0x000E      // 6.1
-#define OSTYPE_WIN_SERVER_2008_R2   0x000F      // 6.1
-#define OSTYPE_WIN_8                0x0010      // 6.2
-#define OSTYPE_WIN_SERVER_2012		0x0011      // 6.2
-
-#define	is_nt_family(_OSTYPE_WIN_XXX_)	((_OSTYPE_WIN_XXX_) >= OSTYPE_WIN_NT ? true : false)
-#define	is_vista_later(_OSTYPE_WIN_XXX_)	((_OSTYPE_WIN_XXX_) >= OSTYPE_WIN_VISTA ? true : false)
-
-WORD OsVersion();
-
-
 typedef struct WU_PROCESSOR_INFO
 {
     DWORD   NumaNodeCount;

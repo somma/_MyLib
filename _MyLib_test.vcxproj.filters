@@ -57,6 +57,9 @@
     <ClInclude Include="FileIoHelperClass.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
+    <ClInclude Include="thread_pool.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -115,6 +118,9 @@
     </ClCompile>
     <ClCompile Include="FileIoHelperClass.cpp">
       <Filter>_MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_boost_thread.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

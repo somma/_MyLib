@@ -11,6 +11,7 @@
 #include "process_tree.h"
 #include "base64.h"
 #include "rc4.h"
+#include "thread_pool.h"
 
 
 bool test_for_each();
@@ -81,7 +82,11 @@ extern bool test_map_plus_algorithm_4();
 extern bool test_registry_util();
 
 
+// thread_pool.h
+bool test_thread_pool();
 
+// _test_boost_thread.cpp
+extern bool test_boost_thread();
 
 class ccc
 {
@@ -108,7 +113,10 @@ int _tmain(int argc, _TCHAR* argv[])
 
     set_log_format(false, false, true);
 
-	//assert_bool(true, test_boost_asio_timer);
+    //assert_bool(true, test_boost_thread);
+	assert_bool(true, test_thread_pool);
+    
+    //assert_bool(true, test_boost_asio_timer);
 	//assert_bool(true, test_for_each);
 
 	//assert_bool(true, test_asm_func);
@@ -122,7 +130,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_process_tree);
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
-	assert_bool(true, test_get_local_ip_list);
+	//assert_bool(true, test_get_local_ip_list);
 
 	//assert_bool(true, test_cpp_class);
 	//
@@ -164,7 +172,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_registry_util);
 
 	log_info
-		"-------------------------------------------------------------------------------"
+		"----------------------------------------------------"
 	log_end
 
 	log_info
@@ -943,8 +951,45 @@ bool test_rc4_encrypt()
 }
 
 
+/**
+ * @brief asio_thread_pool test
+ */
+
+void work() 
+{
+    fprintf(stdout, "tid = %u, running\n", GetCurrentThreadId());
+};
+
+struct worker
+{
+    void operator()() 
+    {
+        fprintf(stdout, "tid = %u, running\n", GetCurrentThreadId() );
+    };
+};
+
+void more_work( int v) 
+{
+    fprintf(stdout, "tid = %u, running = %d\n", GetCurrentThreadId(), v);
+};
 
 
+bool test_thread_pool()
+{
+    thread_pool pool(4);
+    pool.run_task( work );                        // Function pointer.
+    pool.run_task( worker() );                    // Callable object.
+    pool.run_task( boost::bind( more_work, 5 ) ); // Callable object.
+    pool.run_task( worker() );                    // Callable object.
+       
+    // Wait until all tasks are done.
+    while (0 < pool.get_task_count())
+    {
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
+    }
+
+    return true;
+}
 
 
 

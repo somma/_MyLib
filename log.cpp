@@ -91,7 +91,7 @@ set_log_format(
 	_In_ bool show_function_name
 	)
 {
-	_show_process_name = show_function_name;
+	_show_process_name = show_process_name;
 	_show_pid_tid = show_pid_tid;
 	_show_function_name = show_function_name;
 }
@@ -244,14 +244,8 @@ log_write_fmt(
 /*****************************************************************************/
 
 /**
-* @brief	
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
-*/
+ * @brief	constructor
+ */
 slogger::slogger() 
     : _stop_logger(true), 
       _lock(NULL), 
@@ -260,20 +254,17 @@ slogger::slogger()
 {
 }
 
+/**
+ * @brief destructor 
+ */
 slogger::~slogger()
 {
     slog_stop();
 }
 
 /**
-* @brief	
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
-*/
+ * @brief	start logger
+ */
 bool 
 slogger::slog_start(
 	_In_ LogLevel base_log_level, 	
@@ -303,13 +294,7 @@ slogger::slog_start(
 
 
 /**
-* @brief	
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
+ * @brief	stop logger
 */
 void slogger::slog_stop()
 {
@@ -338,13 +323,7 @@ void slogger::slog_stop()
 }
 
 /**
-* @brief	
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
+ * @brief	log 큐에 로그를 push 한다.
 */
 void 
 slogger::slog_write(
@@ -366,15 +345,9 @@ slogger::slog_write(
     _log_queue.push(log);
     _lock->Leave();
 }
-    
+ 
 /**
-* @`brief	logger worker thread
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
+ * @brief	logger worker thread, pops log entry from log queue and writes log to output.
 */
 void slogger::slog_thread()
 {
