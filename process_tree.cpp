@@ -27,7 +27,8 @@ bool process::kill(_In_ DWORD exit_code)
 	set_privilege(SE_DEBUG_NAME, TRUE);
 	
 	HANDLE h = NULL;
-	do 
+#pragma warning(disable: 4127)
+    do 
 	{
 		h = OpenProcess(PROCESS_TERMINATE, FALSE, _pid);
 		if (NULL == h)
@@ -54,7 +55,8 @@ bool process::kill(_In_ DWORD exit_code)
 		_killed = true;	
 		log_dbg "pid = %u, %ws terminated", _pid, _process_name.c_str() log_end
 	} while (false);
-	
+#pragma warning(default: 4127)
+
 	if (NULL!=h) 
 	{
 		CloseHandle(h); // TerminateProcess() is asynchronous, so must call CloseHandle()
@@ -79,8 +81,6 @@ cprocess_tree::build_process_tree()
 {
 	_proc_map.clear();
 
-	bool ret = false;
-
 	PROCESSENTRY32W proc_entry = {0};
 	HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (snap == INVALID_HANDLE_VALUE)
@@ -95,7 +95,8 @@ cprocess_tree::build_process_tree()
 		// just info
 	}
 
-	do
+#pragma warning(disable: 4127)
+    do
 	{
 		proc_entry.dwSize = sizeof(PROCESSENTRY32W);
 		if (!Process32First(snap, &proc_entry))
@@ -141,7 +142,7 @@ cprocess_tree::build_process_tree()
 		} while (Process32Next(snap, &proc_entry));
 
 	} while (false);
-
+#pragma warning(default: 4127)
 
 	CloseHandle(snap);
 	set_privilege(SE_DEBUG_NAME, FALSE);
@@ -417,10 +418,10 @@ cprocess_tree::add_process(
 **/
 void cprocess_tree::print_process_tree(_In_ process& p, _In_ DWORD& depth)
 {
-	std::wstringstream prefix;
+	std::stringstream prefix;
 	for(DWORD i = 0; i < depth; ++i)
 	{
-		prefix << "    ";
+		prefix << "+";
 	}
 
 	log_info 
