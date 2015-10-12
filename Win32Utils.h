@@ -431,7 +431,11 @@ std::wstring get_process_name_by_pid(_In_ DWORD process_id);
 */
 void SetConsoleCoords(COORD xy);
 COORD GetCurCoords(void);
-void write_to_console(_In_z_ const char* log_message);
+
+#define wtc_none    0
+#define wtc_red     1
+#define wtc_green   2
+void write_to_console(_In_ uint32_t color, _In_z_ const char* log_message);
 
 
 

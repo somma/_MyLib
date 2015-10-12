@@ -1,4 +1,4 @@
-ï»¿/**----------------------------------------------------------------------------
+/**----------------------------------------------------------------------------
  * _MyLib_test.cpp
  *-----------------------------------------------------------------------------
  * 
@@ -96,6 +96,7 @@ public:
 		log_info "..." log_end
 	}
 };
+
 /**
  * @brief	
  * @param	
@@ -114,7 +115,7 @@ int _tmain(int argc, _TCHAR* argv[])
     set_log_format(false, false, true);
 
     //assert_bool(true, test_boost_thread);
-	assert_bool(true, test_thread_pool);
+	//assert_bool(true, test_thread_pool);
     
     //assert_bool(true, test_boost_asio_timer);
 	//assert_bool(true, test_for_each);
@@ -125,9 +126,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true , test_print_64int);
 	//assert_bool(true, test_std_string_find_and_substr);
 	//assert_bool(true, test_to_lower_uppper_string);
-	////assert_bool(true, test_const_position);		// ì»´íŒŒì¼ ë¶ˆê°€ í…ŒìŠ¤íŠ¸
+	////assert_bool(true, test_const_position);		// ÄÄÆÄÀÏ ºÒ°¡ Å×½ºÆ®
 	//assert_bool(true, test_initialize_string);
-	//assert_bool(true, test_process_tree);
+	assert_bool(true, test_process_tree);
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
 	//assert_bool(true, test_get_local_ip_list);
@@ -242,10 +243,10 @@ bool test_std_string_find_and_substr()
 	std::wstring nt_name(L"\\Device\\HarddiskVolume1\\Windows\\system32\\drivers");
 	std::wstring dos_device_name(L"c:");
 	std::wstring nt_device_name(L"\\Device\\HarddiskVolume1");
-	std::wstring nt_device_name2(L"\\DEVICE\\HarddiskVolume1");		// ëŒ€ë¬¸ì
+	std::wstring nt_device_name2(L"\\DEVICE\\HarddiskVolume1");		// ´ë¹®ÀÚ
 
 
-	//> ëŒ€ì†Œë¬¸ìê°€ ì¼ì¹˜í•˜ëŠ” ê²½ìš° string::find ê°€ ì •ìƒ ë™ì‘ í•¨
+	//> ´ë¼Ò¹®ÀÚ°¡ ÀÏÄ¡ÇÏ´Â °æ¿ì string::find °¡ Á¤»ó µ¿ÀÛ ÇÔ
 	size_t pos = nt_name.find(nt_device_name);
 	if (std::wstring::npos == pos) return false;
 
@@ -260,7 +261,7 @@ bool test_std_string_find_and_substr()
 		out.c_str()
 	log_end
 
-	//> ëŒ€ì†Œë¬¸ì êµ¬ë¶„ ì—†ì´ find í•˜ë ¤ë©´ win32util::to_lower_string() í˜¸ì¶œ í›„ ë¹„êµí•´ì•¼ í•¨
+	//> ´ë¼Ò¹®ÀÚ ±¸ºĞ ¾øÀÌ find ÇÏ·Á¸é win32util::to_lower_string() È£Ãâ ÈÄ ºñ±³ÇØ¾ß ÇÔ
 	pos = nt_name.find(nt_device_name2);
 	if (std::wstring::npos == pos) return true;
 
@@ -280,9 +281,9 @@ bool test_2_complement()
 {
 	int i = -1;
 
-	// ê²°ê³¼: %d = -1, %x = ffffffff
+	// °á°ú: %d = -1, %x = ffffffff
 	// 1 = 0000 0001
-	//     1111 1110 + 1 (ìŒìˆ˜ë¥¼ í‘œí˜„í•˜ê¸° ìœ„í•´ 2ì˜ ë³´ìˆ˜ë¥¼ ì·¨í•˜ë©´...)
+	//     1111 1110 + 1 (À½¼ö¸¦ Ç¥ÇöÇÏ±â À§ÇØ 2ÀÇ º¸¼ö¸¦ ÃëÇÏ¸é...)
 	//     1111	1111		= -1 = 0xff
 	// 
 	// 2 = 0000 0010
@@ -292,7 +293,7 @@ bool test_2_complement()
 	// 3 = 0000 0011
 	//     1111 1100 + 1
 	//     1111 1101		= -3 = 0xfd
-	log_msg "%%d = %d, %%x = %x", i, i log_end
+	log_dbg "%%d = %d, %%x = %x", i, i log_end
 
 	return true;
 }
@@ -309,7 +310,7 @@ bool test_2_complement()
 bool test_print_64int()
 {
 	uint64_t val = 0xffffffffffffffff;
-	log_msg "%%I64d = %I64d, %%I64u = %I64u, %%I64x = %I64x", val, val, val log_end
+	log_dbg "%%I64d = %I64d, %%I64u = %I64u, %%I64x = %I64x", val, val, val log_end
 
 	// %I64d = -1, %I64u = 18446744073709551615, %I64x = ffffffffffffffff
 
@@ -328,18 +329,18 @@ bool test_print_64int()
 bool test_to_lower_uppper_string()
 {
 	std::wstring str = L"ABCDEFGh1234";	
-	log_msg "str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
+	log_dbg "str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
 	to_lower_string(str);
-	log_msg "after to_lower, str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
+	log_dbg "after to_lower, str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
 
 	to_upper_string(str);
-	log_msg "after to_upper, str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
+	log_dbg "after to_upper, str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
 
 	return true;
 }
 
 /**
- * @brief	const ìœ„ì¹˜ / ì˜ë¯¸ 
+ * @brief	const À§Ä¡ / ÀÇ¹Ì 
  * @param	
  * @see		
  * @remarks	
@@ -351,33 +352,33 @@ bool test_to_lower_uppper_string()
 class ConstPositionTest
 {
 public:	
-	//> (const char*) msg : char* ê°€ const, ì¦‰ msg ê°€ ê°€ë¦¬í‚¤ëŠ” ë°ì´í„° ë³€ê²½ ë¶ˆê°€
+	//> (const char*) msg : char* °¡ const, Áï msg °¡ °¡¸®Å°´Â µ¥ÀÌÅÍ º¯°æ ºÒ°¡
     char* Function1(const char* msg)  
     {
         msg[0] = 't'; // error
         return m_msg;
     }
 
-	//> char* (const msg) : msg ë³€ìˆ˜ê°€ const, ì¦‰ msg í¬ì¸í„° ë³€ìˆ˜ ë³€ê²½ ë¶ˆê°€
+	//> char* (const msg) : msg º¯¼ö°¡ const, Áï msg Æ÷ÀÎÅÍ º¯¼ö º¯°æ ºÒ°¡
     char* Function2(char* const msg)  
     {    
         msg = m_msg; //error
         return m_msg;
     }
 
-	//> ë©”ì†Œë“œ ìƒìˆ˜í™”, ì´ ë©”ì†Œë“œëŠ” í´ë˜ìŠ¤ ë©¤ë²„ë¥¼ ì½ì„ ìˆ˜ëŠ” ìˆìœ¼ë‚˜ ë³€ê²½ í•  ìˆ˜ëŠ” ì—†ìŒ
+	//> ¸Ş¼Òµå »ó¼öÈ­, ÀÌ ¸Ş¼Òµå´Â Å¬·¡½º ¸â¹ö¸¦ ÀĞÀ» ¼ö´Â ÀÖÀ¸³ª º¯°æ ÇÒ ¼ö´Â ¾øÀ½
     char* Function3(char* msg) const 
     {
         m_msg = msg; //error
         return m_msg;  
     }
 
-	//> (const char*) : ë¦¬í„´ ê°’ì´ const char* ì´ë¯€ë¡œ ë¦¬í„´ ë°›ëŠ” ë³€ìˆ˜ë„ const char* ì´ì–´ì•¼ í•¨
-	//> ë”°ë¼ì„œ ë¦¬í„´ë˜ëŠ” í¬ì¸í„°ê°€ ê°€ë¦¬í‚¤ëŠ” ë°ì´í„° ë³€ê²½ ë¶ˆê°€
+	//> (const char*) : ¸®ÅÏ °ªÀÌ const char* ÀÌ¹Ç·Î ¸®ÅÏ ¹Ş´Â º¯¼öµµ const char* ÀÌ¾î¾ß ÇÔ
+	//> µû¶ó¼­ ¸®ÅÏµÇ´Â Æ÷ÀÎÅÍ°¡ °¡¸®Å°´Â µ¥ÀÌÅÍ º¯°æ ºÒ°¡
     const char* Function4(char* msg)  
     {
         m_msg = msg;
-        return m_msg; //ë°˜í™˜ ë°›ëŠ” íƒ€ì…ì´ constê°€ ì•„ë‹ ê²½ìš° error
+        return m_msg; //¹İÈ¯ ¹Ş´Â Å¸ÀÔÀÌ const°¡ ¾Æ´Ò °æ¿ì error
     }
 private:
     char* m_msg;
@@ -411,9 +412,9 @@ bool test_initialize_string()
 	std::wstring str = L"";
 	log_dbg "str = %ws", str.c_str() log_end
 
-	//> invalid null point exception ë°œìƒ 
-	//> try-except ë¡œ ëª» ì¡ìŒ... 
-	//> ì´ˆê¸°í™”ì‹œ NULL ì´ë©´ "" ë¡œ ë°”ê¿”ì„œ ì´ˆê¸°í™” í•´ì•¼ í•¨
+	//> invalid null point exception ¹ß»ı 
+	//> try-except ·Î ¸ø ÀâÀ½... 
+	//> ÃÊ±âÈ­½Ã NULL ÀÌ¸é "" ·Î ¹Ù²ã¼­ ÃÊ±âÈ­ ÇØ¾ß ÇÔ
 /*
 	try
 	{
@@ -432,9 +433,9 @@ bool test_initialize_string()
 /**
  * @brief	test for cprocess_tree class 
 			
-			í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ì„œëŠ” 
-			cmd.exe -> procexp.exe -> procexp64.exe(ìë™ìœ¼ë¡œ ë§Œë“¤ì–´ì§) -> notepad.exe
-			ìˆœì„œë¡œ í”„ë¡œì„¸ìŠ¤ë¥¼ ìƒì„±í•´ ë‘ê³  í•´ì•¼ í•œë‹¤. 
+			Å×½ºÆ®¸¦ À§ÇØ¼­´Â 
+			cmd.exe -> procexp.exe -> procexp64.exe(ÀÚµ¿À¸·Î ¸¸µé¾îÁü) -> notepad.exe
+			¼ø¼­·Î ÇÁ·Î¼¼½º¸¦ »ı¼ºÇØ µÎ°í ÇØ¾ß ÇÑ´Ù. 
  * @param	
  * @see		
  * @remarks	
@@ -453,15 +454,17 @@ bool test_process_tree()
 	cprocess_tree proc_tree;
 	if (!proc_tree.build_process_tree()) return false;
 
-	// í”„ë¡œì„¸ìŠ¤ ì—´ê±° í…ŒìŠ¤íŠ¸ (by callback)
+	// ÇÁ·Î¼¼½º ¿­°Å Å×½ºÆ® (by callback)
 	proc_tree.iterate_process(proc_tree_callback, 0);
 	proc_tree.iterate_process_tree(proc_tree.find_process(L"cmd.exe"), proc_tree_callback, 0);
 	
 	// print 
 	proc_tree.print_process_tree(L"cmd.exe");
 
-	// í”„ë¡œì„¸ìŠ¤ ì¢…ë£Œ í…ŒìŠ¤íŠ¸	
+	// ÇÁ·Î¼¼½º Á¾·á Å×½ºÆ®	
 	proc_tree.kill_process_tree( proc_tree.find_process(L"cmd.exe") );	
+
+    proc_tree.print_process_tree(L"explorer.exe");
 
 	return true;
 }
@@ -480,8 +483,8 @@ bool test_base64()
 // http://www.opinionatedgeek.com/dotnet/tools/base64encode/
 #define _base64_encoded	"64yA7ZWc66+86rWt"
 
-	std::wstring string_to_encodeW = L"ëŒ€í•œë¯¼êµ­";
-	std::string string_to_encodeA = "ëŒ€í•œë¯¼êµ­";
+	std::wstring string_to_encodeW = L"´ëÇÑ¹Î±¹";
+	std::string string_to_encodeA = "´ëÇÑ¹Î±¹";
 
 	std::wstring wide_str;
 	std::string utf8_str;
@@ -489,7 +492,7 @@ bool test_base64()
 	
 	// base 64 encode
 	// 
-	// #1) multibyte -> ucs16 -> utf8 -> base64 ìˆœì„œë¡œ...
+	// #1) multibyte -> ucs16 -> utf8 -> base64 ¼ø¼­·Î...
 	// #2) ucs16 -> utf8 -> base64 
 	wide_str = MbsToWcsEx(string_to_encodeA.c_str());
 	utf8_str = WcsToMbsUTF8Ex(wide_str.c_str());
@@ -880,7 +883,7 @@ bool test_dump_memory()
 	std::vector<std::string>::iterator ite = dump.end();
 	for(; its != ite; ++its)
 	{
-		log_msg "%s", its->c_str() log_end
+		log_dbg "%s", its->c_str() log_end
 	}
 
 	dump.clear();
@@ -893,7 +896,7 @@ bool test_dump_memory()
 bool test_get_process_name_by_pid()
 {
 	std::wstring name = get_process_name_by_pid(GetCurrentProcessId());
-	log_msg "name = %ws", name.c_str() log_end
+	log_dbg "name = %ws", name.c_str() log_end
 	return true;
 }
 
@@ -916,7 +919,7 @@ bool test_get_environment_value()
 		if (true != get_environment_value(env_variables[i], env_value)) 
 			return false;
 		else
-			log_msg "%ws = %ws", env_variables[i], env_value.c_str() log_end
+			log_dbg "%ws = %ws", env_variables[i], env_value.c_str() log_end
 	}
 
 	return true;
@@ -928,7 +931,7 @@ bool test_get_environment_value()
 bool test_rc4_encrypt()
 {
 	const char* key = "coresecurity";
-	const char plain[] = "abcdefghijklmnop1234567890!@#$%^&*()ê°€ë‚˜ë‹¤ë¼ë§ˆë°”ì‚¬ì•„ìì°¨ì¹´íƒ€íŒŒí•˜";
+	const char plain[] = "abcdefghijklmnop1234567890!@#$%^&*()°¡³ª´Ù¶ó¸¶¹Ù»ç¾ÆÀÚÂ÷Ä«Å¸ÆÄÇÏ";
 	uint8_t enc[1024] = {0};
 	uint8_t dec[1024] = {0};
 
@@ -952,7 +955,7 @@ bool test_rc4_encrypt()
 
 
 /**
- * @brief asio_thread_pool test
+ * @brief thread_pool test
  */
 
 void work() 
@@ -971,6 +974,7 @@ struct worker
 void more_work( int v) 
 {
     fprintf(stdout, "tid = %u, running = %d\n", GetCurrentThreadId(), v);
+    //getchar();
 };
 
 

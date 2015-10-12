@@ -30,7 +30,7 @@ static bool			_show_function_name = true;
 **/
 bool 
 initialize_log(
-	_In_ LogLevel log_level, 
+	_In_ uint32_t log_level, 
 	_In_opt_z_ const wchar_t* log_file_path
 	)
 {
@@ -107,7 +107,7 @@ set_log_format(
 **/
 void
 log_write(
-    _In_ LogLevel log_level, 
+    _In_ uint32_t log_level, 
 	_In_ uint32_t log_to,
     _In_z_ const char* function,
     _In_z_ const char* log_message
@@ -129,7 +129,6 @@ log_write(
 	case log_level_info:    log_strm << "[INFO] "; break;
 	case log_level_warn:    log_strm << "[WARN] "; break;
 	case log_level_error:   log_strm << "[ERR ] "; break;
-	case log_level_msg:		log_strm << ""; break;
 	default:
 		_ASSERTE(!"never reach here!");
 		return;
@@ -170,7 +169,18 @@ log_write(
 	{		
 		if (log_to & log_to_con)
 		{
-			write_to_console(log_strm.str().c_str());
+            switch (log_level)
+            {
+            case log_level_error: // same as log_level_critical
+                write_to_console(wtc_red, log_strm.str().c_str());
+                break;
+            case log_level_info:
+            case log_level_warn:
+                write_to_console(wtc_green, log_strm.str().c_str());
+                break;
+            default:
+                write_to_console(wtc_none, log_strm.str().c_str());
+            }
 		}
 
 		if (log_to & log_to_ods)
@@ -191,7 +201,7 @@ log_write(
 **/
 void
 log_write_fmt(
-    _In_ LogLevel log_level, 
+    _In_ uint32_t log_level, 
 	_In_ uint32_t log_to,
 	_In_z_ const char* function,
     _In_z_ const char* fmt, 
@@ -267,7 +277,7 @@ slogger::~slogger()
  */
 bool 
 slogger::slog_start(
-	_In_ LogLevel base_log_level, 	
+	_In_ uint32_t base_log_level, 	
 	_In_opt_z_ const wchar_t *log_file_path
 	)
 {
@@ -327,7 +337,7 @@ void slogger::slog_stop()
 */
 void 
 slogger::slog_write(
-	_In_ LogLevel level, 
+	_In_ uint32_t level, 
 	_In_ uint32_t log_to, 
 	_In_z_ const char* log_message
 	)
@@ -339,7 +349,7 @@ slogger::slog_write(
 	if (slog_get_base_log_level() > level) return;
 
 	// enqueue log
-	log_entry log(log_to, log_message);
+	log_entry log(level, log_to, log_message);
 
 	_lock->Enter();
     _log_queue.push(log);
@@ -355,8 +365,6 @@ void slogger::slog_thread()
 
     while (true != _stop_logger)
     {
-        // 큐에서 pop 을 하는 스레드는 현재 스레드가 유일하므로 empty 검사시에는
-        // lock 이 필요없다.
         if (true == _log_queue.empty()) 
         {
             Sleep(10);
@@ -369,7 +377,18 @@ void slogger::slog_thread()
 		     
 		if (log._log_to & log_to_con)
 		{
-			write_to_console(log._msg.c_str());
+            switch (log._log_level)
+            {
+            case log_level_error: // same as log_level_critical
+                write_to_console(wtc_red, log._msg.c_str());
+                break;
+            case log_level_info:
+            case log_level_warn: 
+                write_to_console(wtc_green, log._msg.c_str());
+                break;
+            default:
+                write_to_console(wtc_none, log._msg.c_str());
+            }
 		}
 
 		if (log._log_to & log_to_file)
@@ -393,7 +412,18 @@ void slogger::slog_thread()
             log_entry log = _log_queue.pop();
 			if (log._log_to & log_to_con)
 			{
-				write_to_console(log._msg.c_str());
+                switch (log._log_level)
+                {
+                case log_level_error: // same as log_level_critical
+                    write_to_console(wtc_red, log._msg.c_str());
+                    break;
+                case log_level_info:
+                case log_level_warn:
+                    write_to_console(wtc_green, log._msg.c_str());
+                    break;
+                default:
+                    write_to_console(wtc_none, log._msg.c_str());
+                }
 			}
 
 			if (log._log_to & log_to_file)

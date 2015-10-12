@@ -2989,7 +2989,7 @@ BOOL DumpMemory(FILE* stream,DWORD Length,BYTE* Buf)
 		return TRUE;
 	}
 
-	_ftprintf(stream, TEXT("%s > invalid parameters \n"), __FUNCTION__);
+	_ftprintf(stream, TEXT("err ] invalid parameters \n"));
 	return FALSE;
 }
 
@@ -3416,6 +3416,7 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege)
 {
 	HANDLE proc_handle = NULL;
+    #pragma warning(disable:4127)
 	do 
 	{
 		// open the process
@@ -3435,6 +3436,7 @@ HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool rais
 		}
 		
 	} while(false);
+    #pragma warning(default: 4127)
 
 	return proc_handle;
 }
@@ -3626,7 +3628,7 @@ COORD GetCurCoords(void)
  * @endcode	
  * @return	
 **/
-void write_to_console(_In_z_ const char* log_message)
+void write_to_console(_In_ uint32_t color, _In_z_ const char* log_message)
 {
 	_ASSERTE(NULL != log_message);
 	if (NULL == log_message) return;
@@ -3644,9 +3646,22 @@ void write_to_console(_In_z_ const char* log_message)
 	}
 
 	DWORD len;
-	SetConsoleTextAttribute(con_stdout_handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);	
-	WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);	
-	SetConsoleTextAttribute(con_stdout_handle, con_old_color);
+    switch (color)
+    {
+    case wtc_red:
+        SetConsoleTextAttribute(con_stdout_handle, FOREGROUND_RED | FOREGROUND_INTENSITY);
+        WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
+        SetConsoleTextAttribute(con_stdout_handle, con_old_color);
+        break;
+    case wtc_green:
+        SetConsoleTextAttribute(con_stdout_handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
+        SetConsoleTextAttribute(con_stdout_handle, con_old_color);
+        break;
+    case wtc_none:
+    default:
+        WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
+    }
 }
 
 /** ---------------------------------------------------------------------------
