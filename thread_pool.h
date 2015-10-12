@@ -1,3 +1,14 @@
+/**
+ * @file    thread_pool.h
+ * @brief   thread pool implementation.
+ * 
+ * This file contains thread pool implementation using boost thread.
+ *
+ * @author  Yonhgwhan, Noh (fixbrain@gmail.com)
+ * @date    2015:08:01 10:02 created.
+ * @copyright All rights reserved by Yonghwan, Noh.
+**/
+
 #include <queue>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
@@ -5,7 +16,7 @@
 /// @brief thread pool implementation
 /// @see test_thread_pool()
 /// @see original code is from http://stackoverflow.com/questions/12215395/thread-pool-using-boost-asio
-class thread_pool
+typedef class thread_pool
 {
 private:
     std::queue< boost::function< void() > > _tasks;
@@ -60,12 +71,14 @@ public:
 
     /// @brief Add task to the thread pool if a thread is currently available.
     template < typename Task >
-    void run_task(Task task)
+    bool run_task(Task task)
     {
+        // We will use condition variable later of this function, so we have to 
+        // use unique_lock.
         boost::unique_lock< boost::mutex > lock(_lock);
 
         // If no threads are available, then return.
-        if (0 == _available) return;
+        if (0 == _available) return false;
 
         // Decrement count, indicating thread is no longer available.
         --_available;
@@ -74,8 +87,19 @@ public:
         // wake up andl use the task.
         _tasks.push(boost::function< void() >(task));
         _condition.notify_one();
+        return true;
     }
 
+    /// @brief return true if idle thread exists.
+    bool is_available()
+    {
+        // boost::lock_guard is enough becauese we will not use any condition variables.
+        boost::lock_guard< boost::mutex > lock(_lock);
+        if (0 == _available)
+            return false;
+        else
+            return true;
+    }
 
     /// @brief Entry point for pool threads.
     void pool_main()
@@ -89,6 +113,7 @@ public:
             {
                 _condition.wait(lock);
             }
+
             // If pool is no longer running, break out.
             if (!_running) 
             {
@@ -120,4 +145,4 @@ public:
             ++_available;
         } // while _running
     }
-};
+} *pthread_pool;
