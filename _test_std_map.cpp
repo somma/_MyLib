@@ -9,6 +9,13 @@
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
 
+#include <unordered_map>
+
+
+bool test_std_unordered_map_object();
+
+
+
 /**
 * @brief	for test_std_map
 * @param	
@@ -55,11 +62,11 @@ bool test_std_map()
 	delete it->second;
 	my_map.erase(it);
 
-	for(std::map<DWORD, pmap_second_object>::iterator it = my_map.begin();
-		it != my_map.end();
-		++it)
+	for(std::map<DWORD, pmap_second_object>::iterator itl = my_map.begin();
+		itl != my_map.end();
+		++itl)
 	{
-		delete it->second;
+		delete itl->second;
 	}
 	my_map.clear();
 
@@ -242,4 +249,170 @@ bool test_map_plus_algorithm_4()
 								_1)));
 
 	return true;
+}
+
+/// @brief
+bool test_std_unordered_map()
+{
+    std::unordered_map<std::string, std::string> mymap;
+    mymap = { { "Australia","Canberra" },{ "U.S.","Washington" },{ "France","Paris" } };
+
+    // iterate items
+    std::cout << "mymap contains:";
+    for (auto it = mymap.begin(); it != mymap.end(); ++it)
+        std::cout << " " << it->first << ":" << it->second;
+    std::cout << std::endl;
+
+    // iterate buckets
+    std::cout << "---" << std::endl;
+    std::cout << "mymap's buckets contain:\n";
+    for (unsigned i = 0; i < mymap.bucket_count(); ++i) {
+        std::cout << "bucket #" << i << " contains:";
+        for (auto local_it = mymap.begin(i); local_it != mymap.end(i); ++local_it)
+            std::cout << " " << local_it->first << ":" << local_it->second;
+        std::cout << std::endl;
+    }
+
+    // add item
+    std::cout << "---" << std::endl;
+    mymap.insert(std::make_pair("aaa", "bbb"));
+    std::cout << "mymap contains:";
+    for (auto it = mymap.begin(); it != mymap.end(); ++it)
+        std::cout << " " << it->first << ":" << it->second;
+    std::cout << std::endl;
+
+    // search item
+    std::cout << "---" << std::endl;
+    std::cout << "trying to find `aaa` : ";
+    auto f = mymap.find("aaa");
+    if (mymap.end() == f)
+    {
+        std::cout << "none" << std::endl;
+    }
+    else
+    {
+        std::cout << f->second << std::endl;
+    }
+
+    std::cout << "trying to find `bbb` : ";
+    auto ff = mymap.find("bbb");
+    if (mymap.end() == ff)
+    {
+        std::cout << "none" << std::endl;
+    }
+    else
+    {
+        std::cout << ff->second << std::endl;
+    }
+
+    return test_std_unordered_map_object();
+}
+
+/// @brief
+typedef class MyP
+{
+public :
+    MyP(uint32_t v)  : _v(v)
+    {
+        std::cout << __FUNCTION__ << std::endl;
+    }
+    virtual ~MyP() 
+    {
+        std::cout << __FUNCTION__ << "(" << _v << ")" << std::endl;
+    }
+
+    void dump()
+    {
+        std::cout << __FUNCTION__ << "(" << _v << ")" << std::endl;
+    }
+
+private:
+    uint32_t _v;
+} *PMyP;
+
+typedef class MyC: public MyP
+{
+public:
+    MyC(uint32_t v) : MyP(v)
+    {
+        std::cout << __FUNCTION__ << std::endl;
+    }
+    ~MyC() 
+    {
+        std::cout << __FUNCTION__ << std::endl;
+    }
+} *PMyC;
+
+bool test_std_unordered_map_object()
+{
+    std::cout << "---" << std::endl;
+
+    std::unordered_map<uint32_t, PMyP> mymap;
+
+    // insert
+    mymap.insert(std::make_pair < uint32_t, PMyP>(0, new MyC(0)));
+    mymap.insert(std::make_pair < uint32_t, PMyP>(1, new MyC(1)));
+    mymap.insert(std::make_pair < uint32_t, PMyP>(2, new MyC(2)));
+
+    // iterate all objects
+    for (auto& item : mymap)
+    {
+        item.second->dump();
+    }
+
+    // find and erase and free item.
+    auto item = mymap.find(0);
+    _ASSERTE(mymap.end() != item);
+    delete item->second;
+    _ASSERTE(1 == mymap.erase(item->first));        // erase using key
+
+    item = mymap.find(1);
+    _ASSERTE(mymap.end() != item);
+    delete item->second;
+    _ASSERTE(mymap.end() != mymap.erase(item));     // erase using iterator
+    
+    // trying to delete using invalid key 
+    _ASSERTE(0 == mymap.erase(10000000));
+    
+    // clear the rest of all
+    for (auto litem : mymap)
+    {
+        delete litem.second;
+    }
+    mymap.clear();
+
+
+
+
+
+
+    // using [] operator
+    std::cout << "---" << std::endl;
+
+    mymap[0] = new MyC(0);
+    mymap[1] = new MyC(1);
+    for (auto itemx : mymap)
+    {
+        itemx.second->dump();
+    }
+
+    std::cout << "add MyC(2), using []" << std::endl;    
+    mymap[2] = new MyC(2);
+
+    for (auto itemx : mymap)
+    {
+        itemx.second->dump();
+    }
+
+    // access invalid item is equivalent adding new item...
+    PMyP p = mymap[3];
+    _ASSERTE(NULL == p);
+    p = new MyC(3);
+    mymap[3] = p;
+    for (auto itemz : mymap)
+    {
+        itemz.second->dump();
+    }
+
+    return true;
 }

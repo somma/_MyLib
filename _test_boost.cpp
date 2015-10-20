@@ -233,9 +233,15 @@ bool boost_format()
 	std::wcout << L"f = " << f << std::endl;
 
 	// to string
-	std::wstring& fs = f.str();
+	std::wstring fs = f.str();
 	std::wcout << L"fs = " << fs << std::endl;				
 
 	return true;
 
+}
+
+/// @brief boost::hash
+bool boost_hash()
+{
+    return true;
 }

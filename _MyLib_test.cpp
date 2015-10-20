@@ -77,6 +77,7 @@ extern bool test_map_plus_algorithm_1();
 extern bool test_map_plus_algorithm_2();
 extern bool test_map_plus_algorithm_3();
 extern bool test_map_plus_algorithm_4();
+extern bool test_std_unordered_map();
 
 // _test_regstry_util.cpp
 extern bool test_registry_util();
@@ -128,7 +129,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_to_lower_uppper_string);
 	////assert_bool(true, test_const_position);		// 컴파일 불가 테스트
 	//assert_bool(true, test_initialize_string);
-	assert_bool(true, test_process_tree);
+	//assert_bool(true, test_process_tree);
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
 	//assert_bool(true, test_get_local_ip_list);
@@ -169,6 +170,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_map_plus_algorithm_2);
 	//assert_bool(true, test_map_plus_algorithm_3);
 	//assert_bool(true, test_map_plus_algorithm_4);
+    assert_bool(true, test_std_unordered_map);
 
 	//assert_bool(true, test_registry_util);
 
