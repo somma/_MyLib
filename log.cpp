@@ -106,100 +106,6 @@ set_log_format(
  * @return	
 **/
 void
-log_write(
-    _In_ uint32_t log_level, 
-	_In_ uint32_t log_to,
-    _In_z_ const char* function,
-    _In_z_ const char* log_message
-    )
-{
-	_ASSERTE(NULL != function);
-	_ASSERTE(NULL != log_message);
-	if (NULL == function || NULL == log_message) return;
-	
-	// check base log level
-	if (NULL != _logger && _logger->slog_get_base_log_level() > log_level) return;
-
-
-	// show log level prefix
-	std::stringstream log_strm;
-	switch (log_level)
-	{
-	case log_level_debug:   log_strm << "[DBG ] "; break;
-	case log_level_info:    log_strm << "[INFO] "; break;
-	case log_level_warn:    log_strm << "[WARN] "; break;
-	case log_level_error:   log_strm << "[ERR ] "; break;
-	default:
-		_ASSERTE(!"never reach here!");
-		return;
-	}
-
-	//> show process name
-	if (true == _show_process_name)
-	{
-		std::string module_file = WcsToMbsEx(get_current_module_fileEx().c_str());
-		log_strm << module_file;
-	}
-
-	//> show pid, tid
-	if (true == _show_pid_tid)
-	{
-		log_strm << 
-			boost::format( "(%+5u:%+5u) : " ) 
-			% GetCurrentProcessId() 
-			% GetCurrentThreadId();
-	}
-
-	//> show function name
-	if (true == _show_function_name)
-	{
-		log_strm << boost::format( "%s : " ) % function;
-	}
-
-	//> add new line
-	log_strm << log_message;
-	log_strm << "\n";
-
-
-	if (NULL != _logger)
-	{
-		_logger->slog_write(log_level, log_to, log_strm.str().c_str());
-	}
-	else
-	{		
-		if (log_to & log_to_con)
-		{
-            switch (log_level)
-            {
-            case log_level_error: // same as log_level_critical
-                write_to_console(wtc_red, log_strm.str().c_str());
-                break;
-            case log_level_info:
-            case log_level_warn:
-                write_to_console(wtc_green, log_strm.str().c_str());
-                break;
-            default:
-                write_to_console(wtc_none, log_strm.str().c_str());
-            }
-		}
-
-		if (log_to & log_to_ods)
-		{			
-			OutputDebugStringA(log_strm.str().c_str());
-		}
-	}
-}
-
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-void
 log_write_fmt(
     _In_ uint32_t log_level, 
 	_In_ uint32_t log_to,
@@ -208,14 +114,62 @@ log_write_fmt(
     _In_ ...
     )
 {
+    // check base log level
+    if (NULL != _logger && _logger->slog_get_base_log_level() > log_level) return;
+    
     if (NULL == fmt) return;
 
 	char log_buffer[2048];
     size_t remain = sizeof(log_buffer);
-    size_t remain_b = remain;
     char* pos = log_buffer;
-    char* pos_b = pos;    
     va_list args;
+
+    // log level
+    switch (log_level)
+    {
+    case log_level_debug: StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[DEBG] "); break;
+    case log_level_info:  StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[INFO] "); break;
+    case log_level_warn:  StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[WARN] "); break;
+    case log_level_error: StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[EROR] "); break;
+    default:
+        _ASSERTE(!"never reach here!");
+        return;
+    }
+
+    //> show process name
+    if (true == _show_process_name)
+    {
+        StringCbPrintfExA(
+            pos, 
+            remain, 
+            &pos, 
+            &remain, 
+            0, 
+            "%ws",
+            get_current_module_fileEx().c_str()
+            );
+    }
+
+    //> show pid, tid
+    if (true == _show_pid_tid)
+    {
+        StringCbPrintfExA(
+            pos,
+            remain,
+            &pos,
+            &remain,
+            0,
+            "(%+5u:%+5u) : ",
+            GetCurrentProcessId(),
+            GetCurrentThreadId()
+            );
+    }
+
+    //> show function name
+    if (true == _show_function_name)
+    {
+        StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s : ", function);
+    }
 
     va_start(args,fmt);
     HRESULT hRes = StringCbVPrintfExA(
@@ -232,22 +186,138 @@ log_write_fmt(
     {
 		// invalid character 가 끼어있는 경우 발생 할 수 있음
         StringCbPrintfExA(
-            pos_b, 
-            remain_b, 
-            &pos_b, 
-            &remain_b, 
+            pos, 
+            remain, 
+            &pos, 
+            &remain,
             0, 
             "invalid function call parameters"
-            );		
-        remain = remain_b;
-        pos = pos_b;
+            );
     }    
     va_end(args);
 
-	log_write(log_level, log_to, function, log_buffer);
+    // line feed
+    StringCbPrintfExA(pos, remain, &pos, &remain, 0, "\n");
+
+    // Let's write logs.
+    if (NULL != _logger)
+    {
+        _logger->slog_write(log_level, log_to, log_buffer);
+    }
+    else
+    {
+        if (log_to & log_to_con)
+        {
+            switch (log_level)
+            {
+            case log_level_error: // same as log_level_critical
+                write_to_console(wtc_red, log_buffer);
+                break;
+            case log_level_info:
+            case log_level_warn:
+                write_to_console(wtc_green, log_buffer);
+                break;
+            default:
+                write_to_console(wtc_none, log_buffer);
+            }
+        }
+
+        if (log_to & log_to_ods)
+        {
+            OutputDebugStringA(log_buffer);
+        }
+    }
 }
 
+/// @brief  Writes log without decoration
+void
+log_write_fmt_without_deco(
+    _In_ uint32_t log_level,
+    _In_ uint32_t log_to,
+    _In_z_ const char* fmt,
+    _In_ ...
+    )
+{
+    // check base log level
+    if (NULL != _logger && _logger->slog_get_base_log_level() > log_level) return;
 
+    if (NULL == fmt) return;
+
+    char log_buffer[2048];
+    size_t remain = sizeof(log_buffer);
+    char* pos = log_buffer;
+    va_list args;
+
+    // log level
+    switch (log_level)
+    {
+    case log_level_debug: StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[DEBG] "); break;
+    case log_level_info:  StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[INFO] "); break;
+    case log_level_warn:  StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[WARN] "); break;
+    case log_level_error: StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[EROR] "); break;
+    default:
+        _ASSERTE(!"never reach here!");
+        return;
+    }
+
+    va_start(args, fmt);
+    HRESULT hRes = StringCbVPrintfExA(
+        pos,
+        remain,
+        &pos,
+        &remain,
+        0,
+        fmt,
+        args
+        );
+
+    if (S_OK != hRes)
+    {
+        // invalid character 가 끼어있는 경우 발생 할 수 있음
+        StringCbPrintfExA(
+            pos,
+            remain,
+            &pos,
+            &remain,
+            0,
+            "invalid function call parameters"
+            );
+    }
+    va_end(args);
+
+    // line feed
+    StringCbPrintfExA(pos, remain, &pos, &remain, 0, "\n");
+
+    // Let's write logs.
+    if (NULL != _logger)
+    {
+        _logger->slog_write(log_level, log_to, log_buffer);
+    }
+    else
+    {
+        if (log_to & log_to_con)
+        {
+            switch (log_level)
+            {
+            case log_level_error: // same as log_level_critical
+                write_to_console(wtc_red, log_buffer);
+                break;
+            case log_level_info:
+            case log_level_warn:
+                write_to_console(wtc_green, log_buffer);
+                break;
+            default:
+                write_to_console(wtc_none, log_buffer);
+            }
+        }
+
+        if (log_to & log_to_ods)
+        {
+            OutputDebugStringA(log_buffer);
+        }
+    }
+
+}
 
 /*****************************************************************************/
 /*					slogger class implementation							 */
