@@ -437,9 +437,11 @@ void cprocess_tree::print_process_tree(_In_ process& p, _In_ DWORD& depth)
 	for(; it != ite; ++it)
 	{
 		// ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, ppid 를 할당받은 경우가 
-		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다. 
+		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다.
+		// 수정: Jang, Hyowon (jang.hw73@gmail.com)
+		// 생성시간이 동일한 경우 print되지 않는 프로세스가 존재하기 때문에(ex. creation_time == 0) 생성시간의 값이 더 크거나 같은 값으로 해야 한다.
 		if ( it->second.ppid() == p.pid() && 
-			(uint64_t)it->second.creation_time() > (uint64_t)p.creation_time())
+			(uint64_t)it->second.creation_time() >= (uint64_t)p.creation_time())
 		{
 			print_process_tree(it->second, ++depth);
 			--depth;
@@ -467,9 +469,11 @@ void cprocess_tree::kill_process_tree(_In_ process& root)
 	for(; its != ite; ++its)
 	{
 		// ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, ppid 를 할당받은 경우가 
-		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다. 
+		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다.
+		// 수정: Jang, Hyowon (jang.hw73@gmail.com)
+		// 생성시간이 동일한 경우 print되지 않는 프로세스가 존재하기 때문에(ex. creation_time == 0) 생성시간의 값이 더 크거나 같은 값으로 해야 한다.
 		if ( its->second.ppid() == root.pid() && 
-			 its->second.creation_time() > root.creation_time())
+			 its->second.creation_time() >= root.creation_time())
 		{
 			kill_process_tree(its->second);
 		}
@@ -501,9 +505,11 @@ void cprocess_tree::iterate_process_tree(_In_ process& root, _In_ fnproc_tree_ca
 	for(; its != ite; ++its)
 	{
 		// ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, ppid 를 할당받은 경우가 
-		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다. 
+		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다.
+		// 수정: Jang, Hyowon (jang.hw73@gmail.com)
+		// 생성시간이 동일한 경우 print되지 않는 프로세스가 존재하기 때문에(ex. creation_time == 0) 생성시간의 값이 더 크거나 같은 값으로 해야 한다.
 		if ( its->second.ppid() == root.pid() && 
-			 its->second.creation_time() > root.creation_time())
+			 its->second.creation_time() >= root.creation_time())
 		{
 			iterate_process_tree(its->second, callback, callback_tag);
 		}
