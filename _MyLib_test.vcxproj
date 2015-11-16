@@ -76,6 +76,8 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>.\x64_debug\</OutDir>
     <IntDir>x64\debug\</IntDir>
+    <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -111,6 +113,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/I "z:\work.mylib" /I "z:\boost_x64\include\boost-1_59" </AdditionalOptions>
       <SDLCheck>true</SDLCheck>
+      <EnablePREfast>true</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -161,6 +164,7 @@
     <ClInclude Include="base64.h" />
     <ClInclude Include="FileIoHelper.h" />
     <ClInclude Include="FileIoHelperClass.h" />
+    <ClInclude Include="LeakWatcher.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="process_tree.h" />
     <ClInclude Include="rc4.h" />

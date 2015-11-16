@@ -13,7 +13,7 @@
 
 
 bool test_std_unordered_map_object();
-
+bool test_unorded_map_test_move();
 
 
 /**
@@ -305,7 +305,7 @@ bool test_std_unordered_map()
         std::cout << ff->second << std::endl;
     }
 
-    return test_std_unordered_map_object();
+    return true;
 }
 
 /// @brief
@@ -409,10 +409,93 @@ bool test_std_unordered_map_object()
     _ASSERTE(NULL == p);
     p = new MyC(3);
     mymap[3] = p;
-    for (auto itemz : mymap)
+
+
+    PMyP& pr = mymap[4];        // 참조자로 받을 수도 있다.
+    _ASSERTE(NULL == pr);
+    pr = new MyC(4);
+    // mymap[3] = p;            <= 참조자로 받았기땜시롱, 값을 다시 설정할 필요없다.
+
+    
+    // clear the rest of all
+    for (auto litem : mymap)
     {
-        itemz.second->dump();
+        delete litem.second;
     }
+    mymap.clear();
+    
+    _ASSERTE(0 == mymap.size());
+    return true;
+}
+
+
+
+
+
+/// @brief	
+typedef class SomeClass
+{
+public: 
+    SomeClass(int v) : _v(v)
+    {    
+    }
+
+    ~SomeClass()
+    {
+        printf("%s, v = %d\n", __FUNCTION__, _v);
+    }
+
+    int _v;
+
+} *PSomeClass;
+
+bool test_unorded_map_test_move()
+{
+    typedef std::list<PSomeClass> SomeClassList, *PSomeClassList;
+    std::unordered_map< int, PSomeClassList > um;
+
+    
+
+    PSomeClassList l1 = new SomeClassList();
+    PSomeClass o11 = new SomeClass(11); l1->push_back(o11);
+    PSomeClass o12 = new SomeClass(12); l1->push_back(o12);
+    PSomeClass o13 = new SomeClass(13); l1->push_back(o13);
+    PSomeClass o14 = new SomeClass(14); l1->push_back(o14);
+    // make_pare< RValueRef, RValueRef > 가 와야 하는데, PSomeClassList 는 lvalue 이므로
+    // 에러남. LValue 를 RValue 로 변환해주는 std::move() 를 이용해서 PSomeClassList 를 전달
+    um.insert(std::make_pair<int, PSomeClassList>(1, std::move(l1)));
+    
+
+
+    PSomeClassList l2 = new SomeClassList;
+    PSomeClass o21 = new SomeClass(21); l1->push_back(o21);
+    PSomeClass o22 = new SomeClass(22); l1->push_back(o22);
+    PSomeClass o23 = new SomeClass(23); l1->push_back(o23);
+    PSomeClass o24 = new SomeClass(24); l1->push_back(o24);
+    um.insert(std::make_pair<int, PSomeClassList>(2, std::move(l2)));
+
+
+    um[2]->push_back(new SomeClass(31));
+    um[2]->push_back(new SomeClass(32));
+    um[2]->push_back(new SomeClass(33));
+    um[2]->push_back(new SomeClass(34));
+    
+
+    // free all rsrc.
+    for (auto item : um)
+    {
+        //PSomeClassList ln = item.second;
+        auto ln = item.second;
+        SomeClassList::iterator s = ln->begin();
+        SomeClassList::iterator e = ln->end();
+        for (; s != e; ++s)
+        {
+            delete *s;
+        }
+        ln->clear();
+        delete ln;
+    }
+    um.clear();    
 
     return true;
 }

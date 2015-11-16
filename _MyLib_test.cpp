@@ -78,6 +78,9 @@ extern bool test_map_plus_algorithm_2();
 extern bool test_map_plus_algorithm_3();
 extern bool test_map_plus_algorithm_4();
 extern bool test_std_unordered_map();
+extern bool test_std_unordered_map_object();
+extern bool test_unorded_map_test_move();
+
 
 // _test_regstry_util.cpp
 extern bool test_registry_util();
@@ -109,6 +112,9 @@ public:
 **/
 int _tmain(int argc, _TCHAR* argv[])
 {
+    UNREFERENCED_PARAMETER(argc);
+    UNREFERENCED_PARAMETER(argv);
+
 	bool ret = false;
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
@@ -171,6 +177,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_map_plus_algorithm_3);
 	//assert_bool(true, test_map_plus_algorithm_4);
     assert_bool(true, test_std_unordered_map);
+    assert_bool(true, test_std_unordered_map_object);
+    assert_bool(true, test_unorded_map_test_move);
+
 
 	//assert_bool(true, test_registry_util);
 
@@ -447,6 +456,7 @@ bool test_initialize_string()
 **/
 bool proc_tree_callback(_In_ process& process_info, _In_ DWORD_PTR callback_tag)
 {
+    UNREFERENCED_PARAMETER(callback_tag);
 	log_info "pid = %u, %ws", process_info.pid(), process_info.process_name().c_str() log_end
 	return true;
 }
@@ -520,6 +530,7 @@ bool test_base64()
 bool test_random()
 {
 	int var = rand() % 1000 + 1;
+    log_info "var = %d", var log_end;
 	return true;
 }
 

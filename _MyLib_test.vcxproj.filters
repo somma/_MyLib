@@ -60,6 +60,9 @@
     <ClInclude Include="thread_pool.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
+    <ClInclude Include="LeakWatcher.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
