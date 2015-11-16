@@ -20,7 +20,8 @@ typedef class thread_pool
 {
 private:
     std::queue< boost::function< void() > > _tasks;
-    boost::thread_group                     _threads;
+    boost::thread_group                     _threads;  
+    std::size_t                             _pool_size;
     std::size_t                             _available;
     boost::mutex                            _lock;
     boost::condition_variable               _condition;
@@ -30,6 +31,7 @@ public:
     /// @brief  Constructor
     thread_pool(std::size_t pool_size)
         :
+        _pool_size(pool_size),
         _available(pool_size),
         _running(true)
     {
@@ -67,6 +69,13 @@ public:
     {
         boost::unique_lock< boost::mutex > lock(_lock);
         return _tasks.size();
+    }
+
+    /// @brief  return true if all thread in pool is idle.
+    bool is_idle()
+    {
+        boost::lock_guard< boost::mutex > lock(_lock);
+        return (_tasks.empty() && _available == _pool_size) ? true : false;
     }
 
     /// @brief Add task to the thread pool if a thread is currently available.
