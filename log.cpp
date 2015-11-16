@@ -262,14 +262,14 @@ log_write_fmt_without_deco(
 
     va_start(args, fmt);
     HRESULT hRes = StringCbVPrintfExA(
-        pos,
-        remain,
-        &pos,
-        &remain,
-        0,
-        fmt,
-        args
-        );
+                        pos,
+                        remain,
+                        &pos,
+                        &remain,
+                        0,
+                        fmt,
+                        args
+                        );
 
     if (S_OK != hRes)
     {
@@ -475,27 +475,12 @@ void slogger::slog_thread()
 		}
     }
 
-    //std::cout << boost::format("tid=0x%08x, %s finalizing... \n") % GetCurrentThreadId() % __FUNCTION__;
+    // flush all logs to target media only file.
+    write_to_console(wtc_green, "finalizing logs...");
     _lock->Enter();
         while(true != _log_queue.empty())
         {
             log_entry log = _log_queue.pop();
-			if (log._log_to & log_to_con)
-			{
-                switch (log._log_level)
-                {
-                case log_level_error: // same as log_level_critical
-                    write_to_console(wtc_red, log._msg.c_str());
-                    break;
-                case log_level_info:
-                case log_level_warn:
-                    write_to_console(wtc_green, log._msg.c_str());
-                    break;
-                default:
-                    write_to_console(wtc_none, log._msg.c_str());
-                }
-			}
-
 			if (log._log_to & log_to_file)
 			{
 				if (INVALID_HANDLE_VALUE != _log_file_handle)
@@ -503,12 +488,8 @@ void slogger::slog_thread()
 					write_to_filea(_log_file_handle, "%s", log._msg.c_str());
 				}
 			}
-
-			if (log._log_to & log_to_ods)
-			{			
-				OutputDebugStringA(log._msg.c_str());
-			}
         }
     _lock->Leave();	
+    write_to_console(wtc_green, "done.\n");
     //std::cout << boost::format("tid=0x%08x, %s logger thread terminated \n") % GetCurrentThreadId() % __FUNCTION__;
 }
