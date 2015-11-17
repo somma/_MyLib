@@ -13,11 +13,11 @@
 /**
  * @brief	
 **/
-static slogger*		_logger = NULL;
-static bool			_show_process_name = true;
-static bool			_show_pid_tid = true;
-static bool			_show_function_name = true;
-
+static boost::mutex     _logger_lock;
+static slogger*		    _logger = NULL;
+static bool			    _show_process_name = true;
+static bool			    _show_pid_tid = true;
+static bool			    _show_function_name = true;
 
 /**
  * @brief	log 모듈을 초기화한다. 
@@ -34,7 +34,8 @@ initialize_log(
 	_In_opt_z_ const wchar_t* log_file_path
 	)
 {
-	if (NULL != _logger) return true;
+    boost::lock_guard< boost::mutex > lock(_logger_lock);
+    if (NULL != _logger) return true;
 
 	slogger* local_slogger = new slogger();
 	if (NULL == local_slogger) 
@@ -50,7 +51,7 @@ initialize_log(
 	}
 
 	// exchange instance
-	InterlockedExchangePointer((PVOID*)&_logger, local_slogger);
+    _logger = local_slogger;
 	local_slogger = NULL;
 
 	return true;
@@ -69,8 +70,8 @@ void
 finalize_log(
 	)
 {
+    boost::lock_guard< boost::mutex > lock(_logger_lock);
 	if (NULL == _logger) return;
-
 	_logger->slog_stop();
 	delete _logger;  _logger = NULL;
 }
@@ -91,6 +92,8 @@ set_log_format(
 	_In_ bool show_function_name
 	)
 {
+    boost::lock_guard< boost::mutex > lock(_logger_lock);
+
 	_show_process_name = show_process_name;
 	_show_pid_tid = show_pid_tid;
 	_show_function_name = show_function_name;
@@ -115,7 +118,10 @@ log_write_fmt(
     )
 {
     // check base log level
-    if (NULL != _logger && _logger->slog_get_base_log_level() > log_level) return;
+    {
+        boost::lock_guard< boost::mutex > lock(_logger_lock);
+        if (NULL != _logger && _logger->slog_get_base_log_level() > log_level) return;
+    }
     
     if (NULL == fmt) return;
 
@@ -200,31 +206,35 @@ log_write_fmt(
     StringCbPrintfExA(pos, remain, &pos, &remain, 0, "\n");
 
     // Let's write logs.
-    if (NULL != _logger)
     {
-        _logger->slog_write(log_level, log_to, log_buffer);
-    }
-    else
-    {
-        if (log_to & log_to_con)
-        {
-            switch (log_level)
-            {
-            case log_level_error: // same as log_level_critical
-                write_to_console(wtc_red, log_buffer);
-                break;
-            case log_level_info:
-            case log_level_warn:
-                write_to_console(wtc_green, log_buffer);
-                break;
-            default:
-                write_to_console(wtc_none, log_buffer);
-            }
-        }
+        boost::lock_guard< boost::mutex > lock(_logger_lock);
 
-        if (log_to & log_to_ods)
+        if (NULL != _logger)
         {
-            OutputDebugStringA(log_buffer);
+            _logger->slog_write(log_level, log_to, log_buffer);
+        }
+        else
+        {
+            if (log_to & log_to_con)
+            {
+                switch (log_level)
+                {
+                case log_level_error: // same as log_level_critical
+                    write_to_console(wtc_red, log_buffer);
+                    break;
+                case log_level_info:
+                case log_level_warn:
+                    write_to_console(wtc_green, log_buffer);
+                    break;
+                default:
+                    write_to_console(wtc_none, log_buffer);
+                }
+            }
+
+            if (log_to & log_to_ods)
+            {
+                OutputDebugStringA(log_buffer);
+            }
         }
     }
 }
@@ -239,7 +249,10 @@ log_write_fmt_without_deco(
     )
 {
     // check base log level
-    if (NULL != _logger && _logger->slog_get_base_log_level() > log_level) return;
+    {
+        boost::lock_guard< boost::mutex > lock(_logger_lock);
+        if (NULL != _logger && _logger->slog_get_base_log_level() > log_level) return;
+    }
 
     if (NULL == fmt) return;
 
@@ -289,31 +302,35 @@ log_write_fmt_without_deco(
     StringCbPrintfExA(pos, remain, &pos, &remain, 0, "\n");
 
     // Let's write logs.
-    if (NULL != _logger)
     {
-        _logger->slog_write(log_level, log_to, log_buffer);
-    }
-    else
-    {
-        if (log_to & log_to_con)
-        {
-            switch (log_level)
-            {
-            case log_level_error: // same as log_level_critical
-                write_to_console(wtc_red, log_buffer);
-                break;
-            case log_level_info:
-            case log_level_warn:
-                write_to_console(wtc_green, log_buffer);
-                break;
-            default:
-                write_to_console(wtc_none, log_buffer);
-            }
-        }
+        boost::lock_guard< boost::mutex > lock(_logger_lock);
 
-        if (log_to & log_to_ods)
+        if (NULL != _logger)
         {
-            OutputDebugStringA(log_buffer);
+            _logger->slog_write(log_level, log_to, log_buffer);
+        }
+        else
+        {
+            if (log_to & log_to_con)
+            {
+                switch (log_level)
+                {
+                case log_level_error: // same as log_level_critical
+                    write_to_console(wtc_red, log_buffer);
+                    break;
+                case log_level_info:
+                case log_level_warn:
+                    write_to_console(wtc_green, log_buffer);
+                    break;
+                default:
+                    write_to_console(wtc_none, log_buffer);
+                }
+            }
+
+            if (log_to & log_to_ods)
+            {
+                OutputDebugStringA(log_buffer);
+            }
         }
     }
 
