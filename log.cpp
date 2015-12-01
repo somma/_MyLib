@@ -493,7 +493,7 @@ void slogger::slog_thread()
     }
 
     // flush all logs to target media only file.
-    write_to_console(wtc_green, "finalizing logs...");
+    write_to_console(wtc_green, "[INFO] finalizing logs...");
     _lock->Enter();
         while(true != _log_queue.empty())
         {

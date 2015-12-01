@@ -12,3 +12,4 @@ build/
 ipch/
 x64/
 x86/
+doxygen/
