@@ -12,7 +12,8 @@
 #include "base64.h"
 #include "rc4.h"
 #include "thread_pool.h"
-
+#include "md5.h"
+#include "sha2.h"
 
 bool test_for_each();
 
@@ -51,6 +52,9 @@ bool test_get_environment_value();
 
 // rc4.cpp
 bool test_rc4_encrypt();
+
+// md5.cpp / sha2.cpp
+bool test_md5_sha2();
 
 // _test_boost_asio_timer.cpp
 extern bool test_boost_asio_timer();
@@ -155,6 +159,7 @@ int _tmain(int argc, _TCHAR* argv[])
  //   assert_bool(true, test_get_local_ip_list);
 
 	//assert_bool(true, test_rc4_encrypt);
+    assert_bool(true, test_md5_sha2);
 	//
 	//assert_bool(true, boost_lexical_cast);
 	//assert_bool(true, boost_shared_ptr_void);
@@ -176,9 +181,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_map_plus_algorithm_2);
 	//assert_bool(true, test_map_plus_algorithm_3);
 	//assert_bool(true, test_map_plus_algorithm_4);
-    assert_bool(true, test_std_unordered_map);
-    assert_bool(true, test_std_unordered_map_object);
-    assert_bool(true, test_unorded_map_test_move);
+    //assert_bool(true, test_std_unordered_map);
+    //assert_bool(true, test_std_unordered_map_object);
+    //assert_bool(true, test_unorded_map_test_move);
 
 
 	//assert_bool(true, test_registry_util);
@@ -947,9 +952,6 @@ bool test_rc4_encrypt()
 	const char plain[] = "abcdefghijklmnop1234567890!@#$%^&*()가나다라마바사아자차카타파하";
 	uint8_t enc[1024] = {0};
 	uint8_t dec[1024] = {0};
-
-
-	
 	rc4_state ctx={0};
 	
 	// encrypt
@@ -966,6 +968,80 @@ bool test_rc4_encrypt()
 	return true;
 }
 
+// md5.cpp
+bool test_md5_sha2()
+{
+    MD5_CTX ctx_md5 = { 0 };
+    sha256_ctx ctx_sha2 = { 0 };
+
+    uint8_t md5[16] = { 0 };
+    uint8_t sha2[32] = { 0 };
+
+    const uint32_t read_buffer_size = 4096;
+    uint8_t read_buffer[read_buffer_size];
+    
+    wchar_t* file_path = L"z:\\Downloads\\ubuntu-14.04.3-desktop-amd64.iso";
+
+    HANDLE file_handle = CreateFileW(
+                            file_path,
+                            GENERIC_READ,
+                            NULL,
+                            NULL,
+                            OPEN_EXISTING,
+                            FILE_ATTRIBUTE_NORMAL,
+                            NULL
+                            );
+    if (INVALID_HANDLE_VALUE == file_handle)
+    {
+        return false;
+    }
+
+    DWORD ret = SetFilePointer(file_handle, 0, NULL, FILE_BEGIN);
+    if (INVALID_SET_FILE_POINTER == ret)
+    {
+        CloseHandle(file_handle);
+        return false;
+    }
+
+    MD5Init(&ctx_md5, 0);
+    sha256_begin(&ctx_sha2);
+
+    DWORD read = 4096;
+    while (read_buffer_size == read)
+    {
+        if (FALSE == ::ReadFile(
+                            file_handle, 
+                            read_buffer, 
+                            read_buffer_size, 
+                            &read, 
+                            NULL))
+        {
+            log_err 
+                "ReadFile( %ws ) failed. gle = 0x%08x", 
+                file_path, 
+                GetLastError() 
+            log_end;
+            break;
+        }
+
+        if (0 != read)
+        {
+            MD5Update(&ctx_md5, read_buffer, read);
+            sha256_hash(read_buffer, read, &ctx_sha2);
+        }
+    }
+
+    MD5Final(&ctx_md5);
+    
+    sha256_end(sha2, &ctx_sha2);
+    RtlCopyMemory(md5, ctx_md5.digest, sizeof(md5));
+
+    // hash byte buffer to string...
+
+
+    CloseHandle(file_handle);
+    return true;
+}
 
 /**
  * @brief thread_pool test

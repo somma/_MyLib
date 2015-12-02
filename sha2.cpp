@@ -74,6 +74,8 @@
  on big-endian systems and for his assistance with corrections
 */
 
+#include "stdafx.h"
+
 /* define the hash functions that you need          */
 
 #define SHA_2           /* for dynamic hash length  */

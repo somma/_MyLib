@@ -63,6 +63,12 @@
     <ClInclude Include="LeakWatcher.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
+    <ClInclude Include="sha2.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="md5.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -124,6 +130,12 @@
     </ClCompile>
     <ClCompile Include="_test_boost_thread.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sha2.cpp">
+      <Filter>_MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="md5.cpp">
+      <Filter>_MyLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
