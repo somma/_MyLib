@@ -87,6 +87,46 @@ LPCWSTR FAT2Str(IN FATTIME& fat)
 	return FT2Str(ft);
 }
 
+/// @brief  FILETIME to `yyyy-mm-dd hh:mi:ss` string representation.
+std::string file_time_to_str(_In_ FILETIME& file_time)
+{
+    char buf[24];
+
+    SYSTEMTIME utc;
+    FileTimeToSystemTime(&file_time, &utc);
+    //SystemTimeToTzSpecificLocalTime(NULL, &utc, &local);
+    StringCbPrintfA(buf, sizeof(buf),
+                    "%04u-%02u-%02u %02u:%02u:%02u",
+                    utc.wYear,
+                    utc.wMonth,
+                    utc.wDay,
+                    utc.wHour,
+                    utc.wMinute,
+                    utc.wSecond
+                    );
+    return std::string(buf);
+
+}
+
+/// @brief  SYSTEMTIME to `yyyy-mm-dd hh:mi:ss` string representation.
+std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time)
+{
+    char buf[24];
+
+    //SystemTimeToTzSpecificLocalTime(NULL, &utc, &local);
+    StringCbPrintfA(buf, sizeof(buf),
+                    "%04u-%02u-%02u %02u:%02u:%02u",
+                    sys_time.wYear,
+                    sys_time.wMonth,
+                    sys_time.wDay,
+                    sys_time.wHour,
+                    sys_time.wMinute,
+                    sys_time.wSecond
+                    );
+    return std::string(buf);
+}
+
+
 /**
  * @brief	
  * @param	

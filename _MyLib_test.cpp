@@ -980,10 +980,14 @@ bool test_md5_sha2()
     const uint32_t read_buffer_size = 4096;
     uint8_t read_buffer[read_buffer_size];
     
-    wchar_t* file_path = L"z:\\Downloads\\ubuntu-14.04.3-desktop-amd64.iso";
+    //wchar_t* file_path = L"z:\\Downloads\\ubuntu-14.04.3-desktop-amd64.iso";
+    wchar_t* file_path = L"\\Device\\HarddiskVolume2\\Program Files(x86)\\Microsoft Office\\Root\\Office16\\outllib.dll";
+
+    std::wstring dos_name;
+    if (true != nt_name_to_dos_name(file_path, dos_name)) return false;
 
     HANDLE file_handle = CreateFileW(
-                            file_path,
+                            dos_name.c_str(),
                             GENERIC_READ,
                             NULL,
                             NULL,

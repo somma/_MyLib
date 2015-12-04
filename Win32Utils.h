@@ -91,7 +91,7 @@ static __inline LARGE_INTEGER getticks(void)
 	}
 	return retval;
 }
-
+ 
 */
 
 //=============================================================================
@@ -109,6 +109,9 @@ typedef struct _FATTIME
 
 LPCWSTR FT2Str(IN FILETIME& ft);
 LPCWSTR FAT2Str(IN FATTIME& fat);
+
+std::string file_time_to_str(_In_ FILETIME& file_time);
+std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time);
 
 /******************************************************************************
  * 파일 처리
