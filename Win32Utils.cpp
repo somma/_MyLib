@@ -172,6 +172,21 @@ bool is_file_existsA(_In_ const char* file_path)
 	return ret;
 }
 
+/// @brief  file_path 가 directory 이면 true 리턴
+bool is_dir(_In_ const wchar_t* file_path)
+{   
+    WIN32_FILE_ATTRIBUTE_DATA info = { 0 };
+    if (TRUE == GetFileAttributesExW(file_path, GetFileExInfoStandard, &info))
+    {
+        if (info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /**
  * @brief	file_handle 로 file path 를 구하는 함수
  * @param	
