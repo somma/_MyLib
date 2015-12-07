@@ -120,7 +120,6 @@ log_write_fmt(
     // check base log level
     {
         boost::lock_guard< boost::mutex > lock(_logger_lock);
-        if (NULL == _logger) return;
         if (NULL != _logger && _logger->slog_get_base_log_level() > log_level) return;
     }
     
@@ -209,7 +208,34 @@ log_write_fmt(
     // Let's write logs.
     {
         boost::lock_guard< boost::mutex > lock(_logger_lock);
-        _logger->slog_write(log_level, log_to, log_buffer);
+
+        if (NULL != _logger)
+        {
+            _logger->slog_write(log_level, log_to, log_buffer);
+        }
+        else
+        {
+            if (log_to & log_to_con)
+            {
+                switch (log_level)
+                {
+                case log_level_error: // same as log_level_critical
+                    write_to_console(wtc_red, log_buffer);
+                    break;
+                case log_level_info:
+                case log_level_warn:
+                    write_to_console(wtc_green, log_buffer);
+                    break;
+                default:
+                    write_to_console(wtc_none, log_buffer);
+                }
+            }
+
+            if (log_to & log_to_ods)
+            {
+                OutputDebugStringA(log_buffer);
+            }
+        }
     }
 }
 
@@ -225,7 +251,6 @@ log_write_fmt_without_deco(
     // check base log level
     {
         boost::lock_guard< boost::mutex > lock(_logger_lock);
-        if (NULL == _logger) return;
         if (NULL != _logger && _logger->slog_get_base_log_level() > log_level) return;
     }
 
@@ -279,8 +304,36 @@ log_write_fmt_without_deco(
     // Let's write logs.
     {
         boost::lock_guard< boost::mutex > lock(_logger_lock);
-        _logger->slog_write(log_level, log_to, log_buffer);
+
+        if (NULL != _logger)
+        {
+            _logger->slog_write(log_level, log_to, log_buffer);
+        }
+        else
+        {
+            if (log_to & log_to_con)
+            {
+                switch (log_level)
+                {
+                case log_level_error: // same as log_level_critical
+                    write_to_console(wtc_red, log_buffer);
+                    break;
+                case log_level_info:
+                case log_level_warn:
+                    write_to_console(wtc_green, log_buffer);
+                    break;
+                default:
+                    write_to_console(wtc_none, log_buffer);
+                }
+            }
+
+            if (log_to & log_to_ods)
+            {
+                OutputDebugStringA(log_buffer);
+            }
+        }
     }
+
 }
 
 /*****************************************************************************/
