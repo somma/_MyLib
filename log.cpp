@@ -18,6 +18,7 @@ static slogger*		    _logger = NULL;
 static bool			    _show_process_name = true;
 static bool			    _show_pid_tid = true;
 static bool			    _show_function_name = true;
+static uint32_t         _log_mask = log_mask_all;
 
 /**
  * @brief	log 모듈을 초기화한다. 
@@ -99,6 +100,24 @@ set_log_format(
 	_show_function_name = show_function_name;
 }
 
+
+/**
+ * @brief	log mask 를 설정한다. ( mask = 0xffffffff : 모든 로그를 활성화 )
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+void
+set_log_mask(
+    _In_ uint32_t mask
+    )
+{
+    _log_mask &= mask;
+}
+
 /**
  * @brief	
  * @param	
@@ -110,6 +129,7 @@ set_log_format(
 **/
 void
 log_write_fmt(
+    _In_ uint32_t log_mask,
     _In_ uint32_t log_level, 
 	_In_ uint32_t log_to,
 	_In_z_ const char* function,
@@ -117,6 +137,9 @@ log_write_fmt(
     _In_ ...
     )
 {
+    // check log mask
+    if (log_mask != (_log_mask & log_mask)) return;
+
     // check base log level
     {
         boost::lock_guard< boost::mutex > lock(_logger_lock);
@@ -242,12 +265,16 @@ log_write_fmt(
 /// @brief  Writes log without decoration
 void
 log_write_fmt_without_deco(
+    _In_ uint32_t log_mask,
     _In_ uint32_t log_level,
     _In_ uint32_t log_to,
     _In_z_ const char* fmt,
     _In_ ...
     )
 {
+    // check log mask
+    if (log_mask == (_log_mask & log_mask)) return;
+
     // check base log level
     {
         boost::lock_guard< boost::mutex > lock(_logger_lock);

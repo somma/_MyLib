@@ -47,6 +47,8 @@
 #define log_to_ods		2
 #define log_to_con		3
 
+/// @brief  log_mask
+#define log_mask_all    0xffffffff
 
 //
 // C like APIs
@@ -68,9 +70,15 @@ set_log_format(
 	_In_ bool show_pid_tid,
 	_In_ bool show_function_name
 	);
-    
+
+void 
+set_log_mask(
+    _In_ uint32_t mask
+    );        
+
 void
 log_write_fmt(
+    _In_ uint32_t log_mask,
     _In_ uint32_t log_level,
 	_In_ uint32_t log_to,
 	_In_z_ const char* function,
@@ -78,9 +86,9 @@ log_write_fmt(
     _In_ ...
     );
 
-
 void
 log_write_fmt_without_deco(
+    _In_ uint32_t log_mask, 
     _In_ uint32_t log_level,
     _In_ uint32_t log_to,
     _In_z_ const char* fmt,
@@ -92,18 +100,18 @@ log_write_fmt_without_deco(
 //
 // define macro for convenience
 //
-#define log_err		log_write_fmt( log_level_error, log_to_ods | log_to_file, __FUNCTION__, 
-#define log_warn	log_write_fmt( log_level_warn, log_to_ods | log_to_file, __FUNCTION__,  
-#define log_info	log_write_fmt( log_level_info, log_to_ods | log_to_file, __FUNCTION__, 
-#define log_dbg		log_write_fmt( log_level_debug, log_to_ods | log_to_file, __FUNCTION__, 
-#define log_msg     log_write_fmt_without_deco( log_level_debug, log_to_ods | log_to_file, 
+#define log_err		log_write_fmt( log_mask_all, log_level_error, log_to_ods | log_to_file, __FUNCTION__, 
+#define log_warn	log_write_fmt( log_mask_all, log_level_warn, log_to_ods | log_to_file, __FUNCTION__,  
+#define log_info	log_write_fmt( log_mask_all, log_level_info, log_to_ods | log_to_file, __FUNCTION__, 
+#define log_dbg		log_write_fmt( log_mask_all, log_level_debug, log_to_ods | log_to_file, __FUNCTION__, 
+#define log_msg     log_write_fmt_without_deco( log_mask_all, log_level_debug, log_to_ods | log_to_file, 
 
 
-#define con_err		log_write_fmt( log_level_error, log_to_con, __FUNCTION__, 
-#define con_warn	log_write_fmt( log_level_warn, log_to_con, __FUNCTION__,  
-#define con_info	log_write_fmt( log_level_info, log_to_con, __FUNCTION__, 
-#define con_dbg		log_write_fmt( log_level_debug, log_to_con, __FUNCTION__, 
-#define con_msg     log_write_fmt_without_deco( log_level_debug, log_to_con, 
+#define con_err		log_write_fmt( log_mask_all, log_level_error, log_to_con, __FUNCTION__, 
+#define con_warn	log_write_fmt( log_mask_all, log_level_warn, log_to_con, __FUNCTION__,  
+#define con_info	log_write_fmt( log_mask_all, log_level_info, log_to_con, __FUNCTION__, 
+#define con_dbg		log_write_fmt( log_mask_all, log_level_debug, log_to_con, __FUNCTION__, 
+#define con_msg     log_write_fmt_without_deco( log_mask_all, log_level_debug, log_to_con, 
 
 
 #define log_end		);
