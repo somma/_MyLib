@@ -34,6 +34,9 @@ bool test_process_tree();
 bool test_base64();
 bool test_random();
 bool test_get_local_ip_list();
+
+bool test_strtok();
+
 // _test_cpp_test.cpp
 bool test_cpp_class();
 
@@ -143,6 +146,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
 	//assert_bool(true, test_get_local_ip_list);
+    assert_bool(true, test_strtok);
 
 	//assert_bool(true, test_cpp_class);
 	//
@@ -159,7 +163,7 @@ int _tmain(int argc, _TCHAR* argv[])
  //   assert_bool(true, test_get_local_ip_list);
 
 	//assert_bool(true, test_rc4_encrypt);
-    assert_bool(true, test_md5_sha2);
+    //assert_bool(true, test_md5_sha2);
 	//
 	//assert_bool(true, boost_lexical_cast);
 	//assert_bool(true, boost_shared_ptr_void);
@@ -568,6 +572,78 @@ bool test_get_local_ip_list()
 	return true;
 }
 
+/// 
+
+bool split_string(_In_ const char* str, _In_ const char* seps, _Out_ std::vector<std::string>& tokens)
+{
+#define max_str_len     2048
+
+    _ASSERTE(NULL != str);
+    if (NULL == str) return false;
+
+    tokens.clear();
+
+    // strtok_s() modifies the `str` buffer.
+    // so we should make copy.
+    size_t len = strlen(str);
+    if (max_str_len <= len + sizeof(char))
+    {
+        return false;
+    }
+    
+    char* buf = (char*)malloc(len + sizeof(char));
+    if (NULL == buf)
+    {
+        return false;
+    }
+
+    RtlCopyMemory(buf, str, len);
+    buf[len] = 0x00;    
+
+    char* next_token = NULL;
+    char* token = strtok_s(buf, seps, &next_token);
+    while (NULL != token)
+    {
+        tokens.push_back(token);
+        token = strtok_s(NULL, seps, &next_token);
+    }
+    
+    return true;
+}
+
+bool test_strtok()
+{
+    char string1[] = "A string\tof ,,tokens\nand some  more tokens";
+    char string2[] = "Another string\n\tparsed at the same time.";
+    char seps[] = " ,\t\n";
+
+    std::vector<std::string> tokens1;
+    std::vector<std::string> tokens2;
+    
+    // Establish string and get the first token:
+    if (false == split_string(string1, seps, tokens1) ||
+        false == split_string(string2, seps, tokens2))
+    {
+        return false;
+    }
+
+    printf("tokens1 : %s\n\n", string1);
+    for (auto token: tokens1)
+    {
+        printf("\t%s\n", token.c_str());
+    }
+    printf("\n");
+
+
+    printf("tokens2 : %s\n\n", string2);
+    for (auto token : tokens2)
+    {
+        printf("\t%s\n", token.c_str());
+    }
+    printf("\n");
+
+    return true;
+}
 
 /**
  * @brief	

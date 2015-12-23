@@ -324,6 +324,27 @@ std::wstring ltrimw(std::wstring& s, const std::wstring& drop = L" ");
 	#define ExtractLastToken	ExtractLastTokenA
 #endif//UNICODE
 
+bool 
+split_stringa(
+    _In_ const char* str, 
+    _In_ const char* seps, 
+    _Out_ std::vector<std::string>& tokens
+    );
+
+bool
+split_stringw(
+    _In_ const wchar_t* str,
+    _In_ const wchar_t* seps,
+    _Out_ std::vector<std::wstring>& tokens
+    );
+
+// string to hash
+uint32_t hash_string32(_In_ const char* s, _In_opt_ uint32_t seed = 0);
+uint64_t hash_string64(_In_ const char* s, _In_opt_ uint64_t seed = 0);
+uint32_t hash_string32w(_In_ const wchar_t* s, _In_opt_ uint32_t seed = 0);
+uint64_t hash_string64w(_In_ const wchar_t* s, _In_opt_ uint64_t seed = 0);
+
+
 /**
 * @brief	source 에서 find 문자열을 모두 찾아 replace 문자열로 변경한다.
 */
@@ -524,5 +545,6 @@ typedef struct WU_PROCESSOR_INFO
 } *PWU_PROCESSOR_INFO;
 
 BOOL WUGetProcessorInfo(IN OUT WU_PROCESSOR_INFO& CpuInfo);
+
 
 #endif//_win32_utils_

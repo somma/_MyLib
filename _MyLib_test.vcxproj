@@ -77,7 +77,7 @@
     <OutDir>.\x64_debug\</OutDir>
     <IntDir>x64\debug\</IntDir>
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -113,7 +113,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/I "z:\work.mylib" /I "z:\boost_x64\include\boost-1_59" </AdditionalOptions>
       <SDLCheck>true</SDLCheck>
-      <EnablePREfast>true</EnablePREfast>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -172,6 +172,7 @@
     <ClInclude Include="RegistryUtil.h" />
     <ClInclude Include="sha2.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="strtk.hpp" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="thread_pool.h" />
     <ClInclude Include="Win32Utils.h" />

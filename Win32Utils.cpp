@@ -2362,6 +2362,140 @@ std::wstring ltrimw(std::wstring& s, const std::wstring& drop)
     return s.erase(0,s.find_first_not_of(drop)); 
 }
 
+/// @brief  sprit `str` using `seps` and save each token into `tokens`. 
+bool split_stringa(_In_ const char* str, _In_ const char* seps, _Out_ std::vector<std::string>& tokens)
+{
+#define max_str_len     2048
+
+    _ASSERTE(NULL != str);
+    if (NULL == str) return false;
+
+    tokens.clear();
+
+    // strtok_s() modifies the `str` buffer.
+    // so we should make copy.
+    size_t buf_len = (strlen(str) * sizeof(char)) + sizeof(char);
+    if (max_str_len < buf_len)
+    {
+        return false;
+    }
+
+    uint8_t* buf = (uint8_t*)malloc(buf_len);
+    if (NULL == buf)
+    {
+        return false;
+    }
+
+    StringCbPrintfA((char*)buf, buf_len, "%s", str);
+
+    char* next_token = NULL;
+    char* token = strtok_s((char*) buf, seps, &next_token);
+    while (NULL != token)
+    {
+        tokens.push_back(token);
+        token = strtok_s(NULL, seps, &next_token);
+    }
+    
+    return true;
+}
+
+bool split_stringw(_In_ const wchar_t* str, _In_ const wchar_t* seps, _Out_ std::vector<std::wstring>& tokens)
+{
+#define max_str_len     2048
+
+    _ASSERTE(NULL != str);
+    if (NULL == str) return false;
+
+    tokens.clear();
+
+    // strtok_s() modifies the `str` buffer.
+    // so we should make copy.
+    size_t buf_len = (wcslen(str) * sizeof(wchar_t)) + sizeof(wchar_t);
+    if (max_str_len < buf_len)
+    {
+        return false;
+    }
+
+    uint8_t* buf = (uint8_t*)malloc(buf_len);
+    if (NULL == buf)
+    {
+        return false;
+    }
+
+    StringCbPrintfW((wchar_t*)buf, buf_len, L"%ws", str);
+
+    wchar_t* next_token = NULL;
+    wchar_t* token = wcstok_s((wchar_t*)buf, seps, &next_token);
+    while (NULL != token)
+    {
+        tokens.push_back(token);
+        token = wcstok_s(NULL, seps, &next_token);
+    }
+    
+    return true;
+}
+
+/// @brief  string to hash
+///         http://stackoverflow.com/questions/98153/whats-the-best-hashing-algorithm-to-use-on-a-stl-string-when-using-hash-map?answertab=active
+///         °ËÁõ¾ÈÇØºÃÀ½, ¾Æ ¸ô¶û, ±×³É ½á
+uint32_t hash_string32(_In_ const char* s, _In_opt_ uint32_t seed)
+{
+    _ASSERTE(NULL != s);
+    if (NULL == s) return 0;
+
+    uint32_t hash = seed;
+    while (*s)
+    {
+        hash = hash * 101 + *s++;
+    }
+    return hash;
+}
+
+uint64_t hash_string64(_In_ const char* s, _In_opt_ uint64_t seed)
+{
+    _ASSERTE(NULL != s);
+    if (NULL == s) return 0;
+
+    uint64_t hash = seed;
+    while (*s)
+    {
+        hash = hash * 101 + *s++;
+    }
+    return hash;
+}
+
+uint32_t hash_string32w(_In_ const wchar_t* s, _In_opt_ uint32_t seed)
+{
+    _ASSERTE(NULL != s);
+    if (NULL == s) return 0;
+
+    uint32_t ret = 0;
+    char* mbs = WcsToMbs(s);
+    if (NULL != mbs)
+    {
+        ret = hash_string32(mbs, seed);
+        free(mbs);
+    }
+
+    return ret;
+}
+
+uint64_t hash_string64w(_In_ const wchar_t* s, _In_opt_ uint64_t seed)
+{
+    _ASSERTE(NULL != s);
+    if (NULL == s) return 0;
+
+    uint64_t ret = 0;
+    char* mbs = WcsToMbs(s);
+    if (NULL != mbs)
+    {
+        ret = hash_string64(mbs, seed);
+        free(mbs);
+    }
+
+    return ret;
+}
+
 
 /**
  * @brief	custom destructor for Windows HANDLE
