@@ -31,6 +31,7 @@
 #include <Windows.h>
 #include <sal.h>
 
+#include "Win32Utils.h"
 #include "AKSyncObjs.h"
 #include "Queue.h"
 

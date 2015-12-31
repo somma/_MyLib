@@ -98,6 +98,7 @@
       <AdditionalOptions>/I "z:\work.mylib" /I "z:\boost_x86\include\boost-1_59" %(AdditionalOptions)</AdditionalOptions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -114,6 +115,7 @@
       <AdditionalOptions>/I "z:\work.mylib" /I "z:\boost_x64\include\boost-1_59" </AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <EnablePREfast>false</EnablePREfast>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,6 +133,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/I "z:\work.mylib" /I "z:\boost_x86\include\boost-1_59" %(AdditionalOptions)</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -150,6 +153,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/I "z:\work.mylib" /I "z:\boost_x64\include\boost-1_59" </AdditionalOptions>
       <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

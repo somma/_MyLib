@@ -14,8 +14,13 @@
 #include "thread_pool.h"
 #include "md5.h"
 #include "sha2.h"
+#include "Win32Utils.h"
 
 bool test_for_each();
+
+// enum physical drive
+bool test_enum_physical_drive();
+bool test_read_vbr();
 
 // _test_asm.cpp
 bool test_asm_func();
@@ -126,13 +131,20 @@ int _tmain(int argc, _TCHAR* argv[])
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
 
-    set_log_format(false, false, true);
+
+    
+    boost::wformat f = boost::wformat(L"%s\\%s") % get_current_module_dirEx().c_str() % L"_MyLib_tst.log";
+    if (true != initialize_log(log_level_debug, f.str().c_str())) return false;
+    set_log_format(false, false, false);
+    
 
     //assert_bool(true, test_boost_thread);
 	//assert_bool(true, test_thread_pool);
     
     //assert_bool(true, test_boost_asio_timer);
 	//assert_bool(true, test_for_each);
+    assert_bool(true, test_enum_physical_drive);
+    assert_bool(true, test_read_vbr);
 
 	//assert_bool(true, test_asm_func);
 	//assert_bool(true, test_x64_calling_convension);
@@ -146,7 +158,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
 	//assert_bool(true, test_get_local_ip_list);
-    assert_bool(true, test_strtok);
+    //assert_bool(true, test_strtok);
 
 	//assert_bool(true, test_cpp_class);
 	//
@@ -204,7 +216,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	log_end
 
 	con_info "press any key to terminate..." con_end
-	getchar();
+	_pause;
 	return 0;
 }
 
@@ -1164,6 +1176,67 @@ bool test_thread_pool()
     return true;
 }
 
+#include <winioctl.h>
 
 
+bool test_enum_physical_drive()
+{
+    std::vector<uint32_t> disk_numbers;
+    bool ret = get_disk_numbers(disk_numbers);
+    if (true != ret)
+        return false;
 
+    DWORD bytes_returned = 0;
+
+    for (auto disk_number : disk_numbers)
+    {
+        std::wstringstream path;
+        path << L"\\\\.\\PhysicalDrive" << disk_number;
+        //path << L"\\\\.\\PhysicalDrive0"
+        HANDLE disk = CreateFileW(
+                        path.str().c_str(),
+                        GENERIC_READ,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE,
+                        NULL,
+                        OPEN_EXISTING,  // for device or file, only if exists.
+                        FILE_ATTRIBUTE_NORMAL,
+                        NULL);
+        if (INVALID_HANDLE_VALUE != disk)
+        {
+            uint8_t buf[512] = { 0x00 };
+            if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
+            {
+                log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+            }
+            else
+            {
+                std::vector<std::string> dumps;
+                dump_memory(buf, sizeof(buf), dumps);
+                //for (auto line : dumps)
+                //{
+                //    log_info "%s", line.c_str() log_end;
+                //}                
+                log_info "%ws, \n%s", path.str().c_str(), dumps[dumps.size() - 2].c_str() log_end;
+            }
+        }
+        else
+        {
+            log_err
+                "CreateFile( %ws ) failed. gle = %u",
+                path.str().c_str(),
+                GetLastError()
+            log_end;
+        }
+
+    }
+
+    return true;
+}
+
+
+bool test_read_vbr()
+{
+    dump_drive_layout();
+    dump_boot_area();
+    return true;
+}

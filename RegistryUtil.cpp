@@ -10,8 +10,6 @@
 #include "stdafx.h"
 #include "RegistryUtil.h"
 
-#include <crtdbg.h>
-#include <stdlib.h>
 
 class RegHandle
 {

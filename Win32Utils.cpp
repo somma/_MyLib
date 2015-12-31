@@ -12,7 +12,7 @@
 
 #include <io.h>			// _setmode()
 #include <fcntl.h>		// _O_U8TEXT, ...
-
+#include <winioctl.h>
 #include "Win32Utils.h"
 
 #include <VersionHelpers.h>
@@ -369,6 +369,8 @@ nt_name_to_dos_name(
 	
 	bool ret = false;
 
+    // 시스템에 매핑되어있는 드라이브 목록을 구한다. 
+    // 
 	// 0               4               8               12
 	// +---+---+---+---+---+---+---+---+---+---+---+---+
 	// | A | : | \ |NUL| C | : | \ |NUL| D | : | \ |NUL|
@@ -507,6 +509,483 @@ bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_dev
 
 	free(buf); buf = NULL;
 	return ret;
+}
+
+/// @brief  마운트 된 disk 의 number 목록을 구한다. 
+/// 
+///         획득한 disk number 는 Diskdevice 를 직접 열어서 NTFS 를 통하지 않고
+///         I/O 를 수행하는데 사용할 수 있다. 
+///             - CreateFile( L"\\\\.\\\Physicaldisk[disk number]" ) 형태로 사용할 수 있음
+///             - `Win32 Device Namespaces` 이기때문에 file system 을 거치지 않고, io 를 할 수 있음
+///
+///         하지만 I/O 용도로 사용하는 경우 
+///             - `\\physicaldisk[disk number]` 형태가 아니라 
+///             - `\\.\c:` 형태로도 오픈할 수 있기때문에 어렵게 disk number 를 구할 필요가 없다. 
+///         
+bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
+{
+    // 시스템에 매핑되어있는 드라이브 목록을 구한다. 
+    // 
+	// 0               4               8               12
+	// +---+---+---+---+---+---+---+---+---+---+---+---+
+	// | A | : | \ |NUL| C | : | \ |NUL| D | : | \ |NUL|
+	//  "A:\"           "C:\"           "D:\"
+	// 
+	// 매핑된 드라이브를 나타내는 문자열 버퍼는 
+	// 26 (알파벳) * 4 (드라이브 명) = 104 바이트면 충분함
+	// 유니코드인 경우 208바이트 	
+	wchar_t drive_string[128 + 1] = {0};
+	DWORD length = GetLogicalDriveStringsW(128, drive_string);
+	if ( 0 == length)
+	{
+		log_err 
+			"GetLogicalDriveStringsW(), gle = %u", GetLastError()
+		log_end
+		return false;
+	}
+
+    // 하나의 디스크에 여러개의 파티션(볼륨)이 구성되어 있을 수 있기때문에
+    // 이미 구한 disk_number 인지 확인한다.
+    std::set<uint32_t> disk_numberz;
+
+    for (DWORD i = 0; i < length / 4; ++i)
+    {
+        wchar_t* dos_device_name = &(drive_string[i * 4]);
+        dos_device_name[1] = 0x0000;
+        std::wstringstream path;
+        path << L"\\\\.\\" << dos_device_name << ":";
+        HANDLE hFile = CreateFileW(
+                            path.str().c_str(), //L"\\\\.\\c:", 
+                            GENERIC_READ, 
+                            FILE_SHARE_READ | FILE_SHARE_WRITE, 
+                            NULL, 
+                            OPEN_EXISTING,  // for device or file, only if exists.
+                            FILE_ATTRIBUTE_NORMAL,
+                            NULL);
+        if (INVALID_HANDLE_VALUE == hFile)
+        {
+            // cdrom 이 비어있거나, network fs 이거나,...
+            // 에러나는 상황들이 있을 수 있음
+            log_err 
+                "CreateFile( %ws ) failed. gle = %u", 
+                path.str().c_str(), 
+                GetLastError() 
+            log_end;
+            continue;
+        }
+
+        STORAGE_DEVICE_NUMBER sdn = { 0 };
+        DWORD bytes_returned = 0;
+
+        // disk number 를 알아내기 위해서 호출하는것이므로
+        // hFile 디바이스에 대한 모든 volume extents 목록을 가져올 필요없이
+        // 하나만 가져오면 된다. 
+        // 
+        // :참고용:
+        // use IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS
+        //      device number, extent 정보를 얻어올때
+        // 
+        // use IOCTL_DISK_GET_DRIVE_LAYOUT_EX  
+        //      디바이스의 파티션 정보를 얻어올때 
+
+
+        bool ioctrl_succeeded = true;
+        if (!DeviceIoControl(
+                    hFile,
+                    IOCTL_STORAGE_GET_DEVICE_NUMBER,
+                    NULL,
+                    0,
+                    (LPVOID)&sdn,
+                    sizeof(sdn),
+                    (LPDWORD)&bytes_returned,
+                    NULL))
+        {
+            DWORD gle = GetLastError();
+            if (ERROR_MORE_DATA != gle)
+            {
+                log_err 
+                    "DeviceIoControl( IOCTL_STORAGE_GET_DEVICE_NUMBER ) failed. device = %ws, gle = %u", 
+                    path.str().c_str(),
+                    gle 
+                log_end;
+                ioctrl_succeeded = false;
+            }
+        }
+
+        if (true == ioctrl_succeeded)
+        {
+            if (sdn.DeviceType == FILE_DEVICE_DISK)
+            {
+                if (disk_numberz.end() == disk_numberz.find(sdn.DeviceNumber))
+                {
+                    disk_numberz.insert(sdn.DeviceNumber);
+
+                    disk_numbers.push_back(sdn.DeviceNumber);
+                    log_dbg "disk number = %u, found.", sdn.DeviceNumber log_end
+                }
+            }
+            
+            //uint8_t buf[512] = { 0x00 };
+            //if (!ReadFile(hFile, buf, sizeof(buf), &bytes_returned, NULL))
+            //{
+            //    log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+            //}
+            //else
+            //{
+            //    std::vector<std::string> dumps;
+            //    dump_memory(buf, sizeof(buf), dumps);
+            //    for (auto line : dumps)
+            //    {
+            //        log_info "%s", line.c_str() log_end;
+            //    }
+            //}
+        }
+        CloseHandle(hFile);
+    }
+
+    return true;
+}
+
+/// @brief  sample code about using IOCTL_DISK_GET_DRIVE_LAYOUT_EX
+///         disk 의 파티션 정보를 덤프한다. 
+bool dump_drive_layout()
+{
+    std::vector<uint32_t> disk_numbers;
+    bool ret = get_disk_numbers(disk_numbers);
+    if (true != ret)
+        return false;
+
+    DWORD bytes_returned = 0;
+
+    for (auto disk_number : disk_numbers)
+    {
+        std::wstringstream path;
+        path << L"\\\\.\\PhysicalDrive" << disk_number;
+        
+        // open handle for disk as `WIN32 Device Namespace` foramt.
+        HANDLE disk = CreateFileW(
+                        path.str().c_str(),
+                        GENERIC_READ,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE,
+                        NULL,
+                        OPEN_EXISTING,  // for device or file, only if exists.
+                        FILE_ATTRIBUTE_NORMAL,
+                        NULL);
+        if (INVALID_HANDLE_VALUE == disk)
+        {
+            log_err
+                "CreateFile( %ws ) failed. gle = %u",
+                path.str().c_str(),
+                GetLastError()
+            log_end;
+            continue;
+        }
+
+        // get information about drive layout
+        bool break_loop = false;
+        uint32_t dli_size = sizeof(DRIVE_LAYOUT_INFORMATION_EX) * 4;
+        PDRIVE_LAYOUT_INFORMATION_EX dli = (PDRIVE_LAYOUT_INFORMATION_EX)malloc(dli_size);
+        if (NULL == dli)
+        {
+            log_err
+                "insufficient rsrc for DRIVE_LAYOUT_INFORMATION_EX buffer. device = %ws", 
+                path.str().c_str()
+            log_end;
+
+            CloseHandle(disk);
+            continue;
+        }
+
+        while(true != break_loop)
+        {
+            // get needed buffer size
+            if (!DeviceIoControl(
+                    disk,
+                    IOCTL_DISK_GET_DRIVE_LAYOUT_EX,
+                    NULL,
+                    0,
+                    (LPVOID)dli,
+                    dli_size,
+                    (LPDWORD)&bytes_returned,
+                    NULL))
+            {
+                DWORD gle = GetLastError();
+                if (ERROR_INSUFFICIENT_BUFFER == gle)
+                {
+                    dli_size *= 2;
+                    dli = (PDRIVE_LAYOUT_INFORMATION_EX)realloc(dli, dli_size);
+                }
+                else
+                {
+                    log_err
+                        "DeviceIoControl( IOCTL_DISK_GET_DRIVE_LAYOUT_EX ) failed. "\
+                        "device = %ws, gle = %u, bytes_returned = %u",
+                        path.str().c_str(),
+                        gle,
+                        bytes_returned
+                        log_end;
+                    break_loop = true;
+                }
+
+                continue;
+            }
+            else
+            {
+                // ok. print partition info for the drive
+                log_info
+                    "===============================================\n"\
+                    "device = %ws\npartition style = %u, count = %u",
+                    path.str().c_str(),
+                    dli->PartitionStyle,
+                    dli->PartitionCount
+                    log_end;
+
+                for (DWORD i = 0; i < dli->PartitionCount; ++i)
+                {
+                    PPARTITION_INFORMATION_EX pi = &dli->PartitionEntry[i];
+                    if (pi->PartitionStyle == PARTITION_STYLE_MBR)
+                    {
+                        PPARTITION_INFORMATION_MBR mbr = &pi->Mbr;
+                        log_info
+                            "partition [%u] info\n"\
+                            "   style = PARTITION_STYLE_MBR\n"\
+                            "   start offset = 0x%llx\n"\
+                            "   length = %llu\n"\
+                            "   number = %u\n"\
+                            "   [MBR]\n"\
+                            "       PartitionType = %u\n"\
+                            "       BootIndicator = %s\n"\
+                            "       RecognizedPartition = %s\n"\
+                            "       HiddenSectors = %u\n",
+                            i,
+                            pi->StartingOffset,
+                            pi->PartitionLength,
+                            pi->PartitionNumber,
+                            mbr->PartitionType,
+                            TRUE == mbr->BootIndicator ? "true" : "false",
+                            TRUE == mbr->RecognizedPartition ? "true" : "false",
+                            mbr->HiddenSectors
+                            log_end;
+
+                        if (mbr->BootIndicator)
+                        {
+                            uint8_t buf[512] = { 0x00 };
+                            LARGE_INTEGER li_new_pos = { 0 };
+                            LARGE_INTEGER li_distance = { 0 };
+                            
+                            // boot 파티션이 설치된 디스크의 첫 섹터는 MBR
+                            log_info "[*] dump MBR" log_end
+                            li_distance.QuadPart = 0;
+                            if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
+                            {
+                                log_err
+                                    "SetFilePointerEx() failed, gle = %u", GetLastError()
+                                    log_end;
+                                continue;
+                            }
+                            
+                            if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
+                            {
+                                log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+                            }
+                            else
+                            {
+                                std::vector<std::string> dumps;
+                                dump_memory(buf, sizeof(buf), dumps);
+
+                                log_info
+                                    "[*] dump VBR (disk offset 0x00000000)"
+                                log_end
+                                for (auto line : dumps)
+                                {
+                                    log_info "%s", line.c_str() log_end;
+                                }
+                            }
+
+                            // boot 파티션의 첫 섹터는 VBR
+                            li_distance = pi->StartingOffset;
+                            if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
+                            {
+                                log_err
+                                    "SetFilePointerEx() failed, gle = %u", GetLastError()
+                                    log_end;
+                                continue;
+                            }
+                            
+                            if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
+                            {
+                                log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+                            }
+                            else
+                            {
+                                std::vector<std::string> dumps;
+                                dump_memory(buf, sizeof(buf), dumps);
+
+                                log_info 
+                                    "[*] dump VBR (disk offset 0x%llx)", pi->StartingOffset 
+                                log_end
+                                for (auto line : dumps)
+                                {
+                                    log_info "%s", line.c_str() log_end;
+                                }
+                            }
+                        }
+                    }
+                    else if (pi->PartitionStyle == PARTITION_STYLE_GPT)
+                    {
+                        PPARTITION_INFORMATION_GPT gpt = &pi->Gpt;
+
+                        std::string p_type;
+                        std::string p_id;
+
+                        bin_to_hexa(sizeof(GUID), (uint8_t*)&gpt->PartitionType, false, p_type);
+                        bin_to_hexa(sizeof(GUID), (uint8_t*)&gpt->PartitionId, false, p_id);
+
+                        log_info
+                            "partition [%u] info\n"\
+                            "   style = PARTITION_STYLE_GPT\n"\
+                            "   start offset = 0x%llx\n"\
+                            "   length = %llu\n"\
+                            "   number = %u\n"\
+                            "   [GPT]\n"\
+                            "       PartitionType = %s\n"\
+                            "       PartitionId = %s\n"\
+                            "       Attributes = %llx\n"\
+                            "       Name = %ws\n",
+                            i,
+                            pi->StartingOffset,
+                            pi->PartitionLength,
+                            pi->PartitionNumber,
+                            p_type.c_str(),
+                            p_id.c_str(),
+                            gpt->Attributes,
+                            gpt->Name
+                            log_end;
+                    }
+                    else
+                    {
+                        log_info
+                            "partition [%u] info\n"\
+                            "   style = PARTITION_STYLE_RAW\n"\
+                            "   start offset = 0x%llx\n"\
+                            "   length = %llu\n"\
+                            "   number = %u\n",
+                            i,
+                            pi->StartingOffset,
+                            pi->PartitionLength,
+                            pi->PartitionNumber
+                            log_end;
+                    }
+
+                    
+                }
+
+                break_loop = true;
+            }
+        }
+
+        free_and_nil(dli);
+        CloseHandle(disk);
+    }
+    return true;
+}
+
+/// @brief  c 드라이브로 매핑된 파티션(볼륨)의 boot_area 정보를 출력한다. 
+///         당연히 CreateFile 로 open하는 핸들은 볼륨의 핸들이어야 한다. 
+bool dump_boot_area()
+{
+    DWORD bytes_returned = 0;
+
+    // open handle for disk
+    if (true != set_privilege(SE_MANAGE_VOLUME_NAME, true))
+    {
+        log_err "set_privilege(SE_MANAGE_VOLUME_NAME) failed." log_end;
+        return false;
+    }
+
+    HANDLE disk = INVALID_HANDLE_VALUE;
+    do
+    {
+        std::wstringstream path;
+        path << L"\\\\.\\c:";           // 볼륨을 오픈해야 한다. \\.\PhysicalDrive0 같은거 오픈하면 안됨
+        disk = CreateFileW(
+                        path.str().c_str(),
+                        GENERIC_READ,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE,
+                        NULL,
+                        OPEN_EXISTING,  // for device or file, only if exists.
+                        FILE_ATTRIBUTE_NORMAL,
+                        NULL);
+        if (INVALID_HANDLE_VALUE == disk)
+        {
+            log_err
+                "CreateFile( %ws ) failed. gle = %u",
+                path.str().c_str(),
+                GetLastError()
+                log_end;
+            break;
+        }
+
+        BOOT_AREA_INFO bai = { 0 };
+
+        if (!DeviceIoControl(
+                disk,
+                FSCTL_GET_BOOT_AREA_INFO,
+                NULL,
+                0,
+                (LPVOID)&bai,
+                sizeof(bai),
+                (LPDWORD)&bytes_returned,
+                NULL))
+        {
+            log_err "DeviceIoControl(FSCTL_GET_BOOT_AREA_INFO) failed. gle = %u\n", GetLastError() log_end;
+
+            break;
+        }
+
+        log_info
+            "===============================================\n"\
+            "device = %ws\nBootSectorCount = %u, Offset = 0x%llx, Offset2 = 0x%llx",
+            path.str().c_str(),
+            bai.BootSectorCount,
+            bai.BootSectors[0].Offset.QuadPart,
+            bai.BootSectors[1].Offset.QuadPart
+            log_end;
+
+        uint8_t buf[512] = { 0x00 };
+        LARGE_INTEGER li_new_pos = { 0 };
+        LARGE_INTEGER li_distance = { 0 };
+        li_distance.LowPart = bai.BootSectors[0].Offset.LowPart;
+        li_distance.HighPart = bai.BootSectors[0].Offset.HighPart;
+        if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
+        {
+            log_err
+                "SetFilePointerEx() failed, gle = %u", GetLastError()
+                log_end;
+            break;
+        }
+
+        if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
+        {
+            log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+        }
+        else
+        {
+            std::vector<std::string> dumps;
+            dump_memory(buf, sizeof(buf), dumps);
+            for (auto line : dumps)
+            {
+                log_info "%s", line.c_str() log_end;
+            }
+        }
+    } while (false);
+
+    if (disk != INVALID_HANDLE_VALUE)
+    {
+        CloseHandle(disk);
+    }
+
+    return true;
 }
 
 /**

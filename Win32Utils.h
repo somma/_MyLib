@@ -23,6 +23,7 @@
 #include <windows.h>
 #include <tchar.h>
 #include <strsafe.h>
+#include <conio.h>
 
 //> reported as vs 2010 bug, ms says that will be patch this bug next major vs release, vs2012.
 //
@@ -72,6 +73,7 @@ typedef struct _continuous_memory
 
 #define free_and_nil(p)     do { if (NULL != p) { free(p); p = NULL;} } while(p != NULL);
 
+#define     _pause  _getch()
 
 
 /* 
@@ -126,6 +128,9 @@ bool get_filepath_by_handle(_In_ HANDLE file_handle, _Out_ std::wstring& file_na
 bool get_mapped_file_name(_In_ HANDLE process_handle, _In_ const void* mapped_addr, _Out_ std::wstring& file_name);
 bool nt_name_to_dos_name(_In_ const wchar_t* nt_name, _Out_ std::wstring& dos_name);
 bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_device);
+bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers);
+bool dump_drive_layout();
+bool dump_boot_area();
 
 HANDLE open_file_to_write(_In_ const wchar_t* file_path);
 HANDLE open_file_to_read(LPCWCH file_path);
