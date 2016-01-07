@@ -18,9 +18,15 @@
 
 bool test_for_each();
 
-// enum physical drive
+// disk, volume stuffs.
+bool read_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint8_t* buf, _In_ uint32_t size);
+bool write_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint8_t* buf, _In_ uint32_t size);
+void dump_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint32_t size);
+
 bool test_enum_physical_drive();
-bool test_read_vbr();
+bool test_get_disk_volume_info();
+bool test_dump_xxx();
+bool test_write_mbr_vbr();
 
 // _test_asm.cpp
 bool test_asm_func();
@@ -143,9 +149,10 @@ int _tmain(int argc, _TCHAR* argv[])
     
     //assert_bool(true, test_boost_asio_timer);
 	//assert_bool(true, test_for_each);
-    assert_bool(true, test_enum_physical_drive);
-    assert_bool(true, test_read_vbr);
-
+    //assert_bool(true, test_enum_physical_drive);
+    //assert_bool(true, test_get_disk_volume_info);
+    //assert_bool(true, test_dump_xxx);
+    assert_bool(true, test_write_mbr_vbr);
 	//assert_bool(true, test_asm_func);
 	//assert_bool(true, test_x64_calling_convension);
 	//assert_bool(true, test_2_complement);
@@ -983,7 +990,7 @@ bool test_dump_memory()
 	RtlCopyMemory(buf, GetModuleHandle(NULL), 512);
 
 	std::vector<std::string> dump;
-	if (true != dump_memory(buf, sizeof(buf), dump)) return false;
+	if (true != dump_memory(0, buf, sizeof(buf), dump)) return false;
 
 	std::vector<std::string>::iterator its = dump.begin();
 	std::vector<std::string>::iterator ite = dump.end();
@@ -1211,7 +1218,7 @@ bool test_enum_physical_drive()
             else
             {
                 std::vector<std::string> dumps;
-                dump_memory(buf, sizeof(buf), dumps);
+                dump_memory(0, buf, sizeof(buf), dumps);
                 //for (auto line : dumps)
                 //{
                 //    log_info "%s", line.c_str() log_end;
@@ -1234,9 +1241,313 @@ bool test_enum_physical_drive()
 }
 
 
-bool test_read_vbr()
+bool test_get_disk_volume_info()
 {
-    dump_drive_layout();
-    dump_boot_area();
+    std::vector<uint32_t> disk_numbers;
+    bool ret = get_disk_numbers(disk_numbers);
+    if (true != ret)
+        return false;
+
+
+    for (auto disk_number : disk_numbers)
+    {
+        uint8_t buf[512] = { 0x00 };
+        DWORD bytes_returned = 0;
+        LARGE_INTEGER li_new_pos = { 0 };
+        LARGE_INTEGER li_distance = { 0 };
+        disk_volume_info dvi(disk_number);
+
+        if (true != get_disk_volume_info(dvi))
+        {
+            log_err "get_vbr_offset( disk_number = %u ) failed.", disk_number);
+            return false;
+        }
+
+        // dump mbr and vbr
+        std::wstringstream path;
+        path << L"\\\\.\\PhysicalDrive" << dvi._disk_number;
+        HANDLE disk = CreateFileW(
+                            path.str().c_str(),
+                            GENERIC_READ,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE,
+                            NULL,
+                            OPEN_EXISTING,  // for device or file, only if exists.
+                            FILE_ATTRIBUTE_NORMAL,
+                            NULL);
+        if (INVALID_HANDLE_VALUE == disk)
+        {
+            log_err
+                "CreateFile( %ws ) failed. gle = %u",
+                path.str().c_str(),
+                GetLastError());
+            return false;
+        }
+        raii_handle handle_guard(disk, raii_CloseHandle);
+
+        // dump MBR
+        li_distance.QuadPart = 0;
+        if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
+        {
+            log_err
+                "SetFilePointerEx() failed, gle = %u", GetLastError()
+                log_end;
+            break;
+        }
+
+        if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
+        {
+            log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+        }
+        else
+        {
+            std::vector<std::string> dump;
+            dump_memory(0, buf, sizeof(buf), dump);
+            log_info "[*] MBR" log_end
+            for (auto line : dump)
+            {
+                log_info "%s", line.c_str() log_end
+            }
+        }
+
+        // dump VBRs
+        for (auto vbr_info : dvi._vbrs)
+        {
+            if (true != vbr_info.recognized) { continue; }
+
+            li_distance = vbr_info.offset;
+            if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
+            {
+                log_err
+                    "SetFilePointerEx() failed, gle = %u", GetLastError()
+                    log_end;
+                break;
+            }
+
+            if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
+            {
+                log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+            }
+            else
+            {
+                log_info "[*] VBR" log_end
+                std::vector<std::string> dump;
+                dump_memory(0, buf, sizeof(buf), dump);
+                for (auto line : dump)
+                {
+                    log_info "%s", line.c_str() log_end
+                }
+            }
+        }
+    }
+    
     return true;
+}
+
+/// @brief 
+bool test_dump_xxx()
+{
+    dump_all_disk_drive_layout();
+    //dump_boot_area();
+    return true;
+}
+
+/// @brief
+bool test_write_mbr_vbr()
+{
+    log_err
+        "This test writes MBR and VBR, may cause serious system damage. really want to do this?"
+        log_end
+    _pause;
+
+    ///
+    /// buf 와 offset 이 512 (섹터 사이즈)로 align 되어있지 않으면 
+    /// Read/WriteFile 함수에서 에러 (87) 발생함
+    /// 나중에 한번 확인해봐
+    ///
+    uint8_t buf_read[512] = { 0x00 };
+    uint8_t buf_write[512] = { 0x41 };
+    
+    std::vector<uint32_t> disk_numbers;
+    bool ret = get_disk_numbers(disk_numbers);
+    if (true != ret)
+    {
+        log_err "get_disk_numbers() failed." log_end;
+        return false;
+    }
+
+    for (auto disk_number : disk_numbers)
+    {
+        disk_volume_info dvi(disk_number);
+
+        if (true != get_disk_volume_info(dvi))
+        {
+            log_err "get_vbr_offset( disk_number = %u ) failed.", disk_number);
+            return false;
+        }
+
+        // writes mbr and vbr
+        std::wstringstream path;
+        path << L"\\\\.\\PhysicalDrive" << dvi._disk_number;
+        HANDLE disk = CreateFileW(
+                            path.str().c_str(),
+                            GENERIC_READ | GENERIC_WRITE,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE,
+                            NULL,
+                            OPEN_EXISTING,  // for device or file, only if exists.
+                            FILE_ATTRIBUTE_NORMAL,
+                            NULL);
+        if (INVALID_HANDLE_VALUE == disk)
+        {
+            log_err
+                "CreateFile( %ws ) failed. gle = %u",
+                path.str().c_str(),
+                GetLastError());
+            return false;
+        }
+        raii_handle handle_guard(disk, raii_CloseHandle);
+
+        // #1 write mbr - backup
+        if (true != read_file_offset(disk, 0, buf_read, sizeof(buf_read)))
+        {
+            log_err "read_file_offset() failed" log_end;
+        }
+
+        log_info "[*] %uth disk MBR - before write", disk_number log_end;        
+        dump_file_offset(disk, 0, sizeof(buf_read));
+
+        // #2 write mbr - write
+        if (true != write_file_offset(disk, 0, buf_write, sizeof(buf_write)))
+        {
+            log_err "write_file_offset(mbr) failed." log_end;
+            return false;
+        }
+        log_info "[*] %uth disk MBR - after write", disk_number log_end;
+        dump_file_offset(disk, 0, sizeof(buf_read));
+        
+        // #3 write mbr - restore
+        if (true != write_file_offset(disk, 0, buf_read, sizeof(buf_read)))
+        {
+            log_err "write_file_offset(mbr) failed. (restore failed)" log_end;
+            return false;
+        }
+
+        // dump VBRs
+        uint32_t ix = 0;
+        for (auto vbr_info : dvi._vbrs)
+        {
+            if (true != vbr_info.recognized) { continue; }
+
+            // #1 write vbr - backup
+            if (true != read_file_offset(disk, vbr_info.offset.QuadPart, buf_read, sizeof(buf_read)))
+            {
+                log_err "read_file_offset() failed" log_end;
+            }
+
+            log_info "[*] %uth disk, %uth VBR - before write", disk_number, ix log_end;
+            dump_file_offset(disk, vbr_info.offset.QuadPart, sizeof(buf_read));
+
+            // #2 write vbr - write
+            if (true != write_file_offset(disk, vbr_info.offset.QuadPart, buf_write, sizeof(buf_write)))
+            {
+                log_err "write_file_offset(mbr) failed." log_end;
+                return false;
+            }
+            log_info "[*] %uth disk, %uth VBR - after write", disk_number, ix log_end;
+            dump_file_offset(disk, vbr_info.offset.QuadPart, sizeof(buf_read));
+
+            // #3 write vbr - restore
+            if (true != write_file_offset(disk, vbr_info.offset.QuadPart, buf_read, sizeof(buf_read)))
+            {
+                log_err "write_file_offset(mbr) failed. (restore failed)" log_end;
+                return false;
+            }
+
+            ++ix;
+        }
+    }
+
+    return true;
+}
+
+
+bool read_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint8_t* buf, _In_ uint32_t size)
+{
+    _ASSERTE(0 == offset % 512);
+    _ASSERTE(0 == size % 512);
+
+    DWORD bytes_rw = 0;    
+    LARGE_INTEGER li_new_pos = { 0 };
+    LARGE_INTEGER li_distance = { 0 };
+    li_distance.QuadPart = offset;
+
+    if (!SetFilePointerEx(file_handle, li_distance, &li_new_pos, FILE_BEGIN))
+    {
+        log_err
+            "SetFilePointerEx() failed, gle = %u", GetLastError()
+            log_end;
+        return false;
+    }
+
+    RtlZeroMemory(buf, size);
+    if (!ReadFile(file_handle, buf, size, &bytes_rw, NULL))
+    {
+        log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+        return false;
+    }
+
+    return true;
+}
+
+bool write_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint8_t* buf, _In_ uint32_t size)
+{
+    _ASSERTE(0 == offset % 512);
+    _ASSERTE(0 == size % 512);
+
+    DWORD bytes_rw = 0;
+    LARGE_INTEGER li_new_pos = { 0 };
+    LARGE_INTEGER li_distance = { 0 };
+    li_distance.QuadPart = offset;
+
+    if (!SetFilePointerEx(file_handle, li_distance, &li_new_pos, FILE_BEGIN))
+    {
+        log_err
+            "SetFilePointerEx() failed, gle = %u", GetLastError()
+            log_end;
+        return false;
+    }
+
+    if (!WriteFile(file_handle, buf, size, &bytes_rw, NULL))
+    {
+        log_err 
+            "WriteFile() failed. gle = %u", GetLastError()
+            );
+        return false;
+    }
+
+    return true;
+}
+
+void dump_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint32_t size)
+{
+    uint8_t buf[512] = { 0 };
+
+    _ASSERTE(size <= sizeof(buf));
+ 
+    if (true != read_file_offset(file_handle, offset, buf, size))
+    {
+        log_err "read_file_offset() failed." log_end;
+        return;
+    }
+
+    std::vector<std::string> dump;
+    if (true != dump_memory(0, buf, size, dump))
+    {
+        log_err "dump_memory(0,  ) failed." log_end;
+        return;
+    }
+
+    for (auto line : dump)
+    {
+        log_info "%s", line.c_str() log_end
+    }
 }

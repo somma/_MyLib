@@ -115,7 +115,7 @@ set_log_mask(
     _In_ uint32_t mask
     )
 {
-    _log_mask &= mask;
+    _log_mask = mask;
 }
 
 /**

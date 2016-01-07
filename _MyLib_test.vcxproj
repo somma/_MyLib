@@ -168,6 +168,7 @@
     <ClInclude Include="base64.h" />
     <ClInclude Include="FileIoHelper.h" />
     <ClInclude Include="FileIoHelperClass.h" />
+    <ClInclude Include="gpt_partition_guid.h" />
     <ClInclude Include="LeakWatcher.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="md5.h" />

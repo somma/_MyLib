@@ -8,13 +8,12 @@
  * 26:8:2011   15:34 created
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
-#include <errno.h>
-
-#include <io.h>			// _setmode()
-#include <fcntl.h>		// _O_U8TEXT, ...
-#include <winioctl.h>
 #include "Win32Utils.h"
 
+#include <set>
+#include <errno.h>
+#include <io.h>			// _setmode()
+#include <fcntl.h>		// _O_U8TEXT, ...
 #include <VersionHelpers.h>
 #include <time.h>
 #include <Shellapi.h>
@@ -23,13 +22,12 @@
 #include <WinSock2.h>
 #include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
-
 #include <Psapi.h>
 #pragma comment(lib, "psapi.lib")
+#include <guiddef.h>
 
 #include "ResourceHelper.h"
-
-
+#include "gpt_partition_guid.h"
 
 /**----------------------------------------------------------------------------
     \brief  
@@ -646,9 +644,204 @@ bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
     return true;
 }
 
+/// @brief  
+const char* partition_style_to_str(_In_ DWORD partition_style)
+{
+    switch (partition_style)
+    {
+    case PARTITION_STYLE_MBR: return "MBR";
+    case PARTITION_STYLE_GPT: return "GPT";
+    case PARTITION_STYLE_RAW: return "RAW";
+    default: 
+        return "UNKNOWN";
+    }
+}
+ 
+/// @brief  
+const char* gpt_partition_type_to_str(_In_ GUID& partition_type)
+{
+    if (IsEqualGUID(partition_type, PARTITION_BASIC_DATA_GUID))
+    {
+        return "PARTITION_BASIC_DATA_GUID";
+    } else if (IsEqualGUID(partition_type, PARTITION_ENTRY_UNUSED_GUID))
+    {
+        return "PARTITION_ENTRY_UNUSED_GUID";
+    }
+    else if (IsEqualGUID(partition_type, PARTITION_SYSTEM_GUID))
+    {
+        return "PARTITION_SYSTEM_GUID";
+    }
+    else if (IsEqualGUID(partition_type, PARTITION_MSFT_RESERVED_GUID))
+    {
+        return "PARTITION_MSFT_RESERVED_GUID";
+    }
+    else if (IsEqualGUID(partition_type, PARTITION_LDM_METADATA_GUID))
+    {
+        return "PARTITION_LDM_METADATA_GUID";
+    }
+    else if (IsEqualGUID(partition_type, PARTITION_LDM_DATA_GUID))
+    {
+        return "PARTITION_LDM_DATA_GUID";
+    }
+    else if (IsEqualGUID(partition_type, PARTITION_MSFT_RECOVERY_GUID))
+    {
+        return "PARTITION_MSFT_RECOVERY_GUID";
+    }
+    else
+        return "UNKNOWN GUID";
+}
+
+/// @brief  info._disk_number 디스크내 VBR (Volume Boot Record) 의 VBR 정보를 구한다.
+///
+///         disk 는 여러개의 볼륨(파티션)으로 나뉘고, 각 볼륨은 각각 VBR 을 가진다. 
+///         MBR 파티션의 경우 주 파티션 4개, GPT 는 128개(맞나?)
+///         
+/// @return 성공시 true, 실패시 false
+bool get_disk_volume_info(_Inout_ disk_volume_info& info)
+{
+    std::wstringstream path;
+    path << L"\\\\.\\PhysicalDrive" << info._disk_number;
+
+    // open handle for disk as `WIN32 Device Namespace` foramt.
+    HANDLE disk = CreateFileW(
+                        path.str().c_str(),
+                        GENERIC_READ,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE,
+                        NULL,
+                        OPEN_EXISTING,  // for device or file, only if exists.
+                        FILE_ATTRIBUTE_NORMAL,
+                        NULL);
+    if (INVALID_HANDLE_VALUE == disk)
+    {
+        log_err
+            "CreateFile( %ws ) failed. gle = %u",
+            path.str().c_str(),
+            GetLastError());
+        return false;
+    }
+    raii_handle handle_guard(disk, raii_CloseHandle);
+
+    DWORD bytes_returned = 0;
+    uint32_t layout_info_size = sizeof(DRIVE_LAYOUT_INFORMATION_EX) * 4;
+    PDRIVE_LAYOUT_INFORMATION_EX layout_info = (PDRIVE_LAYOUT_INFORMATION_EX)malloc(layout_info_size);
+    
+    for (;;)
+    {
+        if (NULL == layout_info)
+        {
+            log_err
+                "insufficient rsrc for DRIVE_LAYOUT_INFORMATION_EX buffer. device = %ws",
+                path.str().c_str());
+
+            return false;
+        }
+
+        if (!DeviceIoControl(
+                    disk,
+                    IOCTL_DISK_GET_DRIVE_LAYOUT_EX,
+                    NULL,
+                    0,
+                    (LPVOID)layout_info,
+                    layout_info_size,
+                    &bytes_returned,
+                    NULL))
+        {
+            if (ERROR_INSUFFICIENT_BUFFER == GetLastError())
+            {
+                layout_info_size *= 2;
+                layout_info = (PDRIVE_LAYOUT_INFORMATION_EX)realloc(layout_info, layout_info_size);
+                continue;
+            }
+            else
+            {
+                log_err
+                    "DeviceIoControl( IOCTL_DISK_GET_DRIVE_LAYOUT_EX ) failed. "\
+                    "device = %ws, gle = %u, bytes_returned = %u",
+                    path.str().c_str(),
+                    GetLastError(),
+                    bytes_returned);
+                return false;
+            }
+        }
+        else
+        {
+            // ok. we got!
+            break;
+        }
+    }
+    raii_void_ptr buf_guard(layout_info, raii_free);
+
+    //
+    // ok. DeviceIoControl() succeeded.
+    // 
+    log_dbg
+        "disk = %ws, partition style = %s, partition count = %u, ",
+        path.str().c_str(),
+        partition_style_to_str(layout_info->PartitionStyle),        
+        layout_info->PartitionCount);
+
+    for (DWORD i = 0; i < layout_info->PartitionCount; ++i)
+    {
+        vbr_info vbr = { 0 };
+
+        PPARTITION_INFORMATION_EX pi = &layout_info->PartitionEntry[i];
+        vbr.offset = pi->StartingOffset;
+        vbr.partition_length = pi->PartitionLength;
+        vbr.partition_number = pi->PartitionNumber;
+        vbr.rewrite_partition = (TRUE == pi->RewritePartition) ? true : false;
+        
+        if (pi->PartitionStyle == PARTITION_STYLE_MBR)
+        {
+            vbr.is_mbr = true;
+            PPARTITION_INFORMATION_MBR mbr = &pi->Mbr;
+            if (TRUE == mbr->BootIndicator)
+            {
+                vbr.is_boot_partition = true;
+            }
+            vbr.recognized = (TRUE == mbr->RecognizedPartition) ? true : false;
+            
+            log_dbg
+                "    [%u/%u] style = MBR, recognized = %s, boot = %s, offset = 0x%llx, length = %llu, number = %u",
+                i + 1,
+                layout_info->PartitionCount,
+                (vbr.recognized) ? "true" : "false",
+                vbr.is_boot_partition ? "true" : "false",
+                vbr.offset.QuadPart,
+                vbr.partition_length.QuadPart,
+                vbr.partition_number);
+        }
+        else
+        {
+            vbr.is_mbr = false;
+            PPARTITION_INFORMATION_GPT gpt = &pi->Gpt;
+            if (TRUE == IsEqualGUID(PARTITION_SYSTEM_GUID, gpt->PartitionType))
+            {
+                vbr.is_boot_partition = true;
+            }
+
+            vbr.recognized = true;
+            
+            log_dbg
+                "    [%u/%u] style = GPT, recognized = true, boot = %s, offset = 0x%llx, length = %llu, number = %u, type = %s",
+                i + 1,
+                layout_info->PartitionCount,
+                vbr.is_boot_partition ? "true" : "false",
+                vbr.offset.QuadPart,
+                vbr.partition_length.QuadPart,
+                vbr.partition_number, 
+                gpt_partition_type_to_str(gpt->PartitionType)
+                );
+        }
+
+        info._vbrs.push_back(vbr);
+    }
+
+    return true;
+}
+
 /// @brief  sample code about using IOCTL_DISK_GET_DRIVE_LAYOUT_EX
 ///         disk 의 파티션 정보를 덤프한다. 
-bool dump_drive_layout()
+bool dump_all_disk_drive_layout()
 {
     std::vector<uint32_t> disk_numbers;
     bool ret = get_disk_numbers(disk_numbers);
@@ -665,7 +858,7 @@ bool dump_drive_layout()
         // open handle for disk as `WIN32 Device Namespace` foramt.
         HANDLE disk = CreateFileW(
                         path.str().c_str(),
-                        GENERIC_READ,
+                        GENERIC_READ/* | GENERIC_WRITE*/,
                         FILE_SHARE_READ | FILE_SHARE_WRITE,
                         NULL,
                         OPEN_EXISTING,  // for device or file, only if exists.
@@ -791,11 +984,7 @@ bool dump_drive_layout()
                             else
                             {
                                 std::vector<std::string> dumps;
-                                dump_memory(buf, sizeof(buf), dumps);
-
-                                log_info
-                                    "[*] dump VBR (disk offset 0x00000000)"
-                                log_end
+                                dump_memory(0, buf, sizeof(buf), dumps);
                                 for (auto line : dumps)
                                 {
                                     log_info "%s", line.c_str() log_end;
@@ -819,7 +1008,7 @@ bool dump_drive_layout()
                             else
                             {
                                 std::vector<std::string> dumps;
-                                dump_memory(buf, sizeof(buf), dumps);
+                                dump_memory(0, buf, sizeof(buf), dumps);
 
                                 log_info 
                                     "[*] dump VBR (disk offset 0x%llx)", pi->StartingOffset 
@@ -904,10 +1093,12 @@ bool dump_boot_area()
     }
 
     HANDLE disk = INVALID_HANDLE_VALUE;
+    
+#pragma warning(disable: 4127)  // conditional expression is constant
     do
     {
         std::wstringstream path;
-        path << L"\\\\.\\c:";           // 볼륨을 오픈해야 한다. \\.\PhysicalDrive0 같은거 오픈하면 안됨
+        path << L"\\\\.\\h:";           // 볼륨을 오픈해야 한다. \\.\PhysicalDrive0 같은거 오픈하면 안됨
         disk = CreateFileW(
                         path.str().c_str(),
                         GENERIC_READ,
@@ -972,13 +1163,14 @@ bool dump_boot_area()
         else
         {
             std::vector<std::string> dumps;
-            dump_memory(buf, sizeof(buf), dumps);
+            dump_memory(0, buf, sizeof(buf), dumps);
             for (auto line : dumps)
             {
                 log_info "%s", line.c_str() log_end;
             }
         }
     } while (false);
+#pragma warning(default: 4127)  // conditional expression is constant
 
     if (disk != INVALID_HANDLE_VALUE)
     {
@@ -3670,7 +3862,7 @@ BOOL DumpMemory(FILE* stream,DWORD Length,BYTE* Buf)
  * @endcode	
  * @return	
 **/
-bool dump_memory(_In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump)
+bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump)
 {
 	_ASSERTE(NULL!=buf);
 	_ASSERTE(0 < buf_len);
@@ -3681,8 +3873,9 @@ bool dump_memory(_In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector
 
 	if ( (0 < buf_len) && (NULL != buf) && (TRUE != IsBadReadPtr(buf, buf_len)) )
 	{
-		StringCbPrintfA(line_dump, sizeof(line_dump), "buf_len = %u, buffer=0x%08x", buf_len, buf);
-		dump.push_back(line_dump);
+        // useless, uh?
+		//StringCbPrintfA(line_dump, sizeof(line_dump), "buf_len = %u, buffer=0x%08x", buf_len, buf);
+		//dump.push_back(line_dump);
 		
 		CHAR print_buf[128 * sizeof(CHAR)] = {0};
 		DWORD i = 0, x = 0, ib = 0;		
@@ -3706,7 +3899,7 @@ bool dump_memory(_In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector
 								&Remain, 
 								0, 
 								"0x%08p    ", 
-								&Addr[i])))
+								base_offset + i)))
 			{
                 log_err "StringCbPrintfEx() failed" log_end
 				break;
@@ -3825,7 +4018,7 @@ bool dump_memory(_In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector
 		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 /**----------------------------------------------------------------------------

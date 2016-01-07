@@ -24,6 +24,7 @@
 #include <tchar.h>
 #include <strsafe.h>
 #include <conio.h>
+#include <winioctl.h>
 
 //> reported as vs 2010 bug, ms says that will be patch this bug next major vs release, vs2012.
 //
@@ -118,7 +119,7 @@ std::string file_time_to_str(_In_ FILETIME& file_time);
 std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time);
 
 /******************************************************************************
- * 파일 처리
+ * file, disk, volumes
 ******************************************************************************/
 bool is_file_existsW(_In_ const wchar_t* file_path);
 bool is_file_existsA(_In_ const char* file_path);
@@ -127,9 +128,37 @@ bool is_dir(_In_ const wchar_t* file_path);
 bool get_filepath_by_handle(_In_ HANDLE file_handle, _Out_ std::wstring& file_name);
 bool get_mapped_file_name(_In_ HANDLE process_handle, _In_ const void* mapped_addr, _Out_ std::wstring& file_name);
 bool nt_name_to_dos_name(_In_ const wchar_t* nt_name, _Out_ std::wstring& dos_name);
+
+// disk, volume, ...
 bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_device);
+
 bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers);
-bool dump_drive_layout();
+const char* partition_style_to_str(_In_ DWORD partition_style);
+const char* gpt_partition_type_to_str(_In_ GUID& partition_type);
+typedef struct _vbr_info
+{
+    bool            is_boot_partition;
+    bool            is_mbr;
+    bool            recognized;
+    LARGE_INTEGER   offset;
+    LARGE_INTEGER   partition_length;
+    uint32_t        partition_number;
+    bool            rewrite_partition;
+} vbr_info, *pvbr_info;
+
+typedef class disk_volume_info
+{
+public:
+    disk_volume_info(_In_ uint32_t disk_number) :_disk_number(disk_number) {}
+    void clear() { _disk_number = 0; _vbrs.clear(); }
+    
+    uint32_t                _disk_number;
+    // `mbr` always placed at first 512,
+    std::vector<vbr_info>   _vbrs;
+}*pdisk_volume_info;
+bool get_disk_volume_info(_Inout_ disk_volume_info& info);
+
+bool dump_all_disk_drive_layout();
 bool dump_boot_area();
 
 HANDLE open_file_to_write(_In_ const wchar_t* file_path);
@@ -424,7 +453,7 @@ std::wstring Win32ErrorToStringW(IN DWORD ErrorCode);
 
 BOOL	DumpMemory(DWORD Length, BYTE* Buf);
 BOOL	DumpMemory(FILE* stream,DWORD Length,BYTE* Buf);
-bool	dump_memory(_In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump);
+bool	dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump);
 
 BOOL	GetTimeStringA(OUT std::string& TimeString);
 BOOL	GetTimeStringW(IN std::wstring& TimeString);
