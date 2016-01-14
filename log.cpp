@@ -103,19 +103,14 @@ set_log_format(
 
 /**
  * @brief	log mask 를 설정한다. ( mask = 0xffffffff : 모든 로그를 활성화 )
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ *          (log_mask_sys 는 항상 설정됨)
 **/
 void
 set_log_mask(
     _In_ uint32_t mask
     )
 {
-    _log_mask = mask;
+    _log_mask = (mask | log_mask_sys);
 }
 
 /**
