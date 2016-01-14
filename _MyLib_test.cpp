@@ -18,6 +18,8 @@
 
 bool test_for_each();
 
+bool test_find_and_replace();
+
 // disk, volume stuffs.
 bool read_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint8_t* buf, _In_ uint32_t size);
 bool write_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint8_t* buf, _In_ uint32_t size);
@@ -143,6 +145,9 @@ int _tmain(int argc, _TCHAR* argv[])
     if (true != initialize_log(log_level_debug, f.str().c_str())) return false;
     set_log_format(false, false, false);
     
+    //std::string s("");
+    //log_info "s.size() = %u, s.empty() = %s", s.size(), true == s.empty() ? "true" : "false" log_end
+    //assert_bool(true, test_find_and_replace);
 
     //assert_bool(true, test_boost_thread);
 	//assert_bool(true, test_thread_pool);
@@ -225,6 +230,28 @@ int _tmain(int argc, _TCHAR* argv[])
 	con_info "press any key to terminate..." con_end
 	_pause;
 	return 0;
+}
+
+/// @brief
+bool test_find_and_replace()
+{
+    std::string src = "0123456789,Version=v4,5";
+    std::string find = ",";
+    std::string replace = " ";
+    
+    
+    log_info "before find_and_replace, %s", src.c_str() log_end;
+    std::string str_mod = find_and_replace_string_exa(src.c_str(), ",", "\\,");
+    _ASSERTE(0 == str_mod.compare("0123456789\\,Version=v4\\,5"));
+    log_info "after find_and_replace, %s", str_mod.c_str() log_end;
+    
+    std::wstring srcw = L"0123456789,Version=v4,5";
+    log_info "before find_and_replace, %ws", srcw.c_str() log_end;
+    std::wstring str_modw = find_and_replace_string_exw(srcw.c_str(), L",", L"\\,");
+    _ASSERTE(0 == str_modw.compare(L"0123456789\\,Version=v4\\,5"));
+    log_info "after find_and_replace, %ws", str_mod.c_str() log_end;
+
+    return true;
 }
 
 /**

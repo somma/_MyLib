@@ -3167,6 +3167,53 @@ uint64_t hash_string64w(_In_ const wchar_t* s, _In_opt_ uint64_t seed)
     return ret;
 }
 
+/// @brief  source 에서 find 를 찾아 replace 로 변경해서, 새로운 문자열 객체를 생성/리턴한다.
+///         실패시 _null_string_a 객체를 리턴한다.
+std::string
+find_and_replace_string_exa(
+    _In_ const char* source,
+    _In_ const char* find,
+    _In_ const char* replace
+    )
+{
+    _ASSERTE(NULL != source);
+    _ASSERTE(NULL != find);
+    _ASSERTE(NULL != replace);
+
+    if (NULL != source && NULL != find && NULL != replace)
+    {
+        std::string s(source);
+        std::string f(find);
+        std::string r(replace);
+        find_and_replace_string(s, f, r);
+        return s;
+    }
+    else
+        return _null_stringa;
+}
+
+std::wstring
+find_and_replace_string_exw(
+    _In_ const wchar_t* source,
+    _In_ const wchar_t* find,
+    _In_ const wchar_t* replace
+    )
+{
+    _ASSERTE(NULL != source);
+    _ASSERTE(NULL != find);
+    _ASSERTE(NULL != replace);
+
+    if (NULL != source && NULL != find && NULL != replace)
+    {
+        std::wstring s(source);
+        std::wstring f(find);
+        std::wstring r(replace);
+        find_and_replace_string(s, f, r);
+        return s;
+    }
+    else
+        return _null_stringw;
+}
 
 /**
  * @brief	custom destructor for Windows HANDLE

@@ -379,22 +379,43 @@ uint32_t hash_string32w(_In_ const wchar_t* s, _In_opt_ uint32_t seed = 0);
 uint64_t hash_string64w(_In_ const wchar_t* s, _In_opt_ uint64_t seed = 0);
 
 
-/**
-* @brief	source 에서 find 문자열을 모두 찾아 replace 문자열로 변경한다.
-*/
+
+/// @brief	source 에서 find 문자열을 모두 찾아 replace 문자열로 변경하고, 변경한 횟수를 리턴한다.
+///         source 문자열 객체를 직접 변경한다.
 template <typename T> int		
-FindAndReplace(IN T& source, IN T& find, IN T replace)
+find_and_replace_string(IN T& source, IN T& find, IN T replace)
 {
-	int count = 0;
+    uint32_t adv = (uint32_t)replace.size();
+    int count = 0;
 	size_t pos = source.find(find, 0);
 	while (T::npos != pos)
 	{
 		source.replace(pos, find.length(), replace);
+        pos += adv;     // replace 가 find 문자열을 포함하고 있는 더 긴 문자열인 경우 
+                        // adv 만큼 pos 를 보정해 주지 않으면 무한루프에 빠진다. 
+                        // e.g. find = ',' replace = '\,' 
 		++count;
 		pos = source.find(find, pos);
 	}
 	return count;
 }
+
+/// @brief  source 에서 find 를 찾아 replace 로 변경해서, 새로운 문자열 객체를 생성/리턴한다.
+///         실패시 _null_string_a 객체를 리턴한다.
+std::string
+find_and_replace_string_exa(
+    _In_ const char* source,
+    _In_ const char* find,
+    _In_ const char* replace
+    );
+
+std::wstring
+find_and_replace_string_exw(
+    _In_ const wchar_t* source,
+    _In_ const wchar_t* find,
+    _In_ const wchar_t* replace
+    );
+
 
 /******************************************************************************
  * RAII (Resource Acquisition Is Initialization ), raii
