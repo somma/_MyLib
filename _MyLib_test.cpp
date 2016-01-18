@@ -139,15 +139,17 @@ int _tmain(int argc, _TCHAR* argv[])
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
 
+    //char* p = NULL;
+    //p = (char*)realloc(p, 100);
+    //p[0] = 1;
 
     
     boost::wformat f = boost::wformat(L"%s\\%s") % get_current_module_dirEx().c_str() % L"_MyLib_tst.log";
     if (true != initialize_log(log_level_debug, f.str().c_str())) return false;
     set_log_format(false, false, false);
     
-    //std::string s("");
-    //log_info "s.size() = %u, s.empty() = %s", s.size(), true == s.empty() ? "true" : "false" log_end
-    //assert_bool(true, test_find_and_replace);
+
+
 
     //assert_bool(true, test_boost_thread);
 	//assert_bool(true, test_thread_pool);
@@ -157,7 +159,7 @@ int _tmain(int argc, _TCHAR* argv[])
     //assert_bool(true, test_enum_physical_drive);
     //assert_bool(true, test_get_disk_volume_info);
     //assert_bool(true, test_dump_xxx);
-    assert_bool(true, test_write_mbr_vbr);
+    //assert_bool(true, test_write_mbr_vbr);
 	//assert_bool(true, test_asm_func);
 	//assert_bool(true, test_x64_calling_convension);
 	//assert_bool(true, test_2_complement);
@@ -173,8 +175,8 @@ int _tmain(int argc, _TCHAR* argv[])
     //assert_bool(true, test_strtok);
 
 	//assert_bool(true, test_cpp_class);
-	//
-	//assert_bool(true, test_nt_name_to_dos_name);
+	
+	assert_bool(true, test_nt_name_to_dos_name);
 	//assert_bool(true, test_query_dos_device);
 	//assert_bool(true, test_get_filepath_by_handle);
 	//assert_bool(true, test_bin_to_hex);

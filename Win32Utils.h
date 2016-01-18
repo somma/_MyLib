@@ -54,8 +54,10 @@ typedef struct _continuous_memory
 #define _HIGH_PART(_int64_value_)    (UINT32)((_int64_value_) >> 32)
 #define _LOW_PART(_int64_value_)     (UINT32)((_int64_value_) & 0x00000000FFFFFFFF)
 
+
 /// @brief  val 변수의 pos 번째 비트가 1 이면 1 아니면 0
 #define _check_bit(val, pos)  (val & (1 << pos))
+
 
 /**	-----------------------------------------------------------------------
 	빌드시에 TODO 메세지를 출력하기 위한 매크로 
@@ -124,6 +126,7 @@ std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time);
 bool is_file_existsW(_In_ const wchar_t* file_path);
 bool is_file_existsA(_In_ const char* file_path);
 bool is_dir(_In_ const wchar_t* file_path);
+bool is_file(_In_ const wchar_t* file_path);
 
 bool get_filepath_by_handle(_In_ HANDLE file_handle, _Out_ std::wstring& file_name);
 bool get_mapped_file_name(_In_ HANDLE process_handle, _In_ const void* mapped_addr, _Out_ std::wstring& file_name);
