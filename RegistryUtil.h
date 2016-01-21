@@ -101,3 +101,26 @@ RUIsKeyExists(
     const wchar_t* TargetKey
     );
 
+
+typedef
+bool(*fn_key_callback)(
+    _In_ uint32_t index,
+    _In_ const wchar_t* sub_key_name,
+    _In_ const wchar_t* class_name
+    );
+
+typedef
+bool(*fn_value_callback)(
+    _In_ uint32_t index,
+    _In_ uint32_t value_type,
+    _In_ const wchar_t* value_name,
+    _In_ uint32_t value_data_size,
+    _In_ const uint8_t* value_data
+    );
+
+bool
+reg_enum_key_values(
+    _In_ HKEY key,
+    _In_ fn_key_callback key_cb,
+    _In_ fn_value_callback value_cb
+    );

@@ -16,6 +16,7 @@
 #include "sha2.h"
 #include "Win32Utils.h"
 
+bool test_os_version();
 bool test_for_each();
 
 bool test_find_and_replace();
@@ -104,6 +105,7 @@ extern bool test_unorded_map_test_move();
 
 // _test_regstry_util.cpp
 extern bool test_registry_util();
+extern bool test_read_mouted_device();
 
 
 // thread_pool.h
@@ -149,7 +151,7 @@ int _tmain(int argc, _TCHAR* argv[])
     set_log_format(false, false, false);
     
 
-
+    assert_bool(true, test_os_version);
 
     //assert_bool(true, test_boost_thread);
 	//assert_bool(true, test_thread_pool);
@@ -176,7 +178,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//assert_bool(true, test_cpp_class);
 	
-	assert_bool(true, test_nt_name_to_dos_name);
+	//assert_bool(true, test_nt_name_to_dos_name);
 	//assert_bool(true, test_query_dos_device);
 	//assert_bool(true, test_get_filepath_by_handle);
 	//assert_bool(true, test_bin_to_hex);
@@ -217,6 +219,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 	//assert_bool(true, test_registry_util);
+    //assert_bool(true, test_read_mouted_device);
 
 	log_info
 		"----------------------------------------------------"
@@ -232,6 +235,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	con_info "press any key to terminate..." con_end
 	_pause;
 	return 0;
+}
+
+/// @brief
+bool test_os_version()
+{
+    OSVER os = get_os_version();
+    log_info "%ws", osver_to_str(os) log_end;
+    return true;
 }
 
 /// @brief

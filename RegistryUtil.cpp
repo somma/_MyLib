@@ -487,3 +487,169 @@ RUIsKeyExists(
     RegHandle reg (RUOpenKey(RootKey, TargetKey, true));    
     return (NULL == reg.get()) ? false : true;
 }
+
+
+/// @brief  `key` 의 key, value 들을 enumerate 한다. 
+///         sub key 는 `key_cb` 를 통해 caller 에게 전달되고, 
+///         value 는 `value_cb` 를 통해 caller 에게 전달된다. 
+///         key_cb, value_cb 는 NULL 일 수 있다. 
+bool reg_enum_key_values(_In_ HKEY key, _In_ fn_key_callback key_cb, _In_ fn_value_callback value_cb)
+{
+    DWORD sub_key_count = 0;
+    DWORD max_sub_key_name_cc = 0;
+    DWORD max_class_name_cc = 0;
+    DWORD value_count = 0;
+    DWORD max_value_name_cc = 0;
+    DWORD max_value_data_byte = 0;
+    DWORD max_security_desciptor_byte = 0;
+    FILETIME last_write_time = { 0 };
+
+    // xxx_size 값은 UNICODE character 의 사이즈이며 
+    // null terminate character 를 포함하지 않은 값이다. 
+
+    LSTATUS ret = RegQueryInfoKeyW(
+                    key,
+                    NULL,
+                    NULL,
+                    NULL,
+                    &sub_key_count,
+                    &max_sub_key_name_cc,
+                    &max_class_name_cc,
+                    &value_count,
+                    &max_value_name_cc,
+                    &max_value_data_byte,
+                    &max_security_desciptor_byte,
+                    &last_write_time);
+    if (ERROR_SUCCESS != ret)
+    {
+        log_err "RegQueryInfoKeyW() failed. ret = %u", ret log_end;
+        return false;
+    }
+
+    //log_dbg
+    //    "sub_key_count = %u, \n"\
+    //    "max_sub_key_name_size = %u, \n"\
+    //    "max_class_name_size = %u, \n"\
+    //    "value_count = %u, \n"\
+    //    "max_value_name_size = %u, \n"\
+    //    "max_value_data_size = %u, \n"\
+    //    "max_security_desciptor_size = %u",
+    //    sub_key_count,
+    //    max_sub_key_name_cc,
+    //    max_class_name_cc,
+    //    value_count,
+    //    max_value_name_cc,
+    //    max_value_data_byte,
+    //    max_security_desciptor_byte
+    //    log_end;
+
+    // xxx_cc 값은 null terminate 를 포함하지 않는 character count 이다. 
+    // RegEnumKeyEx() 같은 함수들은 파라미터를 받을때 null terminate 를 포함한 
+    // 버퍼와 버퍼의 사이즈를 파라미터로 받기 때문에 편의상 xxx_cc 에 +1 을 해준다. 
+    ++max_sub_key_name_cc;
+    ++max_class_name_cc;
+    ++max_value_name_cc;
+
+
+    // enum reg keyz
+    if (NULL != key_cb)
+    {
+        if (sub_key_count > 0)
+        {
+            //log_dbg "sub key count = %u", sub_key_count log_end;
+            wchar_t* sub_key_name = (wchar_t*)malloc((max_sub_key_name_cc)* sizeof(wchar_t));
+            wchar_t* class_name = (wchar_t*)malloc((max_class_name_cc)* sizeof(wchar_t));
+
+            for (DWORD i = 0; i < sub_key_count; ++i)
+            {
+                RtlZeroMemory(sub_key_name, (max_sub_key_name_cc)* sizeof(wchar_t));
+                RtlZeroMemory(class_name, (max_class_name_cc)* sizeof(wchar_t));
+
+                DWORD sub_key_name_cc = max_sub_key_name_cc;
+                DWORD class_name_cc = max_class_name_cc;
+
+                ret = RegEnumKeyEx(
+                        key,
+                        i,
+                        sub_key_name,
+                        &sub_key_name_cc,
+                        NULL,
+                        class_name,
+                        &class_name_cc,
+                        &last_write_time);
+                if (ret == ERROR_SUCCESS)
+                {
+                    //log_dbg
+                    //    "index = %u, sub_key_name = %ws, class_name = %ws",
+                    //    i, sub_key_name, class_name
+                    //    log_end;
+                
+                    if (true != key_cb(i, sub_key_name, class_name))
+                    {
+                        // caller canceled.
+                        break;
+                    }
+                }
+                else
+                {
+                    log_err "RegEnumKeyEx() failed. ret = %u", ret log_end;
+                }
+            }
+
+            free_and_nil(sub_key_name);
+            free_and_nil(class_name);
+        }
+    }
+
+    // enum reg values
+    if (NULL != value_cb)
+    {
+        if (value_count > 0)
+        {
+            //log_dbg "value count = %u", value_count log_end;
+            wchar_t* value_name = (wchar_t*)malloc((max_value_name_cc)* sizeof(wchar_t));
+            BYTE* value_data = (BYTE*)malloc(max_value_data_byte);
+
+            for (DWORD i = 0, ret = ERROR_SUCCESS; i < value_count; i++)
+            {
+                RtlZeroMemory(value_name, (max_value_name_cc)* sizeof(wchar_t));
+                RtlZeroMemory(value_data, max_value_data_byte);
+
+                DWORD value_type = REG_NONE;
+                DWORD value_name_cc = max_value_name_cc;
+                DWORD value_data_size = max_value_data_byte;
+            
+                ret = RegEnumValue(
+                            key,
+                            i,
+                            value_name,
+                            &value_name_cc,
+                            NULL,
+                            &value_type,
+                            value_data,
+                            &value_data_size);
+                if (ret == ERROR_SUCCESS)
+                {
+                    //log_dbg
+                    //    "index = %u, value_name = %ws, value_type = %u, data = %ws", 
+                    //    i, 
+                    //    value_name, 
+                    //    value_type, 
+                    //    (char*)value_data
+                    //    log_end;
+                    if (true != value_cb(i, value_type, value_name, value_data_size, value_data))
+                    {
+                        // caller calceld.
+                        break;
+                    }
+
+                }
+            }
+
+            free_and_nil(value_name);
+            free_and_nil(value_data);
+        }
+    }
+    
+    return true;
+}
