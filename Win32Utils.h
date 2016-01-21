@@ -25,6 +25,8 @@
 #include <strsafe.h>
 #include <conio.h>
 #include <winioctl.h>
+#include <winnt.h>
+
 
 //> reported as vs 2010 bug, ms says that will be patch this bug next major vs release, vs2012.
 //
@@ -604,5 +606,49 @@ typedef struct WU_PROCESSOR_INFO
 
 BOOL WUGetProcessorInfo(IN OUT WU_PROCESSOR_INFO& CpuInfo);
 
+
+//
+// os version
+// 
+// widows 10 에서 (MDSN 에서 하라는대로) VersionHelpers.h 에 있는 IsWindows10OrGreater() 함수를 
+// 호출해도 false 가 떨어짐
+// 괜히 쓰기도 복잡하고, 효율도 떨어져서 RtlGetVersion() wrapper 를 사용함
+// 
+// from https://indidev.net/forum/viewtopic.php?f=5&t=474 
+// 
+
+enum OSVER
+{
+    // Operating System Version 
+    //  + https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx)
+
+    OSV_UNDEF,
+    OSV_2000,
+
+    OSV_XP,
+    OSV_XPSP1,      
+    OSV_XPSP2,      
+    OSV_XPSP3,      
+
+    OSV_2003,
+    OSV_VISTA, 
+    OSV_VISTASP1, 
+    OSV_VISTASP2,
+    OSV_2008,           // vista server
+
+    OSV_7, 
+    OSV_7SP1,
+    OSV_2008R2,         // win7 server
+
+    OSV_8, 
+    OSV_81,
+    OSV_2012R2,         // win 8 server
+
+    OSV_10,
+    OSV_UNKNOWN,
+};
+
+const wchar_t*  osver_to_str(_In_ OSVER os);
+OSVER get_os_version();
 
 #endif//_win32_utils_

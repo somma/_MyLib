@@ -5081,3 +5081,103 @@ BOOL WUGetProcessorInfo(IN OUT WU_PROCESSOR_INFO& CpuInfo)
     free(buf);
     return TRUE;
 }
+
+
+/// @brief 
+const wchar_t*  osver_to_str(_In_ OSVER os)
+{
+    switch (os)
+    {
+    case OSV_UNDEF: return L"Undef";
+    case OSV_2000: return L"Windows 2000";
+    case OSV_XP: return L"Windows XP";
+    case OSV_XPSP1: return L"Windows XP (SP1)";
+    case OSV_XPSP2: return L"Windows XP (SP2)";
+    case OSV_XPSP3: return L"Windows XP (SP3)";
+    case OSV_2003: return L"Windows 2000";
+    case OSV_VISTA: return L"Windows Vista";
+    case OSV_VISTASP1: return L"Windows Vista (SP1)";
+    case OSV_VISTASP2: return L"Windows Vista (SP2)";
+    case OSV_2008: return L"Windows Server 2008";
+    case OSV_7: return L"Windows 7";
+    case OSV_7SP1: return L"Windows 7 (SP1)";
+    case OSV_2008R2: return L"Windows Server 2008 R2";
+    case OSV_8: return L"Windows 8";
+    case OSV_81: return L"Windows 8.1";
+    case OSV_2012R2: return L"Windows Server 2012 R2";
+    case OSV_10: return L"Windows 10";
+    case OSV_UNKNOWN:
+    default:
+        return L"Unknown OS";
+    }
+}
+
+/// @brief  RtlGetVersion() wrapper
+OSVER get_os_version()
+{
+    static OSVER os = OSV_UNDEF;
+    if (os != OSV_UNDEF) return os;
+    os = OSV_UNKNOWN;
+
+    // https://github.com/DarthTon/Blackbone/blob/master/contrib/VersionHelpers.h 
+    RTL_OSVERSIONINFOEXW osv = { sizeof(osv), 0, };    
+    typedef uint32_t(__stdcall *fnRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation);
+    fnRtlGetVersion RtlGetVersion = (fnRtlGetVersion)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "RtlGetVersion");
+
+    if (RtlGetVersion != 0 && RtlGetVersion((PRTL_OSVERSIONINFOW)&osv) == 0 && osv.dwPlatformId == VER_PLATFORM_WIN32_NT)
+    {
+        switch (osv.dwMajorVersion)
+        {
+        case 5:
+            os = OSV_2000;
+            if (osv.dwMinorVersion == 1)
+            {
+                os = OSV_XP;
+                if (osv.wServicePackMajor == 1) os = OSV_XPSP1;
+                else if (osv.wServicePackMajor == 2) os = OSV_XPSP2;
+                else if (osv.wServicePackMajor == 3) os = OSV_XPSP3;
+            }
+            else if (osv.dwMinorVersion == 2)   os = OSV_2003;
+            break;
+
+        case 6:
+            if (osv.dwMinorVersion == 0)
+            {
+                os = OSV_VISTA;
+                if (osv.wProductType == VER_NT_WORKSTATION)
+                {
+                    if (osv.wServicePackMajor == 1) os = OSV_VISTASP1;
+                    else if (osv.wServicePackMajor == 2) os = OSV_VISTASP2;
+                }
+                else
+                    os = OSV_2008;
+            }
+            else if (osv.dwMinorVersion == 1)
+            {
+                if (osv.wProductType == VER_NT_WORKSTATION)
+                {
+                    os = OSV_7;
+                    if (osv.wServicePackMajor == 1) os = OSV_7SP1;
+                }
+                else
+                    os = OSV_2008R2;
+            }
+            else if (osv.dwMinorVersion == 2)
+                os = OSV_8;
+            else if (osv.dwMinorVersion == 3)
+            {
+                if (osv.wProductType == VER_NT_WORKSTATION)
+                    os = OSV_81;
+                else
+                    os = OSV_2012R2;
+            }
+            break;
+
+        case 10:
+            os = OSV_10;
+            break;
+        }
+    }
+
+    return os;
+}
