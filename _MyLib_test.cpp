@@ -48,6 +48,8 @@ bool test_process_tree();
 bool test_base64();
 bool test_random();
 bool test_get_local_ip_list();
+bool test_get_mac_address();
+bool test_ip_to_str();
 
 bool test_strtok();
 
@@ -150,8 +152,17 @@ int _tmain(int argc, _TCHAR* argv[])
     if (true != initialize_log(log_level_debug, f.str().c_str())) return false;
     set_log_format(false, false, false);
     
+    //std::wstring wstr = L"12345";
+    //log_info "wstr.size() = %u, wcslen(wstr.c_str() = %u",
+    //    wstr.size(), wcslen(wstr.c_str())
+    //    log_end;
 
-    assert_bool(true, test_os_version);
+
+
+
+
+    
+    //assert_bool(true, test_os_version);
 
     //assert_bool(true, test_boost_thread);
 	//assert_bool(true, test_thread_pool);
@@ -174,6 +185,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
 	//assert_bool(true, test_get_local_ip_list);
+    //assert_bool(true, test_get_mac_address);
+    assert_bool(true, test_ip_to_str);
+
     //assert_bool(true, test_strtok);
 
 	//assert_bool(true, test_cpp_class);
@@ -188,8 +202,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_dump_memory);
 	//assert_bool(true, test_get_process_name_by_pid);
 	//assert_bool(true, test_get_environment_value);
- //   assert_bool(true, test_get_local_ip_list);
-
+ 
 	//assert_bool(true, test_rc4_encrypt);
     //assert_bool(true, test_md5_sha2);
 	//
@@ -631,8 +644,43 @@ bool test_get_local_ip_list()
 	return true;
 }
 
-/// 
+/// @brief
+bool test_get_mac_address()
+{
+    std::wstring host_name;
+    std::vector<std::wstring> ip_list;
 
+    if (true != get_local_ip_list(host_name, ip_list)) return false;
+    log_info "hot name = %ws", host_name.c_str() log_end;
+
+    for (auto ip : ip_list)
+    {
+        std::wstring mac_str;
+        
+        if (true != get_local_mac_by_ipv4(ip.c_str(), mac_str)) return false;
+
+        log_info "ip = %ws, mac = %ws", ip.c_str(), mac_str.c_str() log_end;
+    }
+    return true;
+}
+
+/// @brief
+bool test_ip_to_str()
+{
+    const wchar_t* ip_str = L"211.221.93.88";
+ 
+    in_addr addr = { 0 };
+    if (true != str_to_ipv4(ip_str, addr)) return false;
+    log_info "ip = %ws -> %lu", ip_str, addr.S_un.S_addr log_end;
+    log_info "ip = %lu -> %ws", addr.S_un.S_addr, ipv4_to_str(addr).c_str() log_end;
+
+
+    addr.S_un.S_addr = 0x0100007f;
+    log_info "ip = %lu -> %ws", addr.S_un.S_addr, ipv4_to_str(addr).c_str() log_end;
+    return true;
+}
+
+/// @brief
 bool split_string(_In_ const char* str, _In_ const char* seps, _Out_ std::vector<std::string>& tokens)
 {
 #define max_str_len     2048

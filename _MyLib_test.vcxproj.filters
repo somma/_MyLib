@@ -75,6 +75,45 @@
     <ClInclude Include="gpt_partition_guid.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
+    <ClInclude Include="arch.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseWindowsHeader.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="CStream.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugMessage.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="injector.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="Queue.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceHelper.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="scm_context.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="StatusCode.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="StopWatch.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadManager.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="Wow64Util.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -141,6 +180,24 @@
       <Filter>_MyLib</Filter>
     </ClCompile>
     <ClCompile Include="md5.cpp">
+      <Filter>_MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="CStream.cpp">
+      <Filter>_MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugMessage.cpp">
+      <Filter>_MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="injector.cpp">
+      <Filter>_MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="scm_context.cpp">
+      <Filter>_MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadManager.cpp">
+      <Filter>_MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="Wow64Util.cpp">
       <Filter>_MyLib</Filter>
     </ClCompile>
   </ItemGroup>

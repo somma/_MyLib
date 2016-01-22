@@ -27,6 +27,10 @@
 #include <winioctl.h>
 #include <winnt.h>
 
+#include <WinSock2.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
+
 
 //> reported as vs 2010 bug, ms says that will be patch this bug next major vs release, vs2012.
 //
@@ -237,7 +241,6 @@ std::wstring get_current_module_fileEx();
 bool WUCreateDirectory(const LPCWSTR DirectoryPath);
 bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete);
 BOOL GetSystemRootDirectory(DWORD Len, LPTSTR Buffer);
-BOOL DeleteDirectory(IN LPCWSTR  DirctoryPathToDelete);
 BOOL GetImageFullPathFromPredefinedPathW(
                 IN  LPCWSTR ImageName, 
                 IN  DWORD   BufferLen,
@@ -265,7 +268,7 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 ******************************************************************************/
 wchar_t* MbsToWcs(_In_ const char* mbs);
 char* WcsToMbs(_In_ const wchar_t* wcs);
-char* WcsToMbsUTF8(IN const wchar_t* wcs);
+char* WcsToMbsUTF8(_In_ const wchar_t* wcs);
 wchar_t* Utf8MbsToWcs(_In_ const char* utf8);
 
 static const std::wstring _null_stringw(L"");
@@ -483,12 +486,22 @@ bool	dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32
 
 BOOL	GetTimeStringA(OUT std::string& TimeString);
 BOOL	GetTimeStringW(IN std::wstring& TimeString);
+
+#if (NTDDI_VERSION >= NTDDI_VISTA)
+std::wstring ipv4_to_str(_In_ in_addr& ipv4);
+std::wstring ipv6_to_str(_In_ in6_addr& ipv6);
+bool str_to_ipv4(_In_ const wchar_t* ipv4, _Out_ in_addr& ipv4_addr);
+bool str_to_ipv6(_In_ const wchar_t* ipv6, _Out_ in6_addr& ipv6_addr);
+#endif
+
 bool	get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wstring>& ip_list);
+bool    get_local_mac_by_ipv4(_In_ const wchar_t* ip_str, _Out_ std::wstring& mac_str);
+ 
 
 bool	set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
 HANDLE	privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege);
 
-bool	get_active_window_pid(_Out_ DWORD& pid);
+bool    get_active_window_pid(_Out_ DWORD& pid, _Out_ DWORD& tid);
 DWORD	get_active_console_session_id();
 bool	get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id);
 bool	process_in_console_session(_In_ DWORD process_id);

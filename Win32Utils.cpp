@@ -18,16 +18,18 @@
 #include <time.h>
 #include <Shellapi.h>
 #include <Shlobj.h>
-#pragma comment(lib, "Shell32.lib")
-#include <WinSock2.h>
-#include <ws2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
 #include <Psapi.h>
-#pragma comment(lib, "psapi.lib")
 #include <guiddef.h>
 
 #include "ResourceHelper.h"
 #include "gpt_partition_guid.h"
+
+#pragma comment(lib, "Shell32.lib")
+#pragma comment(lib, "IPHLPAPI.lib")
+#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "psapi.lib")
+
+
 
 /**----------------------------------------------------------------------------
     \brief  
@@ -4171,6 +4173,80 @@ BOOL GetTimeStringW(IN std::wstring& TimeString)
 	return TRUE;
 }
 
+#if (NTDDI_VERSION >= NTDDI_VISTA)
+/// @brief  
+std::wstring ipv4_to_str(_In_ in_addr& ipv4)
+{
+    wchar_t ipv4_buf[16 + 1] = { 0 };
+    if (NULL == InetNtopW(AF_INET, &ipv4, ipv4_buf, sizeof(ipv4_buf)))
+    {
+        log_err "InetNtopW( ) failed. wsa_gle = %u", WSAGetLastError() log_end;
+        return std::wstring(L"0.0.0.0");
+    }
+
+    return std::wstring(ipv4_buf);
+}
+
+/// @brief  
+std::wstring ipv6_to_str(_In_ in6_addr& ipv6)
+{
+    wchar_t ipv6_buf[46 + 1] = { 0 };
+    if (NULL == InetNtopW(AF_INET6, &ipv6, ipv6_buf, sizeof(ipv6_buf)))
+    {
+        log_err "InetNtopW( ) failed. wsa_gle = %u", WSAGetLastError() log_end;
+        return std::wstring(L"0.0.0.0");
+    }
+
+    return std::wstring(ipv6_buf);
+}
+
+/// @brief  
+bool str_to_ipv4(_In_ const wchar_t* ipv4, _Out_ in_addr& ipv4_addr)
+{
+    _ASSERTE(NULL != ipv4);
+    if (NULL != ipv4)
+    {
+        int ret = InetPtonW(AF_INET, ipv4, &ipv4_addr);
+        switch (ret)
+        {
+        case 1: 
+            return true;    // success
+        case 0:
+            log_err "invalid ipv4 string. input = %ws", ipv4 log_end;
+            return false;
+        case -1: 
+            log_err "InetPtonW() failed. input = %ws, wsa gle = %u", ipv4, WSAGetLastError() log_end;
+            return false;
+        }
+    }
+
+    return false;
+}
+
+/// @brief  
+bool str_to_ipv6(_In_ const wchar_t* ipv6, _Out_ in6_addr& ipv6_addr)
+{
+    _ASSERTE(NULL != ipv6);
+    if (NULL != ipv6)
+    {
+        int ret = InetPtonW(AF_INET6, ipv6, &ipv6_addr);
+        switch (ret)
+        {
+        case 1:
+            return true;    // success
+        case 0:
+            log_err "invalid ipv4 string. input = %ws", ipv6 log_end;
+            return false;
+        case -1:
+            log_err "InetPtonW() failed. input = %ws, wsa gle = %u", ipv6, WSAGetLastError() log_end;
+            return false;
+        }
+    }
+
+    return false;
+}
+#endif//#if (NTDDI_VERSION >= NTDDI_VISTA)
+
 /**
  * @brief	
  * @param	
@@ -4251,6 +4327,60 @@ bool get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wst
 	FreeAddrInfoW(Result); 
 	WSACleanup();
 	return true;
+}
+
+/// @brief  `ip_str` 주소를 가진 interface 의 mac 주소를 알아낸다. 
+///         리모트 시스템의 mac 주소를 알아오려는 목적인 아니고, 로컬 시스템에 연결된
+///         interface 의 맥 주소를 알아오는 용도의 함수다. 
+///         `127.0.0.1` 은 안됨
+/// 
+///         GetAdaptersAddresses() 함수를 사용할 수도 있으나 이게 더 간편해서 ...
+///         cf. IP_ADAPTER_ADDRESSES  
+///         https://msdn.microsoft.com/en-us/library/windows/desktop/aa366058(v=vs.85).aspx
+/// 
+/// @param  ip_str
+bool get_local_mac_by_ipv4(_In_ const wchar_t* ip_str, _Out_ std::wstring& mac_str)
+{
+    _ASSERTE(NULL != ip_str);
+    if (NULL == ip_str) return false;
+
+    IN_ADDR src = { 0 };
+    if (0 == InetPtonW(AF_INET, ip_str, &src))
+    {
+        log_err "InetPtonW( %ws ) failed." log_end;
+        return false;
+    }
+
+    uint8_t     mac[8] = { 0 };
+    uint32_t    cb_mac = sizeof(mac);
+    DWORD ret = SendARP((IPAddr)src.S_un.S_addr, (IPAddr)src.S_un.S_addr, mac, (PULONG)&cb_mac);
+    if (NO_ERROR != ret)
+    {
+        log_err "SendARP( %ws ) failed. ret = %u", ip_str, ret log_end;
+        return false;
+    }
+
+    wchar_t buf[18] = { 0 };   // 01-34-67-9a-cd-f0[null]
+
+    StringCbPrintfW(&buf[0], 6, L"%02x", mac[0]);
+    StringCbPrintfW(&buf[2], 4, L"-");
+
+    StringCbPrintfW(&buf[3], 6, L"%02x", mac[1]);
+    StringCbPrintfW(&buf[5], 4, L"-");
+
+    StringCbPrintfW(&buf[6], 6, L"%02x", mac[2]);
+    StringCbPrintfW(&buf[8], 4, L"-");
+
+    StringCbPrintfW(&buf[9], 6, L"%02x", mac[3]);
+    StringCbPrintfW(&buf[11], 4, L"-");
+
+    StringCbPrintfW(&buf[12], 6, L"%02x", mac[4]);
+    StringCbPrintfW(&buf[14], 4, L"-");
+
+    StringCbPrintfW(&buf[15], 6, L"%02x", mac[5]);
+    
+    mac_str = buf;
+    return true;
 }
 
 /**

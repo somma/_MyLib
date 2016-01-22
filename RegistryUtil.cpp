@@ -610,7 +610,7 @@ bool reg_enum_key_values(_In_ HKEY key, _In_ fn_key_callback key_cb, _In_ fn_val
             wchar_t* value_name = (wchar_t*)malloc((max_value_name_cc)* sizeof(wchar_t));
             BYTE* value_data = (BYTE*)malloc(max_value_data_byte);
 
-            for (DWORD i = 0, ret = ERROR_SUCCESS; i < value_count; i++)
+            for (DWORD i = 0; i < value_count; i++)
             {
                 RtlZeroMemory(value_name, (max_value_name_cc)* sizeof(wchar_t));
                 RtlZeroMemory(value_data, max_value_data_byte);
@@ -642,7 +642,10 @@ bool reg_enum_key_values(_In_ HKEY key, _In_ fn_key_callback key_cb, _In_ fn_val
                         // caller calceld.
                         break;
                     }
-
+                }
+                else
+                {
+                    log_err "RegEnumValue() failed. ret = %u", ret log_end;
                 }
             }
 
