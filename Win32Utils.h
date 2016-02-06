@@ -567,7 +567,7 @@ typedef enum _IMAGE_TYPE
     IT_NORMAL                   // unknown or not executable or invalid image
 } IMAGE_TYPE;
 
-BOOL     IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type);
+bool    is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type);
 LPCWSTR  FileTypeToString(IMAGE_TYPE type);
 
 

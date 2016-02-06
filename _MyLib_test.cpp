@@ -16,6 +16,7 @@
 #include "sha2.h"
 #include "Win32Utils.h"
 
+bool test_get_drive_type();
 bool test_os_version();
 bool test_for_each();
 
@@ -161,7 +162,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 
-    
+    assert_bool(true, test_get_drive_type);
     //assert_bool(true, test_os_version);
 
     //assert_bool(true, test_boost_thread);
@@ -186,7 +187,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_random);
 	//assert_bool(true, test_get_local_ip_list);
     //assert_bool(true, test_get_mac_address);
-    assert_bool(true, test_ip_to_str);
+    //assert_bool(true, test_ip_to_str);
 
     //assert_bool(true, test_strtok);
 
@@ -248,6 +249,20 @@ int _tmain(int argc, _TCHAR* argv[])
 	con_info "press any key to terminate..." con_end
 	_pause;
 	return 0;
+}
+
+/// @brief
+bool test_get_drive_type()
+{
+    UINT drive_type = GetDriveTypeW(L"c:\\");
+    drive_type = GetDriveTypeW(L"\\Device\\HarddiskVolume1");
+    drive_type = GetDriveTypeW(L"c");
+    drive_type = GetDriveTypeW(L"\\Device\\HarddiskVolume1\\");
+    drive_type = GetDriveTypeW(L"d:\\");
+    drive_type = GetDriveTypeW(L"e:\\");
+    drive_type = GetDriveTypeW(L"f:\\");
+
+    return true;
 }
 
 /// @brief

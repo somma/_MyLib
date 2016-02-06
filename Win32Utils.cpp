@@ -4734,22 +4734,22 @@ void write_to_console(_In_ uint32_t color, _In_z_ const char* log_message)
     \code
     \endcode        
 -----------------------------------------------------------------------------*/
-BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
+bool is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type)
 {
-    type = IT_NORMAL;
+type = IT_NORMAL;
 
-    HANDLE hFile = CreateFile(
-                    (LPCTSTR)path, 
+    HANDLE hFile = CreateFileW(
+                    path, 
                     GENERIC_READ, 
-                    FILE_SHARE_READ | FILE_SHARE_WRITE,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                     NULL, 
                     OPEN_EXISTING, 
                     FILE_ATTRIBUTE_NORMAL, 
                     NULL);
     if (INVALID_HANDLE_VALUE == hFile)
     {
-        log_err "access denied or invalid path, %ws", path log_end
-        return FALSE;
+        log_err "access denied or invalid path, %ws, gle = %u", path, GetLastError() log_end
+        return false;
     }
     SmrtHandle sfFile(hFile);
 
@@ -4759,13 +4759,13 @@ BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
     if (TRUE != GetFileSizeEx(hFile, &fileSize))
     {
         log_err "%ws, can not get file size, errorcode=0x%08x", path, GetLastError() log_end
-        return FALSE;
+        return false;
     }
-    if (sizeof(IMAGE_DOS_HEADER) > fileSize.QuadPart) return TRUE;
+    if (sizeof(IMAGE_DOS_HEADER) > fileSize.QuadPart) return false;
 
     
     HANDLE hImageMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
-    if (NULL == hImageMap){return FALSE;}
+    if (NULL == hImageMap){return false;}
     SmrtHandle sfMap(hImageMap);
 
     PBYTE ImageView = (LPBYTE) MapViewOfFile(
@@ -4775,7 +4775,7 @@ BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
                             0, 
                             0
                             );
-    if(ImageView == NULL){return FALSE;}
+    if(ImageView == NULL){return false;}
     SmrtView sfView(ImageView);
 
 
@@ -4784,7 +4784,7 @@ BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
     //
 
     PIMAGE_DOS_HEADER idh = (PIMAGE_DOS_HEADER)ImageView;
-    if(idh->e_magic != IMAGE_DOS_SIGNATURE) return TRUE;
+    if(idh->e_magic != IMAGE_DOS_SIGNATURE) return false;
 
 
     // check DOS file size
@@ -4793,7 +4793,7 @@ BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
     if (dosSize > fileSize.QuadPart) 
     {
         log_err "%ws, invalid file size, size=%lu", path, fileSize.QuadPart log_end
-        return TRUE;
+        return false;
     }
 
 
@@ -4806,12 +4806,12 @@ BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
             "%s, 0x%08x, invalid e_lfanew offset, idh=0x%08x, e_lfanew=0x%08x", 
             path, idh, idh->e_lfanew 
         log_end        
-        return TRUE;    
+        return false;    
     }
 
 
     PIMAGE_NT_HEADERS inh = (PIMAGE_NT_HEADERS) ((DWORD_PTR)idh + idh->e_lfanew);
-    if (IMAGE_NT_SIGNATURE != inh->Signature) return TRUE;
+    if (IMAGE_NT_SIGNATURE != inh->Signature) return false;
 
 
     WORD subsys = inh->OptionalHeader.Subsystem;
@@ -4819,13 +4819,12 @@ BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
     
     // characteristics check
     //  - 
-    ///if ((characteristics & IMAGE_FILE_32BIT_MACHINE) != IMAGE_FILE_32BIT_MACHINE) return FALSE;
-    if ((characteristics & IMAGE_FILE_EXECUTABLE_IMAGE) != IMAGE_FILE_EXECUTABLE_IMAGE) return TRUE;   // not executable
+    if ((characteristics & IMAGE_FILE_EXECUTABLE_IMAGE) != IMAGE_FILE_EXECUTABLE_IMAGE) return false;   // not executable
     
     if ((characteristics & IMAGE_FILE_DLL) == IMAGE_FILE_DLL) 
     { 
         type = IT_DLL;
-        return TRUE;
+        return true;
     }
 
     // never called.. ???
@@ -4837,21 +4836,21 @@ BOOL IsExecutableFile(LPCTSTR path, IMAGE_TYPE& type)
     if ((subsys & IMAGE_SUBSYSTEM_NATIVE) == IMAGE_SUBSYSTEM_NATIVE)
     {
         type = IT_NATIVE_APP;
-        return TRUE;
+        return true;
     }
 
     if ((subsys & IMAGE_SUBSYSTEM_WINDOWS_GUI) == IMAGE_SUBSYSTEM_WINDOWS_GUI)
     {
         type = IT_EXE_GUI;
-        return TRUE;
+        return true;
     }
     if ((subsys & IMAGE_SUBSYSTEM_WINDOWS_CUI) == IMAGE_SUBSYSTEM_WINDOWS_CUI)
     {
         type = IT_EXE_CUI;
-        return TRUE;
+        return true;
     }        
         
-    return TRUE;
+    return false;
 }
 
 /** ---------------------------------------------------------------------------
