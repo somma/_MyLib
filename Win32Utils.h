@@ -257,6 +257,8 @@ BOOL GetImageFullPathFromPredefinedPathA(
 #define GetImageFullPathFromPredefinedPath  GetImageFullPathFromPredefinedPathA	
 #endif//UNICODE
 
+bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring& full_path);
+
 
 bool get_system_directory(_Out_ std::wstring& system_dir);
 bool get_environment_value(_In_ const wchar_t* env_variable, _Out_ std::wstring& env_value);
@@ -278,6 +280,11 @@ std::wstring MbsToWcsEx(_In_ const char *mbs);
 std::string WcsToMbsEx(_In_ const wchar_t *wcs);
 std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs);
 std::wstring Utf8MbsToWcsEx(_In_ const char* utf8);
+
+/// @brief  src 의 뒤에서부터 fnd 문자열을 찾는다. 
+///         fnd 가 src 의 꽁무니와 정확히 일치하면 true, 아니면 false 리턴
+///         - 확장자 검사같은거 할때 사용
+bool rstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd);
 
 
 //> T = std::string || std::wstring

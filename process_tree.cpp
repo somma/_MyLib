@@ -108,6 +108,7 @@ cprocess_tree::build_process_tree()
 		do
 		{
 			FILETIME create_time={0};
+            std::wstring full_path;
 			HANDLE process_handle = OpenProcess(
 										PROCESS_QUERY_INFORMATION, 
 										FALSE, 
@@ -127,7 +128,12 @@ cprocess_tree::build_process_tree()
 			}
 			else
 			{
-				FILETIME dummy_time;
+                if (!get_process_image_full_path(process_handle, full_path))
+                {
+                    full_path = _null_stringw;
+                }
+
+                FILETIME dummy_time;
 				if (!GetProcessTimes(process_handle, &create_time, &dummy_time, &dummy_time, &dummy_time))
 				{
 					log_err "GetProcessTimes() failed, gle = %u", GetLastError() log_end
@@ -137,7 +143,7 @@ cprocess_tree::build_process_tree()
 				CloseHandle(process_handle); process_handle = NULL;
 			}			
 						
-			add_process(proc_entry.th32ParentProcessID, proc_entry.th32ProcessID, create_time, proc_entry.szExeFile);
+			add_process(proc_entry.th32ParentProcessID, proc_entry.th32ProcessID, create_time, proc_entry.szExeFile, full_path);
 
 		} while (Process32Next(snap, &proc_entry));
 
@@ -168,7 +174,7 @@ DWORD cprocess_tree::find_process(_In_ const wchar_t* process_name)
 	process_map::iterator ite = _proc_map.end();
 	for(; it != ite; ++it)
 	{
-		if (0 == it->second.process_name().compare(process_name)) 
+        if (rstrnicmp(it->second.process_name(), process_name))
 		{
 			// found
 			return it->second.pid();
@@ -192,9 +198,24 @@ const wchar_t* cprocess_tree::get_process_name(_In_ DWORD pid)
 	process_map::iterator it = _proc_map.find(pid);
 	if (it == _proc_map.end()) return NULL;
 
-	return it->second.process_name().c_str();
-
+	return it->second.process_name();
 }
+
+const wchar_t* cprocess_tree::get_process_path(_In_ DWORD pid)
+{
+    process_map::iterator it = _proc_map.find(pid);
+    if (it == _proc_map.end()) return NULL;
+
+    return it->second.process_path();
+}
+
+ uint64_t cprocess_tree::get_process_time(DWORD pid)
+ {
+     process_map::iterator it = _proc_map.find(pid);
+     if (it == _proc_map.end()) return NULL;
+
+     return it->second.creation_time();
+ }
 
 /**
  * @brief	
@@ -231,7 +252,7 @@ const wchar_t* cprocess_tree::get_parent_name(_In_ DWORD child_pid)
 	process_map::iterator it = _proc_map.find(ppid);
 	if (it == _proc_map.end()) return NULL;
 
-	return it->second.process_name().c_str();
+	return it->second.process_name();
 }
 
 /**
@@ -376,7 +397,7 @@ bool cprocess_tree::kill_process_tree(_In_ DWORD root_pid)
 	// check process is already killed.
 	if (true == root.killed()) 
 	{
-		log_info "already killed. pid = %u, %ws", root.pid(), root.process_name().c_str() log_end
+		log_info "already killed. pid = %u, %ws", root.pid(), root.process_name() log_end
 		return true;
 	}
 
@@ -400,10 +421,11 @@ cprocess_tree::add_process(
 	_In_ DWORD ppid, 
 	_In_ DWORD pid, 
 	_In_ FILETIME& creation_time, 
-	_In_ const wchar_t* process_name
+	_In_ const wchar_t* process_name, 
+    _In_ std::wstring& full_path
 	)
 {
-	process p(process_name, ppid, pid, *(uint64_t*)&creation_time, false);
+	process p(process_name, ppid, pid, *(uint64_t*)&creation_time, full_path, false);
 	_proc_map.insert( std::make_pair(pid, p) );
 }
 
@@ -428,7 +450,7 @@ void cprocess_tree::print_process_tree(_In_ process& p, _In_ DWORD& depth)
 		"%spid = %u (ppid = %u), %ws ", prefix.str().c_str(), 
 		p.pid(), 
 		p.ppid(), 
-		p.process_name().c_str() 
+		p.process_name() 
 	log_end
 
 	// p._pid 를 ppid 로 갖는 item 을 찾자

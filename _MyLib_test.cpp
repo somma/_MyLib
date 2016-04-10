@@ -16,6 +16,7 @@
 #include "sha2.h"
 #include "Win32Utils.h"
 
+bool test_rstrnicmp();
 bool test_get_drive_type();
 bool test_os_version();
 bool test_for_each();
@@ -126,6 +127,9 @@ public:
 	}
 };
 
+
+
+
 /**
  * @brief	
  * @param	
@@ -144,6 +148,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
 
+    
     //char* p = NULL;
     //p = (char*)realloc(p, 100);
     //p[0] = 1;
@@ -160,9 +165,12 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 
+    assert_bool(true, test_rstrnicmp);
 
 
-    assert_bool(true, test_get_drive_type);
+
+
+    //assert_bool(true, test_get_drive_type);
     //assert_bool(true, test_os_version);
 
     //assert_bool(true, test_boost_thread);
@@ -173,7 +181,7 @@ int _tmain(int argc, _TCHAR* argv[])
     //assert_bool(true, test_enum_physical_drive);
     //assert_bool(true, test_get_disk_volume_info);
     //assert_bool(true, test_dump_xxx);
-    //assert_bool(true, test_write_mbr_vbr);
+    assert_bool(true, test_write_mbr_vbr);
 	//assert_bool(true, test_asm_func);
 	//assert_bool(true, test_x64_calling_convension);
 	//assert_bool(true, test_2_complement);
@@ -553,7 +561,7 @@ bool test_initialize_string()
 bool proc_tree_callback(_In_ process& process_info, _In_ DWORD_PTR callback_tag)
 {
     UNREFERENCED_PARAMETER(callback_tag);
-	log_info "pid = %u, %ws", process_info.pid(), process_info.process_name().c_str() log_end
+	log_info "pid = %u, %ws", process_info.pid(), process_info.process_name() log_end
 	return true;
 }
 
@@ -1458,7 +1466,7 @@ bool test_dump_xxx()
 bool test_write_mbr_vbr()
 {
     log_err
-        "This test writes MBR and VBR, may cause serious system damage. really want to do this?"
+        "This test writes MBR and VBR, may cause serious system damage. really want to do this? ok~"
         log_end
     _pause;
 
@@ -1653,4 +1661,13 @@ void dump_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint32
     {
         log_info "%s", line.c_str() log_end
     }
+}
+
+bool test_rstrnicmp()
+{
+    if (!rstrnicmp(L"abcdef.123", L"123")) return false;
+    if (rstrnicmp(L"aaa.def", L"xx")) return false;
+    if (rstrnicmp(L"aaa.def", L"xx")) return false;
+    if (rstrnicmp(L"aaa.def", L"xxwwwwwwwwwwwww")) return false;
+    return true;
 }

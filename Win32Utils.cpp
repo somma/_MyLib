@@ -2038,6 +2038,47 @@ GetImageFullPathFromPredefinedPathW(
     }
 }
 
+/// @ brief GetProcessImageFileName() wrapper
+bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring& full_path)
+{
+    bool ret = false;
+    uint32_t    buf_len = 1024;
+    wchar_t*    buf = (wchar_t*)malloc(buf_len);
+    if (NULL == buf) return false;
+        
+    for (int i = 0; i < 3; ++i) // 버퍼 늘리는건 세번만...
+    {
+        DWORD dwret = GetProcessImageFileName(process_handle, buf, buf_len / sizeof(wchar_t));
+        if (0 == dwret)
+        {
+            DWORD gle = GetLastError();
+            if (gle == ERROR_INSUFFICIENT_BUFFER)
+            {
+                buf_len *= 2;
+                free(buf);
+                buf = (wchar_t*)malloc(buf_len);
+                if (NULL == buf) return false;
+                continue;
+            }
+            else
+            {
+                log_err "GetProcessImageFileName() failed. gle = %u", gle log_end;
+                break;
+            }
+        }
+        else
+        {
+            // 성공
+            full_path = buf;
+            ret = true;
+            break;
+        }
+    }
+
+    free(buf);
+    return ret;
+}
+
 /**
  * @brief	system directory 경로를 리턴하는 함수
  * @param	
@@ -2595,6 +2636,25 @@ std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
     {
         return std::wstring(tmp.get());
     }
+}
+
+/// @brief  src 의 뒤에서부터 fnd 문자열을 찾는다. 
+///         fnd 가 src 의 꽁무니와 정확히 일치하면 true, 아니면 false 리턴
+///         - 확장자 검사같은거 할때 사용
+bool rstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd)
+{
+    uint32_t src_len = (uint32_t)wcslen(src);
+    uint32_t fnd_len = (uint32_t)wcslen(fnd);
+    if (fnd_len > src_len) return false;
+
+    int sidx = src_len - 1; // uint32_t 타입 쓰면 안됨!
+    int fidx = fnd_len - 1;
+    while (fidx >= 0)
+    {
+        if (towlower(fnd[fidx--]) != towlower(src[sidx--])) return false;
+
+    }
+    return true;
 }
 
 /**	---------------------------------------------------------------------------
@@ -4748,7 +4808,7 @@ type = IT_NORMAL;
                     NULL);
     if (INVALID_HANDLE_VALUE == hFile)
     {
-        log_err "access denied or invalid path, %ws, gle = %u", path, GetLastError() log_end
+        //log_err "access denied or invalid path, %ws, gle = %u", path, GetLastError() log_end
         return false;
     }
     SmrtHandle sfFile(hFile);
