@@ -46,7 +46,7 @@
 #define log_to_none		0
 #define log_to_file		1
 #define log_to_ods		2
-#define log_to_con		3
+#define log_to_con		4
 
 /// @brief  log_mask
 #define log_mask_all    0xffffffff
