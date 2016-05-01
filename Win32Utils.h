@@ -123,8 +123,9 @@ typedef struct _FATTIME
 LPCWSTR FT2Str(IN FILETIME& ft);
 LPCWSTR FAT2Str(IN FATTIME& fat);
 
-std::string file_time_to_str(_In_ FILETIME& file_time);
-std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time);
+std::string file_time_to_str(_In_ FILETIME& file_time, _In_ bool localtime);
+std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time, _In_ bool localtime);
+
 
 /******************************************************************************
  * file, disk, volumes
@@ -504,7 +505,6 @@ bool str_to_ipv6(_In_ const wchar_t* ipv6, _Out_ in6_addr& ipv6_addr);
 bool	get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wstring>& ip_list);
 bool    get_local_mac_by_ipv4(_In_ const wchar_t* ip_str, _Out_ std::wstring& mac_str);
  
-
 bool	set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
 HANDLE	privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege);
 
@@ -543,6 +543,7 @@ COORD GetCurCoords(void);
 #define wtc_red     1
 #define wtc_green   2
 void write_to_console(_In_ uint32_t color, _In_z_ const char* log_message);
+void clear_console();
 
 
 

@@ -88,40 +88,37 @@ LPCWSTR FAT2Str(IN FATTIME& fat)
 }
 
 /// @brief  FILETIME to `yyyy-mm-dd hh:mi:ss` string representation.
-std::string file_time_to_str(_In_ FILETIME& file_time)
+std::string file_time_to_str(_In_ FILETIME& file_time, _In_ bool localtime)
 {
     char buf[24];
 
     SYSTEMTIME utc;
-    FileTimeToSystemTime(&file_time, &utc);
-    //SystemTimeToTzSpecificLocalTime(NULL, &utc, &local);
-    StringCbPrintfA(buf, sizeof(buf),
-                    "%04u-%02u-%02u %02u:%02u:%02u",
-                    utc.wYear,
-                    utc.wMonth,
-                    utc.wDay,
-                    utc.wHour,
-                    utc.wMinute,
-                    utc.wSecond
-                    );
-    return std::string(buf);
-
+    FileTimeToSystemTime(&file_time, &utc);    
+    return sys_time_to_str(utc, localtime);
 }
 
 /// @brief  SYSTEMTIME to `yyyy-mm-dd hh:mi:ss` string representation.
-std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time)
+std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time, _In_ bool localtime)
 {
     char buf[24];
 
-    //SystemTimeToTzSpecificLocalTime(NULL, &utc, &local);
+    SYSTEMTIME local;
+    PSYSTEMTIME time = &sys_time;
+
+    if (true == localtime)
+    {
+        SystemTimeToTzSpecificLocalTime(NULL, &sys_time, &local);
+        time = &local;
+    }
+
     StringCbPrintfA(buf, sizeof(buf),
                     "%04u-%02u-%02u %02u:%02u:%02u",
-                    sys_time.wYear,
-                    sys_time.wMonth,
-                    sys_time.wDay,
-                    sys_time.wHour,
-                    sys_time.wMinute,
-                    sys_time.wSecond
+                    time->wYear,
+                    time->wMonth,
+                    time->wDay,
+                    time->wHour,
+                    time->wMinute,
+                    time->wSecond
                     );
     return std::string(buf);
 }
@@ -4779,6 +4776,47 @@ void write_to_console(_In_ uint32_t color, _In_z_ const char* log_message)
     default:
         WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
     }
+}
+
+/// @brief  clear console
+///         https://msdn.microsoft.com/en-us/library/windows/desktop/ms682022(v=vs.85).aspx
+void clear_console()
+{
+    COORD coordScreen = { 0, 0 };    // home for the cursor 
+    DWORD cCharsWritten;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    DWORD dwConSize;
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    // Get the number of character cells in the current buffer. 
+    if (!GetConsoleScreenBufferInfo(hConsole, &csbi)){ return; }
+    dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+
+    // Fill the entire screen with blanks.
+    if (!FillConsoleOutputCharacter(hConsole,        // Handle to console screen buffer 
+                                    (TCHAR) ' ',     // Character to write to the buffer
+                                    dwConSize,       // Number of cells to write 
+                                    coordScreen,     // Coordinates of first cell 
+                                    &cCharsWritten))// Receive number of characters written
+    {
+        return;
+    }
+
+    // Get the current text attribute.
+    if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) { return; }
+
+    // Set the buffer's attributes accordingly.
+    if (!FillConsoleOutputAttribute(hConsole,         // Handle to console screen buffer 
+                                    csbi.wAttributes, // Character attributes to use
+                                    dwConSize,        // Number of cells to set attribute 
+                                    coordScreen,      // Coordinates of first cell 
+                                    &cCharsWritten)) // Receive number of characters written
+    {
+        return;
+    }
+
+    // Put the cursor at its home coordinates.
+    SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
 /** ---------------------------------------------------------------------------

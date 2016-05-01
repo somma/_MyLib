@@ -50,6 +50,7 @@ bool test_registry_util()
 	// -- key 내부의 value 들도 함께 삭제됨
 	if (true != RUDeleteKey(HKEY_CURRENT_USER, L"_test_key")) return false;
 
+    
 	return true;
 }
 
@@ -166,4 +167,13 @@ bool test_read_mouted_device()
     return true;
 }
 
-
+bool test_set_binary_data()
+{
+    uint8_t value[] = { 0x00,0x01,0x02,0x03,0x04,0x00,0x01,0x02,0x03,0x04,0x00,0x01,0x02,0x03,0x04 };
+                        
+    if (!RUSetBinaryData(HKEY_CURRENT_USER, L"Environment", L"ExtToReg", (uint8_t*)&value, sizeof(value)))
+    {
+        return false;
+    }
+    return true;
+}

@@ -82,6 +82,21 @@ RUSetExpandString(
     );
 
 bool
+RUSetBinaryData(
+    _In_ HKEY RootKey,
+    _In_ const wchar_t* SubKey,
+    _In_ const wchar_t* value_name,
+    _In_ const uint8_t* value,
+    _In_ DWORD cbValue);
+
+uint8_t*
+RUReadBinaryData(
+    _In_ HKEY RootKey,
+    _In_ const wchar_t* SubKey,
+    _In_ const wchar_t* value_name,
+    _Out_ DWORD& cbValue);
+
+bool
 RUDeleteValue(
 	_In_ HKEY RootKey,
 	_In_ const wchar_t* SubKey,

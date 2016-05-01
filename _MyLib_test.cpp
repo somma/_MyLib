@@ -110,6 +110,7 @@ extern bool test_unorded_map_test_move();
 // _test_regstry_util.cpp
 extern bool test_registry_util();
 extern bool test_read_mouted_device();
+extern bool test_set_binary_data();
 
 
 // thread_pool.h
@@ -165,10 +166,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 
-    assert_bool(true, test_rstrnicmp);
-
-
-
+    //assert_bool(true, test_rstrnicmp);
 
     //assert_bool(true, test_get_drive_type);
     //assert_bool(true, test_os_version);
@@ -181,7 +179,7 @@ int _tmain(int argc, _TCHAR* argv[])
     //assert_bool(true, test_enum_physical_drive);
     //assert_bool(true, test_get_disk_volume_info);
     //assert_bool(true, test_dump_xxx);
-    assert_bool(true, test_write_mbr_vbr);
+    //assert_bool(true, test_write_mbr_vbr);
 	//assert_bool(true, test_asm_func);
 	//assert_bool(true, test_x64_calling_convension);
 	//assert_bool(true, test_2_complement);
@@ -242,6 +240,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//assert_bool(true, test_registry_util);
     //assert_bool(true, test_read_mouted_device);
+    assert_bool(true, test_set_binary_data);
+    
 
 	log_info
 		"----------------------------------------------------"

@@ -159,7 +159,7 @@ RUReadDword(
     //
     RegHandle rh(sub_key_handle);
 
-    DWORD ret = RegQueryValueExW(sub_key_handle, ValueName, 0, NULL, (PBYTE)&value, &value_size);
+    DWORD ret = RegQueryValueExW(sub_key_handle, ValueName, NULL, NULL, (PBYTE)&value, &value_size);
     if (ERROR_SUCCESS != ret)
     {
         log_err "RegQueryValueExW(%ws) failed, ret = %u", SubKey, ret log_end
@@ -230,8 +230,8 @@ RUWriteDword(
 bool
 RUReadString(
     IN HKEY				RootKey,
-    IN const wchar_t* 			SubKey,
-    IN const wchar_t* 			ValueName,
+    IN const wchar_t*   SubKey,
+    IN const wchar_t* 	ValueName,
 	OUT std::wstring&	Value
     )
 {
@@ -254,7 +254,7 @@ RUReadString(
     DWORD ret = RegQueryValueExW(
                         sub_key_handle, 
                         ValueName, 
-                        0, 
+                        NULL, 
                         NULL, 
                         (LPBYTE) buffer, 
                         &cbValue
@@ -264,7 +264,7 @@ RUReadString(
         cbValue *= 2;
         old = buffer;        // save pointer for realloc faild
 
-        Value = (PWCHAR) realloc(buffer, cbValue);
+        buffer = (PWCHAR) realloc(buffer, cbValue);
         if (NULL == buffer)
         {
             free(old); 
@@ -277,7 +277,7 @@ RUReadString(
         ret = RegQueryValueExW(
                         sub_key_handle, 
                         ValueName, 
-                        0, 
+                        NULL, 
                         NULL, 
                         (LPBYTE) buffer, 
                         &cbValue
@@ -388,6 +388,140 @@ RUSetExpandString(
 
     return true;
 }
+
+/**
+ * @brief	
+ * @param	RootKey     HKEY_CLASSES_ROOT
+                        HKEY_CURRENT_CONFIG
+                        HKEY_CURRENT_USER
+                        HKEY_LOCAL_MACHINE
+                        HKEY_USERS
+			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+						'\' 로 시작하면 안됨
+ * @see		
+ * @remarks	value 사이즈 제한에 관한 정보는 링크 참조
+ *          https://msdn.microsoft.com/en-us/library/windows/desktop/ms724872(v=vs.85).aspx
+ * @code		
+ * @endcode	
+ * @return	
+**/
+bool
+RUSetBinaryData(
+    HKEY RootKey,
+    const wchar_t* SubKey,
+    const wchar_t* value_name,
+    const uint8_t* value,
+    DWORD cbValue)
+{
+    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
+    if (NULL == sub_key_handle)
+    {
+        log_err "RUOpenKey(%ws) failed", SubKey log_end
+        return false;
+    }
+
+    // assign key handle
+    //
+    RegHandle rh(sub_key_handle);
+
+    DWORD ret = RegSetValueExW(sub_key_handle, value_name, 0, REG_BINARY, (LPBYTE)value, cbValue);
+    if (ERROR_SUCCESS != ret)
+    {
+        log_err "RegSetValueExW(%ws) failed, ret = %u", value_name, ret log_end
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief	
+ * @param	RootKey     HKEY_CLASSES_ROOT
+                        HKEY_CURRENT_CONFIG
+                        HKEY_CURRENT_USER
+                        HKEY_LOCAL_MACHINE
+                        HKEY_USERS
+			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+						'\' 로 시작하면 안됨
+ * @see		
+ * @remarks	caller must free returned buffer pointer.
+ * @code		
+ * @endcode	
+ * @return	
+**/
+uint8_t*
+RUReadBinaryData(
+    _In_ HKEY RootKey,
+    _In_ const wchar_t* SubKey,
+    _In_ const wchar_t* value_name,
+    _Out_ DWORD& cbValue
+    )
+{
+    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, true);
+    if (NULL == sub_key_handle)
+    {
+        log_err "RUOpenKey(%ws) failed", SubKey log_end
+        return NULL;
+    }
+
+    // assign key handle
+    //
+    RegHandle rh(sub_key_handle);
+    void* old = NULL;	
+    cbValue = 1024;
+    uint8_t* buffer = (uint8_t*) malloc(cbValue);
+    if (NULL == buffer)
+    {
+        cbValue = 0;
+        return NULL;
+    }
+    RtlZeroMemory(buffer, cbValue);
+
+    DWORD ret = RegQueryValueExW(
+                        sub_key_handle, 
+                        value_name, 
+                        NULL, 
+                        NULL,
+                        (LPBYTE) buffer, 
+                        &cbValue
+                        );
+    while (ERROR_MORE_DATA  == ret)
+    {
+        cbValue *= 2;
+        old = buffer;        // save pointer for realloc faild
+
+        buffer = (uint8_t*) realloc(buffer, cbValue);
+        if (NULL == buffer)
+        {
+            free(old); 
+
+            cbValue = 0;
+            return NULL;
+        }
+		RtlZeroMemory(buffer, cbValue);
+
+        ret = RegQueryValueExW(
+                        sub_key_handle, 
+                        value_name, 
+                        NULL, 
+                        NULL,
+                        (LPBYTE) buffer, 
+                        &cbValue
+                        );
+    }
+
+    if (ERROR_SUCCESS != ret)
+    {
+        // Value 가 없는 경우
+        //
+        //log_err "RegQueryValueExW(%ws) failed, ret = %u", ValueName, ret log_end
+        free(buffer); buffer=NULL;
+        return NULL;    
+    }
+    
+	return buffer;
+}
+
 
 /**
  * @brief	
