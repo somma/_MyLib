@@ -90,8 +90,6 @@ LPCWSTR FAT2Str(IN FATTIME& fat)
 /// @brief  FILETIME to `yyyy-mm-dd hh:mi:ss` string representation.
 std::string file_time_to_str(_In_ FILETIME& file_time, _In_ bool localtime)
 {
-    char buf[24];
-
     SYSTEMTIME utc;
     FileTimeToSystemTime(&file_time, &utc);    
     return sys_time_to_str(utc, localtime);
@@ -2640,6 +2638,10 @@ std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 ///         - 확장자 검사같은거 할때 사용
 bool rstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd)
 {
+    _ASSERTE(NULL != src);
+    _ASSERTE(NULL != fnd);
+    if (NULL == src || NULL == fnd) return false;
+    
     uint32_t src_len = (uint32_t)wcslen(src);
     uint32_t fnd_len = (uint32_t)wcslen(fnd);
     if (fnd_len > src_len) return false;
@@ -2653,6 +2655,28 @@ bool rstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd)
     }
     return true;
 }
+
+bool rstrnicmpa(_In_ const char* src, _In_ const char* fnd)
+{
+    _ASSERTE(NULL != src);
+    _ASSERTE(NULL != fnd);
+    if (NULL == src || NULL == fnd) return false;
+
+    uint32_t src_len = (uint32_t)strlen(src);
+    uint32_t fnd_len = (uint32_t)strlen(fnd);
+    if (fnd_len > src_len) return false;
+
+    int sidx = src_len - 1; // uint32_t 타입 쓰면 안됨!
+    int fidx = fnd_len - 1;
+    while (fidx >= 0)
+    {
+        if (towlower(fnd[fidx--]) != towlower(src[sidx--])) return false;
+
+    }
+    return true;
+}
+
+
 
 /**	---------------------------------------------------------------------------
 	\brief	

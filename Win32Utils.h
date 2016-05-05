@@ -286,6 +286,9 @@ std::wstring Utf8MbsToWcsEx(_In_ const char* utf8);
 ///         fnd 가 src 의 꽁무니와 정확히 일치하면 true, 아니면 false 리턴
 ///         - 확장자 검사같은거 할때 사용
 bool rstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd);
+bool rstrnicmpa(_In_ const char* src, _In_ const char* fnd);
+
+
 
 
 //> T = std::string || std::wstring
