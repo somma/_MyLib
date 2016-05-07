@@ -16,6 +16,7 @@
 #include "sha2.h"
 #include "Win32Utils.h"
 
+bool test_device_name_from_nt_name();
 bool test_rstrnicmp();
 bool test_get_drive_type();
 bool test_os_version();
@@ -119,14 +120,34 @@ bool test_thread_pool();
 // _test_boost_thread.cpp
 extern bool test_boost_thread();
 
-class ccc
+class aaa
 {
 public:
-	~ccc ()
-	{
-		log_info "..." log_end
-	}
+    aaa(bool value) : _value(false) { }
+    virtual ~aaa() { con_info "..." log_end }
+
+    void run() { con_info "%s", _value == true ? "Ture" : "False"  con_end;}
+protected:
+    bool _value;
 };
+
+class bbb : public aaa
+{
+public:
+    bbb(bool value): aaa(value) { }
+    virtual ~bbb() { }
+    void run() { con_info "%s", _value == true ? "Ture" : "False"  con_end;}
+};
+
+class ccc : public bbb
+{
+public:
+    ccc(bool value) : bbb(value) { }
+    virtual ~ccc() { }
+    void run() { con_info "%s", _value == true ? "Ture" : "False"  con_end;}
+};
+
+
 
 
 
@@ -149,6 +170,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
 
+    //ccc c(true);
+    //c.run();
     
     //char* p = NULL;
     //p = (char*)realloc(p, 100);
@@ -159,13 +182,26 @@ int _tmain(int argc, _TCHAR* argv[])
     if (true != initialize_log(log_level_debug, f.str().c_str())) return false;
     set_log_format(false, false, false);
     
+    
     //std::wstring wstr = L"12345";
-    //log_info "wstr.size() = %u, wcslen(wstr.c_str() = %u",
+    //con_info "wstr.size() = %u, wcslen(wstr.c_str() = %u",
     //    wstr.size(), wcslen(wstr.c_str())
     //    log_end;
 
 
 
+    //FILETIME ft1, ft2;
+    //GetSystemTimeAsFileTime(&ft1);
+    //Sleep(1000);
+    //GetSystemTimeAsFileTime(&ft2);
+    //con_info "delta = %u", file_time_delta_sec(ft2, ft1) con_end;
+
+    
+
+
+
+
+    assert_bool(true, test_device_name_from_nt_name);
     //assert_bool(true, test_rstrnicmp);
 
     //assert_bool(true, test_get_drive_type);
@@ -243,11 +279,11 @@ int _tmain(int argc, _TCHAR* argv[])
     assert_bool(true, test_set_binary_data);
     
 
-	log_info
+	con_info
 		"----------------------------------------------------"
 	log_end
 
-	log_info
+	con_info
 		"total test = %u, pass = %u, fail = %u", 
 		_pass_count + _fail_count, 
 		_pass_count, 
@@ -277,7 +313,7 @@ bool test_get_drive_type()
 bool test_os_version()
 {
     OSVER os = get_os_version();
-    log_info "%ws", osver_to_str(os) log_end;
+    con_info "%ws", osver_to_str(os) log_end;
     return true;
 }
 
@@ -289,16 +325,16 @@ bool test_find_and_replace()
     std::string replace = " ";
     
     
-    log_info "before find_and_replace, %s", src.c_str() log_end;
+    con_info "before find_and_replace, %s", src.c_str() log_end;
     std::string str_mod = find_and_replace_string_exa(src.c_str(), ",", "\\,");
     _ASSERTE(0 == str_mod.compare("0123456789\\,Version=v4\\,5"));
-    log_info "after find_and_replace, %s", str_mod.c_str() log_end;
+    con_info "after find_and_replace, %s", str_mod.c_str() log_end;
     
     std::wstring srcw = L"0123456789,Version=v4,5";
-    log_info "before find_and_replace, %ws", srcw.c_str() log_end;
+    con_info "before find_and_replace, %ws", srcw.c_str() log_end;
     std::wstring str_modw = find_and_replace_string_exw(srcw.c_str(), L",", L"\\,");
     _ASSERTE(0 == str_modw.compare(L"0123456789\\,Version=v4\\,5"));
-    log_info "after find_and_replace, %ws", str_mod.c_str() log_end;
+    con_info "after find_and_replace, %ws", str_mod.c_str() log_end;
 
     return true;
 }
@@ -538,7 +574,7 @@ bool test_initialize_string()
 	}
 	catch (...)
 	{
-		log_err "oops" log_end
+		con_err "oops" log_end
 	}
 */	
 	
@@ -561,7 +597,7 @@ bool test_initialize_string()
 bool proc_tree_callback(_In_ process& process_info, _In_ DWORD_PTR callback_tag)
 {
     UNREFERENCED_PARAMETER(callback_tag);
-	log_info "pid = %u, %ws", process_info.pid(), process_info.process_name() log_end
+	con_info "pid = %u, %ws", process_info.pid(), process_info.process_name() log_end
 	return true;
 }
 
@@ -634,7 +670,7 @@ bool test_base64()
 bool test_random()
 {
 	int var = rand() % 1000 + 1;
-    log_info "var = %d", var log_end;
+    con_info "var = %d", var log_end;
 	return true;
 }
 
@@ -647,19 +683,19 @@ bool test_get_local_ip_list()
 	std::vector<std::wstring> ip_list;
 	if (true != get_local_ip_list(host_name, ip_list)) return false;
 
-	log_info "host_name = %ws", host_name.c_str() log_end
+	con_info "host_name = %ws", host_name.c_str() log_end
 	/*std::vector<std::wstring>::iterator its = ip_list.begin();
 	std::vector<std::wstring>::iterator ite = ip_list.end();
 	for(; its != ite; ++its)
 	{
-		log_info "ip = %ws", its->c_str() log_end
+		con_info "ip = %ws", its->c_str() log_end
 	}*/
     std::for_each(
         ip_list.begin(), 
         ip_list.end(),
 		[](std::wstring& ip)
 		    {
-			    log_info "ip = %ws", ip.c_str() log_end
+			    con_info "ip = %ws", ip.c_str() log_end
 		    }
 		);
 
@@ -674,7 +710,7 @@ bool test_get_mac_address()
     std::vector<std::wstring> ip_list;
 
     if (true != get_local_ip_list(host_name, ip_list)) return false;
-    log_info "hot name = %ws", host_name.c_str() log_end;
+    con_info "hot name = %ws", host_name.c_str() log_end;
 
     for (auto ip : ip_list)
     {
@@ -682,7 +718,7 @@ bool test_get_mac_address()
         
         if (true != get_local_mac_by_ipv4(ip.c_str(), mac_str)) return false;
 
-        log_info "ip = %ws, mac = %ws", ip.c_str(), mac_str.c_str() log_end;
+        con_info "ip = %ws, mac = %ws", ip.c_str(), mac_str.c_str() log_end;
     }
     return true;
 }
@@ -694,12 +730,12 @@ bool test_ip_to_str()
  
     in_addr addr = { 0 };
     if (true != str_to_ipv4(ip_str, addr)) return false;
-    log_info "ip = %ws -> %lu", ip_str, addr.S_un.S_addr log_end;
-    log_info "ip = %lu -> %ws", addr.S_un.S_addr, ipv4_to_str(addr).c_str() log_end;
+    con_info "ip = %ws -> %lu", ip_str, addr.S_un.S_addr log_end;
+    con_info "ip = %lu -> %ws", addr.S_un.S_addr, ipv4_to_str(addr).c_str() log_end;
 
 
     addr.S_un.S_addr = 0x0100007f;
-    log_info "ip = %lu -> %ws", addr.S_un.S_addr, ipv4_to_str(addr).c_str() log_end;
+    con_info "ip = %lu -> %ws", addr.S_un.S_addr, ipv4_to_str(addr).c_str() log_end;
     return true;
 }
 
@@ -1226,7 +1262,7 @@ bool test_md5_sha2()
                             &read, 
                             NULL))
         {
-            log_err 
+            con_err 
                 "ReadFile( %ws ) failed. gle = 0x%08x", 
                 file_path, 
                 GetLastError() 
@@ -1324,7 +1360,7 @@ bool test_enum_physical_drive()
             uint8_t buf[512] = { 0x00 };
             if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
             {
-                log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+                con_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
             }
             else
             {
@@ -1332,14 +1368,14 @@ bool test_enum_physical_drive()
                 dump_memory(0, buf, sizeof(buf), dumps);
                 //for (auto line : dumps)
                 //{
-                //    log_info "%s", line.c_str() log_end;
+                //    con_info "%s", line.c_str() log_end;
                 //}                
-                log_info "%ws, \n%s", path.str().c_str(), dumps[dumps.size() - 2].c_str() log_end;
+                con_info "%ws, \n%s", path.str().c_str(), dumps[dumps.size() - 2].c_str() log_end;
             }
         }
         else
         {
-            log_err
+            con_err
                 "CreateFile( %ws ) failed. gle = %u",
                 path.str().c_str(),
                 GetLastError()
@@ -1370,7 +1406,7 @@ bool test_get_disk_volume_info()
 
         if (true != get_disk_volume_info(dvi))
         {
-            log_err "get_vbr_offset( disk_number = %u ) failed.", disk_number);
+            con_err "get_vbr_offset( disk_number = %u ) failed.", disk_number);
             return false;
         }
 
@@ -1387,7 +1423,7 @@ bool test_get_disk_volume_info()
                             NULL);
         if (INVALID_HANDLE_VALUE == disk)
         {
-            log_err
+            con_err
                 "CreateFile( %ws ) failed. gle = %u",
                 path.str().c_str(),
                 GetLastError());
@@ -1399,7 +1435,7 @@ bool test_get_disk_volume_info()
         li_distance.QuadPart = 0;
         if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
         {
-            log_err
+            con_err
                 "SetFilePointerEx() failed, gle = %u", GetLastError()
                 log_end;
             break;
@@ -1407,16 +1443,16 @@ bool test_get_disk_volume_info()
 
         if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
         {
-            log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+            con_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
         }
         else
         {
             std::vector<std::string> dump;
             dump_memory(0, buf, sizeof(buf), dump);
-            log_info "[*] MBR" log_end
+            con_info "[*] MBR" log_end
             for (auto line : dump)
             {
-                log_info "%s", line.c_str() log_end
+                con_info "%s", line.c_str() log_end
             }
         }
 
@@ -1428,7 +1464,7 @@ bool test_get_disk_volume_info()
             li_distance = vbr_info.offset;
             if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
             {
-                log_err
+                con_err
                     "SetFilePointerEx() failed, gle = %u", GetLastError()
                     log_end;
                 break;
@@ -1436,16 +1472,16 @@ bool test_get_disk_volume_info()
 
             if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
             {
-                log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+                con_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
             }
             else
             {
-                log_info "[*] VBR" log_end
+                con_info "[*] VBR" log_end
                 std::vector<std::string> dump;
                 dump_memory(0, buf, sizeof(buf), dump);
                 for (auto line : dump)
                 {
-                    log_info "%s", line.c_str() log_end
+                    con_info "%s", line.c_str() log_end
                 }
             }
         }
@@ -1465,7 +1501,7 @@ bool test_dump_xxx()
 /// @brief
 bool test_write_mbr_vbr()
 {
-    log_err
+    con_err
         "This test writes MBR and VBR, may cause serious system damage. really want to do this? ok~"
         log_end
     _pause;
@@ -1482,7 +1518,7 @@ bool test_write_mbr_vbr()
     bool ret = get_disk_numbers(disk_numbers);
     if (true != ret)
     {
-        log_err "get_disk_numbers() failed." log_end;
+        con_err "get_disk_numbers() failed." log_end;
         return false;
     }
 
@@ -1492,7 +1528,7 @@ bool test_write_mbr_vbr()
 
         if (true != get_disk_volume_info(dvi))
         {
-            log_err "get_vbr_offset( disk_number = %u ) failed.", disk_number);
+            con_err "get_vbr_offset( disk_number = %u ) failed.", disk_number);
             return false;
         }
 
@@ -1509,7 +1545,7 @@ bool test_write_mbr_vbr()
                             NULL);
         if (INVALID_HANDLE_VALUE == disk)
         {
-            log_err
+            con_err
                 "CreateFile( %ws ) failed. gle = %u",
                 path.str().c_str(),
                 GetLastError());
@@ -1520,25 +1556,25 @@ bool test_write_mbr_vbr()
         // #1 write mbr - backup
         if (true != read_file_offset(disk, 0, buf_read, sizeof(buf_read)))
         {
-            log_err "read_file_offset() failed" log_end;
+            con_err "read_file_offset() failed" log_end;
         }
 
-        log_info "[*] %uth disk MBR - before write", disk_number log_end;        
+        con_info "[*] %uth disk MBR - before write", disk_number log_end;        
         dump_file_offset(disk, 0, sizeof(buf_read));
 
         // #2 write mbr - write
         if (true != write_file_offset(disk, 0, buf_write, sizeof(buf_write)))
         {
-            log_err "write_file_offset(mbr) failed." log_end;
+            con_err "write_file_offset(mbr) failed." log_end;
             return false;
         }
-        log_info "[*] %uth disk MBR - after write", disk_number log_end;
+        con_info "[*] %uth disk MBR - after write", disk_number log_end;
         dump_file_offset(disk, 0, sizeof(buf_read));
         
         // #3 write mbr - restore
         if (true != write_file_offset(disk, 0, buf_read, sizeof(buf_read)))
         {
-            log_err "write_file_offset(mbr) failed. (restore failed)" log_end;
+            con_err "write_file_offset(mbr) failed. (restore failed)" log_end;
             return false;
         }
 
@@ -1551,25 +1587,25 @@ bool test_write_mbr_vbr()
             // #1 write vbr - backup
             if (true != read_file_offset(disk, vbr_info.offset.QuadPart, buf_read, sizeof(buf_read)))
             {
-                log_err "read_file_offset() failed" log_end;
+                con_err "read_file_offset() failed" log_end;
             }
 
-            log_info "[*] %uth disk, %uth VBR - before write", disk_number, ix log_end;
+            con_info "[*] %uth disk, %uth VBR - before write", disk_number, ix log_end;
             dump_file_offset(disk, vbr_info.offset.QuadPart, sizeof(buf_read));
 
             // #2 write vbr - write
             if (true != write_file_offset(disk, vbr_info.offset.QuadPart, buf_write, sizeof(buf_write)))
             {
-                log_err "write_file_offset(mbr) failed." log_end;
+                con_err "write_file_offset(mbr) failed." log_end;
                 return false;
             }
-            log_info "[*] %uth disk, %uth VBR - after write", disk_number, ix log_end;
+            con_info "[*] %uth disk, %uth VBR - after write", disk_number, ix log_end;
             dump_file_offset(disk, vbr_info.offset.QuadPart, sizeof(buf_read));
 
             // #3 write vbr - restore
             if (true != write_file_offset(disk, vbr_info.offset.QuadPart, buf_read, sizeof(buf_read)))
             {
-                log_err "write_file_offset(mbr) failed. (restore failed)" log_end;
+                con_err "write_file_offset(mbr) failed. (restore failed)" log_end;
                 return false;
             }
 
@@ -1593,7 +1629,7 @@ bool read_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint8_
 
     if (!SetFilePointerEx(file_handle, li_distance, &li_new_pos, FILE_BEGIN))
     {
-        log_err
+        con_err
             "SetFilePointerEx() failed, gle = %u", GetLastError()
             log_end;
         return false;
@@ -1602,7 +1638,7 @@ bool read_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint8_
     RtlZeroMemory(buf, size);
     if (!ReadFile(file_handle, buf, size, &bytes_rw, NULL))
     {
-        log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+        con_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
         return false;
     }
 
@@ -1621,7 +1657,7 @@ bool write_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint8
 
     if (!SetFilePointerEx(file_handle, li_distance, &li_new_pos, FILE_BEGIN))
     {
-        log_err
+        con_err
             "SetFilePointerEx() failed, gle = %u", GetLastError()
             log_end;
         return false;
@@ -1629,7 +1665,7 @@ bool write_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint8
 
     if (!WriteFile(file_handle, buf, size, &bytes_rw, NULL))
     {
-        log_err 
+        con_err 
             "WriteFile() failed. gle = %u", GetLastError()
             );
         return false;
@@ -1646,20 +1682,20 @@ void dump_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint32
  
     if (true != read_file_offset(file_handle, offset, buf, size))
     {
-        log_err "read_file_offset() failed." log_end;
+        con_err "read_file_offset() failed." log_end;
         return;
     }
 
     std::vector<std::string> dump;
     if (true != dump_memory(0, buf, size, dump))
     {
-        log_err "dump_memory(0,  ) failed." log_end;
+        con_err "dump_memory(0,  ) failed." log_end;
         return;
     }
 
     for (auto line : dump)
     {
-        log_info "%s", line.c_str() log_end
+        con_info "%s", line.c_str() log_end
     }
 }
 
@@ -1669,5 +1705,17 @@ bool test_rstrnicmp()
     if (rstrnicmp(L"aaa.def", L"xx")) return false;
     if (rstrnicmp(L"aaa.def", L"xx")) return false;
     if (rstrnicmp(L"aaa.def", L"xxwwwwwwwwwwwww")) return false;
+    return true;
+}
+
+bool test_device_name_from_nt_name()
+{
+    std::wstring r = device_name_from_nt_name(L"\\Device\\HarddiskVolume4\\Windows");    
+    if (r.compare(L"\\Device\\HarddiskVolume4\\") != 0) return false;
+    r = device_name_from_nt_name(L"\\Device\\HarddiskVolume4");
+    if (r.compare(L"\\Device\\HarddiskVolume4") != 0) return false;
+    r = device_name_from_nt_name(L"\\Device\\HarddiskVolume455\\xyz");
+    if (r.compare(L"\\Device\\HarddiskVolume455\\") != 0) return false;
+
     return true;
 }

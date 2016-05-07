@@ -110,6 +110,13 @@ static __inline LARGE_INTEGER getticks(void)
 //=============================================================================
 // 시간 관련
 //=============================================================================
+
+// FILETIME 관련 매크로 (based on 100-nanosecond intervals)
+// 1 nonosecond = 1/1,000,000,000 sec
+// 100 nonosecond = 1/10,000,000
+#define _ft_sec  ((uint64_t) 10000000)
+
+
 #ifndef _FAT_TEIME_DEFINDED_
 #define _FAT_TEIME_DEFINDED_
 typedef struct _FATTIME
@@ -123,6 +130,8 @@ typedef struct _FATTIME
 LPCWSTR FT2Str(IN FILETIME& ft);
 LPCWSTR FAT2Str(IN FATTIME& fat);
 
+uint64_t file_time_to_int(FILETIME& ft);
+uint64_t file_time_delta_sec(FILETIME& ftl, FILETIME& ftr);
 std::string file_time_to_str(_In_ FILETIME& file_time, _In_ bool localtime);
 std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time, _In_ bool localtime);
 
@@ -238,6 +247,15 @@ std::wstring get_module_dirEx(_In_ const wchar_t* module_name);
 std::wstring get_current_module_pathEx();
 std::wstring get_current_module_dirEx();
 std::wstring get_current_module_fileEx();
+
+/// @brief  nt_name 에서 device name 부분만 떼어내서 리턴한다.
+///
+///         "\\Device\\HarddiskVolume4\\Windows"    -> "\\Device\\HarddiskVolume4"
+///         "\\Device\\HarddiskVolume4"             -> "\\Device\\HarddiskVolume4"
+///         "\\Device\\HarddiskVolume4\\"           -> "\\Device\\HarddiskVolume4"
+///         "\\Device\\HarddiskVolume455\\xyz"      -> "\\Device\\HarddiskVolume455"
+std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name);
+
 
 bool WUCreateDirectory(const LPCWSTR DirectoryPath);
 bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete);

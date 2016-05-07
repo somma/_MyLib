@@ -87,6 +87,18 @@ LPCWSTR FAT2Str(IN FATTIME& fat)
 	return FT2Str(ft);
 }
 
+/// @brief  
+uint64_t file_time_to_int(FILETIME& ft) 
+{
+    return (uint64_t)((LARGE_INTEGER*)&ft)->QuadPart; 
+}
+
+/// @brief  
+uint64_t file_time_delta_sec(FILETIME& ftl, FILETIME& ftr) 
+{
+    return ((file_time_to_int(ftl) - file_time_to_int(ftr)) / _ft_sec); 
+}
+
 /// @brief  FILETIME to `yyyy-mm-dd hh:mi:ss` string representation.
 std::string file_time_to_str(_In_ FILETIME& file_time, _In_ bool localtime)
 {
@@ -3686,6 +3698,46 @@ std::wstring get_current_module_fileEx()
 	{
 		return out;
 	}
+}
+
+/// @brief  nt_name 에서 device name 부분만 떼어내서 리턴한다.
+///
+///         "\Device\HarddiskVolume4\Windows"    -> "\Device\HarddiskVolume4\"
+///         "\Device\HarddiskVolume4"             -> "\Device\HarddiskVolume4"   (!)
+///         "\Device\HarddiskVolume4\"           -> "\Device\HarddiskVolume4\"
+///         "\Device\HarddiskVolume455\xyz"      -> "\Device\HarddiskVolume455\"
+std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name)
+{
+    _ASSERTE(NULL != nt_name);
+    if (NULL == nt_name) return false;
+
+    // 문자열 길이를 계산
+    // input: \Device\HarddiskVolume4\
+    //        ^      ^               ^  : `\` 를 3번 만날때까지의 길이를 구한다. (마지막 `\` 포함)
+    uint32_t cmp_count = 0;
+    uint32_t met_count = 0;
+    uint32_t max_count = (uint32_t)wcslen(nt_name);
+    for (cmp_count = 0; cmp_count <= max_count; ++cmp_count)
+    {
+        if (met_count == 3) break;
+        if (nt_name[cmp_count] == L'\\')
+        {
+            ++met_count;
+        }
+    }
+    
+    // 그냥 대충 짜자...귀찮..
+    if (cmp_count < 256)
+    {
+        wchar_t buf[256] = { 0x00 };
+        RtlCopyMemory(buf, nt_name, sizeof(wchar_t) * cmp_count);
+        return std::wstring(buf);
+    }
+    else
+    {
+        // oh?! 
+        return _null_stringw;
+    }
 }
 
 /**
