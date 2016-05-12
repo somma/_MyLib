@@ -16,6 +16,9 @@
 #include "sha2.h"
 #include "Win32Utils.h"
 
+#include <regex>
+
+bool test_regexp();
 bool test_device_name_from_nt_name();
 bool test_rstrnicmp();
 bool test_get_drive_type();
@@ -199,9 +202,8 @@ int _tmain(int argc, _TCHAR* argv[])
     
 
 
-
-
-    assert_bool(true, test_device_name_from_nt_name);
+    assert_bool(true, test_regexp);
+    //assert_bool(true, test_device_name_from_nt_name);
     //assert_bool(true, test_rstrnicmp);
 
     //assert_bool(true, test_get_drive_type);
@@ -1717,5 +1719,111 @@ bool test_device_name_from_nt_name()
     r = device_name_from_nt_name(L"\\Device\\HarddiskVolume455\\xyz");
     if (r.compare(L"\\Device\\HarddiskVolume455\\") != 0) return false;
 
+    return true;
+}
+
+bool test_regexp()
+{
+    try
+    {
+
+        // std::regexp 가 `\` 를 특수문자로 인식, 한번더 escape 하기 때문에
+        // `\device` 문자열을 매칭하기 위해서는 
+        // `\\device` 패턴을 사용해야 한다. 
+        // 
+        // c++ 에서도 `\` 를 escape 하므로 결국 `\` 문자를 매칭하기 위해서는 
+        // `\\\\device` 패턴을 사용해야 한다. 
+        // 
+        // c++11 raw string, `LR"( )"` 을 사용하면 c++ 의 escape 를 막을 수 있으니까
+        // LR"(\\device)" 패턴을 사용해서 매칭할 수 있다. 
+        //
+        std::wstring str(L"\\device");
+        std::wregex exp(L"\\\\device");   // wregex 가 `\` 를 한번씩 더 escape 하므로 `\\` 와 동일
+        std::wregex expr(LR"(\\device)");
+
+        std::wsmatch wsm;
+        _ASSERTE(true == std::regex_match(str, wsm, exp));  // 정확히 일치하면 매칭
+        _ASSERTE(true == std::regex_match(str, wsm, expr)); // 정확히 일치하면 매칭
+
+
+
+        //wchar_t* r = LR"(\\device\\mup\\(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))";
+        //std::wregex exp(r, std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+        //for (auto s : strs)
+        //{
+        //    std::wstring ws(s);
+        //    std::wsmatch wsm;
+        //    if (std::regex_search(ws, wsm, exp))        // sub string 매칭
+        //    {
+        //        for (size_t i = 0; i < wsm.size(); i++)
+        //        {
+        //            std::wcout << i << "번째 : " << wsm[i] << std::endl;
+        //        }
+        //    }
+        //}
+
+        //std::wstring str(L"\\device");
+        //std::wregex exp(L"\\\\de");   // wregex 가 `\` 를 한번씩 더 escape 하므로 `\\` 와 동일
+        //std::wregex expr(LR"(\\de)");
+        //
+        //std::wsmatch wsm;
+        //if (std::regex_search(str, wsm, exp))
+        //{
+        //    for (size_t i = 0; i < wsm.size(); i++)
+        //    {
+        //        std::wcout << wsm[i] << std::endl;
+        //    }
+        //}        
+    }
+    catch (const std::regex_error& e)
+    {
+        con_err "regex_error caught: %s", e.what() con_end;
+        
+        if (e.code() == std::regex_constants::error_brack)
+        {
+            con_err "The code was error_brack" con_end;
+        }
+    }
+
+    const wchar_t* strs[] = {
+        L"1122",
+        L"\\d",
+        L"device",
+        L"\\device\\mup",
+        L"\\Device\\Mup\\192.168.0.197\\sfr002_share\\agent.exe",
+        L"\\Device\\Mup\\1.1.1.1\\sfr002_share\\agent.exe",
+        L"\\DevicE\\MUP\\192.168.0.197",
+        L"\\Device\\Mup\\192.168.0.197\\"
+    };
+
+
+
+
+    try
+    {
+        wchar_t* r = LR"(\\device\\mup\\(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))";
+        std::wregex exp(r, std::regex_constants::ECMAScript | std::regex_constants::icase);
+        for (auto str : strs)
+        {
+            std::wcmatch wcm;
+            if (std::regex_search(str, wcm, exp))        // sub string 매칭
+            {
+                _ASSERTE(2 == wcm.size());
+                con_info "str=%ws, match=%ws, ip=%ws", str, wcm[0].str().c_str(), wcm[1].str().c_str() con_end;
+            }
+        }
+    
+    }
+    catch (const std::regex_error& e)
+    {
+        con_err "regex_error caught: %s", e.what() con_end;
+        
+        if (e.code() == std::regex_constants::error_brack)
+        {
+            con_err "The code was error_brack" con_end;
+        }
+    }
+    
     return true;
 }
