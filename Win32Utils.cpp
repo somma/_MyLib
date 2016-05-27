@@ -1221,7 +1221,7 @@ HANDLE open_file_to_write(_In_ const wchar_t* file_path)
 	}
 
 	HANDLE hFile = CreateFileW(file_path, 
-						GENERIC_WRITE, 
+						GENERIC_WRITE,                                
 						FILE_SHARE_READ, 
 						NULL, 
 						OPEN_ALWAYS, 
@@ -4379,6 +4379,63 @@ bool str_to_ipv6(_In_ const wchar_t* ipv6, _Out_ in6_addr& ipv6_addr)
     return false;
 }
 #endif//#if (NTDDI_VERSION >= NTDDI_VISTA)
+
+
+/// @brief  
+bool get_ip_by_hostname(_In_ const wchar_t* host_name, _Out_ std::wstring& ip_string)
+{
+    _ASSERTE(NULL != host_name);
+    if (NULL == host_name) return false;
+
+    bool ret = false;
+
+    ADDRINFOW hints = { 0 };
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    do
+    {
+        PADDRINFOW Result = NULL;
+        if (0 != GetAddrInfoW(host_name, NULL, &hints, &Result) || NULL == Result)
+        {
+            log_err 
+                "GetAddrInfoW(host_name = %s) failed, wserr=0x%08x", 
+                host_name, 
+                WSAGetLastError() log_end;
+            break;
+        }
+
+        for (PADDRINFOW p = Result; p != NULL; p = p->ai_next)
+        {
+            if (AF_INET == p->ai_family)
+            {
+                sockaddr_in* sa = (sockaddr_in*)p->ai_addr;
+
+#if (NTDDI_VERSION >= NTDDI_VISTA)
+                wchar_t addr[16] = { 0 };
+                if (NULL == InetNtop(AF_INET, (PVOID)&sa->sin_addr, addr, 16))
+                {
+                    log_err "InetNtop() failed. gle = %u", WSAGetLastError() log_end;
+                    continue;
+                }
+                ip_string = addr;                
+#else
+                ip_string = MbsToWcsEx(inet_ntoa(sa->sin_addr)));
+#endif
+
+                ret = true;
+                break;
+            }
+        }
+        
+        FreeAddrInfoW(Result);    
+    } while (false);
+    WSACleanup();
+
+    return ret;
+}
+
 
 /**
  * @brief	
