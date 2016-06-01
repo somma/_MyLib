@@ -66,10 +66,16 @@ bool send_ping(_In_ const wchar_t* target_ip_str)
     }
 
     _ASSERTE(NULL != hmod);
+     
+    if (NULL==_IcmpCreateFile)
+        _IcmpCreateFile = (pIcmpCreateFile)GetProcAddress(hmod, "IcmpCreateFile");
+    
+    if (NULL == _IcmpSendEcho)
+        _IcmpSendEcho = (pIcmpSendEcho)GetProcAddress(hmod, "IcmpSendEcho");
 
-    _IcmpCreateFile = (pIcmpCreateFile)GetProcAddress(hmod, "IcmpCreateFile");
-    _IcmpSendEcho = (pIcmpSendEcho)GetProcAddress(hmod, "IcmpSendEcho");
-    _IcmpCloseHandle = (pIcmpCloseHandle)GetProcAddress(hmod, "IcmpCloseHandle");
+    if (NULL == _IcmpCloseHandle)
+        _IcmpCloseHandle = (pIcmpCloseHandle)GetProcAddress(hmod, "IcmpCloseHandle");
+
     if (NULL == _IcmpCreateFile || NULL == _IcmpSendEcho || NULL == _IcmpCloseHandle)
     {
         log_err "GetProcAddress() failed. " log_end;
@@ -95,6 +101,7 @@ bool send_ping(_In_ const wchar_t* target_ip_str)
     }
 
 
+    bool pong = false;
     do
     {
         h_icmp = _IcmpCreateFile();
@@ -119,18 +126,22 @@ bool send_ping(_In_ const wchar_t* target_ip_str)
             in_addr reply_addr = { 0 };
             reply_addr.S_un.S_addr = echo_reply->Address;
         
-            log_info "ping -> %ws ->", target_ip_str log_end;
-            log_info "     <- %ws pong", ipv4_to_str(reply_addr).c_str() log_end;
+            log_dbg "ping -> %ws ->", target_ip_str log_end;
+            log_dbg "     <- %ws pong", ipv4_to_str(reply_addr).c_str() log_end;
+
+            pong = true;
         }
         else
         {
-            log_info "ping -> %ws ->", target_ip_str log_end;
-            log_info "     <- none " log_end;
+            log_dbg "ping -> %ws ->", target_ip_str log_end;
+            log_dbg "     <- none " log_end;
+
+            pong = false;
         }
     
     } while (false);
 
     free_and_nil(pong_buf);
     _IcmpCloseHandle(h_icmp);
-    return true;
+    return pong;
 }
