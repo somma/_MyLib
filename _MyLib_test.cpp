@@ -15,9 +15,10 @@
 #include "md5.h"
 #include "sha2.h"
 #include "Win32Utils.h"
-
+#include "send_ping.h"
 #include <regex>
 
+bool test_ping();
 bool test_regexp();
 bool test_device_name_from_nt_name();
 bool test_rstrnicmp();
@@ -202,7 +203,8 @@ int _tmain(int argc, _TCHAR* argv[])
     
 
 
-    assert_bool(true, test_regexp);
+    //assert_bool(true, test_regexp);
+    assert_bool(true, test_ping);
     //assert_bool(true, test_device_name_from_nt_name);
     //assert_bool(true, test_rstrnicmp);
 
@@ -1827,3 +1829,28 @@ bool test_regexp()
     
     return true;
 }
+
+
+/// @brief  IcmpSendEcho 
+bool test_ping()
+{
+    for (int i = 0; i < 10; ++i)
+    {
+        send_ping(L"8.8.8.8");
+    }
+
+    return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

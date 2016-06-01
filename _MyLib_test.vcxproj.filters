@@ -114,6 +114,9 @@
     <ClInclude Include="Wow64Util.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
+    <ClInclude Include="send_ping.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

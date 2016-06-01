@@ -22,7 +22,7 @@
     <ProjectGuid>{0CB511FD-3E50-4548-A4F2-91D55B983656}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>_MyLib_test</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -184,6 +184,7 @@
     <ClInclude Include="RegistryUtil.h" />
     <ClInclude Include="ResourceHelper.h" />
     <ClInclude Include="scm_context.h" />
+    <ClInclude Include="send_ping.h" />
     <ClInclude Include="sha2.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="StatusCode.h" />
