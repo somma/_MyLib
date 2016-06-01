@@ -84,9 +84,6 @@
     <ClInclude Include="CStream.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
-    <ClInclude Include="DebugMessage.h">
-      <Filter>_MyLib</Filter>
-    </ClInclude>
     <ClInclude Include="injector.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
@@ -186,9 +183,6 @@
       <Filter>_MyLib</Filter>
     </ClCompile>
     <ClCompile Include="CStream.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="DebugMessage.cpp">
       <Filter>_MyLib</Filter>
     </ClCompile>
     <ClCompile Include="injector.cpp">

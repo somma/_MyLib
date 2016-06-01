@@ -170,7 +170,6 @@
     <ClInclude Include="base64.h" />
     <ClInclude Include="BaseWindowsHeader.h" />
     <ClInclude Include="CStream.h" />
-    <ClInclude Include="DebugMessage.h" />
     <ClInclude Include="FileIoHelper.h" />
     <ClInclude Include="FileIoHelperClass.h" />
     <ClInclude Include="gpt_partition_guid.h" />
@@ -202,7 +201,6 @@
     <ClCompile Include="AKSyncObjs.cpp" />
     <ClCompile Include="base64.cpp" />
     <ClCompile Include="CStream.cpp" />
-    <ClCompile Include="DebugMessage.cpp" />
     <ClCompile Include="FileIoHelper.cpp" />
     <ClCompile Include="FileIoHelperClass.cpp" />
     <ClCompile Include="injector.cpp" />
