@@ -195,6 +195,7 @@
     <ClInclude Include="thread_pool.h" />
     <ClInclude Include="Win32Utils.h" />
     <ClInclude Include="mini_test.h" />
+    <ClInclude Include="wmi_client.h" />
     <ClInclude Include="Wow64Util.h" />
   </ItemGroup>
   <ItemGroup>
@@ -219,6 +220,7 @@
     </ClCompile>
     <ClCompile Include="ThreadManager.cpp" />
     <ClCompile Include="Win32Utils.cpp" />
+    <ClCompile Include="wmi_client.cpp" />
     <ClCompile Include="Wow64Util.cpp" />
     <ClCompile Include="_MyLib_test.cpp" />
     <ClCompile Include="_test_asm.cpp" />

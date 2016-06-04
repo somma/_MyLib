@@ -18,6 +18,10 @@
 #include "send_ping.h"
 #include <regex>
 
+#include "wmi_client.h"
+
+
+extern bool test_wmi_client();
 bool test_ping();
 bool test_regexp();
 bool test_device_name_from_nt_name();
@@ -204,7 +208,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
     //assert_bool(true, test_regexp);
-    assert_bool(true, test_ping);
+    //assert_bool(true, test_ping);
+    assert_bool(true, test_wmi_client);
     //assert_bool(true, test_device_name_from_nt_name);
     //assert_bool(true, test_rstrnicmp);
 
@@ -280,7 +285,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	//assert_bool(true, test_registry_util);
     //assert_bool(true, test_read_mouted_device);
-    assert_bool(true, test_set_binary_data);
+    //assert_bool(true, test_set_binary_data);
     
 
 	con_info
