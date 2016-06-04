@@ -209,6 +209,56 @@ bool test_wmi_client()
     enumerator->Release();
 
 
+
+
+    enumerator = NULL;
+    if (!wc.query(L"select * from Win32_DiskPartition", enumerator))
+    {
+        return false;
+    }
+
+    while (enumerator)
+    {
+        IWbemClassObject *pclsObj = NULL;
+        ULONG uReturn = 0;
+        HRESULT hr = enumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
+        if (0 == uReturn)
+        {
+            break;
+        }
+
+        VARIANT vtProp;
+        do
+        {
+            hr = pclsObj->Get(L"Caption", 0, &vtProp, 0, 0);
+            if (!SUCCEEDED(hr))
+            {
+                log_err "pclsObj->Get() failed. hres=%u", hr log_end;
+                break;
+            }
+            else
+            {
+                log_info "Caption=%ws", vtProp.bstrVal log_end;
+                VariantClear(&vtProp);
+            }
+
+            hr = pclsObj->Get(L"DiskIndex", 0, &vtProp, 0, 0);
+            if (!SUCCEEDED(hr))
+            {
+                log_err "pclsObj->Get() failed. hres=%u", hr log_end;
+                break;
+            }
+            else
+            {
+                log_info "DiskIndex=%u", vtProp.lVal log_end;
+                VariantClear(&vtProp);
+            }
+        } while (false);
+
+        pclsObj->Release();
+    }
+    enumerator->Release();
+
     wc.finalize();
     return true;
 }
