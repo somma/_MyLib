@@ -115,7 +115,7 @@
       <Filter>_MyLib</Filter>
     </ClInclude>
     <ClInclude Include="wmi_client.h">
-      <Filter>Source Files</Filter>
+      <Filter>_MyLib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -201,7 +201,7 @@
       <Filter>_MyLib</Filter>
     </ClCompile>
     <ClCompile Include="wmi_client.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>_MyLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
