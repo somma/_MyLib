@@ -20,7 +20,7 @@
 
 #include "wmi_client.h"
 
-
+bool test_NtCreateFile();
 bool test_wmi_client();
 bool test_ping();
 bool test_regexp();
@@ -209,7 +209,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
     //assert_bool(true, test_regexp);
     //assert_bool(true, test_ping);
-    assert_bool(true, test_wmi_client);
+    //assert_bool(true, test_wmi_client);
+    assert_bool(true, test_NtCreateFile);
     //assert_bool(true, test_device_name_from_nt_name);
     //assert_bool(true, test_rstrnicmp);
 
@@ -1958,14 +1959,4 @@ bool test_wmi_client()
     wc.finalize();
     return true;
 }
-
-
-
-
-
-
-
-
-
-
 

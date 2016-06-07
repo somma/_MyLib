@@ -203,6 +203,9 @@
     <ClCompile Include="wmi_client.cpp">
       <Filter>_MyLib</Filter>
     </ClCompile>
+    <ClCompile Include="_test_NtApi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">

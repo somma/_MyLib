@@ -217,6 +217,7 @@ bool is_file(_In_ const wchar_t* file_path)
  * @brief	file_handle 로 file path 를 구하는 함수
  * @param	
  * @see		http://msdn.microsoft.com/en-us/library/windows/desktop/aa366789(v=vs.85).aspx
+ * @see		https://msdn.microsoft.com/en-us/library/aa364962(v=vs.85).aspx
  * @remarks	NtQueryObject() 를 사용하는게 더 좋을 것 같기도 함, 권한 문제가 발생 할 수도 있을것 같으나
  * @remarks 확인해본적 없음
  * @code		

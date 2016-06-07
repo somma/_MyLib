@@ -229,6 +229,7 @@
     <ClCompile Include="_test_boost_bind.cpp" />
     <ClCompile Include="_test_boost_thread.cpp" />
     <ClCompile Include="_test_cpp_class.cpp" />
+    <ClCompile Include="_test_NtApi.cpp" />
     <ClCompile Include="_test_registry_util.cpp" />
     <ClCompile Include="_test_std_map.cpp" />
     <ClCompile Include="_test_x64.cpp" />
