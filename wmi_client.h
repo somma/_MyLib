@@ -14,9 +14,8 @@
 #define _WIN32_DCOM
 #include <comdef.h>
 #include <WbemIdl.h>
-
-#pragma comment(lib, "wbemuuid.lib")
-
+#include <WbemCli.h>
+#pragma comment(lib, "WbemUuid.lib")
 
 typedef class WmiClient
 {
@@ -33,8 +32,9 @@ private:
 
     IWbemLocator*   _locator;
     IWbemServices*  _svc;
-
-
 } *PWmiClient;
+
+
+std::string variant_to_str(const VARIANT& var);
 
 

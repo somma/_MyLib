@@ -21,7 +21,7 @@
 #include "wmi_client.h"
 
 bool test_NtCreateFile();
-bool test_wmi_client();
+extern bool test_wmi_client();
 bool test_ping();
 bool test_regexp();
 bool test_device_name_from_nt_name();
@@ -209,8 +209,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
     //assert_bool(true, test_regexp);
     //assert_bool(true, test_ping);
-    //assert_bool(true, test_wmi_client);
-    assert_bool(true, test_NtCreateFile);
+    assert_bool(true, test_wmi_client);
+    //assert_bool(true, test_NtCreateFile);
     //assert_bool(true, test_device_name_from_nt_name);
     //assert_bool(true, test_rstrnicmp);
 
@@ -1847,116 +1847,3 @@ bool test_ping()
 
     return true;
 }
-
-/// @brief  
-bool test_wmi_client()
-{
-    WmiClient wc;
-    if (!wc.initialize())
-    {
-        return false;
-    }
-
-    IEnumWbemClassObject* enumerator = NULL;
-    if (!wc.query(L"select * from Win32_LogicalDiskToPartition", enumerator))
-    {
-        return false;
-    }
-
-    while (enumerator)
-    {
-        IWbemClassObject *pclsObj = NULL;
-        ULONG uReturn = 0;
-        HRESULT hr = enumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
-        if (0 == uReturn)
-        {
-            break;
-        }
-
-        VARIANT vtProp;
-        do
-        {
-            hr = pclsObj->Get(L"Antecedent", 0, &vtProp, 0, 0);
-            if (!SUCCEEDED(hr))
-            {
-                log_err "pclsObj->Get() failed. hres=%u", hr log_end;
-                break;
-            }
-            else
-            {
-                log_info "Antecedent=%ws", vtProp.bstrVal log_end;
-                VariantClear(&vtProp);
-            }
-
-            hr = pclsObj->Get(L"Dependent", 0, &vtProp, 0, 0);
-            if (!SUCCEEDED(hr))
-            {
-                log_err "pclsObj->Get() failed. hres=%u", hr log_end;
-                break;
-            }
-            else
-            {
-                log_info "Dependent=%ws", vtProp.bstrVal log_end;
-                VariantClear(&vtProp);
-            }
-        } while (false);
-
-        pclsObj->Release();
-    }
-    enumerator->Release();
-
-
-
-
-    enumerator = NULL;
-    if (!wc.query(L"select * from Win32_DiskPartition", enumerator))
-    {
-        return false;
-    }
-
-    while (enumerator)
-    {
-        IWbemClassObject *pclsObj = NULL;
-        ULONG uReturn = 0;
-        HRESULT hr = enumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
-        if (0 == uReturn)
-        {
-            break;
-        }
-
-        VARIANT vtProp;
-        do
-        {
-            hr = pclsObj->Get(L"Caption", 0, &vtProp, 0, 0);
-            if (!SUCCEEDED(hr))
-            {
-                log_err "pclsObj->Get() failed. hres=%u", hr log_end;
-                break;
-            }
-            else
-            {
-                log_info "Caption=%ws", vtProp.bstrVal log_end;
-                VariantClear(&vtProp);
-            }
-
-            hr = pclsObj->Get(L"DiskIndex", 0, &vtProp, 0, 0);
-            if (!SUCCEEDED(hr))
-            {
-                log_err "pclsObj->Get() failed. hres=%u", hr log_end;
-                break;
-            }
-            else
-            {
-                log_info "DiskIndex=%u", vtProp.lVal log_end;
-                VariantClear(&vtProp);
-            }
-        } while (false);
-
-        pclsObj->Release();
-    }
-    enumerator->Release();
-
-    wc.finalize();
-    return true;
-}
-

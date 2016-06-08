@@ -152,3 +152,47 @@ bool WmiClient::query(_In_ const wchar_t* query, _Out_ IEnumWbemClassObject*& en
 }
 
 
+/// @brief 
+std::string variant_to_str(const VARIANT& var)
+{
+    if (var.vt == VT_NULL || var.vt == VT_EMPTY)
+    {
+        return "NULL";
+    }
+    else if (var.vt == VT_BOOL)
+    {
+        return var.boolVal ? "true" : "false";
+    }
+    else if (var.vt == VT_UI1)
+    {
+        char buf[128] = { 0, };
+        StringCbPrintfA(buf, sizeof(buf), "%c", var.cVal);
+        return std::string(buf);
+    }
+    else if (var.vt == VT_I2)
+    {
+        char buf[128] = { 0, };
+        StringCbPrintfA(buf, sizeof(buf), "%d", var.iVal);
+        return std::string(buf);
+    }
+    else if (var.vt == VT_I4)
+    {
+        char buf[128] = { 0, };
+        StringCbPrintfA(buf, sizeof(buf), "%d", var.lVal);
+        return std::string(buf);
+    }
+    else if (var.vt == VT_I8)
+    {
+        char buf[128] = { 0, };
+        StringCbPrintfA(buf, sizeof(buf), "%I64d", var.llVal);
+        return std::string(buf);
+    }
+    else if (var.vt == VT_BSTR)
+    {
+        return std::string(WcsToMbsEx(var.bstrVal));
+    }
+
+#pragma todo("complete this function...")
+
+    return "Unknown";
+}
