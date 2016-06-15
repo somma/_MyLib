@@ -17,10 +17,11 @@
 #include "Win32Utils.h"
 #include "send_ping.h"
 #include <regex>
-
 #include "wmi_client.h"
+#include "nt_name_conv.h"
 
-bool test_NtCreateFile();
+bool test_canonicalize_file_name();
+extern bool test_NtCreateFile();
 extern bool test_wmi_client();
 bool test_ping();
 bool test_regexp();
@@ -131,7 +132,7 @@ extern bool test_boost_thread();
 class aaa
 {
 public:
-    aaa(bool value) : _value(false) { }
+    aaa(bool value) : _value(value) { }
     virtual ~aaa() { con_info "..." log_end }
 
     void run() { con_info "%s", _value == true ? "Ture" : "False"  con_end;}
@@ -209,7 +210,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
     //assert_bool(true, test_regexp);
     //assert_bool(true, test_ping);
-    assert_bool(true, test_wmi_client);
+    assert_bool(true, test_canonicalize_file_name);
+    //assert_bool(true, test_wmi_client);
     //assert_bool(true, test_NtCreateFile);
     //assert_bool(true, test_device_name_from_nt_name);
     //assert_bool(true, test_rstrnicmp);
@@ -1843,6 +1845,48 @@ bool test_ping()
     for (int i = 0; i < 10; ++i)
     {
         send_ping(L"8.8.8.8");
+    }
+
+    return true;
+}
+
+
+
+
+bool test_canonicalize_file_name()
+{
+    //[INFO] \ ? ? \c : \windows\system32\abc.exe->c:\windows\system32\abc.exe
+    //[INFO] \Systemroot\abc.exe->C:\WINDOWS\abc.exe
+    //[INFO] system32\abc.exe->C:\WINDOWS\system32\abc.exe
+    //[INFO] \windows\system32\abc.exe->C:\WINDOWS\system32\abc.exe
+    //[INFO] \Device\Mup\1.1.1.1\abc.exe -> \\1.1.1.1\abc.exe
+    //[INFO] \Device\Unknown\aaaa.exe -> \Device\Unknown\aaaa.exe
+    //[INFO] \device\lanmanredirector\;x:000000000008112d\192.168.153.144\sfr022\ -> \\192.168.153.144\sfr022\
+    //[INFO] x:\->x:\
+    //[INFO] \Device\Mup\192.168.153.144\sfr022\ -> \\192.168.153.144\sfr022\
+
+    wchar_t* file_names[] = {
+        L"\\??\\c:\\windows\\system32\\abc.exe",
+        L"\\Systemroot\\abc.exe",
+        L"system32\\abc.exe",
+        L"\\windows\\system32\\abc.exe",
+        L"\\Device\\Mup\\1.1.1.1\\abc.exe",
+        L"\\Device\\Unknown\\aaaa.exe",
+
+        // net use x: \\192.168.153.144\\sfr022\\ /user:vmuser * 명령으로 x 드라이브 매핑해둠
+        // 
+        L"\\device\\lanmanredirector\\;x:000000000008112d\\192.168.153.144\\sfr022\\",
+        L"x:\\",
+        L"\\Device\\Mup\\192.168.153.144\\sfr022\\"
+    };
+
+    NameConverter nc;
+    if (true != nc.reload()) return false;
+
+    for (int i = 0; i < sizeof(file_names) / sizeof(wchar_t*); ++i)
+    {
+        std::wstring name = nc.get_file_name(file_names[i]);
+        log_info "%ws -> %ws", file_names[i], name.c_str() log_end;
     }
 
     return true;

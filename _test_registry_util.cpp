@@ -75,6 +75,7 @@ bool reg_value_callback(
     _In_ const uint8_t* value_data
     )
 {
+    UNREFERENCED_PARAMETER(index);
     static std::wstring token_name = L"\\dosdevices\\";
     static std::wstring token_data = L"_??_usbstor#disk&";
     

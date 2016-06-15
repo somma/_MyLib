@@ -28,7 +28,7 @@ public:
         if (full == _buf_size)
         {
             {
-                boost::mutex::scoped_lock lock(io_mutex);
+                boost::mutex::scoped_lock lock2(io_mutex);
                 std::cout << "buffer is full. waiting..." << std::endl;
             }
 
@@ -52,7 +52,7 @@ public:
         if (full == 0)
         {
             {
-                boost::mutex::scoped_lock lock(io_mutex);
+                boost::mutex::scoped_lock lock2(io_mutex);
                 std::cout << "buffer is empty. waiting..." << std::endl;
             }
 

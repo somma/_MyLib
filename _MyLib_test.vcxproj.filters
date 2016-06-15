@@ -117,6 +117,9 @@
     <ClInclude Include="wmi_client.h">
       <Filter>_MyLib</Filter>
     </ClInclude>
+    <ClInclude Include="nt_name_conv.h">
+      <Filter>_MyLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -208,6 +211,9 @@
     </ClCompile>
     <ClCompile Include="_test_wmi_client.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nt_name_conv.cpp">
+      <Filter>_MyLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1907,24 +1907,6 @@ bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete)
 /**
 * @brief	
 */
-BOOL GetSystemRootDirectory(DWORD Len,LPTSTR Buffer)
-{
-    _ASSERTE(NULL != Buffer);
-    _ASSERTE(TRUE != IsBadWritePtr(Buffer, Len));
-    if ( (NULL == Buffer) || (TRUE == IsBadWritePtr(Buffer, Len)) )
-    {
-        return FALSE;
-    }
-
-    if (0 != GetSystemDirectory(Buffer, Len))
-        return TRUE;
-    else
-        return FALSE;
-}
-
-/**
-* @brief	
-*/
 BOOL 
 GetImageFullPathFromPredefinedPathA(
     IN  LPCSTR ImageName, 
@@ -2008,24 +1990,22 @@ GetImageFullPathFromPredefinedPathW(
         static WCHAR SearchPathBuf[MAX_PATH] = {0,};
         if (0x00 == SearchPathBuf[0])
         {
-            WCHAR   SysRootDir[MAX_PATH] = {0,};
-            if (TRUE != GetSystemRootDirectory(
-								    sizeof(SysRootDir), 
-								    SysRootDir))
+            std::wstring system_root;
+            if (!get_system_dir(system_root))
             {
-                log_err "GetSystemRootDirectory() failed" log_end                    
+                log_err "get_system_rootdir() failed." log_end;
                 return FALSE;
-            }    
+            }
 
             if (! SUCCEEDED(StringCbPrintfW(
                                 SearchPathBuf, 
                                 sizeof(SearchPathBuf), 
                                 L"%s\\drivers", 
-                                SysRootDir)) )
+                                system_root.c_str())))
             {
                 log_err "StringCbPrintf() failed" log_end
                 return FALSE;
-            }    
+            }
         }    
 
         if (0 != SearchPathW(
@@ -2087,8 +2067,72 @@ bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring&
     return ret;
 }
 
+
+/// @brief  GetSystemDirectoryW() wrapper (c:\windows\system32)
+bool get_system_dir(_Out_ std::wstring& system_dir)
+{
+    wchar_t     buf[MAX_PATH] = { 0x00 };
+    uint32_t    buf_len = sizeof(buf);
+    wchar_t*    pbuf = buf;
+    
+    static  std::wstring _sys_dir;
+
+    if (true != _sys_dir.empty())
+    {
+        system_dir = _sys_dir;
+        return true;
+    }
+
+    UINT32 len = GetSystemDirectoryW(pbuf, buf_len);
+    if (0 == len)
+    {
+        log_err "GetSystemDirectoryW() failed. gle=%u", GetLastError() log_end;
+        return false;
+    }
+
+    if (len < buf_len)
+    {
+        buf[len] = 0x0000;
+        system_dir = buf;
+        return true;
+    }
+    else if (len == buf_len)
+    {
+        // GetWindowsDirectoryW( ) 는 null char 를 포함하지 않는 길이를 리턴함
+        // 버퍼가 더 필요하다.
+        buf_len *= 2;            
+        pbuf = (wchar_t*)malloc(buf_len);
+        if (NULL == buf)
+        {
+            log_err "not enough memory" log_end;
+            return false;
+        }
+
+        // try again
+        len = GetSystemDirectoryW(pbuf, buf_len);
+        if (0 == len)
+        {
+            log_err "GetSystemDirectoryW() failed. gle=%u", GetLastError() log_end;
+            free(pbuf); 
+            return false;
+        }
+        else
+        {
+            pbuf[len] = 0x0000;
+            
+            _sys_dir = pbuf;
+            system_dir = pbuf;
+
+            free(pbuf); pbuf = NULL;
+            return true;
+        }
+    }
+
+    return true;        // never reach here
+}
+
 /**
- * @brief	system directory 경로를 리턴하는 함수
+ * @brief	windows 경로를 리턴하는 함수 (c:\windows)
  * @param	
  * @see		
  * @remarks	경로가 c:\ 인 경우를 제외하고, '\' 를 붙이지 않음. (GetWindowsDirectory() 함수 스펙)
@@ -2096,44 +2140,65 @@ bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring&
  * @endcode	
  * @return	
 **/
-bool get_system_directory(_Out_ std::wstring& system_dir)
+bool get_windows_dir(_Out_ std::wstring& windows_dir)
 {
-	bool ret = false;
-	UINT32 buf_len = MAX_PATH;
-	wchar_t* buf = (wchar_t*) malloc(buf_len);
-	if (NULL == buf) return false;
-	RtlZeroMemory(buf, buf_len);
+    wchar_t     buf[MAX_PATH] = { 0x00 };
+    uint32_t    buf_len = sizeof(buf);
+    wchar_t*    pbuf = buf;
 
-	for(;;)
-	{
-		UINT32 len = GetWindowsDirectoryW(buf, buf_len);
-		if (0 == len) 
-		{
-			break;				// error
-		}
+    static  std::wstring _win_dir;
 
-		if (len == buf_len)
-		{
-			// GetWindowsDirectoryW( ) 는 null char 를 포함하지 않는 길이를 리턴함
-			// 버퍼가 더 필요하다.
-			buf_len *= 2;
-			free(buf);
-			buf = (wchar_t*) malloc(buf_len);
-			if (NULL == buf) return false;			
-			RtlZeroMemory(buf, buf_len);
-			
-			continue;				// re-try
-		}
-		else
-		{
-			system_dir = buf;
-			ret = true;				// success
-			break;
-		}
-	}
+    if (true != _win_dir.empty())
+    {
+        windows_dir = _win_dir;
+        return true;
+    }
 
-	free(buf); buf = NULL;
-	return ret;
+    UINT32 len = GetWindowsDirectoryW(pbuf, buf_len);
+    if (0 == len)
+    {
+        log_err "GetWindowsDirectoryW() failed. gle=%u", GetLastError() log_end;
+        return false;
+    }
+
+    if (len < buf_len)
+    {
+        buf[len] = 0x0000;
+        windows_dir = buf;
+        return true;
+    }
+    else if (len == buf_len)
+    {
+        // GetWindowsDirectoryW( ) 는 null char 를 포함하지 않는 길이를 리턴함
+        // 버퍼가 더 필요하다.
+        buf_len *= 2;
+        pbuf = (wchar_t*)malloc(buf_len);
+        if (NULL == buf)
+        {
+            log_err "not enough memory" log_end;
+            return false;
+        }
+
+        // try again
+        len = GetSystemDirectoryW(pbuf, buf_len);
+        if (0 == len)
+        {
+            log_err "GetSystemDirectoryW() failed. gle=%u", GetLastError() log_end;
+            free(pbuf);
+            return false;
+        }
+        else
+        {
+            pbuf[len] = 0x0000;
+            windows_dir = pbuf;
+            _win_dir = pbuf;    // !
+
+            free(pbuf); pbuf = NULL;
+            return true;
+        }
+    }
+
+    return true;        // never reach here
 }
 
 /**
@@ -2569,7 +2634,7 @@ wchar_t* Utf8MbsToWcs(_In_ const char* utf8)
 std::wstring MbsToWcsEx(_In_ const char *mbs)
 {
     raii_wchar_ptr tmp( MbsToWcs(mbs), raii_free );
-    if (NULL == tmp)
+    if (NULL == tmp.get())
     {
         return _null_stringw;
     }
@@ -2683,12 +2748,32 @@ bool rstrnicmpa(_In_ const char* src, _In_ const char* fnd)
     int fidx = fnd_len - 1;
     while (fidx >= 0)
     {
-        if (towlower(fnd[fidx--]) != towlower(src[sidx--])) return false;
+        if (tolower(fnd[fidx--]) != tolower(src[sidx--])) return false;
 
     }
     return true;
 }
 
+
+/// @brief  src 의 앞에서부터 fnd 문자열을 찾는다. 
+bool lstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd)
+{
+    _ASSERTE(NULL != src);
+    _ASSERTE(NULL != fnd);
+    if (NULL == src || NULL == fnd) return false;
+
+    return (0 == _wcsnicmp(src, fnd, wcslen(fnd))) ? true : false;
+}
+
+/// @brief  src 의 앞에서부터 fnd 문자열을 찾는다. 
+bool lstrnicmpa(_In_ const char* src, _In_ const char* fnd)
+{
+    _ASSERTE(NULL != src);
+    _ASSERTE(NULL != fnd);
+    if (NULL == src || NULL == fnd) return false;
+
+    return (0 == _strnicmp(src, fnd, strlen(fnd))) ? true : false;
+}
 
 
 /**	---------------------------------------------------------------------------

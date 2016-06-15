@@ -91,8 +91,6 @@ BOOL CWow64Util::IsWow64Process( HANDLE hProcess )
 //////////////////////////////////////////////////////////////////////
 BOOL CWow64Util::IsWow64Process( DWORD pid )
 {
-	BOOL bRtVal = FALSE;
-
 	HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
 	if (INVALID_HANDLE_VALUE == hProc)
 	{

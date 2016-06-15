@@ -63,7 +63,9 @@ bool test_asm_func()
 
 	ULONG64 addr = (ULONG64)test_asm_func;
 	ULONG32 low  = addr & 0x00000000ffffffff;
+    low = low;
 	ULONG32 high = (addr & 0xffffffff00000000) >> 32;
+    high = high;
 
 
 	return true;

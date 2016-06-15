@@ -14,6 +14,7 @@ class base
 public: 
 	base(int param1)
 	{
+        UNREFERENCED_PARAMETER(param1);
 		log_dbg "" log_end
 	}
 
@@ -45,6 +46,7 @@ class child_has_diff_creator : public base
 public:
 	child_has_diff_creator(int param1, int param2): base(param1)
 	{
+        UNREFERENCED_PARAMETER(param2);
 		log_dbg "" log_end
 	}
 	virtual ~child_has_diff_creator()

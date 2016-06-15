@@ -259,7 +259,6 @@ std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name);
 
 bool WUCreateDirectory(const LPCWSTR DirectoryPath);
 bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete);
-BOOL GetSystemRootDirectory(DWORD Len, LPTSTR Buffer);
 BOOL GetImageFullPathFromPredefinedPathW(
                 IN  LPCWSTR ImageName, 
                 IN  DWORD   BufferLen,
@@ -279,7 +278,11 @@ BOOL GetImageFullPathFromPredefinedPathA(
 bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring& full_path);
 
 
-bool get_system_directory(_Out_ std::wstring& system_dir);
+/// @brief  system direcotry 경로 리턴 (c:\windows\system32 )
+bool get_system_dir(_Out_ std::wstring& system_dir);        
+
+/// @brief  %systemroot% 경로 리턴 ( c:\windows )
+bool get_windows_dir(_Out_ std::wstring& windows_dir);
 bool get_environment_value(_In_ const wchar_t* env_variable, _Out_ std::wstring& env_value);
 bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring& short_file_name);
 
@@ -305,6 +308,9 @@ std::wstring Utf8MbsToWcsEx(_In_ const char* utf8);
 ///         - 확장자 검사같은거 할때 사용
 bool rstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd);
 bool rstrnicmpa(_In_ const char* src, _In_ const char* fnd);
+bool lstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd);
+bool lstrnicmpa(_In_ const char* src, _In_ const char* fnd);
+
 
 
 
