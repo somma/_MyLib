@@ -103,7 +103,7 @@ log_write_fmt_without_deco(
 //
 // define macro for convenience
 //
-#define log_err		log_write_fmt( log_mask_sys, log_level_error, log_to_ods | log_to_file, __FUNCTION__, 
+#define log_err		log_write_fmt( log_mask_sys, log_level_error, log_to_con | log_to_ods | log_to_file, __FUNCTION__, 
 #define log_warn	log_write_fmt( log_mask_sys, log_level_warn, log_to_ods | log_to_file, __FUNCTION__,  
 #define log_info	log_write_fmt( log_mask_sys, log_level_info, log_to_ods | log_to_file, __FUNCTION__, 
 #define log_dbg		log_write_fmt( log_mask_sys, log_level_debug, log_to_ods | log_to_file, __FUNCTION__, 
