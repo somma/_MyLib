@@ -19,7 +19,9 @@
 #include <regex>
 #include "wmi_client.h"
 #include "nt_name_conv.h"
+#include "crc64.h"
 
+bool test_crc64();
 bool test_canonicalize_file_name();
 extern bool test_NtCreateFile();
 extern bool test_wmi_client();
@@ -210,7 +212,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
     //assert_bool(true, test_regexp);
     //assert_bool(true, test_ping);
-    assert_bool(true, test_canonicalize_file_name);
+    //assert_bool(true, test_canonicalize_file_name);
+    assert_bool(true, test_crc64);
+    
     //assert_bool(true, test_wmi_client);
     //assert_bool(true, test_NtCreateFile);
     //assert_bool(true, test_device_name_from_nt_name);
@@ -1889,5 +1893,14 @@ bool test_canonicalize_file_name()
         log_info "%ws -> %ws", file_names[i], name.c_str() log_end;
     }
 
+    return true;
+}
+
+
+bool test_crc64()
+{
+    log_info "e9c6d914c4b8d9ca == %016llx",
+        (unsigned long long) crc64(0, (unsigned char*)"123456789", 9)
+        log_end;
     return true;
 }
