@@ -221,6 +221,9 @@
     <ClCompile Include="crc64.cpp">
       <Filter>_MyLib</Filter>
     </ClCompile>
+    <ClCompile Include="_test_scm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">

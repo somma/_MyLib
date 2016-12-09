@@ -3589,12 +3589,12 @@ bool get_module_path(_In_ const wchar_t* module_name, _Out_ std::wstring& module
 {
 	DWORD  ret = 0;
 	DWORD  buf_len = MAX_PATH;
-	LPTSTR buf = (LPTSTR) malloc( buf_len * sizeof(TCHAR) );
+    wchar_t* buf = (wchar_t*)malloc(buf_len * sizeof(wchar_t));
 	if (NULL == buf) return false;
 	
 	for(;;)
 	{
-		ret = GetModuleFileName(GetModuleHandle(module_name), buf, buf_len);
+		ret = GetModuleFileNameW(GetModuleHandleW(module_name), buf, buf_len);
 		if (ret == buf_len)
 		{
 			// buf 가 작은 경우 buf_len 만큼 버퍼가 잘리고, buf_len 리턴 (에러로 간주)
@@ -3602,7 +3602,7 @@ bool get_module_path(_In_ const wchar_t* module_name, _Out_ std::wstring& module
 			free(buf);
 
 			buf_len *= 2;
-			buf = (LPTSTR) malloc( buf_len * sizeof(TCHAR) );
+            buf = (wchar_t*)malloc(buf_len * sizeof(wchar_t));
 			if (NULL == buf) return false;
 		}
 		else

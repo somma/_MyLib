@@ -11,6 +11,7 @@
 #include "stdafx.h"
 #include "scm_context.h"
 #include <memory>				// std::shared_ptr
+#include "RegistryUtil.h"
 
 //> todo - SCM 접근시 권한은 필요한 만큼만 정해서 호출하게 하자. 
 
@@ -25,28 +26,42 @@ struct sc_handle_deleter
 
 typedef std::shared_ptr<SC_HANDLE> sc_handle_ptr;
 
-
-/**
-* @brief	
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
-*/
+/// @brief	service context manager for legacy dirver or win32 service.
 scm_context::scm_context(
 	_In_z_ const wchar_t* driver_path, 
 	_In_z_ const wchar_t* service_name, 
 	_In_z_ const wchar_t* service_display_name,
-	_In_ bool uninstall_service_on_free_context
-	)
-:	_uninstall_service_on_free(uninstall_service_on_free_context),
+	_In_ bool uninstall_service_on_free)
+:	_uninstall_service_on_free(uninstall_service_on_free),
 	_driver_handle(INVALID_HANDLE_VALUE), 
 	_driver_path(driver_path),
 	_service_name(service_name),
 	_service_display_name(service_display_name),
+	_is_minifilter(false),
+	_altitude(L"none"),
+	_flags(0),
 	_installed(false), 
+	_running(false)
+{
+}
+
+/// @brief	service context manager for minifilter driver
+scm_context::scm_context(
+	_In_z_ const wchar_t* driver_path,
+	_In_z_ const wchar_t* service_name,
+	_In_z_ const wchar_t* service_display_name,
+	_In_z_ const wchar_t* altitude,
+	_In_ uint32_t flags,
+	_In_ bool uninstall_service_on_free)
+:	_uninstall_service_on_free(uninstall_service_on_free),
+	_driver_handle(INVALID_HANDLE_VALUE),
+	_driver_path(driver_path),
+	_service_name(service_name),
+	_service_display_name(service_display_name),
+	_is_minifilter(true),
+	_altitude(altitude),
+	_flags(flags),
+	_installed(false),
 	_running(false)
 {
 }
@@ -127,6 +142,74 @@ bool scm_context::install_driver()
 			return false;
 		}
 		CloseServiceHandle(service_handle);
+
+		//
+		// If this service is for minifilter, write additional information on registry.
+		//
+		if (_is_minifilter)
+		{
+			//
+			// key  : HKLM\SYSTEM\CurrentControlSet\Services\[xxx]\Instances
+			// value: "DefaultInstance" = "AltitudeAndFlags"
+			//
+#define	MF_DEFAULT_INSTANCE	L"DefaultInstance"
+#define	MF_ALTITUDE_N_FLAGS	L"AltitudeAndFlags"
+			std::wstringstream key_path;
+			key_path<< L"SYSTEM\\CurrentControlSet\\Services\\" 
+					<< _service_name 
+					<< L"\\Instances";
+			if (!RUSetString(HKEY_LOCAL_MACHINE,
+							 key_path.str().c_str(),
+							 MF_DEFAULT_INSTANCE,
+							 MF_ALTITUDE_N_FLAGS,
+							 (DWORD)(wcslen(MF_ALTITUDE_N_FLAGS) + 1) * sizeof(wchar_t)))
+			{
+				log_err "RUSetString(HKLM, %ws, %ws) failed.", 
+					key_path.str().c_str(),
+					MF_DEFAULT_INSTANCE
+					log_end;
+				return false;
+			}
+
+			// 
+			// key  : HKLM\SYSTEM\CurrentControlSet\Services\scanner\Instances\AltitudeAndFlags
+			// value: "Altitude" = "0"
+			//		  "Flags" = dword:00000000
+			//
+#define	MF_ALTITUDE		L"Altitude"
+#define	MF_FLAGS		L"Flags"
+
+			key_path.str(L"");
+			key_path<< L"SYSTEM\\CurrentControlSet\\Services\\" 
+					<< _service_name 
+					<< L"\\Instances\\AltitudeAndFlags";
+			
+			if (!RUSetString(HKEY_LOCAL_MACHINE,
+							 key_path.str().c_str(),
+							 MF_ALTITUDE,
+							 _altitude.c_str(),
+							 (DWORD)(wcslen(_altitude.c_str()) + 1) * sizeof(wchar_t)))
+			{
+				log_err "RUSetString(HKLM, %ws, %ws) failed.", 
+					key_path.str().c_str(), 
+					MF_ALTITUDE
+					log_end;
+				return false;
+			}
+
+			if (!RUWriteDword(HKEY_LOCAL_MACHINE,
+							  key_path.str().c_str(),
+							  MF_FLAGS,
+							  _flags))
+			{
+				log_err "RUWriteDword(HKLM, %ws, %ws) failed.",
+					key_path.str().c_str(),
+					MF_FLAGS
+					log_end;
+				return false;
+			}
+		}
+
 		log_info "service=%ws installed successfully", _service_name.c_str() log_end
 	}
 

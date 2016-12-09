@@ -300,7 +300,7 @@ RUReadString(
 }
 
 /**
- * @brief	
+ * @brief	SubKey\ValueName 문자열 Value 를 생성한다. 만일 SubKey 가 존재하지 않는 다면 생성하고, 값을 생성한다.
  * @param	RootKey     HKEY_CLASSES_ROOT
                             HKEY_CURRENT_CONFIG
                             HKEY_CURRENT_USER
@@ -308,6 +308,7 @@ RUReadString(
                             HKEY_USERS
 			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 						'\' 로 시작하면 안됨
+			cbValue		null 을 포함하는 문자열의 바이트 사이즈
  * @see		
  * @remarks	
  * @code		
@@ -319,14 +320,14 @@ RUSetString(
     HKEY RootKey,
     const wchar_t* SubKey,
     const wchar_t* ValueName,
-    const wchar_t* Value,           // byte buffer
-    DWORD cbValue          // count byte
+    const wchar_t* Value,	// byte buffer
+    DWORD cbValue			// count byte
     )
 {
-    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
+    HKEY sub_key_handle = RUCreateKey(RootKey, SubKey, false);
     if (NULL == sub_key_handle)
     {
-        log_err "RUOpenKey(%ws) failed", SubKey log_end        
+        log_err "RUCreateKey(%ws) failed", SubKey log_end        
         return false;
     }
 
@@ -334,7 +335,11 @@ RUSetString(
     //
     RegHandle rh(sub_key_handle);
 
-    DWORD ret = RegSetValueExW(sub_key_handle, ValueName, 0, REG_SZ, (LPBYTE)Value, cbValue);
+    DWORD ret = RegSetValueExW(sub_key_handle,
+							   ValueName, 
+							   0, 
+							   REG_SZ, 
+							   (LPBYTE)Value, cbValue);
     if (ERROR_SUCCESS != ret)
     {
         //log_err "RegSetValueExW(%ws) failed, ret = %u", ValueName, ret log_end
