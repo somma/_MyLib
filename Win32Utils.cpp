@@ -146,8 +146,7 @@ std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time, _In_ bool localtime)
 bool is_file_existsW(_In_ const wchar_t* file_path)
 {
 	_ASSERTE(NULL != file_path);
-	_ASSERTE(TRUE != IsBadStringPtrW(file_path, MAX_PATH));
-	if ((NULL == file_path) || (TRUE == IsBadStringPtrW(file_path, MAX_PATH))) return false;
+	if (NULL == file_path) return false;
 
 	WIN32_FILE_ATTRIBUTE_DATA info = {0};
 
@@ -1215,8 +1214,7 @@ bool dump_boot_area()
 HANDLE open_file_to_write(_In_ const wchar_t* file_path)
 {
 	_ASSERTE(NULL != file_path);
-	_ASSERTE(TRUE != IsBadStringPtrW(file_path, MAX_PATH));
-	if ( (NULL == file_path) || (TRUE == IsBadStringPtrW(file_path, MAX_PATH)) )
+	if (NULL == file_path)
 	{
 		return INVALID_HANDLE_VALUE;
 	}
@@ -1246,8 +1244,7 @@ HANDLE open_file_to_write(_In_ const wchar_t* file_path)
 HANDLE open_file_to_read(LPCWCH file_path)
 {
 	_ASSERTE(NULL != file_path);
-	_ASSERTE(TRUE != IsBadStringPtrW(file_path, MAX_PATH));
-	if ( (NULL == file_path) || (TRUE == IsBadStringPtrW(file_path, MAX_PATH)) )
+	if (NULL == file_path)
 	{
 		return INVALID_HANDLE_VALUE;
 	}
@@ -1305,8 +1302,7 @@ bool get_file_size(_In_ HANDLE file_handle, _Out_ uint64_t& size)
 BOOL write_to_filew(LPCWCH file_path, LPCWCH format,...)
 {
 	_ASSERTE(NULL != file_path);
-	_ASSERTE(TRUE != IsBadStringPtrW(file_path, MAX_PATH));
-	if ( (NULL == file_path) || (TRUE == IsBadStringPtrW(file_path, MAX_PATH)) )
+	if (NULL == file_path)
 	{
 		return FALSE;
 	}
@@ -1752,9 +1748,7 @@ SaveBinaryFile(
     _ASSERT(NULL != FileName);
     _ASSERT(0 < Size);
     _ASSERT(NULL != Data);
-    _ASSERT(TRUE != IsBadReadPtr(Data, Size));
-    if (NULL == Directory || NULL == FileName || 0 >= Size || NULL == Data ||
-        TRUE == IsBadReadPtr(Data, Size))
+    if (NULL == Directory || NULL == FileName || 0 >= Size || NULL == Data)
     {
         return FALSE;
     }
@@ -1916,10 +1910,8 @@ GetImageFullPathFromPredefinedPathA(
 {
     _ASSERTE(NULL != ImageName);
     _ASSERTE(NULL != FullPathBuffer);
-    _ASSERTE(TRUE != IsBadWritePtr(FullPathBuffer, FullPathBufferLen));
     if (	(NULL == ImageName) || 
-			(NULL == FullPathBuffer) || 
-			(TRUE == IsBadWritePtr(FullPathBuffer, FullPathBufferLen)))
+			(NULL == FullPathBuffer))
     {
         return FALSE;
     }
@@ -1962,10 +1954,8 @@ GetImageFullPathFromPredefinedPathW(
 {
     _ASSERTE(NULL != ImageName);
     _ASSERTE(NULL != FullPathBuffer);
-    _ASSERTE(TRUE != IsBadWritePtr(FullPathBuffer, FullPathBufferLen));
     if (	(NULL == ImageName) || 
-			(NULL == FullPathBuffer) || 
-			(TRUE == IsBadWritePtr(FullPathBuffer, FullPathBufferLen)))
+			(NULL == FullPathBuffer))
     {
         return FALSE;
     }    
@@ -2327,8 +2317,7 @@ find_files(
 	)
 { 
     _ASSERTE(NULL != root);
-    _ASSERTE(TRUE != IsBadStringPtr(root, MAX_PATH));
-    if ((NULL == root) || (TRUE == IsBadStringPtr(root, MAX_PATH))) return false;
+    if (NULL == root) return false;
 
 
 	// root 파라미터가 '\' 로 끝나면 안되므로 \* 로 강제 변경
@@ -2425,8 +2414,7 @@ FindSubDirectory(
     )
 { 
     _ASSERTE(NULL != RootPath);
-    _ASSERTE(TRUE != IsBadStringPtr(RootPath, MAX_PATH));
-    if ((NULL == RootPath) || (TRUE == IsBadStringPtr(RootPath, MAX_PATH))) return FALSE;
+    if (NULL == RootPath) return FALSE;
 
     HANDLE hSrch = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW wfd = {0};
@@ -3895,7 +3883,7 @@ std::wstring Win32ErrorToStringW(IN DWORD ErrorCode)
 -----------------------------------------------------------------------------*/
 BOOL DumpMemory(DWORD Length, BYTE* Buf)
 {
-	if ( (0 < Length) && (NULL != Buf) && (TRUE != IsBadReadPtr(Buf, Length)) )
+	if ( (0 < Length) && (NULL != Buf))
 	{
         log_info "length = %u, buffer=0x%08x", Length, Buf log_end
 
@@ -4050,7 +4038,7 @@ BOOL DumpMemory(DWORD Length, BYTE* Buf)
 -----------------------------------------------------------------------------*/
 BOOL DumpMemory(FILE* stream,DWORD Length,BYTE* Buf)
 {
-	if ( (0 < Length) && (NULL != Buf) && (TRUE != IsBadReadPtr(Buf, Length)) )
+	if ( (0 < Length) && (NULL != Buf) )
 	{
 		_ftprintf(stream, TEXT("\n  00 01 02 03 04 05 06 07   08 09 0A 0B 0C 0D 0E 0F\n"));
 		_ftprintf(stream, TEXT("  -- -- -- -- -- -- -- --   -- -- -- -- -- -- -- --\n"));
@@ -4158,7 +4146,7 @@ bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32
 	// !주의! - 한 라인이 line_dump 보다 큰 경우 (설마 그런일이...?!) 문제가 발생 할 수 있음
 	char line_dump[1024];
 
-	if ( (0 < buf_len) && (NULL != buf) && (TRUE != IsBadReadPtr(buf, buf_len)) )
+	if ( (0 < buf_len) && (NULL != buf) )
 	{
         // useless, uh?
 		//StringCbPrintfA(line_dump, sizeof(line_dump), "buf_len = %u, buffer=0x%08x", buf_len, buf);
@@ -5053,7 +5041,7 @@ void clear_console()
 -----------------------------------------------------------------------------*/
 bool is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type)
 {
-type = IT_NORMAL;
+	type = IT_NORMAL;
 
     HANDLE hFile = CreateFileW(
                     path, 
@@ -5096,77 +5084,68 @@ type = IT_NORMAL;
     SmrtView sfView(ImageView);
 
 
-    //
-    // parse PE header
-    //
+	//
+	// PE 내 offset 값들을 신뢰할 수 없기 때문에 SEH 를 이용한다. 
+	// 기존에 IsBadReadPtr() 함수들은 더 이상 사용하지 않는다. 
+	//
+	try
+	{
+		PIMAGE_DOS_HEADER idh = (PIMAGE_DOS_HEADER)ImageView;
+		if (idh->e_magic != IMAGE_DOS_SIGNATURE) return false;
 
-    PIMAGE_DOS_HEADER idh = (PIMAGE_DOS_HEADER)ImageView;
-    if(idh->e_magic != IMAGE_DOS_SIGNATURE) return false;
+		// check DOS file size
+		// 
+		DWORD dosSize = (idh->e_cp * 512);
+		if (dosSize > fileSize.QuadPart)
+		{
+			log_err "%ws, invalid file size, size=%lu", path, fileSize.QuadPart log_end;
+			return false;
+		}
+
+		PIMAGE_NT_HEADERS inh = (PIMAGE_NT_HEADERS)((DWORD_PTR)idh + idh->e_lfanew);
+		if (IMAGE_NT_SIGNATURE != inh->Signature) return false;
+
+		WORD subsys = inh->OptionalHeader.Subsystem;
+		WORD characteristics = inh->FileHeader.Characteristics;
+
+		// characteristics check
+		if ((characteristics & IMAGE_FILE_EXECUTABLE_IMAGE) != IMAGE_FILE_EXECUTABLE_IMAGE) return false;   // not executable
+
+		if ((characteristics & IMAGE_FILE_DLL) == IMAGE_FILE_DLL)
+		{
+			type = IT_DLL;
+			return true;
+		}
+
+		// never called.. ???
+		// if ((characteristics & IMAGE_FILE_SYSTEM) == IMAGE_FILE_SYSTEM){OutputDebugStringW(" IMAGE_FILE_SYSTEM");}
 
 
-    // check DOS file size
-    // 
-    DWORD dosSize = (idh->e_cp * 512);
-    if (dosSize > fileSize.QuadPart) 
-    {
-        log_err "%ws, invalid file size, size=%lu", path, fileSize.QuadPart log_end
-        return false;
-    }
+		// subsystem check
+		// 
+		if ((subsys & IMAGE_SUBSYSTEM_NATIVE) == IMAGE_SUBSYSTEM_NATIVE)
+		{
+			type = IT_NATIVE_APP;
+			return true;
+		}
 
+		if ((subsys & IMAGE_SUBSYSTEM_WINDOWS_GUI) == IMAGE_SUBSYSTEM_WINDOWS_GUI)
+		{
+			type = IT_EXE_GUI;
+			return true;
+		}
+		if ((subsys & IMAGE_SUBSYSTEM_WINDOWS_CUI) == IMAGE_SUBSYSTEM_WINDOWS_CUI)
+		{
+			type = IT_EXE_CUI;
+			return true;
+		}
+	}
+	catch(std::exception& e)
+	{
+		log_warn "Invalid/Malformed pe file, exception=%s", e.what() log_end;
+		return false;
+	}
 
-    // check e_lfanew offset
-    // 
-    DWORD_PTR p = (DWORD_PTR)idh + idh->e_lfanew;
-    if (TRUE == IsBadReadPtr((void*)p, sizeof(DWORD)/* sizeof (IMAGE_NT_SIGNATURE) */))
-    {
-        log_err
-            "%s, 0x%08x, invalid e_lfanew offset, idh=0x%08x, e_lfanew=0x%08x", 
-            path, idh, idh->e_lfanew 
-        log_end        
-        return false;    
-    }
-
-
-    PIMAGE_NT_HEADERS inh = (PIMAGE_NT_HEADERS) ((DWORD_PTR)idh + idh->e_lfanew);
-    if (IMAGE_NT_SIGNATURE != inh->Signature) return false;
-
-
-    WORD subsys = inh->OptionalHeader.Subsystem;
-    WORD characteristics = inh->FileHeader.Characteristics;
-    
-    // characteristics check
-    //  - 
-    if ((characteristics & IMAGE_FILE_EXECUTABLE_IMAGE) != IMAGE_FILE_EXECUTABLE_IMAGE) return false;   // not executable
-    
-    if ((characteristics & IMAGE_FILE_DLL) == IMAGE_FILE_DLL) 
-    { 
-        type = IT_DLL;
-        return true;
-    }
-
-    // never called.. ???
-    // if ((characteristics & IMAGE_FILE_SYSTEM) == IMAGE_FILE_SYSTEM){OutputDebugStringW(" IMAGE_FILE_SYSTEM");}
-
-    
-    // subsystem check
-    // 
-    if ((subsys & IMAGE_SUBSYSTEM_NATIVE) == IMAGE_SUBSYSTEM_NATIVE)
-    {
-        type = IT_NATIVE_APP;
-        return true;
-    }
-
-    if ((subsys & IMAGE_SUBSYSTEM_WINDOWS_GUI) == IMAGE_SUBSYSTEM_WINDOWS_GUI)
-    {
-        type = IT_EXE_GUI;
-        return true;
-    }
-    if ((subsys & IMAGE_SUBSYSTEM_WINDOWS_CUI) == IMAGE_SUBSYSTEM_WINDOWS_CUI)
-    {
-        type = IT_EXE_CUI;
-        return true;
-    }        
-        
     return false;
 }
 

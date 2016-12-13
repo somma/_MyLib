@@ -9,9 +9,6 @@
 #ifndef _SYNC_OBJS_H_
 #define _SYNC_OBJS_H_
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
 class CAbsSyncObjs
 {
 public:

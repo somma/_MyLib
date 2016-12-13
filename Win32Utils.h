@@ -19,13 +19,8 @@
 
 #include <vector>
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <tchar.h>
-#include <strsafe.h>
 #include <conio.h>
 #include <winioctl.h>
-#include <winnt.h>
 
 #include <WinSock2.h>
 #include <ws2tcpip.h>

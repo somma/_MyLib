@@ -26,11 +26,6 @@
 #pragma warning(default:4005)
 #include <boost/format.hpp>
 
-
-//#define WIN32_LEAN_AND_MEAN
-//#include <Windows.h>
-#include <sal.h>
-
 #include "Win32Utils.h"
 #include "AKSyncObjs.h"
 #include "Queue.h"

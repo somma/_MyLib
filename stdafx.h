@@ -14,11 +14,12 @@
 
 #include "targetver.h"
 
+#define BOOST_LIB_DIAGNOSTIC
 #include "boost/lexical_cast.hpp"
 #include "boost/type_traits.hpp"		// boost::remove_pointer
-#include <boost/noncopyable.hpp>
-#include <boost/format.hpp>
-#include <boost/thread.hpp>
+#include "boost/noncopyable.hpp"
+#include "boost/format.hpp"
+#include "boost/thread.hpp"
 #include "boost/shared_ptr.hpp"
 #include <sstream>
 #include <list>
@@ -33,6 +34,7 @@
 #include <Windows.h>
 #include <VersionHelpers.h>
 #include <crtdbg.h>
+#include <strsafe.h>
 
 #include "Win32Utils.h"
 #include "mini_test.h"
