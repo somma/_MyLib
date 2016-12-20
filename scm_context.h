@@ -13,11 +13,11 @@ typedef class scm_context
 {
 public:
 	scm_context(
-			_In_z_ const wchar_t* driver_path, 
-			_In_z_ const wchar_t* service_name, 
-			_In_z_ const wchar_t* service_display_name, 
-			_In_ bool uninstall_service_on_free = true
-			);
+		_In_z_ const wchar_t* driver_path, 
+		_In_z_ const wchar_t* service_name, 
+		_In_z_ const wchar_t* service_display_name, 
+		_In_ bool uninstall_service_on_free = true
+		);
 	scm_context(
 		_In_z_ const wchar_t* driver_path,
 		_In_z_ const wchar_t* service_name,
@@ -32,14 +32,15 @@ public:
 	bool	uninstall_driver();
 	bool	start_driver();
 	bool	stop_driver();
-	bool	send_command(
-				_In_ uint32_t io_code, 
-				_In_ uint32_t input_buffer_size,
-				_In_bytecount_(input_buffer_size) void* input_buffer,
-				_In_ uint32_t output_buffer_size,
-				_In_bytecount_(output_buffer_size) void* output_buffer,
-				_Out_ uint32_t* bytes_returned
-				);
+	bool	
+	send_command(
+		_In_ uint32_t io_code, 
+		_In_ uint32_t input_buffer_size,
+		_In_bytecount_(input_buffer_size) void* input_buffer,
+		_In_ uint32_t output_buffer_size,
+		_In_bytecount_(output_buffer_size) void* output_buffer,
+		_Out_ uint32_t* bytes_returned
+		);
 
 	const wchar_t* service_name() { return _service_name.c_str(); }
 private:
@@ -59,3 +60,4 @@ private:
 	HANDLE			open_driver();
 
 } *pscm_context;
+

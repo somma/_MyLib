@@ -397,8 +397,17 @@ slogger::slog_start(
 	// if log file specified, create log file.
 	if (NULL != log_file_path)
 	{
-		_log_file_handle = open_file_to_write(log_file_path);
-		if (INVALID_HANDLE_VALUE == _log_file_handle) return false;
+		_log_file_handle = CreateFileW(log_file_path,
+								   GENERIC_WRITE,
+								   FILE_SHARE_READ,
+								   NULL,
+								   OPEN_ALWAYS,
+								   FILE_ATTRIBUTE_NORMAL,
+								   NULL);
+		if (INVALID_HANDLE_VALUE == _log_file_handle)
+		{
+			return false;
+		}
 	}
 
     slog_set_base_log_level(base_log_level);

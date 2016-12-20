@@ -53,7 +53,6 @@
 
 bool 
 initialize_log(
-
 	_In_ uint32_t log_level,
 	_In_opt_z_ const wchar_t* log_file_path
 	);
@@ -155,6 +154,43 @@ private:
 
     void slog_thread();
 } *pslogger;
+
+
+//
+// Logger helper class
+//
+typedef class Logger
+{
+public:
+	Logger(){}
+	~Logger(){ finalize_log(); }
+
+	bool 
+	initialize_log(
+		_In_ uint32_t log_level,
+		_In_opt_z_ const wchar_t* log_file_path)
+	{
+		return ::initialize_log(log_level, log_file_path);
+	}
+
+	void
+	set_log_format(
+		_In_ bool show_process_name, 
+		_In_ bool show_pid_tid,
+		_In_ bool show_function_name
+		)
+	{
+		::set_log_format(show_process_name, show_pid_tid, show_function_name);
+	}
+
+	void 
+	set_log_mask(
+		_In_ uint32_t mask
+		)
+	{
+		::set_log_mask(mask);
+	}
+} *PLogger;
 
 
 #endif//_log_h_

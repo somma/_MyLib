@@ -73,12 +73,15 @@ bool test_legacy_driver_service()
 /// @brief	test for minifilter driver service using scm_context class
 bool test_minifilter_service()
 {
-	scm_context scm(L"c:\\dbg\\scanner.sys", 
-					L"scanner", 
-					L"scanner", 
+	scm_context scm(L"c:\\dbg\\blockRS.sys", 
+					L"blockRS", 
+					L"blockRS", 
 					L"0", 
 					0x00000000,
 					false);
+
+	const wchar_t* svc_name = scm.service_name();
+	log_info "%ws", scm.service_name() log_end;
 
 	//
 	// install service
