@@ -35,25 +35,38 @@ initialize_log(
 	_In_opt_z_ const wchar_t* log_file_path
 	)
 {
-    boost::lock_guard< boost::mutex > lock(_logger_lock);
-    if (NULL != _logger) return true;
-
-	slogger* local_slogger = new slogger();
-	if (NULL == local_slogger) 
 	{
-		OutputDebugStringA("[ERR ] initialize_log(), insufficient resource for slogger.\n");
-		return false;
-	}
+		boost::lock_guard< boost::mutex > lock(_logger_lock);
+		if (NULL != _logger) return true;
 
-	if (true != local_slogger->slog_start(log_level, log_file_path))
-	{
-		OutputDebugStringA("[ERR ] initialize_log(), _logger->slog_start() failed.\n");
-		return false;
-	}
+		slogger* local_slogger = new slogger();
+		if (NULL == local_slogger)
+		{
+			OutputDebugStringA("[ERR ] initialize_log(), insufficient resource for slogger.\n");
+			return false;
+		}
 
-	// exchange instance
-    _logger = local_slogger;
-	local_slogger = NULL;
+		if (true != local_slogger->slog_start(log_level, log_file_path))
+		{
+			OutputDebugStringA("[ERR ] initialize_log(), _logger->slog_start() failed.\n");
+			return false;
+		}
+
+		// 
+		// exchange instance
+		// 
+
+		_logger = local_slogger;
+		local_slogger = NULL;
+	}
+	
+
+	//
+	// write log header
+	// 
+
+	std::string now; GetTimeStringA(now);
+	log_info "%s, log start.", now.c_str() log_end;
 
 	return true;
 }
@@ -524,7 +537,7 @@ void slogger::slog_thread()
     }
 
     // flush all logs to target media only file.
-    write_to_console(wtc_green, "[INFO] finalizing logs...");
+    //write_to_console(wtc_green, "[INFO] finalizing logs...");
     _lock->Enter();
         while(true != _log_queue.empty())
         {
@@ -536,8 +549,29 @@ void slogger::slog_thread()
 					write_to_filea(_log_file_handle, "%s", log._msg.c_str());
 				}
 			}
+
+			if (log._log_to & log_to_con)
+			{
+				switch (log._log_level)
+				{
+				case log_level_error: // same as log_level_critical
+					write_to_console(wtc_red, log._msg.c_str());
+					break;
+				case log_level_info:
+				case log_level_warn:
+					write_to_console(wtc_green, log._msg.c_str());
+					break;
+				default:
+					write_to_console(wtc_none, log._msg.c_str());
+				}
+			}
+
+			if (log._log_to & log_to_ods)
+			{
+				OutputDebugStringA(log._msg.c_str());
+			}
         }
     _lock->Leave();	
-    write_to_console(wtc_green, "done.\n");
+    //write_to_console(wtc_green, "done.\n");
     //std::cout << boost::format("tid=0x%08x, %s logger thread terminated \n") % GetCurrentThreadId() % __FUNCTION__;
 }

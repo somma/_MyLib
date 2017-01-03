@@ -98,9 +98,9 @@ log_write_fmt_without_deco(
 // define macro for convenience
 //
 #define log_err		log_write_fmt( log_mask_sys, log_level_error, log_to_con | log_to_ods | log_to_file, __FUNCTION__, 
-#define log_warn	log_write_fmt( log_mask_sys, log_level_warn, log_to_ods | log_to_file, __FUNCTION__,  
-#define log_info	log_write_fmt( log_mask_sys, log_level_info, log_to_ods | log_to_file, __FUNCTION__, 
-#define log_dbg		log_write_fmt( log_mask_sys, log_level_debug, log_to_ods | log_to_file, __FUNCTION__, 
+#define log_warn	log_write_fmt( log_mask_sys, log_level_warn, log_to_con | log_to_ods | log_to_file, __FUNCTION__,  
+#define log_info	log_write_fmt( log_mask_sys, log_level_info, log_to_con | log_to_ods | log_to_file, __FUNCTION__, 
+#define log_dbg		log_write_fmt( log_mask_sys, log_level_debug, log_to_con | log_to_ods | log_to_file, __FUNCTION__, 
 #define log_msg     log_write_fmt_without_deco( log_mask_sys, log_level_debug, log_to_ods | log_to_file, 
 
 
@@ -162,13 +162,28 @@ private:
 typedef class Logger
 {
 public:
-	Logger(){}
-	~Logger(){ finalize_log(); }
+	Logger(
+		_In_ bool show_process_name = true,
+		_In_ bool show_pid_tid = true,
+		_In_ bool show_function_name = true
+		)
+	{
+		::set_log_format(show_process_name,
+						 show_pid_tid,
+						 show_function_name);
+
+	}
+	
+	~Logger()
+	{
+		finalize_log(); 
+	}
 
 	bool 
 	initialize_log(
 		_In_ uint32_t log_level,
-		_In_opt_z_ const wchar_t* log_file_path)
+		_In_opt_z_ const wchar_t* log_file_path
+		)
 	{
 		return ::initialize_log(log_level, log_file_path);
 	}
@@ -180,7 +195,9 @@ public:
 		_In_ bool show_function_name
 		)
 	{
-		::set_log_format(show_process_name, show_pid_tid, show_function_name);
+		::set_log_format(show_process_name, 
+						 show_pid_tid, 
+						 show_function_name);
 	}
 
 	void 

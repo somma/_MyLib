@@ -107,8 +107,8 @@ static __inline LARGE_INTEGER getticks(void)
 //=============================================================================
 
 // FILETIME 관련 매크로 (based on 100-nanosecond intervals)
-// 1 nonosecond = 1/1,000,000,000 sec
-// 100 nonosecond = 1/10,000,000
+// 1 nano sec = 1/1,000,000,000 (1e-9) sec 
+// 100 nonosecond = 1/10,000,000 (1e-7) sec
 #define _ft_sec  ((uint64_t) 10000000)
 
 

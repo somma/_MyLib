@@ -96,7 +96,8 @@ uint64_t file_time_to_int(FILETIME& ft)
 /// @brief  
 uint64_t file_time_delta_sec(FILETIME& ftl, FILETIME& ftr) 
 {
-    return ((file_time_to_int(ftl) - file_time_to_int(ftr)) / _ft_sec); 
+    // return ((file_time_to_int(ftl) - file_time_to_int(ftr)) * 1e-7); 
+	return ((file_time_to_int(ftl) - file_time_to_int(ftr)) / _ft_sec); 
 }
 
 /// @brief  FILETIME to `yyyy-mm-dd hh:mi:ss` string representation.
