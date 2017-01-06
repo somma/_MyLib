@@ -13,11 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="_MyLib">
-      <UniqueIdentifier>{26662a08-88ae-4af9-85be-86000ab0c16b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\asm">
       <UniqueIdentifier>{8d015123-a8cb-48f5-9bb0-ed8802272d50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{26ff1700-93eb-4edf-be4e-a415d26a9d80}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -27,101 +27,98 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Win32Utils.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\AKSyncObjs.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="mini_test.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\arch.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="process_tree.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\base64.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="RegistryUtil.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\BaseWindowsHeader.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="base64.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\crc64.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="rc4.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\CStream.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="log.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\FileIoHelper.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="AKSyncObjs.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\FileIoHelperClass.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="FileIoHelper.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\gpt_partition_guid.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="FileIoHelperClass.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\injector.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="thread_pool.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\LeakWatcher.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="LeakWatcher.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\log.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="sha2.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\md5.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="md5.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\nt_name_conv.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="strtk.hpp">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\process_tree.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="gpt_partition_guid.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\Queue.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="arch.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\rc4.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="BaseWindowsHeader.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\RegistryUtil.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="CStream.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\ResourceHelper.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="injector.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\scm_context.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Queue.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\send_ping.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="ResourceHelper.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\sha2.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="scm_context.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\Singleton.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Singleton.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\StatusCode.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="StatusCode.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\StopWatch.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="StopWatch.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\targetver.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadManager.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\thread_pool.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Wow64Util.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\ThreadManager.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="send_ping.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\Win32Utils.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="wmi_client.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\wmi_client.h">
+      <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="nt_name_conv.h">
-      <Filter>_MyLib</Filter>
-    </ClInclude>
-    <ClInclude Include="crc64.h">
-      <Filter>_MyLib</Filter>
+    <ClInclude Include="src\Wow64Util.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -130,9 +127,6 @@
     </ClCompile>
     <ClCompile Include="_MyLib_test.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Win32Utils.cpp">
-      <Filter>_MyLib</Filter>
     </ClCompile>
     <ClCompile Include="_test_boost.cpp">
       <Filter>Source Files</Filter>
@@ -146,17 +140,8 @@
     <ClCompile Include="_test_cpp_class.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="process_tree.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="RegistryUtil.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
     <ClCompile Include="_test_registry_util.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base64.cpp">
-      <Filter>_MyLib</Filter>
     </ClCompile>
     <ClCompile Include="_test_asm.cpp">
       <Filter>Source Files\asm</Filter>
@@ -164,50 +149,11 @@
     <ClCompile Include="_test_x64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rc4.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
     <ClCompile Include="_test_boost_asio_timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="log.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="AKSyncObjs.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="FileIoHelper.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="FileIoHelperClass.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
     <ClCompile Include="_test_boost_thread.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sha2.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="md5.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="CStream.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="injector.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="scm_context.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="ThreadManager.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="Wow64Util.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="wmi_client.cpp">
-      <Filter>_MyLib</Filter>
     </ClCompile>
     <ClCompile Include="_test_NtApi.cpp">
       <Filter>Source Files</Filter>
@@ -215,14 +161,65 @@
     <ClCompile Include="_test_wmi_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="nt_name_conv.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
-    <ClCompile Include="crc64.cpp">
-      <Filter>_MyLib</Filter>
-    </ClCompile>
     <ClCompile Include="_test_scm.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AKSyncObjs.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\base64.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crc64.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CStream.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileIoHelper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileIoHelperClass.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\injector.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\log.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\md5.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nt_name_conv.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\process_tree.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rc4.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RegistryUtil.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scm_context.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sha2.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThreadManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Win32Utils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wmi_client.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Wow64Util.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
