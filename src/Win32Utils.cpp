@@ -1260,7 +1260,7 @@ HANDLE open_file_to_read(LPCWCH file_path)
 	if(hFile == INVALID_HANDLE_VALUE)
 	{						
         log_err
-            "CreateFile(path=%S), gle=0x%08x", 
+            "CreateFile(path=%ws), gle=%u", 
             file_path, 
             GetLastError()
         log_end
