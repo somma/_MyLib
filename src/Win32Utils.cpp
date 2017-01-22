@@ -1,12 +1,11 @@
-/**----------------------------------------------------------------------------
- * Win32Utils.cpp
- *-----------------------------------------------------------------------------
- * 
- *-----------------------------------------------------------------------------
- * All rights reserved by Noh,Yonghwan (fixbrain@gmail.com, unsorted@msn.com)
- *-----------------------------------------------------------------------------
- * 26:8:2011   15:34 created
-**---------------------------------------------------------------------------*/
+/**
+ * @file    Windows API wrapper and utility routines.
+ * @brief   
+ * @ref     
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
+ * @date    2011/08/26 created.
+ * @copyright All rights reserved by Yonghwan, Roh.
+**/
 #include "stdafx.h"
 #include "Win32Utils.h"
 
@@ -1532,6 +1531,30 @@ set_file_position(
 	}
 
 	if (NULL != new_position) { *new_position = li_new_pos.QuadPart; }
+	return true;
+}
+
+/// @brief	파일의 사이즈를 변경한다.
+///			- SetFilePointer() -> SetEndOfFile() 방식
+///			- SetFileInformationByHandle(..., FileAllocationInfo, ...)  방식
+///			중 SetFileInformationByHandle() 를 이용함 (이유는 없음)
+bool set_file_size(_In_ HANDLE file_handle, _In_ uint64_t new_size)
+{
+	FILE_ALLOCATION_INFO file_alloc_info;
+	file_alloc_info.AllocationSize.QuadPart = new_size;
+
+	if (!SetFileInformationByHandle(file_handle,
+									FileAllocationInfo,
+									&file_alloc_info,
+									sizeof(file_alloc_info)))
+	{
+		log_err
+			"SetFileInformationByHandle() failed. class=FileAllocationInfo, gle=0x%08x",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
 	return true;
 }
 

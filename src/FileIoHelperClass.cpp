@@ -1,12 +1,13 @@
-/**----------------------------------------------------------------------------
- * FileIoHelperClass.cpp
- *-----------------------------------------------------------------------------
- * 
- *-----------------------------------------------------------------------------
- * All rights reserved by somma (fixbrain@gmail.com, unsorted@msn.com)
- *-----------------------------------------------------------------------------
- * 13:10:2011   17:04 created
-**---------------------------------------------------------------------------*/
+/**
+ * @file    FileIoHelperClass
+ * @brief   
+ *
+ * This file contains test code for `FileIoHelper` class.
+ *
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
+ * @date    2011.10.13 created.
+ * @copyright All rights reserved by Yonghwan, Noh.
+**/
 #include "stdafx.h"
 
 #include "Win32Utils.h"

@@ -1,12 +1,12 @@
-/**----------------------------------------------------------------------------
- * Win32Util.h
- *-----------------------------------------------------------------------------
- * 
- *-----------------------------------------------------------------------------
- * All rights reserved by Noh,Yonghwan (fixbrain@gmail.com, unsorted@msn.com)
- *-----------------------------------------------------------------------------
- * 26:8:2011   15:31 created
-**---------------------------------------------------------------------------*/
+/**
+ * @file    Windows API wrapper and utility routines.
+ * @brief   
+ * @ref     
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
+ * @date    2011/08/26 created.
+ * @copyright All rights reserved by Yonghwan, Roh.
+**/
+
 #ifndef _win32_utils_
 #define _win32_utils_
 
@@ -185,6 +185,8 @@ BOOL write_to_filea(HANDLE hFile, LPCCH format, ...);
 bool get_file_size(_In_ HANDLE file_handle, _Out_ uint64_t& size);
 bool get_file_position(_In_ HANDLE file_handle, _Out_ uint64_t& position);
 bool set_file_position(_In_ HANDLE file_handle, _In_ uint64_t distance, _Out_opt_ uint64_t* new_position);
+bool set_file_size(_In_ HANDLE file_handle, _In_ uint64_t new_size);
+
 
 BOOL SaveToFileAsUTF8A(
                 IN LPCWSTR FilePathDoesNotExists, 

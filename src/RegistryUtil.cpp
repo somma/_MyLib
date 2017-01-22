@@ -1,12 +1,12 @@
-/**----------------------------------------------------------------------------
- * RegistryUtil.cpp
- *-----------------------------------------------------------------------------
- * 
- *-----------------------------------------------------------------------------
- * All rights reserved by somma (fixbrain@gmail.com, unsorted@msn.com)
- *-----------------------------------------------------------------------------
- * 11:11:2011   0:43 created
-**---------------------------------------------------------------------------*/
+/**
+ * @file    Windows registry api wrapper
+ * @brief   
+ * @ref     
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
+ * @date    2011/11/11 created.
+ * @copyright All rights reserved by Yonghwan, Roh.
+**/
+
 #include "stdafx.h"
 #include "RegistryUtil.h"
 

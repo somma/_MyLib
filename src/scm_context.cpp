@@ -1,12 +1,11 @@
-/******************************************************************************
- * scm_context.cpp
- ******************************************************************************
- * 
- ******************************************************************************
- * All rights reserved by somma (fixbrain@gmail.com)
- ******************************************************************************
- * 2011/11/30   created
-******************************************************************************/
+/**
+ * @file    service control manager helper class
+ * @brief   
+ * @ref     
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
+ * @date    2011/11/30 created.
+ * @copyright All rights reserved by Yonghwan, Roh.
+**/
 
 #include "stdafx.h"
 #include "scm_context.h"

@@ -24,6 +24,19 @@
     <RootNamespace>_MyLib_test</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
+
+  <!-- vcpkg, static link 용 설정 -->
+  <PropertyGroup Condition="'$(Platform)'=='Win32'">
+    <VcpkgTriplet>x86-windows-static</VcpkgTriplet>    
+    <VcpkgRoot>c:\work.vcpkg\installed\$(VcpkgTriplet)\</VcpkgRoot>
+    <VcpkgEnabled>true</VcpkgEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <VcpkgTriplet>x64-windows-static</VcpkgTriplet>
+    <VcpkgRoot>c:\work.vcpkg\installed\$(VcpkgTriplet)\</VcpkgRoot>
+    <VcpkgEnabled>true</VcpkgEnabled>
+  </PropertyGroup>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -96,7 +109,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/I "c:\work.mylib\src" /I "c:\boost1.62_x86_msvc14\include\boost-1_62" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/I "c:\work.mylib\src" %(AdditionalOptions)</AdditionalOptions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -118,7 +131,7 @@ echo "done."</Command>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/I "c:\work.mylib\src" /I "c:\boost1.62_x64_msvc14\include\boost-1_62"</AdditionalOptions>
+      <AdditionalOptions>/I "c:\work.mylib\src"</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <EnablePREfast>false</EnablePREfast>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -126,7 +139,6 @@ echo "done."</Command>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalOptions>/LIBPATH:"c:\boost1.62_x64_msvc14\lib" %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>echo "copy [$(TargetPath)] to debuggee..."
@@ -142,7 +154,7 @@ echo "done."</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/I "c:\work.mylib\src" /I "c:\boost1.62_x86_msvc14\include\boost-1_62" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/I "c:\work.mylib\src" %(AdditionalOptions)</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -167,7 +179,7 @@ echo "done."</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/I "c:\work.mylib\src" /I "c:\boost1.62_x64_msvc14\include\boost-1_62" </AdditionalOptions>
+      <AdditionalOptions>/I "c:\work.mylib\src" </AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -252,6 +264,7 @@ echo "done."</Command>
     <ClCompile Include="_test_boost_bind.cpp" />
     <ClCompile Include="_test_boost_thread.cpp" />
     <ClCompile Include="_test_cpp_class.cpp" />
+    <ClCompile Include="_test_file_io_helper.cpp" />
     <ClCompile Include="_test_NtApi.cpp" />
     <ClCompile Include="_test_registry_util.cpp" />
     <ClCompile Include="_test_scm.cpp" />

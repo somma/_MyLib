@@ -1,12 +1,19 @@
-/**----------------------------------------------------------------------------
- * log.cpp
- *-----------------------------------------------------------------------------
- * 
- *-----------------------------------------------------------------------------
- * All rights reserved by Noh,Yonghwan (fixbrain@gmail.com, unsorted@msn.com)
- *-----------------------------------------------------------------------------
- * 2015:1:12 16:54 created
-**---------------------------------------------------------------------------*/
+/**
+ * @file    Logging module
+ * @brief   initialize_log() 함수를 명시적으로 호출하면, log level, log target 
+ *			(file, debugger, console, etc) 지정/변경 가능
+ *
+ *			log format 지정/변경 가능
+ *
+ *			multi thread 환경에서 serialization 이 됨
+ *
+ *			log_err, con_err 같은 매크로만 사용하면 debugger, console 로 메세지 출력 가능
+ * @ref     
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
+ * @date    2015/01/12 created.
+ * @copyright All rights reserved by Yonghwan, Roh.
+**/
+
 #include "stdafx.h"
 #include "log.h"
 
