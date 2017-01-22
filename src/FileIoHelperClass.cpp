@@ -13,81 +13,72 @@
 #include "Win32Utils.h"
 #include "FileIoHelperClass.h"
 
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
 FileIoHelper::FileIoHelper()
 :	mReadOnly(TRUE), 
 	mFileHandle(INVALID_HANDLE_VALUE), 
+	mFileSize(0),
 	mFileMap(NULL), 
 	mFileView(NULL)
 {
-	mFileSize.QuadPart=0;
 }
 
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
 FileIoHelper::~FileIoHelper()
 {
-	this->FIOClose();
+	this->close();
 }
 
-/**----------------------------------------------------------------------------
-    \brief  파일 IO 를 위해 파일을 오픈한다.
-    			
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
-DTSTATUS	
-FileIoHelper::FIOpenForRead(
-	IN std::wstring FilePath
-	)	
+/// @brief	I/O 에 최적화된 블럭사이즈를 리턴한다. 
+///			정확한 수치는 모르겠지만 SYSTEM_INFO.dwAllocationGranularity(64k) * 8 정도가 가장 
+///			무난한 성능이 나오는것 같음. (win7, win10 에서 테스트)
+//static
+uint32_t FileIoHelper::GetOptimizedBlockSize()
 {
-	if (TRUE == Initialized()) { FIOClose(); }
+	static DWORD AllocationGranularity = 0;
+	if (0 == AllocationGranularity)
+	{
+		SYSTEM_INFO si = { 0 };
+		GetSystemInfo(&si);
+		AllocationGranularity = si.dwAllocationGranularity;
+	}
+
+	if (0 == AllocationGranularity)
+	{
+		return (64 * 1024) * 8;
+	}
+	else
+	{
+		return AllocationGranularity * 8;
+	}
+}
+
+/// @brief	파일을 읽기모드로 오픈한다. 
+bool FileIoHelper::OpenForRead(_In_ const wchar_t* file_path)
+{
+	if (TRUE == Initialized()) { close(); }
 
 	mReadOnly = TRUE;	
-	if (TRUE != is_file_existsW(FilePath.c_str()))
+	if (TRUE != is_file_existsW(file_path))
 	{
-		log_err
-			"no file exists. file=%ws", FilePath.c_str()
-		log_end
-		return DTS_NO_FILE_EXIST;
+		log_err "no file exists. file=%ws", file_path log_end
+		return false;
 	}
 
 #pragma warning(disable: 4127)
-	DTSTATUS status=DTS_WINAPI_FAILED;
+	bool ret = false;
     do 
     {
-        mFileHandle = CreateFileW(
-                            FilePath.c_str(), 
-							GENERIC_READ,
-                            NULL,
-                            NULL, 
-							OPEN_EXISTING,
-                            FILE_ATTRIBUTE_NORMAL, 
-                            NULL
-                            );
+        mFileHandle = CreateFileW(file_path,
+								  GENERIC_READ,
+								  NULL,
+								  NULL, 
+								  OPEN_EXISTING,
+								  FILE_ATTRIBUTE_NORMAL, 
+								  NULL);
         if (INVALID_HANDLE_VALUE == mFileHandle)
         {
             log_err
-                "CreateFile(%ws) failed, gle=0x%08x", 
-                FilePath.c_str(), 
+                "CreateFile() failed, file=%ws, gle=0x%08x", 
+                file_path,
                 GetLastError()
             log_end
             break;
@@ -95,136 +86,136 @@ FileIoHelper::FIOpenForRead(
 
         // check file size 
         // 
-		if (TRUE != GetFileSizeEx(mFileHandle, &mFileSize))
+		if (TRUE != GetFileSizeEx(mFileHandle, (PLARGE_INTEGER)&mFileSize))
         {
             log_err
-                "%ws, can not get file size, gle=0x%08x", 
-                FilePath.c_str(), 
+                "GetFileSizeEx() failed. file=%ws, gle=0x%08x", 
+                file_path,
                 GetLastError() 
             log_end
             break;
         }
         
-        mFileMap = CreateFileMapping(
-                                mFileHandle, 
-                                NULL, 
-                                PAGE_READONLY,
-                                0, 
-                                0, 
-                                NULL
-                                );
+        mFileMap = CreateFileMapping(mFileHandle, 
+									 NULL, 
+									 PAGE_READONLY,
+									 0, 
+									 0, 
+									 NULL);
         if (NULL == mFileMap)
         {
             log_err
-                "CreateFileMapping(%ws) failed, gle=0x%08x", 
-                FilePath.c_str(), 
+                "CreateFileMapping() failed, file=%ws, gle=0x%08x", 
+				file_path,
                 GetLastError() 
             log_end
             break;
         }
 				
-        status = DTS_SUCCESS;
+		ret = true;
     } while (FALSE);
 #pragma warning(default: 4127)
 
-    if (TRUE != DT_SUCCEEDED(status))
+    if (true != ret)
     {
         if (INVALID_HANDLE_VALUE!=mFileHandle) 
 		{
 			CloseHandle(mFileHandle);
 			mFileHandle = INVALID_HANDLE_VALUE;
 		}
-        if (NULL!= mFileMap) CloseHandle(mFileMap);
+
+		if (NULL != mFileMap)
+		{
+			CloseHandle(mFileMap);
+		}
     }
 
-	return status;
+	return ret;
 }
 
-/**----------------------------------------------------------------------------
-    \brief		FileSize 바이트 짜리 파일을 생성한다.
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
-DTSTATUS	
-FileIoHelper::FIOCreateFile(
-	IN std::wstring FilePath, 
-	IN LARGE_INTEGER FileSize
+
+/// @brief	file_size 바이트 짜리 파일을 생성한다.
+bool 
+FileIoHelper::OpenForWrite(
+	_In_ const wchar_t* file_path, 
+	_In_ uint64_t file_size
 	)
 {
-	if (TRUE == Initialized()) { FIOClose(); }
-	if (FileSize.QuadPart == 0) return DTS_INVALID_PARAMETER;
+	if (TRUE == Initialized()) { close(); }
+	if (file_size == 0) return false;
 
 	mReadOnly = FALSE;	
 	
 #pragma warning(disable: 4127)
-	DTSTATUS status=DTS_WINAPI_FAILED;
+	bool ret = false;
     do 
     {
-		mFileSize = FileSize;
+		mFileSize = file_size;
 
-        mFileHandle = CreateFileW(
-                            FilePath.c_str(), 
-							GENERIC_READ | GENERIC_WRITE, 
-                            FILE_SHARE_READ,		// write 도중 다른 프로세스에서 읽기가 가능
-                            NULL, 
-							CREATE_ALWAYS,
-                            FILE_ATTRIBUTE_NORMAL, 
-                            NULL
-                            );
+        mFileHandle = CreateFileW(file_path,
+								  GENERIC_READ | GENERIC_WRITE, 
+								  FILE_SHARE_READ,		// write 도중 다른 프로세스에서 읽기가 가능
+								  NULL, 
+								  CREATE_ALWAYS,
+								  FILE_ATTRIBUTE_NORMAL, 
+								  NULL);
         if (INVALID_HANDLE_VALUE == mFileHandle)
         {
             log_err
-                "CreateFile(%ws) failed, gle=0x%08x", 
-                FilePath.c_str(), 
+                "CreateFile() failed, file=%ws, gle=0x%08x", 
+                file_path,
                 GetLastError()
             log_end
             break;
         }
 
-		// increase file size
+		//
+		//	요청된 크기만큼 파일사이즈를 늘린다.
 		// 
-		if (TRUE != SetFilePointerEx(mFileHandle, mFileSize, NULL, FILE_BEGIN))
+		if (TRUE != SetFilePointerEx(mFileHandle, 
+									 *(PLARGE_INTEGER)&mFileSize, 
+									 NULL, 
+									 FILE_BEGIN))
 		{
 			log_err
-				"SetFilePointerEx( move to %I64d ) failed, gle=0x%08x", 
-				FileSize.QuadPart, GetLastError()
+				"SetFilePointerEx() failed, file=%ws, size=%I64d, gle=0x%08x", 
+				file_path, 
+				file_size,
+				GetLastError()				
 			log_end
 			break;
 		}
 		
 		if (TRUE != SetEndOfFile(mFileHandle))
 		{
-			log_err "SetEndOfFile( ) failed, gle=0x%08x",  GetLastError() log_end
+			log_err "SetEndOfFile() failed, file=%ws, gle=0x%08x", 
+				file_path,
+				GetLastError() 
+				log_end
 			break;
 		}
         
-        mFileMap = CreateFileMapping(
-                                mFileHandle, 
-                                NULL, 
-                                PAGE_READWRITE,
-                                0, 
-                                0, 
-                                NULL
-                                );
+        mFileMap = CreateFileMapping(mFileHandle, 
+									 NULL, 
+									 PAGE_READWRITE,
+									 0, 
+									 0, 
+									 NULL);
         if (NULL == mFileMap)
         {
             log_err
-                "CreateFileMapping(%ws) failed, gle=0x%08x", 
-                FilePath.c_str(), 
+                "CreateFileMapping() failed, file=%ws, gle=0x%08x", 
+                file_path,
                 GetLastError() 
             log_end
             break;
         }
 				
-        status = DTS_SUCCESS;
+		ret = true;
     } while (FALSE);
 #pragma warning(default: 4127)
 
-    if (TRUE != DT_SUCCEEDED(status))
+    if (true != ret)
     {
         if (INVALID_HANDLE_VALUE!=mFileHandle) 
 		{
@@ -234,222 +225,196 @@ FileIoHelper::FIOCreateFile(
         if (NULL!= mFileMap) CloseHandle(mFileMap);
     }	
 
-	return status;
+	return ret;
 }
 
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
-void		
-FileIoHelper::FIOClose(
-	)
+/// @brief	모든 리소스를 제거한다.
+void FileIoHelper::close()
 {
     if (TRUE != Initialized()) return;
 
-    FIOUnreference();
+    ReleaseFilePointer();
 	CloseHandle(mFileMap); mFileMap=NULL;
 	CloseHandle(mFileHandle); mFileHandle = INVALID_HANDLE_VALUE;		
 }
 
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
-DTSTATUS	
-FileIoHelper::FIOReference(
-	IN BOOL ReadOnly, 
-	IN LARGE_INTEGER Offset, 
-	IN DWORD Size, 
-	IN OUT PUCHAR& ReferencedPointer
+/// @brief	지정된 파일의 Offset 위치를 Size 만큼 매핑하고, 해당 메모리 참조를 리턴한다.
+///			Offset 은 SYSTEM_INFO.dwAllocationGranularity 의 배수로 지정해야 한다. 
+///			그렇지 않은 경우 자동으로 SYSTEM_INFO.dwAllocationGranularity 값으로 조정해서
+///			파일을 매핑하고, pointer 를 적당히 보정해서 리턴한다.
+uint8_t* 
+FileIoHelper::GetFilePointer(
+	_In_ bool read_only, 
+	_In_ uint64_t Offset, 
+	_In_ uint32_t Size
 	)
 {
-	if (TRUE != Initialized()) return DTS_INVALID_OBJECT_STATUS;
-	if (TRUE == IsReadOnly())
+	_ASSERTE(NULL == mFileView);
+	if (NULL != mFileView)
 	{
-		if (TRUE != ReadOnly) 
-		{
-			log_err "file handle is read-only!" log_end
-			return DTS_INVALID_PARAMETER;
-		}
+		log_err "ReleaseFilePointer() first!" log_end;
+		return NULL;
 	}
-	
-	_ASSERTE(NULL== mFileView);
-	FIOUnreference();
 
-	if (Offset.QuadPart + Size > mFileSize.QuadPart)
+	if (TRUE != Initialized()) return false;
+	if (IsReadOnly() && !read_only)
+	{
+		log_err "file mapped read only." log_end;
+		return NULL;
+	}
+
+	if (Offset + Size > mFileSize)
 	{
 		log_err
-			"invalid offset. file size=%I64d, req offset=%I64d", 
-			mFileSize.QuadPart, Offset.QuadPart
-		log_end
-		return DTS_INVALID_PARAMETER;
+			"invalid offset. file size=%I64d, req offset=%I64d",
+			mFileSize, Offset
+			log_end;
+		return NULL;
 	}
 
 	//
-	// MapViewOfFile() 함수의 dwFileOffsetLow 파라미터는 
-	// SYSTEM_INFO::dwAllocationGranularity 값의 배수이어야 한다.
+	//	MapViewOfFile() 함수의 dwFileOffsetLow 파라미터는 
+	//	SYSTEM_INFO::dwAllocationGranularity 값의 배수이어야 한다.
+	//	혹시라도 오류가 나면 64k 로 설정한다. 
 	// 
-	static DWORD AllocationGranularity=0;
-	if(0 == AllocationGranularity)
+	static DWORD AllocationGranularity = 0;
+	if (0 == AllocationGranularity)
 	{
-		SYSTEM_INFO si={0};
+		SYSTEM_INFO si = { 0 };
 		GetSystemInfo(&si);
 		AllocationGranularity = si.dwAllocationGranularity;
 	}
-
-	DWORD AdjustMask = AllocationGranularity -1;
-	LARGE_INTEGER AdjustOffset={0};
-	AdjustOffset.HighPart = Offset.HighPart;
 	
-	// AllocationGranularity 이하의 값을 버림
-	// 
-	AdjustOffset.LowPart = (Offset.LowPart & ~AdjustMask); 
-	
-	// 버려진 값만큼 매핑할 사이즈를 증가
-	// 
-	DWORD BytesToMap = (Offset.LowPart & AdjustMask) + Size;
+	_ASSERTE(0 != AllocationGranularity);
+	if (0 == AllocationGranularity)
+	{
+		AllocationGranularity = (64 * 1024);		
+	}
 
-	mFileView = (PUCHAR) MapViewOfFile(
-								mFileMap, 
-								(TRUE == ReadOnly) ? FILE_MAP_READ : FILE_MAP_READ | FILE_MAP_WRITE, 
-								AdjustOffset.HighPart, 
-								AdjustOffset.LowPart, 
-								BytesToMap
-								);
+	//
+	//	AllocationGranularity 이하의 값을 버린다. 
+	//	결국 매핑해야 할 사이즈는 버려진 사이즈 만큼 커져야 한다.
+	// 	
+	uint64_t AdjustMask = (uint64_t)(AllocationGranularity - 1);
+	uint64_t adjusted_offset = Offset & ~AdjustMask;
+	DWORD adjusted_size = (DWORD)(Offset & AdjustMask) + Size;
+
+	mFileView = (PUCHAR)MapViewOfFile(mFileMap,
+								      (TRUE == read_only) ? FILE_MAP_READ : FILE_MAP_READ | FILE_MAP_WRITE,
+									  ((PLARGE_INTEGER)&adjusted_offset)->HighPart,
+									  ((PLARGE_INTEGER)&adjusted_offset)->LowPart,
+									  adjusted_size);
 	if (NULL == mFileView)
 	{
 		log_err
-			"MapViewOfFile(high=0x%08x, log=0x%08x, bytes to map=%u) failed, gle=0x%08x", 
-			AdjustOffset.HighPart, AdjustOffset.LowPart, BytesToMap, GetLastError()
-		log_end
-		return DTS_WINAPI_FAILED;
+			"MapViewOfFile(high=0x%08x, low=0x%08x, bytes to map=%u) failed, gle=0x%08x",
+			((PLARGE_INTEGER)&adjusted_offset)->HighPart,
+			((PLARGE_INTEGER)&adjusted_offset)->LowPart,
+			adjusted_size,
+			GetLastError()
+			log_end;
+		return NULL;
 	}
-	
-	ReferencedPointer = &mFileView[Offset.LowPart & AdjustMask];
-	return DTS_SUCCESS;
+
+	//
+	//	매핑은 adjust offset 으로 하지만 리턴하는 메모리 포인터는 
+	//	요청한 대로 리턴해주어야 한다.
+	// 
+	return &mFileView[Offset & AdjustMask];
 }
 
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
-void		
-FileIoHelper::FIOUnreference(
-	)
+
+/// @brief	매핑된 파일포인터를 릴리즈한다. 
+void FileIoHelper::ReleaseFilePointer()
 {
 	if (NULL != mFileView)
 	{
 		UnmapViewOfFile(mFileView);
-		mFileView=NULL;
+		mFileView = NULL;
 	}
 }
 
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
-DTSTATUS	
-FileIoHelper::FIOReadFromFile(
-	IN LARGE_INTEGER Offset, 
-	IN DWORD Size, 
-	IN OUT PUCHAR Buffer
+/// @brief	파일의 Offset 에서 Size 만큼 읽어서 Buffer 에 리턴한다.
+bool 
+FileIoHelper::ReadFromFile(
+	_In_ uint64_t Offset, 
+	_In_ DWORD Size, 
+	_Inout_updates_bytes_(Size) PUCHAR Buffer
 	)
 {
 	_ASSERTE(NULL != Buffer);
-	if (NULL == Buffer) return DTS_INVALID_PARAMETER;
+	if (NULL == Buffer) return false;
 
-	UCHAR* p=NULL;
-	DTSTATUS status = FIOReference(TRUE, Offset, Size, p);
-	if(TRUE != DT_SUCCEEDED(status))
+	uint8_t* src_ptr = GetFilePointer(true, Offset, Size);
+	if (NULL == src_ptr)
 	{
-		log_err
-			"FIOReference() failed. status=0x%08x", 
-			status
-		log_end
-		return status;
+		log_err "GetFilePointer() failed. offset=0x%I64d, size=%u",
+			Offset,
+			Size
+			log_end;
+		return false;
 	}
 
+	bool ret = false;
 	__try
 	{
-		RtlCopyMemory(Buffer, p, Size);
+		RtlCopyMemory(Buffer, src_ptr, Size);
+		ret = true;
 	}
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
 		log_err
-			"exception. code=0x%08x", GetExceptionCode()
+			"exception. offset=0x%I64d, size=%u, code=0x%08x",
+			Offset,
+			Size,
+			GetExceptionCode()
 		log_end		
-		status = DTS_EXCEPTION_RAISED;
 	}
 
-	FIOUnreference();
-	return status;
+	ReleaseFilePointer();
+	return ret;
+	
 }
 
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
-DTSTATUS	
-FileIoHelper::FIOWriteToFile(
-	IN LARGE_INTEGER Offset, 
-	IN DWORD Size, 
-	IN PUCHAR Buffer
+/// @brief	Buffer 를 파일의 Offset 에 Size 만큼 쓴다.
+bool 
+FileIoHelper::WriteToFile(
+	_In_ uint64_t Offset, 
+	_In_ DWORD Size, 
+	_In_reads_bytes_(Size) PUCHAR Buffer
 	)
 {
 	_ASSERTE(NULL != Buffer);
 	_ASSERTE(0 != Size);
 	_ASSERTE(NULL != Buffer);
-	if (NULL == Buffer || 0 == Size || NULL == Buffer) return DTS_INVALID_PARAMETER;
+	if (NULL == Buffer || 0 == Size || NULL == Buffer) return false;
 
-	UCHAR* p=NULL;
-	DTSTATUS status = FIOReference(FALSE, Offset, Size, p);
-	if(TRUE != DT_SUCCEEDED(status))
+	uint8_t* dst_ptr = GetFilePointer(false, Offset, Size);
+	if (NULL == dst_ptr)
 	{
-		log_err
-			"FIOReference() failed. status=0x%08x", 
-			status
-		log_end
-		return status;
+		log_err "GetFilePointer() failed. offset=0x%I64d, size=%u",
+			Offset,
+			Size
+			log_end;
+		return false;
 	}
 
+	bool ret = false;
 	__try
 	{
-		RtlCopyMemory(p, Buffer, Size);
+		RtlCopyMemory(dst_ptr, Buffer, Size);
+		ret = true;
 	}
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
 		log_err
-			"exception. code=0x%08x", GetExceptionCode()
-		log_end		
-		status = DTS_EXCEPTION_RAISED;
+			"exception. offset=0x%I64d, size=%u, code=0x%08x",
+			Offset,
+			Size,
+			GetExceptionCode()
+			log_end
 	}
 
-	FIOUnreference();
-	return status;
+	ReleaseFilePointer();
+	return ret;
 }

@@ -21,6 +21,9 @@
 #include "nt_name_conv.h"
 #include "crc64.h"
 
+// _test_file_io_helper.cpp
+bool test_file_io_helper();
+
 // _test_scm.cpp
 extern bool test_scm_context();	
 
@@ -210,8 +213,9 @@ int _tmain(int argc, _TCHAR* argv[])
     //GetSystemTimeAsFileTime(&ft2);
     //con_info "delta = %u", file_time_delta_sec(ft2, ft1) con_end;
 
-	assert_bool(true, test_scm_context);
+	assert_bool(true, test_file_io_helper);
 
+	//assert_bool(true, test_scm_context);
 
     //assert_bool(true, test_regexp);
     //assert_bool(true, test_ping);

@@ -10,53 +10,40 @@
 **/
 #pragma once
 
-#include <string>
-#include "StatusCode.h"
-
-
+/// @brief	MMIO 용 유틸리티 클래스.
+///			mFileView 포인터는 스레드 안정성을 보장하지 않으므로, 
+///			멀티스레드 환경에서 사용하면 안됨
 typedef class FileIoHelper
 {
 private:
 	BOOL			mReadOnly;
 	HANDLE			mFileHandle;
-	LARGE_INTEGER   mFileSize;
+	uint64_t		mFileSize;
 	HANDLE			mFileMap;
 	PUCHAR			mFileView;
+
+	std::wstring	mFileNameNt;		// e.g. Device\HarddiskVolume2\Windows\System32\drivers\etc\hosts
 public:
 	FileIoHelper();
 	~FileIoHelper();
 
-	BOOL		Initialized()	{ return (INVALID_HANDLE_VALUE != mFileHandle) ? TRUE : FALSE;}
-	BOOL		IsReadOnly()	{ return (TRUE == mReadOnly) ? TRUE : FALSE;}
-	BOOL		IsLargeFile()	{ return ( mFileSize.QuadPart > 0 ? TRUE : FALSE ); }
+	static uint32_t GetOptimizedBlockSize();
 
-	DTSTATUS	FIOpenForRead(IN std::wstring FilePath);
-	DTSTATUS	FIOCreateFile(IN std::wstring FilePath, IN LARGE_INTEGER FileSize);
-	void		FIOClose();
+	BOOL	Initialized()	{ return (INVALID_HANDLE_VALUE != mFileHandle) ? TRUE : FALSE;}
+	BOOL	IsReadOnly()	{ return (TRUE == mReadOnly) ? TRUE : FALSE;}	
 
-	DTSTATUS	FIOReference(
-						IN BOOL ReadOnly, 
-						IN LARGE_INTEGER Offset, 
-						IN DWORD Size, 
-						IN OUT PUCHAR& ReferencedPointer
-						);
-	void		FIOUnreference(
-						);
+	bool OpenForRead(_In_ const wchar_t* file_path);
+	bool OpenForWrite(_In_ const wchar_t* file_path, _In_ uint64_t file_size);
+	void close();
 
-	DTSTATUS	FIOReadFromFile(
-						IN LARGE_INTEGER Offset, 
-						IN DWORD Size, 
-						IN OUT PUCHAR Buffer
-						);
+	uint8_t* GetFilePointer(_In_ bool read_only, _In_ uint64_t Offset, _In_ uint32_t Size);
+	void ReleaseFilePointer();
 
-	DTSTATUS	FIOWriteToFile(
-						IN LARGE_INTEGER Offset, 
-						IN DWORD Size, 
-						IN PUCHAR Buffer
-						);
+	bool ReadFromFile(_In_ uint64_t Offset, _In_ DWORD Size, _Inout_updates_bytes_(Size) PUCHAR Buffer);
+	bool WriteToFile(_In_ uint64_t Offset, _In_ DWORD Size, _In_reads_bytes_(Size) PUCHAR Buffer);
 
-	const 
-	PLARGE_INTEGER  FileSize(){ return &mFileSize; }
+	uint64_t  FileSize(){ return mFileSize; }
+
 	
 
 }*PFileIoHelper;
