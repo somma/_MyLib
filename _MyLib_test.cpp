@@ -27,6 +27,7 @@ bool test_file_io_helper();
 // _test_scm.cpp
 extern bool test_scm_context();	
 
+bool test_alignment_error_test();
 bool test_crc64();
 bool test_canonicalize_file_name();
 extern bool test_NtCreateFile();
@@ -213,13 +214,14 @@ int _tmain(int argc, _TCHAR* argv[])
     //GetSystemTimeAsFileTime(&ft2);
     //con_info "delta = %u", file_time_delta_sec(ft2, ft1) con_end;
 
-	assert_bool(true, test_file_io_helper);
+	//assert_bool(true, test_file_io_helper);
 
 	//assert_bool(true, test_scm_context);
 
     //assert_bool(true, test_regexp);
     //assert_bool(true, test_ping);
     //assert_bool(true, test_canonicalize_file_name);
+	assert_bool(true, test_alignment_error_test);
     //assert_bool(true, test_crc64);
     
     //assert_bool(true, test_wmi_client);
@@ -1903,6 +1905,73 @@ bool test_canonicalize_file_name()
     return true;
 }
 
+
+typedef struct WIN32_FIND_DATAW_ALIGNTEST
+{
+	DWORD dwFileAttributes;
+	uint64_t ftCreationTime;
+	uint64_t ftLastAccessTime;
+	uint64_t ftLastWriteTime;
+	DWORD nFileSizeHigh;
+	DWORD nFileSizeLow;
+	DWORD dwReserved0;
+	DWORD dwReserved1;
+	_Field_z_ WCHAR  cFileName[MAX_PATH];
+	_Field_z_ WCHAR  cAlternateFileName[14];
+}*PWIN32_FIND_DATAW_ALIGNTEST;
+
+///	@brief	구조체 정렬 문제 테스트 
+///			https://msdn.microsoft.com/en-us/library/windows/desktop/ms724284(v=vs.85).aspx
+///			https://blogs.msdn.microsoft.com/oldnewthing/20040825-00/?p=38053
+///			https://msdn.microsoft.com/en-us/library/aa290049(v=vs.71).aspx
+///			http://www.ibm.com/developerworks/library/pa-dalign/
+bool test_alignment_error_test()
+{
+	const wchar_t* root = L"c:\\dbg";
+
+	WIN32_FIND_DATAW wfd = { 0 };
+	HANDLE hSrch = FindFirstFileW(root, &wfd);
+
+	//	문제점 1
+	// 
+	//	PWIN32_FIND_DATAW 구조체는 구성하는 데이터의 사이즈가 4바이트이므로
+	//	4바이트 정렬된다. (FILE_TIME 구조체는 4바이트 두개이므로)
+	//	PWIN32_FIND_DATAW_ALIGNTEST 구조체의 경우 uint64_t 가 있으므로 8바이트 
+	//	정렬이 된다. 
+	//
+	//	따라서  PWIN32_FIND_DATAW 를 PWIN32_FIND_DATAW_ALIGNTEST 로 타입캐스팅하게
+	//	되면 문제가 발생한다. DWORD dwFileAttributes 다음 4바이트가 패딩으로 인식되어
+	//	4바이트씩 밀려나게 된다. 
+	// 
+	PWIN32_FIND_DATAW_ALIGNTEST at = (PWIN32_FIND_DATAW_ALIGNTEST)&wfd;
+	at = at;
+
+	//	문제점 2
+	// 
+	//	wfd.ftCreationTime 의 주소를 uint64_t 로 캐스팅해서 사용하기 때문에
+	//	패딩이나 정렬상의 문제는 없다. 하지만 8바이트 정렬을 사용하는 시스템의 경우(x64)
+	//	ftCreationTime 주소는 4바이트 정렬된 주소이기 때문에 8바이트를 읽기 위해
+	//	8바이트를 두번 읽어서 4바이트씩 쪼개서 합쳐야 하는경우가 발생할 수 있다. 
+	// 
+	//	0123 4567 | 789a bcde 
+	//       ----   ----
+	//		  (1)   (2)
+	// 
+	//	x86 처럼 4바이트 정렬을 하는 시스템이라면 문제가 없을 수 있겠지만
+	//	x64 처럼 8바이트 정렬을 하는 시스템이라면 (1) 주소의 8바이트를 읽기 위해
+	//	두번의 읽기 연산이 필요하다. 
+	//	
+	//	이걸 체크해 주는 매크로가 IS_ALIGNED() 매크로임.
+	//	결국 FILE_TIME 을 uint64_t 로 캐스팅하는것은 매우 안좋은 생각이며
+	//	그래서 타입 캐스팅 하지 말고, high/low part 를 LARGE_INTEGER 에 복사한담에 
+	//	LARGE_INTEGER.QuadPart 를 통해서 연산을 하라고 하는것이다. 
+	//
+	uint64_t* p = (uint64_t*)&wfd.ftCreationTime;
+	p = p;
+
+	hSrch = hSrch;
+	return true;
+}
 
 bool test_crc64()
 {
