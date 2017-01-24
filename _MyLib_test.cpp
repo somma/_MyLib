@@ -200,6 +200,16 @@ int _tmain(int argc, _TCHAR* argv[])
     if (true != initialize_log(log_level_debug, f.str().c_str())) return false;
     set_log_format(false, false, false);
     
+
+
+	//uint64_t t = 0xffffffff00112233;
+	//log_info "0x%llx, 0x%016llx", t, t log_end;
+	//
+	//uint64_t y = 0x00112233;
+	//log_info "0x%llx, 0x%016llx", y, y log_end;
+
+
+	
     
     //std::wstring wstr = L"12345";
     //con_info "wstr.size() = %u, wcslen(wstr.c_str() = %u",
@@ -214,6 +224,7 @@ int _tmain(int argc, _TCHAR* argv[])
     //GetSystemTimeAsFileTime(&ft2);
     //con_info "delta = %u", file_time_delta_sec(ft2, ft1) con_end;
 
+	assert_bool(true, test_find_and_replace);
 	//assert_bool(true, test_file_io_helper);
 
 	//assert_bool(true, test_scm_context);
@@ -221,7 +232,7 @@ int _tmain(int argc, _TCHAR* argv[])
     //assert_bool(true, test_regexp);
     //assert_bool(true, test_ping);
     //assert_bool(true, test_canonicalize_file_name);
-	assert_bool(true, test_alignment_error_test);
+	//assert_bool(true, test_alignment_error_test);
     //assert_bool(true, test_crc64);
     
     //assert_bool(true, test_wmi_client);

@@ -1846,16 +1846,8 @@ SaveBinaryFile(
     return TRUE;
 }
 
-/**----------------------------------------------------------------------------
-    \brief  DirectoryPath 디렉토리를 생성한다. 중간에 없는 디렉토리 경로가 존재하면
-	\brief  생성한다. 
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
+/// @brief	DirectoryPath 디렉토리를 생성한다. 중간에 없는 디렉토리 경로가 존재하면
+///			생성한다.
 bool WUCreateDirectory(const LPCWSTR DirectoryPath)
 {
 	_ASSERTE(NULL != DirectoryPath);

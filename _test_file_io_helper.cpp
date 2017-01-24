@@ -31,6 +31,22 @@ file_copy_mmio(
 		return false;
 	}
 
+	std::wstring nt_name;
+	std::wstring dos_name;
+	if (!srcFile.GetMappedFileName(false, nt_name))
+	{
+		log_err "srcFile.GetMappedFileName() failed" log_end;
+		return false;
+	}
+	log_info "nt_name=%ws", nt_name.c_str() log_end;
+
+	if (!srcFile.GetMappedFileName(true, dos_name))
+	{
+		log_err "srcFile.GetMappedFileName() failed" log_end;
+		return false;
+	}
+	log_info "dos_name=%ws", dos_name.c_str() log_end;
+
 	//
 	//	목적지 파일을 소스파일 사이즈와 동일하게 생성한다.
 	// 

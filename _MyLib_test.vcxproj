@@ -24,10 +24,9 @@
     <RootNamespace>_MyLib_test</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
-
   <!-- vcpkg, static link 용 설정 -->
   <PropertyGroup Condition="'$(Platform)'=='Win32'">
-    <VcpkgTriplet>x86-windows-static</VcpkgTriplet>    
+    <VcpkgTriplet>x86-windows-static</VcpkgTriplet>
     <VcpkgRoot>c:\work.vcpkg\installed\$(VcpkgTriplet)\</VcpkgRoot>
     <VcpkgEnabled>true</VcpkgEnabled>
   </PropertyGroup>
@@ -36,7 +35,6 @@
     <VcpkgRoot>c:\work.vcpkg\installed\$(VcpkgTriplet)\</VcpkgRoot>
     <VcpkgEnabled>true</VcpkgEnabled>
   </PropertyGroup>
-
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>

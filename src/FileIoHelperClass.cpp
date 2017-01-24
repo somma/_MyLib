@@ -133,6 +133,84 @@ bool FileIoHelper::OpenForRead(_In_ const wchar_t* file_path)
 	return ret;
 }
 
+/// @brief	파일을 읽기모드로 오픈한다. 
+///			file_handle 은 외부에서 오픈해서 전달한 파라미터 이므로 
+///			여기서는 섹션 객체를 만드는데만 사용하고, CloseHandle() 같은 
+///			행위는 하지 않는다. 
+bool 
+FileIoHelper::OpenForRead(
+	_In_ const HANDLE file_handle
+	)
+{
+	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);	
+	if (INVALID_HANDLE_VALUE == file_handle)
+	{
+		return false;
+	}
+
+	if (TRUE == Initialized())
+	{
+		close();
+	}
+
+	mReadOnly = TRUE;
+
+#pragma warning(disable: 4127)
+	bool ret = false;
+	do
+	{
+		mFileHandle = file_handle;
+
+		// check file size 
+		// 
+		if (TRUE != GetFileSizeEx(mFileHandle, (PLARGE_INTEGER)&mFileSize))
+		{
+			log_err
+				"GetFileSizeEx() failed. file_handle=0x%p, gle=0x%08x",
+				mFileHandle,
+				GetLastError()
+				log_end
+				break;
+		}
+
+		mFileMap = CreateFileMapping(mFileHandle,
+									 NULL,
+									 PAGE_READONLY,
+									 0,
+									 0,
+									 NULL);
+		if (NULL == mFileMap)
+		{
+			log_err
+				"CreateFileMapping() failed, file_handle=0x%p, gle=0x%08x",
+				mFileHandle,
+				GetLastError()
+				log_end
+				break;
+		}
+
+		ret = true;
+	} while (FALSE);
+#pragma warning(default: 4127)
+
+	if (true != ret)
+	{
+		if (NULL != mFileMap)
+		{
+			CloseHandle(mFileMap);
+			mFileMap = NULL;
+		}
+
+		//
+		//	mFileHandle 은 외부에서 오픈해서 전달한 파라미터 이므로 
+		//	여기서는 섹션 객체를 만드는데만 사용하고, CloseHandle() 같은 
+		//	행위는 하지 않는다. 
+		// 
+		mFileHandle = INVALID_HANDLE_VALUE;
+	}
+
+	return ret;
+}
 
 /// @brief	file_size 바이트 짜리 파일을 생성한다.
 bool 
@@ -234,8 +312,76 @@ void FileIoHelper::close()
     if (TRUE != Initialized()) return;
 
     ReleaseFilePointer();
-	CloseHandle(mFileMap); mFileMap=NULL;
-	CloseHandle(mFileHandle); mFileHandle = INVALID_HANDLE_VALUE;		
+	if (NULL != mFileMap)
+	{
+		CloseHandle(mFileMap); 
+		mFileMap = NULL;
+	}
+
+	if (INVALID_HANDLE_VALUE != mFileHandle)
+	{
+		CloseHandle(mFileHandle); 
+		mFileHandle = INVALID_HANDLE_VALUE;
+	}
+}
+
+/// @beief	메모리 매핑된 파일의 경로를 구한다. 
+///			convert_to_dosname == false 인 경우 
+///				\Device\harddiskVolume1\Windows\System32\notepad.exe 경로 리턴
+///
+///			convert_to_dosname == true 인 경우 디바이스 네임을 볼륨명으로 변경
+///				c:\Windows\System32\notepad.exe 경로 리턴
+bool FileIoHelper::GetMappedFileName(_In_ bool convet_to_dosname, _Out_ std::wstring& file_path)
+{
+	if (TRUE != Initialized()) return false;
+	if (NULL != mFileView)
+	{
+		log_err "mapped file pointer is busy. " log_end;
+		return false;
+	}
+
+	uint8_t* ptr = GetFilePointer(true, 0, 8);
+	if (NULL == ptr)
+	{
+		log_err "GetFilePointer() failed." log_end;
+		return false;
+	}
+
+
+	bool ret = false;
+	do
+	{
+		std::wstring nt_file_name;
+		if (true != get_mapped_file_name(GetCurrentProcess(), ptr, nt_file_name))
+		{
+			log_err "get_mapped_file_name() failed." log_end;
+			break;
+		}
+
+		if (true == convet_to_dosname)
+		{
+			std::wstring dos_file_name;
+			if (!nt_name_to_dos_name(nt_file_name.c_str(), dos_file_name))
+			{
+				log_err "nt_name_to_dos_name() failed. nt_name=%ws",
+					nt_file_name.c_str()
+					log_end;
+				break;
+			}
+
+			file_path = dos_file_name;
+		}
+		else
+		{
+			file_path = nt_file_name;
+		}
+
+		ret = true;
+	} while (false);
+
+	ReleaseFilePointer();
+	return ret;
+
 }
 
 /// @brief	지정된 파일의 Offset 위치를 Size 만큼 매핑하고, 해당 메모리 참조를 리턴한다.
@@ -263,15 +409,27 @@ FileIoHelper::GetFilePointer(
 		return NULL;
 	}
 
-	if (Offset + Size > mFileSize)
+	// 
+	//	요청한 offset 이 파일 사이즈보다 크다면 오류를 리턴한다.
+	// 
+	if (Offset >= mFileSize)
 	{
-		log_err
-			"invalid offset. file size=%I64d, req offset=%I64d",
-			mFileSize, Offset
+		log_err "Req offset > File size. req offset=0x%I64x, file size=0x%I64x",
+			Offset,
+			mFileSize
 			log_end;
 		return NULL;
 	}
 
+	//
+	//	요청한 사이즈가 파일사이즈보다 크다면 파일사이즈만큼만 매핑한다. 
+	//
+	uint32_t adjusted_size = Size;
+	if (Offset + Size > mFileSize)
+	{
+		adjusted_size = mFileSize - Offset;
+	}
+	
 	//
 	//	MapViewOfFile() 함수의 dwFileOffsetLow 파라미터는 
 	//	SYSTEM_INFO::dwAllocationGranularity 값의 배수이어야 한다.
@@ -297,7 +455,7 @@ FileIoHelper::GetFilePointer(
 	// 	
 	uint64_t AdjustMask = (uint64_t)(AllocationGranularity - 1);
 	uint64_t adjusted_offset = Offset & ~AdjustMask;
-	DWORD adjusted_size = (DWORD)(Offset & AdjustMask) + Size;
+	adjusted_size = (DWORD)(Offset & AdjustMask) + adjusted_size;
 
 	mFileView = (PUCHAR)MapViewOfFile(mFileMap,
 								      (TRUE == read_only) ? FILE_MAP_READ : FILE_MAP_READ | FILE_MAP_WRITE,

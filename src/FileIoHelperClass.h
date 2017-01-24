@@ -21,20 +21,21 @@ private:
 	uint64_t		mFileSize;
 	HANDLE			mFileMap;
 	PUCHAR			mFileView;
-
-	std::wstring	mFileNameNt;		// e.g. Device\HarddiskVolume2\Windows\System32\drivers\etc\hosts
 public:
 	FileIoHelper();
 	~FileIoHelper();
 
 	static uint32_t GetOptimizedBlockSize();
 
-	BOOL	Initialized()	{ return (INVALID_HANDLE_VALUE != mFileHandle) ? TRUE : FALSE;}
-	BOOL	IsReadOnly()	{ return (TRUE == mReadOnly) ? TRUE : FALSE;}	
+	BOOL Initialized()	{ return (INVALID_HANDLE_VALUE != mFileHandle) ? TRUE : FALSE;}
+	BOOL IsReadOnly()	{ return (TRUE == mReadOnly) ? TRUE : FALSE;}	
 
 	bool OpenForRead(_In_ const wchar_t* file_path);
+	bool OpenForRead(_In_ const HANDLE file_handle);
 	bool OpenForWrite(_In_ const wchar_t* file_path, _In_ uint64_t file_size);
 	void close();
+
+	bool GetMappedFileName(_In_ bool convet_to_dosname, _Out_ std::wstring& file_path);
 
 	uint8_t* GetFilePointer(_In_ bool read_only, _In_ uint64_t Offset, _In_ uint32_t Size);
 	void ReleaseFilePointer();
