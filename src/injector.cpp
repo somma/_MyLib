@@ -93,7 +93,7 @@ bool inject_dll(_In_ DWORD pid, _In_z_ const char* dll_path)
 								(DWORD)strlen(dll_path), 
 								&cbWritten))
 	{
-		log_err "WriteProcessMemory() failed. gle=0x%08x", GetLastError() log_end
+		log_err "WriteProcessMemory() failed. gle=%u", GetLastError() log_end
 
 		VirtualFreeEx(process_handle, buffer, buffer_size, MEM_DECOMMIT);
 		CloseHandle(process_handle);

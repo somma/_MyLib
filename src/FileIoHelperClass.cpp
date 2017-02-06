@@ -77,7 +77,7 @@ bool FileIoHelper::OpenForRead(_In_ const wchar_t* file_path)
         if (INVALID_HANDLE_VALUE == mFileHandle)
         {
             log_err
-                "CreateFile() failed, file=%ws, gle=0x%08x", 
+                "CreateFile() failed, file=%ws, gle=%u", 
                 file_path,
                 GetLastError()
             log_end
@@ -89,7 +89,7 @@ bool FileIoHelper::OpenForRead(_In_ const wchar_t* file_path)
 		if (TRUE != GetFileSizeEx(mFileHandle, (PLARGE_INTEGER)&mFileSize))
         {
             log_err
-                "GetFileSizeEx() failed. file=%ws, gle=0x%08x", 
+                "GetFileSizeEx() failed. file=%ws, gle=%u", 
                 file_path,
                 GetLastError() 
             log_end
@@ -105,7 +105,7 @@ bool FileIoHelper::OpenForRead(_In_ const wchar_t* file_path)
         if (NULL == mFileMap)
         {
             log_err
-                "CreateFileMapping() failed, file=%ws, gle=0x%08x", 
+                "CreateFileMapping() failed, file=%ws, gle=%u", 
 				file_path,
                 GetLastError() 
             log_end
@@ -166,7 +166,7 @@ FileIoHelper::OpenForRead(
 		if (TRUE != GetFileSizeEx(mFileHandle, (PLARGE_INTEGER)&mFileSize))
 		{
 			log_err
-				"GetFileSizeEx() failed. file_handle=0x%p, gle=0x%08x",
+				"GetFileSizeEx() failed. file_handle=0x%p, gle=%u",
 				mFileHandle,
 				GetLastError()
 				log_end
@@ -182,7 +182,7 @@ FileIoHelper::OpenForRead(
 		if (NULL == mFileMap)
 		{
 			log_err
-				"CreateFileMapping() failed, file_handle=0x%p, gle=0x%08x",
+				"CreateFileMapping() failed, file_handle=0x%p, gle=%u",
 				mFileHandle,
 				GetLastError()
 				log_end
@@ -240,7 +240,7 @@ FileIoHelper::OpenForWrite(
         if (INVALID_HANDLE_VALUE == mFileHandle)
         {
             log_err
-                "CreateFile() failed, file=%ws, gle=0x%08x", 
+                "CreateFile() failed, file=%ws, gle=%u", 
                 file_path,
                 GetLastError()
             log_end
@@ -256,7 +256,7 @@ FileIoHelper::OpenForWrite(
 									 FILE_BEGIN))
 		{
 			log_err
-				"SetFilePointerEx() failed, file=%ws, size=%I64d, gle=0x%08x", 
+				"SetFilePointerEx() failed, file=%ws, size=%I64d, gle=%u", 
 				file_path, 
 				file_size,
 				GetLastError()				
@@ -266,7 +266,7 @@ FileIoHelper::OpenForWrite(
 		
 		if (TRUE != SetEndOfFile(mFileHandle))
 		{
-			log_err "SetEndOfFile() failed, file=%ws, gle=0x%08x", 
+			log_err "SetEndOfFile() failed, file=%ws, gle=%u", 
 				file_path,
 				GetLastError() 
 				log_end
@@ -282,7 +282,7 @@ FileIoHelper::OpenForWrite(
         if (NULL == mFileMap)
         {
             log_err
-                "CreateFileMapping() failed, file=%ws, gle=0x%08x", 
+                "CreateFileMapping() failed, file=%ws, gle=%u", 
                 file_path,
                 GetLastError() 
             log_end
@@ -427,7 +427,7 @@ FileIoHelper::GetFilePointer(
 	uint32_t adjusted_size = Size;
 	if (Offset + Size > mFileSize)
 	{
-		adjusted_size = mFileSize - Offset;
+		adjusted_size = (uint32_t)(mFileSize - Offset);
 	}
 	
 	//
@@ -465,7 +465,7 @@ FileIoHelper::GetFilePointer(
 	if (NULL == mFileView)
 	{
 		log_err
-			"MapViewOfFile(high=0x%08x, low=0x%08x, bytes to map=%u) failed, gle=0x%08x",
+			"MapViewOfFile(high=0x%08x, low=0x%08x, bytes to map=%u) failed, gle=%u",
 			((PLARGE_INTEGER)&adjusted_offset)->HighPart,
 			((PLARGE_INTEGER)&adjusted_offset)->LowPart,
 			adjusted_size,

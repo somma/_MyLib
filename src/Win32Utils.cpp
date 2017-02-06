@@ -1229,7 +1229,7 @@ HANDLE open_file_to_write(_In_ const wchar_t* file_path)
 	if(hFile == INVALID_HANDLE_VALUE)
 	{						
         log_err
-            "CreateFile(path=%S), gle=0x%08x", 
+            "CreateFile(path=%S), gle=%u", 
             file_path, 
             GetLastError()
         log_end
@@ -1318,7 +1318,7 @@ BOOL write_to_filew(LPCWCH file_path, LPCWCH format,...)
 	if(hFile == INVALID_HANDLE_VALUE)
 	{						
         log_err
-            "CreateFile(%S), gle=0x%08x", 
+            "CreateFile(%S), gle=%u", 
             file_path, GetLastError()
         log_end
         return FALSE;
@@ -1549,7 +1549,7 @@ bool set_file_size(_In_ HANDLE file_handle, _In_ uint64_t new_size)
 									sizeof(file_alloc_info)))
 	{
 		log_err
-			"SetFileInformationByHandle() failed. class=FileAllocationInfo, gle=0x%08x",
+			"SetFileInformationByHandle() failed. class=FileAllocationInfo, gle=%u",
 			GetLastError()
 			log_end;
 		return false;
@@ -1628,7 +1628,7 @@ SaveToFileAsUTF8W(
                     NULL))
     {
         log_err
-            "WriteFile(BOM) failed, gle=0x%08x", 
+            "WriteFile(BOM) failed, gle=%u", 
             GetLastError()
         log_end
 
@@ -1644,7 +1644,7 @@ SaveToFileAsUTF8W(
                     NULL))
     {
         log_err
-            "WriteFile(Utf8String) failed, gle=0x%08x", 
+            "WriteFile(Utf8String) failed, gle=%u", 
             GetLastError()
         log_end
         CloseHandle(hFile); hFile = NULL;
@@ -1681,7 +1681,7 @@ LoadFileToMemory(
     if (INVALID_HANDLE_VALUE == hFile)
     {
         log_err
-            "CreateFile(%ws) failed, gle=0x%08x", 
+            "CreateFile(%ws) failed, gle=%u", 
             FilePath, 
             GetLastError()
         log_end
@@ -1695,7 +1695,7 @@ LoadFileToMemory(
     if (TRUE != GetFileSizeEx(hFile, &fileSize))
     {
         log_err
-            "%ws, can not get file size, gle=0x%08x", 
+            "%ws, can not get file size, gle=%u", 
             FilePath, 
             GetLastError() 
         log_end
@@ -1719,7 +1719,7 @@ LoadFileToMemory(
     if (NULL == hImageMap)
     {
         log_err
-            "CreateFileMapping(%ws) failed, gle=0x%08x", 
+            "CreateFileMapping(%ws) failed, gle=%u", 
             FilePath, 
             GetLastError() 
         log_end
@@ -1738,7 +1738,7 @@ LoadFileToMemory(
     if(ImageView == NULL)
     {
         log_err
-            "MapViewOfFile(%ws) failed, gle=0x%08x", 
+            "MapViewOfFile(%ws) failed, gle=%u", 
             FilePath, 
             GetLastError() 
         log_end
@@ -1837,7 +1837,7 @@ SaveBinaryFile(
                         NULL))
     {
         log_err
-            "WriteFile(path=%S) failed, gle=0x%08x",
+            "WriteFile(path=%S) failed, gle=%u",
             DataPath, GetLastError()
         log_end
         return FALSE;
@@ -1858,7 +1858,7 @@ bool WUCreateDirectory(const LPCWSTR DirectoryPath)
 		if (ERROR_SUCCESS != SHCreateDirectoryExW(NULL, DirectoryPath, NULL))
 		{
 			log_err
-				"SHCreateDirectoryExW( path=%ws ) failed. gle=0x%08x", 
+				"SHCreateDirectoryExW( path=%ws ) failed. gle=%u", 
 				DirectoryPath, GetLastError()
 			log_end
 			return false;
@@ -2360,7 +2360,7 @@ find_files(
 		if (ERROR_ACCESS_DENIED != gle)
 		{
 			log_err
-				"FindFirstFileW(path=%S) failed, gle=0x%08x", 
+				"FindFirstFileW(path=%S) failed, gle=%u", 
 				root_dir.c_str(), GetLastError()
 			log_end
 		}
@@ -2462,7 +2462,7 @@ FindSubDirectory(
     if(INVALID_HANDLE_VALUE == hSrch) 
     {
         log_err
-            "FindFirstFileW(path=%S) failed, gle=0x%08x", 
+            "FindFirstFileW(path=%S) failed, gle=%u", 
             RootDir.c_str(), GetLastError()
         log_end
         return FALSE;
@@ -3482,7 +3482,7 @@ BOOL WUGetCurrentDirectoryW(IN OUT std::wstring& CurrentDir)
 	if (0 == buflen)
 	{
 		log_err
-			"GetCurrentDirectoryW() failed. gle=0x%08x", 
+			"GetCurrentDirectoryW() failed. gle=%u", 
 			GetLastError()
 		log_end
 		return FALSE;
@@ -3494,7 +3494,7 @@ BOOL WUGetCurrentDirectoryW(IN OUT std::wstring& CurrentDir)
 	if (0 == GetCurrentDirectoryW(buflen, buf))
 	{
 		log_err
-			"GetCurrentDirectoryW() failed, gle=0x%08x", 
+			"GetCurrentDirectoryW() failed, gle=%u", 
 			GetLastError()
 		log_end
 
@@ -4683,19 +4683,19 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 			{
 				if (ImpersonateSelf(SecurityImpersonation)	!= TRUE ) 
 				{
-					log_err "ImpersonateSelf( ) failed. gle=0x%08x", GetLastError() log_end
+					log_err "ImpersonateSelf( ) failed. gle=%u", GetLastError() log_end
 					return false;
 				}
 
 				if (TRUE != OpenThreadToken(GetCurrentThread(),TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,FALSE,&hToken))
 				{
-					log_err "OpenThreadToken() failed. gle=0x%08x", GetLastError() log_end
+					log_err "OpenThreadToken() failed. gle=%u", GetLastError() log_end
 					return false;
 				}
 			}
 			else
 			{
-				log_err "OpenThread() failed. gle=0x%08x", GetLastError() log_end
+				log_err "OpenThread() failed. gle=%u", GetLastError() log_end
 				return false;
 			}
 		}  
@@ -4705,7 +4705,7 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 		DWORD cb = sizeof(TOKEN_PRIVILEGES);
 		if(!LookupPrivilegeValue( NULL, privilege, &luid ))
 		{		
-			log_err "LookupPrivilegeValue() failed. gle=0x%08x", GetLastError() log_end
+			log_err "LookupPrivilegeValue() failed. gle=%u", GetLastError() log_end
 			CloseHandle(hToken);
 			return false;
 		}
@@ -4725,7 +4725,7 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
             DWORD gle=GetLastError();
 		    if (gle != ERROR_SUCCESS)
 		    {		
-				log_err "AdjustTokenPrivileges() failed. gle=0x%08x", GetLastError() log_end
+				log_err "AdjustTokenPrivileges() failed. gle=%u", GetLastError() log_end
 				CloseHandle(hToken);				
 			    return false;
 		    }		
