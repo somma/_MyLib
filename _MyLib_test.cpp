@@ -1135,8 +1135,8 @@ bool test_set_get_file_position()
 		if (!WriteFile(file_handle.get(), &i, 1, &bytes_written, NULL)) return false;
 	}
 
-	uint64_t pos = 0;
-	uint64_t new_pos = 0;
+	int64_t pos = 0;
+	int64_t new_pos = 0;
 	
 	// get file position
 	if (true != get_file_position(file_handle.get(), pos)) return false;

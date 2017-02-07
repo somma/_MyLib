@@ -38,7 +38,7 @@ std::wstring NameConverter::get_file_name(_In_ const wchar_t* file_name)
     _ASSERTE(NULL != file_name);
     if (NULL == file_name) return std::wstring(L"");
 
-    uint32_t cch_file_name = wcslen(file_name);
+    uint32_t cch_file_name = (uint32_t)wcslen(file_name);
     uint32_t cch_canon_file = 0;
     wchar_t* canon_file = NULL;
     raii_wchar_ptr wp(canon_file, raii_free);

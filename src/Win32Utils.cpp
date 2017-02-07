@@ -29,6 +29,17 @@
 #pragma comment(lib, "psapi.lib")
 
 
+//
+//	create_process_as_login_user()
+// 
+#include <TLHELP32.H>
+#include <userenv.h>
+#pragma comment (lib, "userenv.lib")
+#include <Wtsapi32.h>
+#pragma comment (lib, "Wtsapi32.lib")
+
+
+
 
 /**----------------------------------------------------------------------------
     \brief  
@@ -1277,7 +1288,7 @@ HANDLE open_file_to_read(LPCWCH file_path)
  * @endcode	
  * @return	
 **/
-bool get_file_size(_In_ HANDLE file_handle, _Out_ uint64_t& size)
+bool get_file_size(_In_ HANDLE file_handle, _Out_ int64_t& size)
 {
 	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
 	if (INVALID_HANDLE_VALUE == file_handle) return false;
@@ -1463,7 +1474,7 @@ BOOL write_to_filea(HANDLE hFile,LPCCH format,...)
  * @endcode	
  * @return	
 **/
-bool get_file_position(_In_ HANDLE file_handle, _Out_ uint64_t& position)
+bool get_file_position(_In_ HANDLE file_handle, _Out_ int64_t& position)
 {
 	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
 	if (INVALID_HANDLE_VALUE == file_handle) return false;
@@ -1491,20 +1502,12 @@ bool get_file_position(_In_ HANDLE file_handle, _Out_ uint64_t& position)
 	return true;
 }
 
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
+/// @brief	파일포인터를 distance 로 이동한다.
 bool 
 set_file_position(
 	_In_ HANDLE file_handle, 
-	_In_ uint64_t distance, 
-	_Out_opt_ uint64_t* new_position
+	_In_ int64_t distance, 
+	_Out_opt_ int64_t* new_position
 	)
 {
 	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
@@ -1537,9 +1540,9 @@ set_file_position(
 /// @brief	파일의 사이즈를 변경한다.
 ///			- SetFilePointer() -> SetEndOfFile() 방식
 ///			- SetFileInformationByHandle(..., FileAllocationInfo, ...)  방식
-///			중 SetFileInformationByHandle() 를 이용함 (이유는 없음)
-bool set_file_size(_In_ HANDLE file_handle, _In_ uint64_t new_size)
+bool set_file_size(_In_ HANDLE file_handle, _In_ int64_t new_size)
 {
+#if 0
 	FILE_ALLOCATION_INFO file_alloc_info;
 	file_alloc_info.AllocationSize.QuadPart = new_size;
 
@@ -1552,6 +1555,18 @@ bool set_file_size(_In_ HANDLE file_handle, _In_ uint64_t new_size)
 			"SetFileInformationByHandle() failed. class=FileAllocationInfo, gle=%u",
 			GetLastError()
 			log_end;
+		return false;
+	}
+#endif
+	if (!set_file_position(file_handle, new_size, NULL))
+	{
+		log_err "set_file_position() failed." log_end;
+		return false;
+	}
+
+	if (!SetEndOfFile(file_handle))
+	{
+		log_err "SetEndOfFile() failed. gle=%u", GetLastError() log_end;
 		return false;
 	}
 
@@ -4858,6 +4873,249 @@ bool	process_in_console_session(_In_ DWORD process_id)
 	{
 		return false;
 	}
+}
+
+/// @brief	active console session 에 로그인된 사용자 계정으로 프로세스를 생성한다.
+bool 
+create_process_as_login_user(
+	_In_ const wchar_t* cmdline
+	)
+{
+	_ASSERTE(NULL != cmdline);
+	if (NULL == cmdline) return false;
+
+	DWORD session_id = WTSGetActiveConsoleSessionId();
+	DWORD explorer_pid = 0xFFFFFFFF;
+
+	// 
+	//	타겟 세션의 explorer.exe 프로세스를 찾고, 
+	//	해당 프로세스의 토큰으로 프로세스를 생성한다.
+	// 
+	PROCESSENTRY32 proc_entry = { 0 };
+	DWORD creation_flag = NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE;
+	LPVOID env_block = NULL;
+	size_t cmd_len = 0;
+	wchar_t* cmd = NULL;
+	PROCESS_INFORMATION pi = { 0 };
+	TOKEN_PRIVILEGES tp = { 0 };
+	LUID luid = { 0 };
+	STARTUPINFO si = { 0 };
+	HANDLE snap = INVALID_HANDLE_VALUE;
+	HANDLE user_token = NULL;
+	HANDLE primary_token = NULL;
+	HANDLE duplicated_token = NULL;
+	HANDLE process_handle = NULL;
+
+	bool ret = false;
+	do
+	{
+		snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+		if (snap == INVALID_HANDLE_VALUE)
+		{
+			
+			log_err "CreateToolhelp32Snapshot(), gle=%u", GetLastError() log_end;
+			break;
+		}
+
+		do
+		{
+			proc_entry.dwSize = sizeof(PROCESSENTRY32);
+			if (!Process32First(snap, &proc_entry))
+			{
+				log_err "Process32First(), gle=%u", GetLastError() log_end;
+				break;
+			}
+
+			do
+			{
+				if (_wcsicmp(proc_entry.szExeFile, L"explorer.exe") == 0)
+				{
+					DWORD explorer_sessio_id = 0;
+					if (ProcessIdToSessionId(proc_entry.th32ProcessID, &explorer_sessio_id) &&
+						explorer_sessio_id == session_id)
+					{
+						explorer_pid = proc_entry.th32ProcessID;
+						break;
+					}
+				}
+			} while (Process32Next(snap, &proc_entry));
+		} while (false);
+
+		CloseHandle(snap);
+
+		if (0xFFFFFFFF == explorer_pid)
+		{
+			log_err "can not find 'explorer.exe'" log_end;			
+			break;
+		}
+
+		if (TRUE != WTSQueryUserToken(session_id, 
+									  &user_token))
+		{	
+			log_err "WTSQueryUserToken(), gle=%u", GetLastError() log_end;
+			break;
+		}
+
+		si.cb = sizeof(si);
+		si.lpDesktop = L"winsta0\\default";
+
+		process_handle = OpenProcess(MAXIMUM_ALLOWED, 
+									 FALSE, 
+									 explorer_pid);
+		if (NULL == process_handle)
+		{
+			log_err "OpenProcess(), gle=%u", GetLastError() log_end;
+			break;
+		}
+
+		if (TRUE != OpenProcessToken(process_handle,
+									 TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY | TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_ADJUST_SESSIONID | TOKEN_READ | TOKEN_WRITE,
+									 &primary_token))
+		{
+			log_err "OpenProcessToken(), gle=%u", GetLastError() log_end;
+			break;
+		}
+
+		if (TRUE != LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &luid))
+		{
+			log_err "LookupPrivilegeValue(), gle=%u", GetLastError() log_end;
+			break;
+		}
+
+		tp.PrivilegeCount = 1;
+		tp.Privileges[0].Luid = luid;
+		tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+		if (TRUE != DuplicateTokenEx(primary_token, 
+									 MAXIMUM_ALLOWED, 
+									 NULL, 
+									 SecurityIdentification, 
+									 TokenPrimary, 
+									 &duplicated_token))
+		{
+			log_err "DuplicateTokenEx(), gle=%u", GetLastError() log_end;
+			break;
+		}
+
+		//> adjust token privilege
+		if (TRUE != SetTokenInformation(duplicated_token, 
+										TokenSessionId, 
+										(void*)session_id, 
+										sizeof(DWORD)))
+		{
+			//log_err L"SetTokenInformation(), gle=0x%08x", GetLastError() log_end		
+			// note - 이 에러는 무시해도 된다. 
+		}
+
+		if (TRUE != AdjustTokenPrivileges(duplicated_token, 
+										  FALSE, 
+										  &tp, 
+										  sizeof(TOKEN_PRIVILEGES), 
+										  (PTOKEN_PRIVILEGES)NULL, 
+										  NULL))
+		{
+			DWORD err = GetLastError();
+			if (ERROR_NOT_ALL_ASSIGNED != err)
+			{
+				log_err "AdjustTokenPrivileges(), gle=%u", err log_end;
+				break;
+			}
+
+			// ERROR_NOT_ALL_ASSIGNED is OK!
+		}
+
+		if (TRUE == CreateEnvironmentBlock(&env_block, 
+										   duplicated_token, 
+										   TRUE))
+		{
+			creation_flag |= CREATE_UNICODE_ENVIRONMENT;
+		}
+
+		//> create process in the consol session
+		cmd_len = (wcslen(cmdline) + 1) * sizeof(wchar_t);
+		cmd = (wchar_t*)malloc(cmd_len);
+		if (NULL == cmd)
+		{
+			log_err "insufficient memory for cmdline" log_end;
+			break;
+		}
+		StringCbPrintfW(cmd, cmd_len, L"%s", cmdline);
+
+		si.wShowWindow = SW_HIDE;
+
+		if (TRUE != CreateProcessAsUser(duplicated_token,
+										NULL,
+										cmd,
+										NULL,
+										NULL,
+										FALSE,
+										creation_flag,
+										env_block,
+										NULL,
+										&si,
+										&pi))
+		{
+			log_err "CreateProcessAsUserW(), gle=%u", GetLastError() log_end;
+			break;
+		}
+
+		if (NULL == pi.hProcess)
+		{
+			log_err "CreateProcessAsUserW() failed. gle=%u", GetLastError() log_end;
+			break;
+		}
+
+		if (WAIT_OBJECT_0 != ::WaitForSingleObject(pi.hProcess, 180000))
+		{
+			log_err "WaitForSingleObject Timeout. gle=%u", GetLastError() log_end;
+			break;
+		}
+
+		//
+		//	OK!!!
+		// 
+		ret = true;
+
+	} while (FALSE);
+	
+
+	if (NULL != cmd)
+	{
+		free(cmd);
+	}
+
+	if (NULL != pi.hProcess)
+	{
+		CloseHandle(pi.hProcess);
+	}
+	if (NULL != pi.hThread)
+	{
+		CloseHandle(pi.hThread);
+	}
+
+	if (NULL != process_handle)
+	{
+		CloseHandle(process_handle);
+	}
+	if (NULL != primary_token)
+	{
+		CloseHandle(primary_token);
+	}
+	if (NULL != duplicated_token)
+	{
+		CloseHandle(duplicated_token);
+	}
+	if (NULL != user_token)
+	{
+		CloseHandle(user_token);
+	}
+
+	if (NULL != env_block)
+	{
+		DestroyEnvironmentBlock(env_block);
+	}
+
+	return ret;
 }
 
 /**

@@ -182,10 +182,10 @@ BOOL write_to_filew(LPCWCH file_path, LPCWCH format,...);
 BOOL write_to_filew(HANDLE hFile, LPCWCH format, ...);
 BOOL write_to_filea(HANDLE hFile, LPCCH format, ...);
 
-bool get_file_size(_In_ HANDLE file_handle, _Out_ uint64_t& size);
-bool get_file_position(_In_ HANDLE file_handle, _Out_ uint64_t& position);
-bool set_file_position(_In_ HANDLE file_handle, _In_ uint64_t distance, _Out_opt_ uint64_t* new_position);
-bool set_file_size(_In_ HANDLE file_handle, _In_ uint64_t new_size);
+bool get_file_size(_In_ HANDLE file_handle, _Out_ int64_t& size);
+bool get_file_position(_In_ HANDLE file_handle, _Out_ int64_t& position);
+bool set_file_position(_In_ HANDLE file_handle, _In_ int64_t distance, _Out_opt_ int64_t* new_position);
+bool set_file_size(_In_ HANDLE file_handle, _In_ int64_t new_size);
 
 
 BOOL SaveToFileAsUTF8A(
@@ -537,6 +537,8 @@ bool    get_active_window_pid(_Out_ DWORD& pid, _Out_ DWORD& tid);
 DWORD	get_active_console_session_id();
 bool	get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id);
 bool	process_in_console_session(_In_ DWORD process_id);
+
+bool	create_process_as_login_user(_In_ const wchar_t* cmdline);
 
 #if _WIN32_WINNT >= 0x0600	// after vista
 std::wstring get_process_name_by_pid(_In_ DWORD process_id);
