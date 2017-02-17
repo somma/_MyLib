@@ -173,6 +173,12 @@ FileIoHelper::OpenForRead(
 				break;
 		}
 
+		if (mFileSize == 0)
+		{
+			log_err "Empty file specified." log_end;
+			break;
+		}
+		
 		mFileMap = CreateFileMapping(mFileHandle,
 									 NULL,
 									 PAGE_READONLY,
