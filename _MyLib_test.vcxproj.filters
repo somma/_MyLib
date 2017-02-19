@@ -120,6 +120,9 @@
     <ClInclude Include="src\Wow64Util.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\GeneralHashFunctions.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -223,6 +226,9 @@
     </ClCompile>
     <ClCompile Include="_test_file_io_helper.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GeneralHashFunctions.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

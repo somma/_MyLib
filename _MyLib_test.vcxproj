@@ -203,6 +203,7 @@ echo "done."</Command>
     <ClInclude Include="src\CStream.h" />
     <ClInclude Include="src\FileIoHelper.h" />
     <ClInclude Include="src\FileIoHelperClass.h" />
+    <ClInclude Include="src\GeneralHashFunctions.h" />
     <ClInclude Include="src\gpt_partition_guid.h" />
     <ClInclude Include="src\injector.h" />
     <ClInclude Include="src\LeakWatcher.h" />
@@ -236,6 +237,7 @@ echo "done."</Command>
     <ClCompile Include="src\CStream.cpp" />
     <ClCompile Include="src\FileIoHelper.cpp" />
     <ClCompile Include="src\FileIoHelperClass.cpp" />
+    <ClCompile Include="src\GeneralHashFunctions.cpp" />
     <ClCompile Include="src\injector.cpp" />
     <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\md5.cpp" />

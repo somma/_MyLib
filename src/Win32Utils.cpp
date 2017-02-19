@@ -5000,7 +5000,7 @@ create_process_as_login_user(
 		//> adjust token privilege
 		if (TRUE != SetTokenInformation(duplicated_token, 
 										TokenSessionId, 
-										(void*)session_id, 
+										(void*)(DWORD_PTR)session_id, 
 										sizeof(DWORD)))
 		{
 			//log_err L"SetTokenInformation(), gle=0x%08x", GetLastError() log_end		
