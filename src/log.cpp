@@ -387,7 +387,6 @@ log_write_fmt_without_deco(
  */
 slogger::slogger() 
     : _stop_logger(true), 
-      _lock(NULL), 
       _logger_thread(NULL), 
       _log_file_handle(INVALID_HANDLE_VALUE)
 {
@@ -410,9 +409,8 @@ slogger::slog_start(
 	_In_opt_z_ const wchar_t *log_file_path
 	)
 {
-	_ASSERTE(NULL == _lock);
-    _ASSERTE(NULL == _logger_thread);
-    if (NULL != _lock || NULL != _logger_thread) { return false; }
+	_ASSERTE(NULL == _logger_thread);
+    if (NULL != _logger_thread) { return false; }
     
 	// if log file specified, create log file.
 	if (NULL != log_file_path)
@@ -432,10 +430,7 @@ slogger::slog_start(
 
     slog_set_base_log_level(base_log_level);
 
-    _lock = new AKCriticalSection();
-    if (TRUE != _lock->Init()) return false;
-
-	_stop_logger = false;
+    _stop_logger = false;
     _logger_thread = new boost::thread( boost::bind(&slogger::slog_thread, this) );
     return true;
 }
@@ -462,12 +457,6 @@ void slogger::slog_stop()
 		CloseHandle(_log_file_handle); 
 		_log_file_handle = INVALID_HANDLE_VALUE;
 	}
-
-	if(NULL != _lock)
-	{
-		_lock->Terminate();
-		delete (_lock); _lock=NULL;
-	}
 }
 
 /**
@@ -487,11 +476,10 @@ slogger::slog_write(
 	if (slog_get_base_log_level() > level) return;
 
 	// enqueue log
-	log_entry log(level, log_to, log_message);
+	plog_entry le = new log_entry(level, log_to, log_message);
 
-	_lock->Enter();
-    _log_queue.push(log);
-    _lock->Leave();
+	boost::lock_guard< boost::mutex > lock(_lock);
+    _log_queue.push(le);
 }
  
 /**
@@ -509,76 +497,84 @@ void slogger::slog_thread()
             continue;
         }
 
-        _lock->Enter();
-		log_entry log = _log_queue.pop();
-        _lock->Leave();
-		     
-		if (log._log_to & log_to_con)
+		plog_entry log = NULL;
 		{
-            switch (log._log_level)
+			boost::lock_guard< boost::mutex > lock(_lock);
+			log = _log_queue.pop();
+		}
+		     
+		if (log->_log_to & log_to_con)
+		{
+            switch (log->_log_level)
             {
             case log_level_error: // same as log_level_critical
-                write_to_console(wtc_red, log._msg.c_str());
+                write_to_console(wtc_red, log->_msg.c_str());
                 break;
             case log_level_info:
             case log_level_warn: 
-                write_to_console(wtc_green, log._msg.c_str());
+                write_to_console(wtc_green, log->_msg.c_str());
                 break;
             default:
-                write_to_console(wtc_none, log._msg.c_str());
+                write_to_console(wtc_none, log->_msg.c_str());
             }
 		}
 
-		if (log._log_to & log_to_file)
+		if (log->_log_to & log_to_file)
 		{
 			if (INVALID_HANDLE_VALUE != _log_file_handle)
 			{
-				write_to_filea(_log_file_handle, "%s", log._msg.c_str());
+				write_to_filea(_log_file_handle, "%s", log->_msg.c_str());
 			}
 		}
 
-		if (log._log_to & log_to_ods)
+		if (log->_log_to & log_to_ods)
 		{			
-			OutputDebugStringA(log._msg.c_str());
+			OutputDebugStringA(log->_msg.c_str());
 		}
+
+		delete log;
     }
 
     // flush all logs to target media only file.
     //write_to_console(wtc_green, "[INFO] finalizing logs...");
-    _lock->Enter();
-        while(true != _log_queue.empty())
-        {
-            log_entry log = _log_queue.pop();
-			if (log._log_to & log_to_file)
+	{
+		boost::lock_guard< boost::mutex > lock(_lock);
+
+		while (true != _log_queue.empty())
+		{
+			plog_entry log = _log_queue.pop();
+			if (log->_log_to & log_to_file)
 			{
 				if (INVALID_HANDLE_VALUE != _log_file_handle)
 				{
-					write_to_filea(_log_file_handle, "%s", log._msg.c_str());
+					write_to_filea(_log_file_handle, "%s", log->_msg.c_str());
 				}
 			}
 
-			if (log._log_to & log_to_con)
+			if (log->_log_to & log_to_con)
 			{
-				switch (log._log_level)
+				switch (log->_log_level)
 				{
 				case log_level_error: // same as log_level_critical
-					write_to_console(wtc_red, log._msg.c_str());
+					write_to_console(wtc_red, log->_msg.c_str());
 					break;
 				case log_level_info:
 				case log_level_warn:
-					write_to_console(wtc_green, log._msg.c_str());
+					write_to_console(wtc_green, log->_msg.c_str());
 					break;
 				default:
-					write_to_console(wtc_none, log._msg.c_str());
+					write_to_console(wtc_none, log->_msg.c_str());
 				}
 			}
 
-			if (log._log_to & log_to_ods)
+			if (log->_log_to & log_to_ods)
 			{
-				OutputDebugStringA(log._msg.c_str());
+				OutputDebugStringA(log->_msg.c_str());
 			}
-        }
-    _lock->Leave();	
-    //write_to_console(wtc_green, "done.\n");
-    //std::cout << boost::format("tid=0x%08x, %s logger thread terminated \n") % GetCurrentThreadId() % __FUNCTION__;
+
+			delete log;
+		}
+		//write_to_console(wtc_green, "done.\n");
+		//std::cout << boost::format("tid=0x%08x, %s logger thread terminated \n") % GetCurrentThreadId() % __FUNCTION__;
+	}
 }

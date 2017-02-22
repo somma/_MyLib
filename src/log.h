@@ -28,7 +28,6 @@
 #include <boost/format.hpp>
 
 #include "Win32Utils.h"
-#include "AKSyncObjs.h"
 #include "Queue.h"
 
 /// @brief log level
@@ -134,9 +133,10 @@ public:
 private:
     bool volatile		_stop_logger;
     uint32_t			_base_log_level;
-    CAbsSyncObjs*		_lock;
+	boost::mutex		_lock;
 
-	class log_entry
+
+	typedef class log_entry
 	{
 	public:
 		log_entry(_In_ uint32_t log_level, _In_ uint32_t log_to, const char* log_message)
@@ -147,9 +147,9 @@ private:
         uint32_t    _log_level;
 		uint32_t	_log_to;
         std::string _msg;
-	};
+	} *plog_entry;
 
-    Queue<log_entry>	_log_queue; 
+    Queue<plog_entry>	_log_queue;
     boost::thread*		_logger_thread;
     HANDLE				_log_file_handle;
 
