@@ -2,9 +2,9 @@
  * @file    send_ping.h
  * @brief   
  *
- * @author  Yonhgwhan, Noh (fixbrain@gmail.com)
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2016.05.30 10:47 created.
- * @copyright All rights reserved by Yonghwan, Noh.
+ * @copyright All rights reserved by Yonghwan, Roh.
 **/
 
 #pragma once

@@ -4,9 +4,9 @@
  * 
  * This file contains 
  *
- * @author  Yonhgwhan, Noh (fixbrain@gmail.com)
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2016:06:04 10:02 created.
- * @copyright All rights reserved by Yonghwan, Noh.
+ * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
 #include "wmi_client.h"

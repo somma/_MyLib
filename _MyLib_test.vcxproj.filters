@@ -230,6 +230,9 @@
     <ClCompile Include="src\GeneralHashFunctions.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="_test_ppl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">

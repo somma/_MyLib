@@ -4,9 +4,9 @@
  * 
  * This file contains thread pool implementation using boost thread.
  *
- * @author  Yonhgwhan, Noh (fixbrain@gmail.com)
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2015:08:01 10:02 created.
- * @copyright All rights reserved by Yonghwan, Noh.
+ * @copyright All rights reserved by Yonghwan, Roh.
 **/
 
 #include <queue>

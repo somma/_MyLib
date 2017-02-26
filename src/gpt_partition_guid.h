@@ -3,9 +3,9 @@
  * @brief   This file defines GUID for GPT partion type.
  *          refer https://msdn.microsoft.com/ko-kr/library/windows/desktop/aa365449(v=vs.85).aspx
  *
- * @author  Yonhgwhan, Noh (fixbrain@gmail.com)
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2015:12:31 08:12 created.
- * @copyright All rights reserved by Yonghwan, Noh.
+ * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #pragma once
 #include <guiddef.h>

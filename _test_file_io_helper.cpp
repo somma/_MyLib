@@ -6,7 +6,7 @@
  *
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2017.01.0229 created.
- * @copyright All rights reserved by Yonghwan, Noh.
+ * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
 #include "StopWatch.h"

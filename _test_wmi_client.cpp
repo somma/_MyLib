@@ -2,9 +2,9 @@
  * @file    wmi_client test
  * @brief   
  *
- * @author  Yonhgwhan, Noh (fixbrain@gmail.com)
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2016.06.08 15:36 created.
- * @copyright All rights reserved by Yonghwan, Noh.
+ * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
 #include "wmi_client.h"

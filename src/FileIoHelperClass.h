@@ -6,7 +6,7 @@
  *
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2011.10.13 created.
- * @copyright All rights reserved by Yonghwan, Noh.
+ * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #pragma once
 

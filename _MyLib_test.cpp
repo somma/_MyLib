@@ -21,6 +21,9 @@
 #include "nt_name_conv.h"
 #include "crc64.h"
 
+// _test_ppl.cpp
+extern bool test_ppl();
+
 // _test_file_io_helper.cpp
 bool test_file_io_helper();
 
@@ -224,7 +227,9 @@ int _tmain(int argc, _TCHAR* argv[])
     //GetSystemTimeAsFileTime(&ft2);
     //con_info "delta = %u", file_time_delta_sec(ft2, ft1) con_end;
 
-	assert_bool(true, test_find_and_replace);
+	assert_bool(true, test_ppl);
+
+	//assert_bool(true, test_find_and_replace);
 	//assert_bool(true, test_file_io_helper);
 
 	//assert_bool(true, test_scm_context);

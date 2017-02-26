@@ -5,9 +5,9 @@
  *          https://msdn.microsoft.com/windows/hardware/drivers/ifs/support-for-unc-naming-and-mup
  *          http://pdh11.blogspot.kr/2009/05/pathcanonicalize-versus-what-it-says-on.html
  *          https://github.com/processhacker2/processhacker2/blob/master/phlib/native.c
- * @author  Yonhgwhan, Noh (fixbrain@gmail.com)
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2016.06.14 15:36 created.
- * @copyright All rights reserved by Yonghwan, Noh.
+ * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #pragma once
 #include "RegistryUtil.h"

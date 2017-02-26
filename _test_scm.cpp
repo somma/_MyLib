@@ -6,7 +6,7 @@
  *
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2016.12.09 18:38 created.
- * @copyright All rights reserved by Yonghwan, Noh.
+ * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
 #include "scm_context.h"
