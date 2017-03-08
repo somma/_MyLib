@@ -7,6 +7,12 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
+
+//	
+//	std
+//
+#include <random>
+
 #include "Win32Utils.h"
 
 #include <set>
@@ -39,6 +45,14 @@
 #pragma comment (lib, "Wtsapi32.lib")
 
 
+/// @brief	int type 랜덤값을 리턴한다.
+int get_random_int(_In_ int min, _In_ int max)
+{
+	std::random_device seed;
+	std::default_random_engine re(seed());
+	std::uniform_int_distribution<uint32_t> range(min, max);
+	return range(re);
+}
 
 
 /**----------------------------------------------------------------------------
@@ -50,7 +64,7 @@
     
     \endcode        
 -----------------------------------------------------------------------------*/
-LPCWSTR FT2Str(IN FILETIME& ft)
+ LPCWSTR FT2Str(IN FILETIME& ft)
 {
     static WCHAR	_time[32] = {0x00, };
 	SYSTEMTIME		st, stLocal;
@@ -1783,10 +1797,10 @@ SaveBinaryFile(
     IN PBYTE    Data
     )
 {
-    _ASSERT(NULL != Directory);
-    _ASSERT(NULL != FileName);
-    _ASSERT(0 < Size);
-    _ASSERT(NULL != Data);
+    _ASSERTE(NULL != Directory);
+    _ASSERTE(NULL != FileName);
+    _ASSERTE(0 < Size);
+    _ASSERTE(NULL != Data);
     if (NULL == Directory || NULL == FileName || 0 >= Size || NULL == Data)
     {
         return FALSE;
