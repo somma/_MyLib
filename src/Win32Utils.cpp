@@ -3610,7 +3610,7 @@ bool get_temp_dirA(_Out_ std::string& temp_dir)
 }
 
 /**
- * @brief	
+ * @brief	현재 모듈의 full path 를 구한다. 
  * @param	
  * @see		
  * @remarks	
