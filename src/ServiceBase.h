@@ -30,6 +30,7 @@ public:
     // which results in a call to the OnStart method in the service. This 
     // method blocks until the service has stopped.
     static BOOL Run(CServiceBase &service);
+	static BOOL RunEx(_In_ CServiceBase &service);
 
     // Service object constructor. The optional parameters (fCanStop, 
     // fCanShutdown and fCanPauseContinue) allow you to specify whether the 
@@ -74,7 +75,11 @@ protected:
     // system shutting down.
     virtual void OnShutdown();
 
-    // Set the service status and report the status to the SCM.
+	// 
+	// 
+	virtual void OnDeviceEvent(DWORD dwEventType, LPVOID lpEventData);
+
+	// Set the service status and report the status to the SCM.
     void SetServiceStatus(DWORD dwCurrentState, 
         DWORD dwWin32ExitCode = NO_ERROR, 
         DWORD dwWaitHint = 0);
@@ -90,11 +95,18 @@ private:
 
     // Entry point for the service. It registers the handler function for the 
     // service and starts the service.
-    static void WINAPI ServiceMain(DWORD dwArgc, LPWSTR *lpszArgv);
+    static void WINAPI ServiceMain(DWORD dwArgc, LPWSTR *pszArgv);
 
     // The function is called by the SCM whenever a control code is sent to 
     // the service.
     static void WINAPI ServiceCtrlHandler(DWORD dwCtrl);
+
+
+	static void WINAPI ServiceMainEx(DWORD dwArgc, LPWSTR *pszArgv);
+	static DWORD WINAPI ServiceCtrlHandlerEx(DWORD    dwControl,
+											 DWORD    dwEventType,
+											 LPVOID   lpEventData,
+											 LPVOID   lpContext);	
 
     // Start the service.
     void Start(DWORD dwArgc, PWSTR *pszArgv);
@@ -110,7 +122,7 @@ private:
 
     // The singleton service instance.
     static CServiceBase *s_service;
-
+	
     // The name of the service
     PWSTR m_name;
 
@@ -120,3 +132,7 @@ private:
     // The service status handle
     SERVICE_STATUS_HANDLE m_statusHandle;
 };
+
+
+
+

@@ -18,17 +18,21 @@
 
 #pragma region Includes
 #include "stdafx.h"
-#include "ServiceBase.h"
+#include <crtdbg.h>
 #include <assert.h>
 #include <strsafe.h>
+#include <Dbt.h>
+#include "ServiceBase.h"
+#include "log.h"
+
 #pragma endregion
 
 
 #pragma region Static Members
 
 // Initialize the singleton service instance.
-CServiceBase *CServiceBase::s_service = NULL;
-
+CServiceBase *CServiceBase::s_service = nullptr;
+static HDEVNOTIFY _device_notify_handle = nullptr;
 
 //
 //   FUNCTION: CServiceBase::Run(CServiceBase &)
@@ -63,6 +67,27 @@ BOOL CServiceBase::Run(CServiceBase &service)
     return StartServiceCtrlDispatcher(serviceTable);
 }
 
+//
+//	CServiceBase::Run(CServiceBase &service) 의 확장버전.
+//	Device change notification 을 받을 수 있는 서비스를 생성한다.
+// 
+BOOL CServiceBase::RunEx(_In_ CServiceBase &service)
+{
+	s_service = &service;
+
+	SERVICE_TABLE_ENTRY serviceTable[] =
+	{
+		{ service.m_name, ServiceMainEx },
+		{ NULL, NULL }
+	};
+
+	// Connects the main thread of a service process to the service control 
+	// manager, which causes the thread to be the service control dispatcher 
+	// thread for the calling process. This call returns when the service has 
+	// stopped. The process should simply terminate when the call returns.
+	return StartServiceCtrlDispatcher(serviceTable);
+}
+
 
 //
 //   FUNCTION: CServiceBase::ServiceMain(DWORD, PWSTR *)
@@ -74,13 +99,18 @@ BOOL CServiceBase::Run(CServiceBase &service)
 //   * dwArgc   - number of command line arguments
 //   * lpszArgv - array of command line arguments
 //
-void WINAPI CServiceBase::ServiceMain(DWORD dwArgc, PWSTR *pszArgv)
+void 
+WINAPI 
+CServiceBase::ServiceMain(
+	DWORD dwArgc, 
+	PWSTR *pszArgv
+	)
 {
     assert(s_service != NULL);
 
     // Register the handler function for the service
-    s_service->m_statusHandle = RegisterServiceCtrlHandler(
-        s_service->m_name, ServiceCtrlHandler);
+    s_service->m_statusHandle = RegisterServiceCtrlHandler(s_service->m_name, 
+														   ServiceCtrlHandler);
     if (s_service->m_statusHandle == NULL)
     {
         throw GetLastError();
@@ -125,6 +155,117 @@ void WINAPI CServiceBase::ServiceCtrlHandler(DWORD dwCtrl)
     case SERVICE_CONTROL_INTERROGATE: break;
     default: break;
     }
+}
+
+// 
+//	FUNCTION: CServiceBase::ServiceMainEx
+//
+void 
+WINAPI 
+CServiceBase::ServiceMainEx(
+	DWORD dwArgc, 
+	LPWSTR *pszArgv
+	)
+{
+	assert(s_service != NULL);
+
+	//
+	//	Register the handler function for the service	
+	//
+	s_service->m_statusHandle = RegisterServiceCtrlHandlerExW(s_service->m_name,
+															  ServiceCtrlHandlerEx,
+															  nullptr);
+	if (s_service->m_statusHandle == NULL)
+	{
+		throw GetLastError();
+	}
+
+	//
+	//	Register device notification
+	// 
+	_ASSERTE(nullptr == _device_notify_handle);
+	DEV_BROADCAST_DEVICEINTERFACE device_interface = { 0, };
+	device_interface.dbcc_size = sizeof(DEV_BROADCAST_DEVICEINTERFACE);
+	device_interface.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+
+	_device_notify_handle = RegisterDeviceNotification(
+								s_service->m_statusHandle,													   
+								&device_interface,
+								DEVICE_NOTIFY_SERVICE_HANDLE | 
+								DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
+	if (NULL == _device_notify_handle)
+	{
+		log_err "RegisterDeviceNotification() failed. gle=%u",
+			GetLastError()
+			log_end;
+		throw GetLastError();
+	}
+
+	// Start the service.
+	s_service->Start(dwArgc, pszArgv);
+}
+
+//
+//	FUNCTION: CServiceBase::ServiceCtrlHandlerEx
+//
+DWORD 
+WINAPI 
+CServiceBase::ServiceCtrlHandlerEx(
+	DWORD dwControl,
+	DWORD dwEventType,
+	LPVOID lpEventData,
+	LPVOID lpContext
+	)
+{
+	UNREFERENCED_PARAMETER(lpContext);
+	switch (dwControl)
+	{
+	case SERVICE_CONTROL_STOP: 		
+		// 
+		//	Unregister device notification
+		// 
+		if (nullptr != _device_notify_handle)
+		{
+			UnregisterDeviceNotification(_device_notify_handle);
+		}
+		
+		s_service->Stop(); 
+		break;
+
+	case SERVICE_CONTROL_PAUSE: 
+		s_service->Pause(); 
+		break;
+
+	case SERVICE_CONTROL_CONTINUE: 
+		s_service->Continue(); 
+		break;
+
+	case SERVICE_CONTROL_SHUTDOWN: 
+		s_service->Shutdown(); 
+		break;
+
+	case SERVICE_CONTROL_INTERROGATE: 
+		break;
+
+	case SERVICE_CONTROL_DEVICEEVENT: 
+	{
+		//
+		//	dwEventType
+		//		DBT_DEVICEARRIVAL
+		//		DBT_DEVICEREMOVECOMPLETE
+		//		DBT_DEVICEQUERYREMOVE
+		//		DBT_DEVICEQUERYREMOVEFAILED
+		//		DBT_DEVICEREMOVEPENDING
+		//		DBT_CUSTOMEVENT
+		// 
+		s_service->OnDeviceEvent(dwEventType, lpEventData); 
+		break;
+	}
+	default: 
+		break;
+	}
+
+	return NO_ERROR;
 }
 
 #pragma endregion
@@ -192,7 +333,7 @@ CServiceBase::~CServiceBase(void)
 #pragma endregion
 
 
-#pragma region Service Start, Stop, Pause, Continue, and Shutdown
+#pragma region Service Start, Stop, Pause, Continue, Shutdown and DeviceChange
 
 //
 //   FUNCTION: CServiceBase::Start(DWORD, PWSTR *)
@@ -255,6 +396,8 @@ void CServiceBase::Start(DWORD dwArgc, PWSTR *pszArgv)
 //
 void CServiceBase::OnStart(DWORD dwArgc, PWSTR *pszArgv)
 {
+	UNREFERENCED_PARAMETER(dwArgc);
+	UNREFERENCED_PARAMETER(pszArgv);
 }
 
 
@@ -461,10 +604,34 @@ void CServiceBase::OnShutdown()
 {
 }
 
+//	
+//	FUNCTION: CServiceBase::OnDeviceEvent
+// 
+//	PURPOSE: RegisterServiceCtrlHandlerEx( _handler_ex ) callback의 dwControlCode 값이 
+//	SERVICE_CONTROL_DEVICEEVENT 인 경우 호출되는 가상함수.
+//	
+//	가능한 dwEventType 은 아래와 같다. 
+//	https://msdn.microsoft.com/en-us/library/windows/desktop/ms683241(v=vs.85).aspx
+// 
+//		DBT_DEVICEARRIVAL
+//		DBT_DEVICEREMOVECOMPLETE
+//		DBT_DEVICEQUERYREMOVE
+//		DBT_DEVICEQUERYREMOVEFAILED
+//		DBT_DEVICEREMOVEPENDING
+//		DBT_CUSTOMEVENT
+// 
+void CServiceBase::OnDeviceEvent(DWORD dwEventType, LPVOID lpEventData)
+{	
+	UNREFERENCED_PARAMETER(dwEventType);
+	UNREFERENCED_PARAMETER(lpEventData);
+}
+
+
 #pragma endregion
 
 
 #pragma region Helper Functions
+
 
 //
 //   FUNCTION: CServiceBase::SetServiceStatus(DWORD, DWORD, DWORD)
