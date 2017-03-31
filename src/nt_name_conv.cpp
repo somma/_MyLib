@@ -65,7 +65,7 @@ std::wstring NameConverter::get_file_name(_In_ const wchar_t* file_name)
             return std::wstring(file_name);
         }
 
-        cch_canon_file = (cch_file_name - 11) + windows_dir.size();
+        cch_canon_file = (cch_file_name - 11) + (uint32_t)windows_dir.size();
         canon_file = (wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t));
         if (NULL == canon_file) return std::wstring(file_name);
 
@@ -85,7 +85,7 @@ std::wstring NameConverter::get_file_name(_In_ const wchar_t* file_name)
         }
         windows_dir += L"\\";   // `c:\windows` => `c:\windows\\`
 
-        cch_canon_file = cch_file_name + windows_dir.size();
+        cch_canon_file = cch_file_name + (uint32_t)windows_dir.size();
         canon_file = (wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t));
         if (NULL == canon_file) return std::wstring(file_name);
 
@@ -114,7 +114,7 @@ std::wstring NameConverter::get_file_name(_In_ const wchar_t* file_name)
                     return std::wstring(file_name);
                 }
 
-                cch_canon_file = (cch_file_name - 8) + windows_dir.size();
+                cch_canon_file = (cch_file_name - 8) + (uint32_t)windows_dir.size();
                 canon_file = (wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t));
                 if (NULL == canon_file) return std::wstring(file_name);
 

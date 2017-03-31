@@ -21,6 +21,8 @@
 #include "nt_name_conv.h"
 #include "crc64.h"
 
+bool test_convert_file_time();
+
 // _test_ppl.cpp
 extern bool test_ppl();
 
@@ -218,16 +220,10 @@ int _tmain(int argc, _TCHAR* argv[])
     //con_info "wstr.size() = %u, wcslen(wstr.c_str() = %u",
     //    wstr.size(), wcslen(wstr.c_str())
     //    log_end;
+	
+	assert_bool(true, test_convert_file_time);
 
-
-
-    //FILETIME ft1, ft2;
-    //GetSystemTimeAsFileTime(&ft1);
-    //Sleep(1000);
-    //GetSystemTimeAsFileTime(&ft2);
-    //con_info "delta = %u", file_time_delta_sec(ft2, ft1) con_end;
-
-	assert_bool(true, test_ppl);
+	//assert_bool(true, test_ppl);
 
 	//assert_bool(true, test_find_and_replace);
 	//assert_bool(true, test_file_io_helper);
@@ -1995,4 +1991,85 @@ bool test_crc64()
         (unsigned long long) crc64(0, (unsigned char*)"123456789", 9)
         log_end;
     return true;
+}
+
+/// 
+bool test_convert_file_time()
+{
+	//   FILETIME ft1, ft2, ft3;
+	//   GetSystemTimeAsFileTime(&ft1);
+	//   Sleep(1000);
+	//   GetSystemTimeAsFileTime(&ft2);
+	//   con_info "delta = %u", file_time_delta_sec(ft2, ft1) con_end;
+
+	//uint64_t file_time_int = file_time_to_int(ft1);
+	//int_to_file_time(file_time_int, &ft3);
+	//_ASSERTE(file_time_int == file_time_to_int(ft3));
+
+
+
+	//
+	//	날짜를 월 계산해서 증가시키기 (SYSTEMTIME 을 직접 고치면 안됨)
+	// 
+	SYSTEMTIME system_time_one;
+	SYSTEMTIME system_time_two;
+
+	GetSystemTime(&system_time_one);
+	system_time_two = system_time_one;
+
+	std::string st_one = sys_time_to_str(&system_time_one, false);
+	log_info "st_one=%s", st_one.c_str() log_end;
+
+	system_time_two.wDay++;
+	std::string st_two = sys_time_to_str(&system_time_two, false);
+	log_info "st_two=%s", st_two.c_str() log_end;
+
+	system_time_two.wDay++;
+	st_two = sys_time_to_str(&system_time_two, false);
+	log_info "st_two=%s", st_two.c_str() log_end;
+
+	system_time_two.wDay++;
+	st_two = sys_time_to_str(&system_time_two, false);
+	log_info "st_two=%s", st_two.c_str() log_end;
+
+	system_time_two.wDay++;
+	st_two = sys_time_to_str(&system_time_two, false);
+	log_info "st_two=%s", st_two.c_str() log_end;
+
+	log_info ".... " log_end;
+
+
+	//
+	//	날짜를 월 계산해서 증가시키기 
+	//	
+	//	FILETIME 으로 변환한 후 값을 더해, SYSTEMTIME 으로 변환해주면 됨
+	// 
+
+	FILETIME file_time;
+	FILETIME file_time_added;
+
+	SystemTimeToFileTime(&system_time_one, &file_time);
+	st_two = file_time_to_str(&file_time, false);
+	log_info "ft_one=%s", st_two.c_str() log_end;
+
+	file_time_added = add_day_to_file_time(&file_time, 1);
+	st_two = file_time_to_str(&file_time_added, false);
+	log_info "ft_one=%s", st_two.c_str() log_end;
+
+	file_time_added = add_day_to_file_time(&file_time_added, 1);
+	st_two = file_time_to_str(&file_time_added, false);
+	log_info "ft_one=%s", st_two.c_str() log_end;
+
+	file_time_added = add_day_to_file_time(&file_time_added, 1);
+	st_two = file_time_to_str(&file_time_added, false);
+	log_info "ft_one=%s", st_two.c_str() log_end;
+
+	file_time_added = add_day_to_file_time(&file_time_added, 1);
+	st_two = file_time_to_str(&file_time_added, false);
+	log_info "ft_one=%s", st_two.c_str() log_end;
+
+	_ASSERTE(4 == file_time_delta_day(&file_time_added, &file_time));
+
+
+	return true;
 }

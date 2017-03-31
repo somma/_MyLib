@@ -1251,12 +1251,12 @@ void CppSQLite3DB::close()
 }
 
 
-CppSQLite3Statement CppSQLite3DB::compileStatement(const char* szSQL)
+PCppSQLite3Statement CppSQLite3DB::compileStatement(const char* szSQL)
 {
     checkDB();
 
     sqlite3_stmt* pVM = compile(szSQL);
-    return CppSQLite3Statement(mpDB, pVM);
+    return new CppSQLite3Statement(mpDB, pVM);
 }
 
 

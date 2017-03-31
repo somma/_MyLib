@@ -76,8 +76,8 @@ bool test_NtCreateFile()
         L"\\Device\\HarddiskVolume1\\Program Files\\Internet Explorer\\iexplore.exe",
         L"\\Device\\HarddiskVolume1\\Users\\vmuser\\AppData\\Roaming\\Microsoft\\Windows\\Cookies\\Low\\QEO7K0HI.txt",
         L"\\Device\\HarddiskVolume1\\Users\\vmuser\\AppData\\Local\\Microsoft\\Windows\\Temporary Internet Files\\Low\\Content.IE5\\3IIO9DKD\\BANDIZIP-SETUP-KR[1].EXE",
-        L"\\Device\\HarddiskVolume1\\work._sync\processhacker-2.36-src\phlib\kph.c",
-        L"\\Device\\HarddiskVolume0\\work._sync\processhacker-2.36-src\phlib\kph.c",
+        L"\\Device\\HarddiskVolume1\\work._sync\\processhacker-2.36-src\\phlib\\kph.c",
+        L"\\Device\\HarddiskVolume0\\work._sync\\processhacker-2.36-src\\phlib\\kph.c",
         L"\\Device\\HarddiskVolume1",
         L"\\Device\\HarddiskVolume0",
         L"\\Device\\DeviceApi"

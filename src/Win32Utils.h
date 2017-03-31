@@ -112,7 +112,11 @@ int get_random_int(_In_ int min, _In_ int max);
 // FILETIME 관련 매크로 (based on 100-nanosecond intervals)
 // 1 nano sec = 1/1,000,000,000 (1e-9) sec 
 // 100 nonosecond = 1/10,000,000 (1e-7) sec
-#define _ft_sec  ((uint64_t) 10000000)
+#define _file_time_to_sec  ((uint64_t) 10000000)
+#define _file_time_to_min	(_file_time_to_sec * 60)
+#define _file_time_to_hour	(_file_time_to_min * 60)
+#define _file_time_to_day	(_file_time_to_hour * 24)
+
 
 
 #ifndef _FAT_TEIME_DEFINDED_
@@ -128,10 +132,19 @@ typedef struct _FATTIME
 LPCWSTR FT2Str(IN FILETIME& ft);
 LPCWSTR FAT2Str(IN FATTIME& fat);
 
-uint64_t file_time_to_int(FILETIME& ft);
-uint64_t file_time_delta_sec(FILETIME& ftl, FILETIME& ftr);
-std::string file_time_to_str(_In_ FILETIME& file_time, _In_ bool localtime);
-std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time, _In_ bool localtime);
+
+uint64_t file_time_to_int(_In_ const PFILETIME file_time);
+void int_to_file_time(_In_ uint64_t file_time_int, _Out_ PFILETIME const file_time);
+
+int64_t file_time_delta_sec(_In_ const PFILETIME ftl, _In_ const PFILETIME ftr);
+int64_t file_time_delta_day(_In_ const PFILETIME ftl, _In_ const PFILETIME ft2);
+FILETIME add_day_to_file_time(_In_ const PFILETIME file_time, _In_ int32_t day);
+
+std::string file_time_to_str(_In_ const PFILETIME file_time, _In_ bool localtime);
+std::string sys_time_to_str(_In_ const PSYSTEMTIME sys_time, _In_ bool localtime);
+
+
+
 
 
 /******************************************************************************
@@ -463,6 +476,7 @@ find_and_replace_string_exw(
 /******************************************************************************
  * RAII (Resource Acquisition Is Initialization ), raii
 ******************************************************************************/
+#pragma todo("unique_ptr 로 변경하는것을 고려해보자.")
 /*	ex)
 	raii_handle map_handle(
 					CreateFileMapping(file_handle, NULL, PAGE_READONLY, 0, 1, NULL), 
@@ -502,10 +516,6 @@ typedef boost::shared_ptr< boost::remove_pointer<char*>::type > raii_char_ptr;
 typedef boost::shared_ptr< boost::remove_pointer<void*>::type > raii_void_ptr;
 void raii_free(_In_ void* void_ptr);
 void raii_UnmapViewOfFile(_In_ void* void_ptr);
-
-
-
-
 
 
 

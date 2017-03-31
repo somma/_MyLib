@@ -243,7 +243,7 @@ private:
 };
 
 
-class CppSQLite3Statement
+typedef class CppSQLite3Statement
 {
 public:
 
@@ -279,7 +279,7 @@ private:
 
     sqlite3* mpDB;
     sqlite3_stmt* mpVM;
-};
+} *PCppSQLite3Statement;
 
 
 class CppSQLite3DB
@@ -305,7 +305,7 @@ public:
 
     CppSQLite3Table getTable(const char* szSQL);
 
-    CppSQLite3Statement compileStatement(const char* szSQL);
+    PCppSQLite3Statement compileStatement(const char* szSQL);
 
     sqlite_int64 lastRowId() const;
 

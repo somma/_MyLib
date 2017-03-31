@@ -90,15 +90,7 @@ int get_random_int(_In_ int min, _In_ int max)
 	return _time;
 }
 
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
+/// @brief	
 LPCWSTR FAT2Str(IN FATTIME& fat)
 {
     FILETIME	ft={0};
@@ -112,37 +104,90 @@ LPCWSTR FAT2Str(IN FATTIME& fat)
 }
 
 /// @brief  
-uint64_t file_time_to_int(FILETIME& ft) 
+uint64_t file_time_to_int(_In_ const PFILETIME file_time)
 {
-    return (uint64_t)((LARGE_INTEGER*)&ft)->QuadPart; 
+	return ((LARGE_INTEGER*)file_time)->QuadPart;
 }
 
-/// @brief  
-uint64_t file_time_delta_sec(FILETIME& ftl, FILETIME& ftr) 
+/// @brief
+void 
+int_to_file_time(
+	_In_ uint64_t file_time_int, 
+	_Out_ PFILETIME const file_time
+	)
+{
+	_ASSERTE(nullptr != file_time);
+	if (nullptr == file_time) return;
+
+	file_time->dwLowDateTime = ((PLARGE_INTEGER)&file_time_int)->LowPart;
+	file_time->dwHighDateTime = ((PLARGE_INTEGER)&file_time_int)->HighPart;
+}
+
+/// @brief  ftl - ftr 값을 초단위로 리턴한다. 
+int64_t 
+file_time_delta_sec(
+	_In_ const PFILETIME ftl, 
+	_In_ const PFILETIME ftr
+	)
 {
     // return ((file_time_to_int(ftl) - file_time_to_int(ftr)) * 1e-7); 
-	return ((file_time_to_int(ftl) - file_time_to_int(ftr)) / _ft_sec); 
+	return ((file_time_to_int(ftl) - file_time_to_int(ftr)) / _file_time_to_sec);
+}
+
+/// @brief	ftl - ftl2 값을 일단위로 리턴한다. 
+int64_t 
+file_time_delta_day(
+	_In_ const PFILETIME ftl, 
+	_In_ const PFILETIME ft2
+	)
+{
+	return ((file_time_to_int(ftl) - file_time_to_int(ft2)) / _file_time_to_day);
+}
+
+/// @brief file_time 에 day 만큼 더한 파일타임을 리턴한다.
+FILETIME 
+add_day_to_file_time(
+	_In_ const PFILETIME file_time, 
+	_In_ int32_t day
+	)
+{
+	if (day == 0) return *file_time;
+
+	uint64_t file_time_uint64_t = file_time_to_int(file_time) + (day * _file_time_to_day);
+
+	FILETIME added_file_time;
+	int_to_file_time(file_time_uint64_t, &added_file_time);
+	return added_file_time;
 }
 
 /// @brief  FILETIME to `yyyy-mm-dd hh:mi:ss` string representation.
-std::string file_time_to_str(_In_ FILETIME& file_time, _In_ bool localtime)
+std::string 
+file_time_to_str(
+	_In_ const PFILETIME file_time, 
+	_In_ bool localtime
+	)
 {
     SYSTEMTIME utc;
-    FileTimeToSystemTime(&file_time, &utc);    
-    return sys_time_to_str(utc, localtime);
+    FileTimeToSystemTime(file_time, &utc);    
+    return sys_time_to_str(&utc, localtime);
 }
 
-/// @brief  SYSTEMTIME to `yyyy-mm-dd hh:mi:ss` string representation.
-std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time, _In_ bool localtime)
+/// @brief  SYSTEMTIME (UTC) to `yyyy-mm-dd hh:mi:ss` string representation.
+/// 
+std::string 
+sys_time_to_str(
+	_In_ const PSYSTEMTIME sys_time, 
+	_In_ bool localtime
+	)
 {
     char buf[24];
 
     SYSTEMTIME local;
-    PSYSTEMTIME time = &sys_time;
+    PSYSTEMTIME time = sys_time;
 
     if (true == localtime)
     {
-        SystemTimeToTzSpecificLocalTime(NULL, &sys_time, &local);
+        SystemTimeToTzSpecificLocalTime(NULL, sys_time, &local);
         time = &local;
     }
 
@@ -157,6 +202,7 @@ std::string sys_time_to_str(_In_ SYSTEMTIME& sys_time, _In_ bool localtime)
                     );
     return std::string(buf);
 }
+
 
 
 /**
