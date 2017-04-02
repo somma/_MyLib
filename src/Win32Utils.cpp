@@ -164,23 +164,38 @@ add_day_to_file_time(
 std::string 
 file_time_to_str(
 	_In_ const PFILETIME file_time, 
-	_In_ bool localtime
+	_In_ bool localtime,
+	_In_ bool show_misec
 	)
 {
     SYSTEMTIME utc;
     FileTimeToSystemTime(file_time, &utc);    
-    return sys_time_to_str(&utc, localtime);
+    return sys_time_to_str(&utc, localtime, show_misec);
 }
+
+/// @brief  FILETIME to `yyyy-mm-dd hh:mi:ss` string representation.
+std::string 
+file_time_to_str(
+	_In_ uint64_t file_time,
+	_In_ bool localtime,
+	_In_ bool show_misec
+	)
+{
+	FILETIME ft;
+	int_to_file_time(file_time, &ft);
+	return file_time_to_str(&ft, localtime, show_misec);
+}	
 
 /// @brief  SYSTEMTIME (UTC) to `yyyy-mm-dd hh:mi:ss` string representation.
 /// 
 std::string 
 sys_time_to_str(
 	_In_ const PSYSTEMTIME sys_time, 
-	_In_ bool localtime
+	_In_ bool localtime, 
+	_In_ bool show_misec
 	)
 {
-    char buf[24];
+    char buf[32];
 
     SYSTEMTIME local;
     PSYSTEMTIME time = sys_time;
@@ -191,15 +206,29 @@ sys_time_to_str(
         time = &local;
     }
 
-    StringCbPrintfA(buf, sizeof(buf),
-                    "%04u-%02u-%02u %02u:%02u:%02u",
-                    time->wYear,
-                    time->wMonth,
-                    time->wDay,
-                    time->wHour,
-                    time->wMinute,
-                    time->wSecond
-                    );
+	if (!show_misec)
+	{
+		StringCbPrintfA(buf, sizeof(buf),
+						"%04u-%02u-%02u %02u:%02u:%02u",
+						time->wYear,
+						time->wMonth,
+						time->wDay,
+						time->wHour,
+						time->wMinute,
+						time->wSecond);
+	}
+	else
+	{
+		StringCbPrintfA(buf, sizeof(buf),
+						"%04u-%02u-%02u %02u:%02u:%02u %u",
+						time->wYear,
+						time->wMonth,
+						time->wDay,
+						time->wHour,
+						time->wMinute,
+						time->wSecond, 
+						time->wMilliseconds);
+	}
     return std::string(buf);
 }
 
@@ -4472,30 +4501,45 @@ BOOL GetTimeStringW(IN std::wstring& TimeString)
 }
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)
-/// @brief  
-std::wstring ipv4_to_str(_In_ in_addr& ipv4)
-{
-    wchar_t ipv4_buf[16 + 1] = { 0 };
-    if (NULL == InetNtopW(AF_INET, &ipv4, ipv4_buf, sizeof(ipv4_buf)))
-    {
-        log_err "InetNtopW( ) failed. wsa_gle = %u", WSAGetLastError() log_end;
-        return std::wstring(L"0.0.0.0");
-    }
 
-    return std::wstring(ipv4_buf);
+///	@brief	
+std::string ipv4_to_str(_In_ uint32_t ip_netbyte_order)
+{
+	in_addr ia;
+	ia.s_addr = ip_netbyte_order;
+	return ipv4_to_str(ia);
+}
+
+/// @brief 
+std::string ipv6_to_str(_In_ uint64_t ip_netbyte_order)
+{
+	in_addr6 ia;
+	RtlCopyMemory(ia.s6_addr, &ip_netbyte_order, sizeof(ip_netbyte_order));
+	return ipv6_to_str(ia);
 }
 
 /// @brief  
-std::wstring ipv6_to_str(_In_ in6_addr& ipv6)
+std::string ipv4_to_str(_In_ in_addr& ipv4)
 {
-    wchar_t ipv6_buf[46 + 1] = { 0 };
-    if (NULL == InetNtopW(AF_INET6, &ipv6, ipv6_buf, sizeof(ipv6_buf)))
+    char ipv4_buf[16 + 1] = { 0 };
+    if (NULL == InetNtopA(AF_INET, &ipv4, ipv4_buf, sizeof(ipv4_buf)))
     {
-        log_err "InetNtopW( ) failed. wsa_gle = %u", WSAGetLastError() log_end;
-        return std::wstring(L"0.0.0.0");
+        log_err "InetNtopA( ) failed. wsa_gle = %u", WSAGetLastError() log_end;
+        return std::string("0.0.0.0");
     }
+    return std::string(ipv4_buf);
+}
 
-    return std::wstring(ipv6_buf);
+/// @brief  
+std::string ipv6_to_str(_In_ in6_addr& ipv6)
+{
+    char ipv6_buf[46 + 1] = { 0 };
+    if (NULL == InetNtopA(AF_INET6, &ipv6, ipv6_buf, sizeof(ipv6_buf)))
+    {
+        log_err "InetNtopA( ) failed. wsa_gle = %u", WSAGetLastError() log_end;
+        return std::string("0.0.0.0");
+    }
+    return std::string(ipv6_buf);
 }
 
 /// @brief  

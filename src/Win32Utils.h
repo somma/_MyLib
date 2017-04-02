@@ -59,6 +59,23 @@ typedef struct _continuous_memory
 /// @brief  val 변수의 pos 번째 비트가 1 이면 1 아니면 0
 #define _check_bit(val, pos)  (val & (1 << pos))
 
+/// @brief	from ntifs.h
+#ifndef FlagOn
+#define FlagOn(_F,_SF)        ((_F) & (_SF))
+#endif
+
+#ifndef BooleanFlagOn
+#define BooleanFlagOn(F,SF)   ((BOOLEAN)(((F) & (SF)) != 0))
+#endif
+
+#ifndef SetFlag
+#define SetFlag(_F,_SF)       ((_F) |= (_SF))
+#endif
+
+#ifndef ClearFlag
+#define ClearFlag(_F,_SF)     ((_F) &= ~(_SF))
+#endif
+
 
 /**	-----------------------------------------------------------------------
 	빌드시에 TODO 메세지를 출력하기 위한 매크로 
@@ -140,8 +157,9 @@ int64_t file_time_delta_sec(_In_ const PFILETIME ftl, _In_ const PFILETIME ftr);
 int64_t file_time_delta_day(_In_ const PFILETIME ftl, _In_ const PFILETIME ft2);
 FILETIME add_day_to_file_time(_In_ const PFILETIME file_time, _In_ int32_t day);
 
-std::string file_time_to_str(_In_ const PFILETIME file_time, _In_ bool localtime);
-std::string sys_time_to_str(_In_ const PSYSTEMTIME sys_time, _In_ bool localtime);
+std::string file_time_to_str(_In_ const PFILETIME file_time, _In_ bool localtime, _In_ bool show_misec = false);
+std::string file_time_to_str(_In_ uint64_t file_time, _In_ bool localtime, _In_ bool show_misec = false);
+std::string sys_time_to_str(_In_ const PSYSTEMTIME sys_time, _In_ bool localtime, _In_ bool show_misec = false);
 
 
 
@@ -324,8 +342,17 @@ bool rstrnicmpa(_In_ const char* src, _In_ const char* fnd);
 bool lstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd);
 bool lstrnicmpa(_In_ const char* src, _In_ const char* fnd);
 
+inline void clear_str_stream_w(std::wstringstream& stream)
+{
+	stream.str(L"");
+	stream.clear();
+}
 
-
+inline void clear_str_stream_a(std::stringstream& stream)
+{
+	stream.str("");
+	stream.clear();
+}
 
 
 //> T = std::string || std::wstring
@@ -533,8 +560,12 @@ BOOL	GetTimeStringA(OUT std::string& TimeString);
 BOOL	GetTimeStringW(IN std::wstring& TimeString);
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)
-std::wstring ipv4_to_str(_In_ in_addr& ipv4);
-std::wstring ipv6_to_str(_In_ in6_addr& ipv6);
+std::string ipv4_to_str(_In_ uint32_t ip_netbyte_order);
+std::string ipv6_to_str(_In_ uint64_t ip_netbyte_order);
+
+std::string ipv4_to_str(_In_ in_addr& ipv4);
+std::string ipv6_to_str(_In_ in6_addr& ipv6);
+
 bool str_to_ipv4(_In_ const wchar_t* ipv4, _Out_ in_addr& ipv4_addr);
 bool str_to_ipv6(_In_ const wchar_t* ipv6, _Out_ in6_addr& ipv6_addr);
 #endif
