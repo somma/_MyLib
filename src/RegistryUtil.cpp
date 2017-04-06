@@ -46,14 +46,14 @@ RUOpenKey(
     bool ReadOnly
     )
 {
-    HKEY hSubKey = NULL;
+    HKEY hSubKey = nullptr;
     REGSAM sam = (true == ReadOnly) ? KEY_READ : KEY_ALL_ACCESS;
 
     DWORD ret = RegOpenKeyExW(RootKey, SubKey, 0, sam, &hSubKey);
     if (ERROR_SUCCESS != ret)
     {
         log_err "RegOpenKeyExW(%ws) failed, ret = %u", SubKey, ret log_end        
-        return NULL;
+        return nullptr;
     }
 
     return hSubKey;
@@ -122,129 +122,78 @@ RUCreateKey(
     }    
 }
 
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param      RootKey     HKEY_CLASSES_ROOT
-                            HKEY_CURRENT_CONFIG
-                            HKEY_CURRENT_USER
-                            HKEY_LOCAL_MACHINE
-                            HKEY_USERS
-				SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-							'\' 로 시작하면 안됨
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
 DWORD 
 RUReadDword(
-    HKEY RootKey,
-    const wchar_t* SubKey,
-    const wchar_t* ValueName, 
-    DWORD DefaultValue
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
+	_In_ DWORD DefaultValue
     )
 {
+	_ASSERTE(nullptr != value_name);
+	_ASSERTE(nullptr != key_handle);
+	if (nullptr == key_handle || nullptr == value_name) return DefaultValue;
+
     DWORD value = DefaultValue;
     DWORD value_size = sizeof(value);
 
-    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, true);
-    if (NULL == sub_key_handle)
-    {
-        log_err "RUOpenKey(%ws) failed", SubKey log_end
-        return DefaultValue;
-    }
-
-    // assign key handle
-    //
-    RegHandle rh(sub_key_handle);
-
-    DWORD ret = RegQueryValueExW(sub_key_handle, ValueName, NULL, NULL, (PBYTE)&value, &value_size);
+    DWORD ret = RegQueryValueExW(key_handle, 
+								 value_name, 
+								 NULL, 
+								 NULL, 
+								 (PBYTE)&value, 
+								 &value_size);
     if (ERROR_SUCCESS != ret)
     {
-        log_err "RegQueryValueExW(%ws) failed, ret = %u", SubKey, ret log_end
+		log_err "RegQueryValueExW(%ws) failed, ret = %u",
+			value_name,
+			ret
+			log_end;
         return DefaultValue;
     }
 
     return value;
 }
 
-
-/** ---------------------------------------------------------------------------
-    \brief  
-    \param      RootKey     HKEY_CLASSES_ROOT
-                            HKEY_CURRENT_CONFIG
-                            HKEY_CURRENT_USER
-                            HKEY_LOCAL_MACHINE
-                            HKEY_USERS
-				SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-							'\' 로 시작하면 안됨
-    \return         
-    \code
-    \endcode        
------------------------------------------------------------------------------*/
 bool 
 RUWriteDword(
-    HKEY RootKey,
-    const wchar_t* SubKey,
-    const wchar_t* ValueName, 
-    DWORD Value
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,	
+    _In_ DWORD value
     )
 {
-    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
-    if (NULL == sub_key_handle)
-    {
-        log_err "RUOpenKey(%ws) failed", SubKey log_end        
-        return false;
-    }
+	_ASSERTE(nullptr != key_handle); 
+	_ASSERTE(nullptr != value_name);	
+	if (nullptr == key_handle || nullptr == value_name) return false;
 
-    // assign key handle
-    //
-    RegHandle rh(sub_key_handle);
-
-    DWORD ret = RegSetValueExW(sub_key_handle, ValueName, 0, REG_DWORD, (PBYTE)&Value, sizeof(DWORD));
+    DWORD ret = RegSetValueExW(key_handle, 
+							   value_name, 
+							   0, 
+							   REG_DWORD, 
+							   (PBYTE)&value, 
+							   sizeof(DWORD));
     if (ERROR_SUCCESS != ret)
     {
-        log_err "RegSetValueExW(%ws) failed, ret = %u", ValueName, ret log_end
+		log_err "RegSetValueExW(%ws) failed, ret = %u",
+			value_name,
+			ret
+			log_end;
         return false;
     }
 
     return true;
 }
 
-/**
- * @brief	
- * @param	RootKey     HKEY_CLASSES_ROOT
-                            HKEY_CURRENT_CONFIG
-                            HKEY_CURRENT_USER
-                            HKEY_LOCAL_MACHINE
-                            HKEY_USERS
-			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-						'\' 로 시작하면 안됨
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
 bool
 RUReadString(
-    IN HKEY				RootKey,
-    IN const wchar_t*   SubKey,
-    IN const wchar_t* 	ValueName,
-	OUT std::wstring&	Value
+    _In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
+	_Out_ std::wstring& value
     )
 {
-    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, true);
-    if (NULL == sub_key_handle)
-    {
-        log_err "RUOpenKey(%ws) failed", SubKey log_end
-        return false;
-    }
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle || nullptr == value_name) return false;
 
-    // assign key handle
-    //
-    RegHandle rh(sub_key_handle);
     void* old = NULL;	
     DWORD cbValue = 1024;
     wchar_t* buffer = (PWCHAR) malloc(cbValue);
@@ -252,8 +201,8 @@ RUReadString(
     RtlZeroMemory(buffer, cbValue);
 
     DWORD ret = RegQueryValueExW(
-                        sub_key_handle, 
-                        ValueName, 
+                        key_handle,
+                        value_name, 
                         NULL, 
                         NULL, 
                         (LPBYTE) buffer, 
@@ -267,16 +216,14 @@ RUReadString(
         buffer = (PWCHAR) realloc(buffer, cbValue);
         if (NULL == buffer)
         {
-            free(old); 
-
-            cbValue = 0;
-            return false;
+            free(old); cbValue = 0;
+			return false;
         }
 		RtlZeroMemory(buffer, cbValue);
 
         ret = RegQueryValueExW(
-                        sub_key_handle, 
-                        ValueName, 
+                        key_handle, 
+                        value_name, 
                         NULL, 
                         NULL, 
                         (LPBYTE) buffer, 
@@ -286,204 +233,139 @@ RUReadString(
 
     if (ERROR_SUCCESS != ret)
     {
-        // Value 가 없는 경우
-        //
-        //log_err "RegQueryValueExW(%ws) failed, ret = %u", ValueName, ret log_end
+		log_err "RegQueryValueExW(%ws) failed, ret = %u",
+			value_name,
+			ret
+			log_end;
         free(buffer); buffer=NULL;
         return false;    
     }
     
 	// buffer -> wstring 
-	Value = buffer;
+	value = buffer;
 	free(buffer); buffer = NULL;
     return true;
 }
 
-/**
- * @brief	SubKey\ValueName 문자열 Value 를 생성한다. 만일 SubKey 가 존재하지 않는 다면 생성하고, 값을 생성한다.
- * @param	RootKey     HKEY_CLASSES_ROOT
-                            HKEY_CURRENT_CONFIG
-                            HKEY_CURRENT_USER
-                            HKEY_LOCAL_MACHINE
-                            HKEY_USERS
-			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-						'\' 로 시작하면 안됨
-			cbValue		null 을 포함하는 문자열의 바이트 사이즈
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
 bool
 RUSetString(
-    HKEY RootKey,
-    const wchar_t* SubKey,
-    const wchar_t* ValueName,
-    const wchar_t* Value,	// byte buffer
-    DWORD cbValue			// count byte
+    _In_ HKEY key_handle,	
+	_In_ const wchar_t* value_name,
+	_In_ const wchar_t* value
     )
-{
-    HKEY sub_key_handle = RUCreateKey(RootKey, SubKey, false);
-    if (NULL == sub_key_handle)
-    {
-        log_err "RUCreateKey(%ws) failed", SubKey log_end        
-        return false;
-    }
-
-    // assign key handle
-    //
-    RegHandle rh(sub_key_handle);
-
-    DWORD ret = RegSetValueExW(sub_key_handle,
-							   ValueName, 
+{    
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != value_name);
+	_ASSERTE(nullptr != value);
+	if (nullptr == key_handle || nullptr == value_name || nullptr == value) return false;
+	
+    DWORD ret = RegSetValueExW(key_handle,
+							   value_name, 
 							   0, 
 							   REG_SZ, 
-							   (LPBYTE)Value, cbValue);
+							   (LPBYTE)value, 
+							   static_cast<uint32_t>(((wcslen(value) + 1) * sizeof(wchar_t))) );
     if (ERROR_SUCCESS != ret)
     {
-        //log_err "RegSetValueExW(%ws) failed, ret = %u", ValueName, ret log_end
-        return false;
+		log_err "RegSetValueExW(%ws) failed, ret = %u",
+			value_name,
+			ret
+			log_end;
+		return false;
     }
 
     return true;
 }
 
-/**
- * @brief	
- * @param	RootKey     HKEY_CLASSES_ROOT
-                            HKEY_CURRENT_CONFIG
-                            HKEY_CURRENT_USER
-                            HKEY_LOCAL_MACHINE
-                            HKEY_USERS
-			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-						'\' 로 시작하면 안됨
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
 bool
 RUSetExpandString(
-    HKEY RootKey,
-    const wchar_t* SubKey,
-    const wchar_t* value_name,
-    const wchar_t* value,           // byte buffer
-    DWORD cbValue          // count byte
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
+	_In_ const wchar_t* value,	// byte buffer
+	_In_ DWORD cbValue			// count byte
     )
 {
-    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
-    if (NULL == sub_key_handle)
-    {
-        log_err "RUOpenKey(%ws) failed", SubKey log_end
-        return false;
-    }
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != value_name);
+	_ASSERTE(nullptr != value);
+	if (nullptr == key_handle || nullptr == value_name || nullptr == value) return false;
 
-    // assign key handle
-    //
-    RegHandle rh(sub_key_handle);
-
-    DWORD ret = RegSetValueExW(sub_key_handle, value_name, 0, REG_EXPAND_SZ, (LPBYTE)value, cbValue);
+    DWORD ret = RegSetValueExW(key_handle, 
+							   value_name, 
+							   0, 
+							   REG_EXPAND_SZ, 
+							   (LPBYTE)value, 
+							   cbValue);
     if (ERROR_SUCCESS != ret)
     {
-        log_err "RegSetValueExW(%ws) failed, ret = %u", value_name, ret log_end
+		log_err "RegSetValueExW(%ws) failed, ret = %u",
+			value_name,
+			ret 
+			log_end;
         return false;
     }
 
     return true;
 }
 
-/**
- * @brief	
- * @param	RootKey     HKEY_CLASSES_ROOT
-                        HKEY_CURRENT_CONFIG
-                        HKEY_CURRENT_USER
-                        HKEY_LOCAL_MACHINE
-                        HKEY_USERS
-			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-						'\' 로 시작하면 안됨
- * @see		
- * @remarks	value 사이즈 제한에 관한 정보는 링크 참조
- *          https://msdn.microsoft.com/en-us/library/windows/desktop/ms724872(v=vs.85).aspx
- * @code		
- * @endcode	
- * @return	
-**/
+/// @remark	value 사이즈 제한에 관한 정보는 링크 참조
+///			https://msdn.microsoft.com/en-us/library/windows/desktop/ms724872(v=vs.85).aspx
 bool
 RUSetBinaryData(
-    HKEY RootKey,
-    const wchar_t* SubKey,
-    const wchar_t* value_name,
-    const uint8_t* value,
-    DWORD cbValue)
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
+	_In_ const uint8_t* value,	// byte buffer
+	_In_ DWORD cbValue			// count byte
+	)	
 {
-    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
-    if (NULL == sub_key_handle)
-    {
-        log_err "RUOpenKey(%ws) failed", SubKey log_end
-        return false;
-    }
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != value_name);
+	_ASSERTE(nullptr != value);
+	if (nullptr == key_handle || nullptr == value_name || nullptr == value) return false;
 
-    // assign key handle
-    //
-    RegHandle rh(sub_key_handle);
-
-    DWORD ret = RegSetValueExW(sub_key_handle, value_name, 0, REG_BINARY, (LPBYTE)value, cbValue);
+	DWORD ret = RegSetValueExW(key_handle, 
+							   value_name, 
+							   0, 
+							   REG_BINARY, 
+							   (LPBYTE)value, 
+							   cbValue);
     if (ERROR_SUCCESS != ret)
     {
-        log_err "RegSetValueExW(%ws) failed, ret = %u", value_name, ret log_end
-        return false;
+		log_err "RegSetValueExW(%ws) failed, ret = %u",
+			value_name,
+			ret
+			log_end;
+		return false;
     }
 
     return true;
 }
 
-/**
- * @brief	
- * @param	RootKey     HKEY_CLASSES_ROOT
-                        HKEY_CURRENT_CONFIG
-                        HKEY_CURRENT_USER
-                        HKEY_LOCAL_MACHINE
-                        HKEY_USERS
-			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-						'\' 로 시작하면 안됨
- * @see		
- * @remarks	caller must free returned buffer pointer.
- * @code		
- * @endcode	
- * @return	
-**/
+
+/// @remark	caller must free returned buffer pointer.
 uint8_t*
 RUReadBinaryData(
-    _In_ HKEY RootKey,
-    _In_ const wchar_t* SubKey,
-    _In_ const wchar_t* value_name,
-    _Out_ DWORD& cbValue
-    )
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
+	_Out_ DWORD& cbValue			// count byte
+	)
 {
-    HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, true);
-    if (NULL == sub_key_handle)
-    {
-        log_err "RUOpenKey(%ws) failed", SubKey log_end
-        return NULL;
-    }
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != value_name);	
+	if (nullptr == key_handle || nullptr == value_name) return false;
 
-    // assign key handle
-    //
-    RegHandle rh(sub_key_handle);
-    void* old = NULL;	
+    void* old = nullptr;
     cbValue = 1024;
     uint8_t* buffer = (uint8_t*) malloc(cbValue);
-    if (NULL == buffer)
+    if (nullptr == buffer)
     {
         cbValue = 0;
-        return NULL;
+        return nullptr;
     }
     RtlZeroMemory(buffer, cbValue);
 
     DWORD ret = RegQueryValueExW(
-                        sub_key_handle, 
+                        key_handle, 
                         value_name, 
                         NULL, 
                         NULL,
@@ -498,18 +380,16 @@ RUReadBinaryData(
         buffer = (uint8_t*) realloc(buffer, cbValue);
         if (NULL == buffer)
         {
-            free(old); 
-
-            cbValue = 0;
-            return NULL;
+            free(old);  cbValue = 0;
+            return nullptr;
         }
 		RtlZeroMemory(buffer, cbValue);
 
         ret = RegQueryValueExW(
-                        sub_key_handle, 
+                        key_handle, 
                         value_name, 
-                        NULL, 
-                        NULL,
+						nullptr,
+						nullptr,
                         (LPBYTE) buffer, 
                         &cbValue
                         );
@@ -517,113 +397,84 @@ RUReadBinaryData(
 
     if (ERROR_SUCCESS != ret)
     {
-        // Value 가 없는 경우
-        //
-        //log_err "RegQueryValueExW(%ws) failed, ret = %u", ValueName, ret log_end
-        free(buffer); buffer=NULL;
-        return NULL;    
+		log_err "RegQueryValueExW(%ws) failed, ret = %u",
+			value_name,
+			ret
+			log_end;
+		free(buffer); buffer= nullptr;
+        return nullptr;    
     }
     
 	return buffer;
 }
 
-
-/**
- * @brief	
- * @param	RootKey     HKEY_CLASSES_ROOT
-                            HKEY_CURRENT_CONFIG
-                            HKEY_CURRENT_USER
-                            HKEY_LOCAL_MACHINE
-                            HKEY_USERS
-			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-						'\' 로 시작하면 안됨
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
 bool
 RUDeleteValue(
-	_In_ HKEY RootKey,
-	_In_ const wchar_t* SubKey,
-	_In_ const wchar_t* ValueName
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name
 	)
 {
-	HKEY sub_key_handle = RUOpenKey(RootKey, SubKey, false);
-    if (NULL == sub_key_handle)
-    {
-        log_err "RUOpenKey(%ws) failed", SubKey log_end
-        return false;
-    }
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle || nullptr == value_name) return false;
 
-    // assign key handle
-    //
-    RegHandle rh(sub_key_handle);
-
-	DWORD ret = RegDeleteValueW(sub_key_handle, ValueName);
+	DWORD ret = RegDeleteValueW(key_handle, value_name);
 	if (ERROR_SUCCESS != ret)
 	{
-		log_err "RegDeleteValueW( %ws ) failed. ret = %u", ValueName, ret log_end
+		log_err "RegDeleteValueW( %ws ) failed. ret = %u",
+			value_name,
+			ret
+			log_end;
 		return false;
 	}
-
 	return true;
 }
 
-/**
- * @brief	key 를 삭제한다. 대상 키의 내부에 있는 value 들도 함께 삭제된다.
- * @param	RootKey     HKEY_CLASSES_ROOT
-                            HKEY_CURRENT_CONFIG
-                            HKEY_CURRENT_USER
-                            HKEY_LOCAL_MACHINE
-                            HKEY_USERS
-			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-						'\' 로 시작하면 안됨
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
+/// @brief	key 를 삭제한다. 대상 키의 내부에 있는 value 들도 함께 삭제된다.
 bool 
 RUDeleteKey(
-	_In_ HKEY RootKey,
-	_In_ const wchar_t* SubKey
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key
 	)
 {
-	DWORD ret = RegDeleteKeyW(RootKey, SubKey);
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != sub_key);
+	if (nullptr == key_handle || nullptr == sub_key) return false;
+
+
+	DWORD ret = RegDeleteKeyW(key_handle, sub_key);
 	if (ERROR_SUCCESS != ret)
 	{
-		log_err "RegDeleteKeyW( sub = %ws ) failed. ret = %u", SubKey, ret log_end
+		log_err "RegDeleteKeyW( sub = %ws ) failed. ret = %u",
+			sub_key,
+			ret
+			log_end;
 		return false;
 	}
 
 	return true;
 }
 
-/**
- * @brief	
- * @param	RootKey     HKEY_CLASSES_ROOT
-                            HKEY_CURRENT_CONFIG
-                            HKEY_CURRENT_USER
-                            HKEY_LOCAL_MACHINE
-                            HKEY_USERS
-			SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-						'\' 로 시작하면 안됨
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
+/// @prarm	root_key	HKEY_CLASSES_ROOT
+///						HKEY_CURRENT_CONFIG
+///						HKEY_CURRENT_USER
+///						HKEY_LOCAL_MACHINE
+///						HKEY_USERS
+///						
+/// @param	sub_key		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+///						'\' 로 시작하면 안됨
 bool
 RUIsKeyExists(
-    HKEY RootKey, 
-    const wchar_t* TargetKey
+	_In_ HKEY root_key,
+	_In_ const wchar_t* sub_key
     )
 {
-    RegHandle reg (RUOpenKey(RootKey, TargetKey, true));    
+	_ASSERTE(nullptr != root_key);
+	_ASSERTE(nullptr != sub_key);
+	if (nullptr == root_key || nullptr == sub_key) return false;
+
+
+    RegHandle reg (RUOpenKey(root_key, sub_key, true));    
     return (NULL == reg.get()) ? false : true;
 }
 
@@ -632,7 +483,12 @@ RUIsKeyExists(
 ///         sub key 는 `key_cb` 를 통해 caller 에게 전달되고, 
 ///         value 는 `value_cb` 를 통해 caller 에게 전달된다. 
 ///         key_cb, value_cb 는 NULL 일 수 있다. 
-bool reg_enum_key_values(_In_ HKEY key, _In_ fn_key_callback key_cb, _In_ fn_value_callback value_cb)
+bool 
+reg_enum_key_values(
+	_In_ HKEY key, 
+	_In_ fn_key_callback key_cb, 
+	_In_ fn_value_callback value_cb
+	)
 {
     DWORD sub_key_count = 0;
     DWORD max_sub_key_name_cc = 0;

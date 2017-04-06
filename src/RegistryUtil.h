@@ -14,103 +14,90 @@
 
 HKEY 
 RUOpenKey(
-    HKEY  RootKey,
-    const wchar_t* SubKey,
-    bool ReadOnly
-    );
+	_In_ HKEY RootKey, 
+	_In_ const wchar_t* SubKey,
+	_In_ bool ReadOnly);
 
-bool
+bool 
 RUCloseKey(
-    HKEY Key
-    );
+	_In_ HKEY Key
+	);
 
-HKEY
+HKEY 
 RUCreateKey(
-    HKEY RootKey,
-    const wchar_t* SubKey,
-    bool ReadOnly
-    );
-
+	_In_ HKEY RootKey,
+	_In_ const wchar_t* SubKey,
+	_In_ bool ReadOnly
+	);
 
 DWORD 
-RUReadDword(
-    HKEY RootKey,
-    const wchar_t* SubKey,
-    const wchar_t* ValueName, 
-    DWORD DefaultValue
-    );
+RUReadDword(	
+	_In_ HKEY key_handle, 
+	_In_ const wchar_t* value_name, 
+	_In_ DWORD DefaultValue
+	);
 
 bool 
 RUWriteDword(
-HKEY RootKey,
-    const wchar_t* SubKey,
-    const wchar_t* ValueName, 
-    DWORD Value
-    );
+	_In_ HKEY key_handle, 
+	_In_ const wchar_t* value_name, 
+	_In_ DWORD value
+	);
 
-
-bool
+bool 
 RUReadString(
-    IN HKEY	RootKey,
-    IN const wchar_t* SubKey,
-    IN const wchar_t* ValueName,
-    OUT std::wstring& Value
-    );
+	_In_ HKEY key_handle, 
+	_In_ const wchar_t* value_name, 
+	_Out_ std::wstring& value
+	);
 
-bool
+bool 
 RUSetString(
-    HKEY RootKey,
-    const wchar_t* SubKey,
-    const wchar_t* ValueName,
-    const wchar_t* Value,           // byte buffer
-    DWORD cbValue          // count byte
-    );
+	_In_ HKEY key_handle, 
+	_In_ const wchar_t* value_name, 
+	_In_ const wchar_t* value
+	);
 
-
-bool
+bool 
 RUSetExpandString(
-    HKEY RootKey,
-    const wchar_t* SubKey,
-    const wchar_t* value_name,
-    const wchar_t* value,           // byte buffer
-    DWORD cbValue          // count byte
-    );
+	_In_ HKEY key_handle, 
+	_In_ const wchar_t* value_name, 
+	_In_ const wchar_t* value, 
+	_In_ DWORD cbValue
+	);
 
-bool
+bool 
 RUSetBinaryData(
-    _In_ HKEY RootKey,
-    _In_ const wchar_t* SubKey,
-    _In_ const wchar_t* value_name,
-    _In_ const uint8_t* value,
-    _In_ DWORD cbValue);
+	_In_ HKEY key_handle, 
+	_In_ const wchar_t* value_name, 
+	_In_ const uint8_t* value, 
+	_In_ DWORD cbValue
+	);
 
-uint8_t*
+uint8_t* 
 RUReadBinaryData(
-    _In_ HKEY RootKey,
-    _In_ const wchar_t* SubKey,
-    _In_ const wchar_t* value_name,
-    _Out_ DWORD& cbValue);
+	_In_ HKEY key_handle, 
+	_In_ const wchar_t* value_name, 
+	_Out_ DWORD& cbValue
+	);
 
-bool
+bool 
 RUDeleteValue(
-	_In_ HKEY RootKey,
-	_In_ const wchar_t* SubKey,
-	_In_ const wchar_t* ValueName
+	_In_ HKEY key_handle, 
+	_In_ const wchar_t* value_name
 	);
 
 bool 
 RUDeleteKey(
-	_In_ HKEY RootKey,
-	_In_ const wchar_t* SubKey
+	_In_ HKEY key_handle, 
+	_In_ const wchar_t* sub_key
 	);
 
-
-bool
+bool 
 RUIsKeyExists(
-    HKEY RootKey, 
-    const wchar_t* TargetKey
-    );
-
+	_In_ HKEY root_key, 
+	_In_ const wchar_t* sub_key
+	);
 
 typedef
 bool(*fn_key_callback)(
