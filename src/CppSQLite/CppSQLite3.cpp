@@ -8,6 +8,7 @@
 #include "CppSQLite3.h"
 #include <cstdlib>
 #include <utility>
+#include "Win32Utils.h"
 
 
 // Named constant for passing to CppSQLite3Exception when passing it a string
@@ -1217,7 +1218,7 @@ CppSQLite3DB& CppSQLite3DB::operator=(const CppSQLite3DB& db)
 void CppSQLite3DB::open(const char* szFile)
 {
     int nRet = sqlite3_open(szFile, &mpDB);
-
+	
     if (nRet != SQLITE_OK)
     {
         const char* szError = sqlite3_errmsg(mpDB);
@@ -1240,6 +1241,32 @@ void CppSQLite3DB::open(const wchar_t* szFile)
 	setBusyTimeout(mnBusyTimeoutMs);
 }
 
+void CppSQLite3DB::open(const char* utf8_file, bool read_only)
+{
+	int nRet = 0;
+	if (true != read_only)
+	{
+		nRet = sqlite3_open_v2(utf8_file,
+							   &mpDB,
+							   SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+							   nullptr);
+	}
+	else
+	{
+		nRet = sqlite3_open_v2(utf8_file,
+							   &mpDB,
+							   SQLITE_OPEN_READONLY,
+							   nullptr);
+	}
+
+	if (nRet != SQLITE_OK)
+	{
+		const char* szError = sqlite3_errmsg(mpDB);
+		throw CppSQLite3Exception(nRet, (char*)szError, DONT_DELETE_MSG);
+	}
+
+	setBusyTimeout(mnBusyTimeoutMs);
+}
 
 void CppSQLite3DB::close()
 {

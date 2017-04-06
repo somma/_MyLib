@@ -292,6 +292,7 @@ public:
 
     void open(const char* szFile);
 	void open(const wchar_t* szFile);
+	void open(const char* utf8_file, bool read_only);
 
     void close();
 
