@@ -3934,6 +3934,15 @@ std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name)
     }
 }
 
+/// @brief	full path 경로명에서 `파일명.확장자` 부분만 떼어낸다. 
+std::wstring file_name_from_file_path(_In_ const wchar_t* file_path)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path) return L"";
+
+	return extract_last_tokenExW(file_path, L"\\", false);
+}
+
 /**
  * @brief	
  * @param	
