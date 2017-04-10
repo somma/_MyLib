@@ -106,19 +106,23 @@ bool scm_context::install_driver()
 		return false;
 	}
 	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
-
-	// already exists?
-	SC_HANDLE service_handle = OpenServiceW(scm_handle, _service_name.c_str(), SERVICE_QUERY_CONFIG);
+	SC_HANDLE service_handle = OpenServiceW(scm_handle, 
+											_service_name.c_str(), 
+											SERVICE_QUERY_CONFIG);
 	if (NULL != service_handle)
 	{
 		log_dbg "service=%ws. already exists", _service_name.c_str() log_end
 		CloseServiceHandle(service_handle);
+		_installed = true;
+		return true;
 	}
-	else
-	{
-		// Install the driver
-		service_handle = CreateServiceW(
-									scm_handle,
+
+
+	//
+	//	Install service 
+	// 
+
+	service_handle = CreateServiceW(scm_handle,
 									_service_name.c_str(),
 									_service_display_name.c_str(),
 									GENERIC_READ, // SERVICE_ALL_ACCESS,
@@ -130,90 +134,115 @@ bool scm_context::install_driver()
 									NULL,
 									NULL,
 									NULL,
-									NULL
-									);
-		if (service_handle == NULL)
-		{	
-			log_err 
-				"CreateServcieW(path=%ws, svc_name=%ws, svc_display=%ws) failed. gle = %u",
-				_driver_path.c_str(), _service_name.c_str(), _service_display_name.c_str(), GetLastError()
-			log_end
-			return false;
-		}
-		CloseServiceHandle(service_handle);
+									NULL);
+	if (service_handle == NULL)
+	{
+		log_err
+			"CreateServcieW(path=%ws, svc_name=%ws, svc_display=%ws) failed. gle = %u",
+			_driver_path.c_str(), _service_name.c_str(), _service_display_name.c_str(), GetLastError()
+			log_end;
+		return false;
+	}
+	CloseServiceHandle(service_handle);
 
+
+	//
+	// If this service is for minifilter, write additional information on registry.
+	//
+	if (_is_minifilter)
+	{
 		//
-		// If this service is for minifilter, write additional information on registry.
+		// key  : HKLM\SYSTEM\CurrentControlSet\Services\[xxx]\Instances
+		// value: "DefaultInstance" = "AltitudeAndFlags"
 		//
-		if (_is_minifilter)
-		{
-			//
-			// key  : HKLM\SYSTEM\CurrentControlSet\Services\[xxx]\Instances
-			// value: "DefaultInstance" = "AltitudeAndFlags"
-			//
 #define	MF_DEFAULT_INSTANCE	L"DefaultInstance"
 #define	MF_ALTITUDE_N_FLAGS	L"AltitudeAndFlags"
-			std::wstringstream key_path;
-			key_path<< L"SYSTEM\\CurrentControlSet\\Services\\" 
-					<< _service_name 
-					<< L"\\Instances";
-			if (!RUSetString(HKEY_LOCAL_MACHINE,
-							 key_path.str().c_str(),
-							 MF_DEFAULT_INSTANCE,
-							 MF_ALTITUDE_N_FLAGS,
-							 (DWORD)(wcslen(MF_ALTITUDE_N_FLAGS) + 1) * sizeof(wchar_t)))
-			{
-				log_err "RUSetString(HKLM, %ws, %ws) failed.", 
-					key_path.str().c_str(),
-					MF_DEFAULT_INSTANCE
-					log_end;
-				return false;
-			}
-
-			// 
-			// key  : HKLM\SYSTEM\CurrentControlSet\Services\scanner\Instances\AltitudeAndFlags
-			// value: "Altitude" = "0"
-			//		  "Flags" = dword:00000000
-			//
-#define	MF_ALTITUDE		L"Altitude"
-#define	MF_FLAGS		L"Flags"
-
-			key_path.str(L"");
-			key_path<< L"SYSTEM\\CurrentControlSet\\Services\\" 
-					<< _service_name 
-					<< L"\\Instances\\AltitudeAndFlags";
-			
-			if (!RUSetString(HKEY_LOCAL_MACHINE,
-							 key_path.str().c_str(),
-							 MF_ALTITUDE,
-							 _altitude.c_str(),
-							 (DWORD)(wcslen(_altitude.c_str()) + 1) * sizeof(wchar_t)))
-			{
-				log_err "RUSetString(HKLM, %ws, %ws) failed.", 
-					key_path.str().c_str(), 
-					MF_ALTITUDE
-					log_end;
-				return false;
-			}
-
-			if (!RUWriteDword(HKEY_LOCAL_MACHINE,
-							  key_path.str().c_str(),
-							  MF_FLAGS,
-							  _flags))
-			{
-				log_err "RUWriteDword(HKLM, %ws, %ws) failed.",
-					key_path.str().c_str(),
-					MF_FLAGS
-					log_end;
-				return false;
-			}
+		std::wstringstream key_path;
+		key_path 
+			<< L"SYSTEM\\CurrentControlSet\\Services\\"
+			<< _service_name
+			<< L"\\Instances";
+		HKEY key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
+									key_path.str().c_str(),
+									false);
+		if (nullptr == key_handle)
+		{
+			log_err "RUOpenKey() failed. key=%ws",
+				key_path.str().c_str()
+				log_end;
+			return false;
 		}
 
-		log_info "service=%ws installed successfully", _service_name.c_str() log_end
+		if (!RUSetString(key_handle,
+						 MF_DEFAULT_INSTANCE,
+						 MF_ALTITUDE_N_FLAGS))
+		{
+			log_err "RUSetString(HKLM, %ws, %ws) failed.",
+				key_path.str().c_str(),
+				MF_DEFAULT_INSTANCE
+				log_end;
+
+			RUCloseKey(key_handle); key_handle = nullptr;
+			return false;
+		}
+		RUCloseKey(key_handle); key_handle = nullptr;
+
+
+		// 
+		// key  : HKLM\SYSTEM\CurrentControlSet\Services\scanner\Instances\AltitudeAndFlags
+		// value: "Altitude" = "0"
+		//		  "Flags" = dword:00000000
+		//
+#define	MF_ALTITUDE		L"Altitude"
+#define	MF_FLAGS		L"Flags"
+		_ASSERTE(nullptr == key_handle);
+
+		clear_str_stream_w(key_path);
+		key_path 
+			<< L"SYSTEM\\CurrentControlSet\\Services\\"
+			<< _service_name
+			<< L"\\Instances\\AltitudeAndFlags";
+
+		key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
+							   key_path.str().c_str(),
+							   false);
+		if (nullptr == key_handle)
+		{
+			log_err "RUOpenKey() failed. key=%ws",
+				key_path.str().c_str()
+				log_end;
+			return false;
+		}
+
+		if (!RUSetString(key_handle,
+						 MF_ALTITUDE,
+						 _altitude.c_str()))
+		{
+			log_err "RUSetString(HKLM, %ws, %ws) failed.",
+				key_path.str().c_str(),
+				MF_ALTITUDE
+				log_end;
+			RUCloseKey(key_handle); key_handle = nullptr;
+			return false;
+		}
+
+		if (!RUWriteDword(key_handle,
+							MF_FLAGS,
+							_flags))
+		{
+			log_err "RUWriteDword(HKLM, %ws, %ws) failed.",
+				key_path.str().c_str(),
+				MF_FLAGS
+				log_end;
+			RUCloseKey(key_handle); key_handle = nullptr;
+			return false;
+		}
+
+		RUCloseKey(key_handle); key_handle = nullptr;
+		return true;
 	}
 
-	_installed = true;
-	return true;
+	return false;	// never reach here.
 }
 
 /**

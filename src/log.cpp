@@ -457,6 +457,10 @@ void slogger::slog_stop()
 		CloseHandle(_log_file_handle); 
 		_log_file_handle = INVALID_HANDLE_VALUE;
 	}
+
+	_ASSERTE(true == _log_queue.empty());
+	_ASSERTE(INVALID_HANDLE_VALUE == _log_file_handle);
+	_ASSERTE(nullptr == _logger_thread);
 }
 
 /**
@@ -576,5 +580,7 @@ void slogger::slog_thread()
 		}
 		//write_to_console(wtc_green, "done.\n");
 		//std::cout << boost::format("tid=0x%08x, %s logger thread terminated \n") % GetCurrentThreadId() % __FUNCTION__;
+
+		_ASSERTE(true == _log_queue.empty());
 	}
 }

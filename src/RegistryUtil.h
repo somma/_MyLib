@@ -18,7 +18,7 @@ RUOpenKey(
 	_In_ const wchar_t* SubKey,
 	_In_ bool ReadOnly);
 
-bool 
+void
 RUCloseKey(
 	_In_ HKEY Key
 	);
@@ -121,3 +121,14 @@ reg_enum_key_values(
     _In_ fn_key_callback key_cb,
     _In_ fn_value_callback value_cb
     );
+
+class RegHandle
+{
+public:
+    RegHandle(HKEY key) : m_key(key) {}
+	~RegHandle()    { if (NULL != m_key) RegCloseKey(m_key);  }
+    HKEY get()      { return m_key; };
+protected:
+private:
+	HKEY m_key;
+};

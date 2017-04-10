@@ -2416,8 +2416,7 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 /**
  * @brief      하위 디렉토리에 존재하는 모든 파일들을 enum 하는 함수
 
-				아래 형태 4가지는 모두 동일한 결과를 출력함
-				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData",
+				아래 형태 4가지는 모두 동일한 결과를 출력함				
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\",
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*",
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.*"	
@@ -2515,8 +2514,7 @@ find_files(
 /**----------------------------------------------------------------------------
     \brief  RootPath 하위디렉토리 경로를 enum 하는 함수
 			
-			아래 형태 4가지는 모두 동일한 결과를 출력함
-			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData",
+			아래 형태 4가지는 모두 동일한 결과를 출력함			
 			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\",
 			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*",
 			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.*"
@@ -3342,7 +3340,12 @@ std::wstring ltrimw(std::wstring& s, const std::wstring& drop)
 }
 
 /// @brief  sprit `str` using `seps` and save each token into `tokens`. 
-bool split_stringa(_In_ const char* str, _In_ const char* seps, _Out_ std::vector<std::string>& tokens)
+bool 
+split_stringa(
+	_In_ const char* str, 
+	_In_ const char* seps, 
+	_Out_ std::vector<std::string>& tokens
+	)
 {
 #define max_str_len     2048
 
@@ -3359,26 +3362,31 @@ bool split_stringa(_In_ const char* str, _In_ const char* seps, _Out_ std::vecto
         return false;
     }
 
-    uint8_t* buf = (uint8_t*)malloc(buf_len);
-    if (NULL == buf)
-    {
-        return false;
-    }
+	raii_char_ptr buf((char*)malloc(buf_len), raii_free);
+	if (nullptr == buf.get())
+	{
+		return false;
+	}
 
-    StringCbPrintfA((char*)buf, buf_len, "%s", str);
+	StringCbPrintfA(buf.get(), buf_len, "%s", str);
 
     char* next_token = NULL;
-    char* token = strtok_s((char*) buf, seps, &next_token);
+    char* token = strtok_s(buf.get(), seps, &next_token);
     while (NULL != token)
     {
         tokens.push_back(token);
         token = strtok_s(NULL, seps, &next_token);
-    }
-    
+    }   
+	
     return true;
 }
 
-bool split_stringw(_In_ const wchar_t* str, _In_ const wchar_t* seps, _Out_ std::vector<std::wstring>& tokens)
+bool 
+split_stringw(
+	_In_ const wchar_t* str, 
+	_In_ const wchar_t* seps, 
+	_Out_ std::vector<std::wstring>& tokens
+	)
 {
 #define max_str_len     2048
 
@@ -3395,22 +3403,21 @@ bool split_stringw(_In_ const wchar_t* str, _In_ const wchar_t* seps, _Out_ std:
         return false;
     }
 
-    uint8_t* buf = (uint8_t*)malloc(buf_len);
-    if (NULL == buf)
+	raii_wchar_ptr buf((wchar_t*)malloc(buf_len));
+    if (nullptr == buf.get())
     {
         return false;
     }
 
-    StringCbPrintfW((wchar_t*)buf, buf_len, L"%ws", str);
+    StringCbPrintfW(buf.get(), buf_len, L"%ws", str);
 
     wchar_t* next_token = NULL;
-    wchar_t* token = wcstok_s((wchar_t*)buf, seps, &next_token);
+    wchar_t* token = wcstok_s(buf.get(), seps, &next_token);
     while (NULL != token)
     {
         tokens.push_back(token);
         token = wcstok_s(NULL, seps, &next_token);
     }
-    
     return true;
 }
 

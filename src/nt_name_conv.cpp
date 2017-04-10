@@ -285,6 +285,7 @@ bool NameConverter::update_dos_device_prefixes()
                     if (NO_ERROR == WNetGetConnection(dos_device_name, rmt, &cch_rmt))
                     {
                         network_name = rmt;
+						free(rmt);
                     }
                 }
             }
@@ -304,15 +305,29 @@ bool NameConverter::update_mup_device_prefixes()
 {
     // #1, HKLM\System\CurrentControlSet\Control\NetworkProvider\Order :: ProviderOrder (REG_SZ) 값을 읽는다. 
     std::wstring provider_order;
-    if (!RUReadString(
-        HKEY_LOCAL_MACHINE,
-        L"System\\CurrentControlSet\\Control\\NetworkProvider\\Order",
-        L"ProviderOrder",
-        provider_order))
+	HKEY key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
+								L"System\\CurrentControlSet\\Control\\NetworkProvider\\Order",
+								true);
+	if (nullptr == key_handle)
+	{
+		log_err "RUOpenKey() failed. key=%ws",
+			L"System\\CurrentControlSet\\Control\\NetworkProvider\\Order"
+			log_end;
+		return false;
+	}
+	
+    if (!RUReadString(key_handle, 
+					  L"ProviderOrder",
+					  provider_order))
     {
         log_err "RUReadString( value=ProviderOrder ) failed." log_end;
+
+		RUCloseKey(key_handle);
         return false;
     }
+	RUCloseKey(key_handle);
+
+
 
     _mup_devices.push_back(L"\\Device\\Mup");       // default mup device
 
@@ -334,18 +349,30 @@ bool NameConverter::update_mup_device_prefixes()
         std::wstring device_name;
         std::wstringstream key;
         key << L"SYSTEM\\CurrentControlSet\\Services\\" << provider << L"\\NetworkProvider";
-        if (!RUReadString(
-            HKEY_LOCAL_MACHINE,
-            key.str().c_str(),
-            L"DeviceName",
-            device_name))
+
+		key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
+							   key.str().c_str(),
+							   true);
+		if (nullptr == key_handle)
+		{
+			log_err "RUOpenKey() failed. key=%ws",
+				key.str().c_str()				
+				log_end;
+			continue;
+		}
+
+        if (!RUReadString(key_handle, 
+						  L"DeviceName",
+						  device_name))
         {
             log_err "RUReadString( DeviceName ) failed." log_end;
+
+			RUCloseKey(key_handle);
             continue;
         }
 
         this->_mup_devices.push_back(device_name);
     }
-
+	
     return true;
 }

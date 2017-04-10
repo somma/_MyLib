@@ -126,7 +126,7 @@ bool test_file_io_helper()
 
 	};
 			
-	for (int x = 0; x < 12; ++x)
+	for (int x = 0; x < 4; ++x)
 	{
 		for (int i = 0; i < sizeof(blocks) / sizeof(block_size_test); ++i)
 		{

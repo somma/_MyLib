@@ -67,7 +67,7 @@ bool test_2_complement();
 bool test_print_64int();
 bool test_std_string_find_and_substr();
 bool test_to_lower_uppper_string();
-//bool test_const_position();
+//bool test_const_position();	// 컴파일 불가 테스트
 bool test_initialize_string();
 bool test_process_tree();     
 
@@ -172,9 +172,6 @@ public:
 
 
 
-
-
-
 /**
  * @brief	
  * @param	
@@ -188,6 +185,15 @@ int _tmain(int argc, _TCHAR* argv[])
 {
     UNREFERENCED_PARAMETER(argc);
     UNREFERENCED_PARAMETER(argv);
+
+	
+	
+	_CrtMemState memoryState = { 0 };
+	_CrtMemCheckpoint(&memoryState);
+	//_CrtSetBreakAlloc(14255);
+
+
+
 
 	bool ret = false;
 	UINT32 _pass_count = 0;
@@ -214,7 +220,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//log_info "0x%llx, 0x%016llx", y, y log_end;
 
 
-	
+#pragma todo("memory leak 잡자")
     
     //std::wstring wstr = L"12345";
     //con_info "wstr.size() = %u, wcslen(wstr.c_str() = %u",
@@ -223,97 +229,97 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 	assert_bool(true, test_convert_file_time);
 
-	//assert_bool(true, test_ppl);
+	assert_bool(true, test_ppl);
 
-	//assert_bool(true, test_find_and_replace);
-	//assert_bool(true, test_file_io_helper);
+	assert_bool(true, test_find_and_replace);
+	assert_bool(true, test_file_io_helper);
 
-	//assert_bool(true, test_scm_context);
+	assert_bool(true, test_scm_context);
 
-    //assert_bool(true, test_regexp);
-    //assert_bool(true, test_ping);
-    //assert_bool(true, test_canonicalize_file_name);
-	//assert_bool(true, test_alignment_error_test);
-    //assert_bool(true, test_crc64);
+    assert_bool(true, test_regexp);
+    assert_bool(true, test_ping);
+    assert_bool(true, test_canonicalize_file_name);
+	assert_bool(true, test_alignment_error_test);
+    assert_bool(true, test_crc64);
     
-    //assert_bool(true, test_wmi_client);
-    //assert_bool(true, test_NtCreateFile);
-    //assert_bool(true, test_device_name_from_nt_name);
-    //assert_bool(true, test_rstrnicmp);
+    assert_bool(true, test_wmi_client);
+    assert_bool(true, test_NtCreateFile);
+    assert_bool(true, test_device_name_from_nt_name);
+    assert_bool(true, test_rstrnicmp);
 
-    //assert_bool(true, test_get_drive_type);
-    //assert_bool(true, test_os_version);
+    assert_bool(true, test_get_drive_type);
+    assert_bool(true, test_os_version);
 
-    //assert_bool(true, test_boost_thread);
-	//assert_bool(true, test_thread_pool);
+    assert_bool(true, test_boost_thread);
+	assert_bool(true, test_thread_pool);
     
-    //assert_bool(true, test_boost_asio_timer);
-	//assert_bool(true, test_for_each);
-    //assert_bool(true, test_enum_physical_drive);
-    //assert_bool(true, test_get_disk_volume_info);
-    //assert_bool(true, test_dump_xxx);
-    //assert_bool(true, test_write_mbr_vbr);
-	//assert_bool(true, test_asm_func);
-	//assert_bool(true, test_x64_calling_convension);
-	//assert_bool(true, test_2_complement);
-	//assert_bool(true , test_print_64int);
-	//assert_bool(true, test_std_string_find_and_substr);
-	//assert_bool(true, test_to_lower_uppper_string);
-	////assert_bool(true, test_const_position);		// 컴파일 불가 테스트
-	//assert_bool(true, test_initialize_string);
-	//assert_bool(true, test_process_tree);
-	//assert_bool(true, test_base64);
-	//assert_bool(true, test_random);
-	//assert_bool(true, test_get_local_ip_list);
-    //assert_bool(true, test_get_mac_address);
-    //assert_bool(true, test_ip_to_str);
+    assert_bool(true, test_boost_asio_timer);
+	assert_bool(true, test_for_each);
+    assert_bool(true, test_enum_physical_drive);
+    assert_bool(true, test_get_disk_volume_info);
+    assert_bool(true, test_dump_xxx);
+    //assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
+	assert_bool(true, test_asm_func);
+	assert_bool(true, test_x64_calling_convension);
+	assert_bool(true, test_2_complement);
+	assert_bool(true , test_print_64int);
+	assert_bool(true, test_std_string_find_and_substr);
+	assert_bool(true, test_to_lower_uppper_string);
+	//assert_bool(true, test_const_position);		// 컴파일 불가 테스트
+	assert_bool(true, test_initialize_string);
+	assert_bool(true, test_process_tree);
+	assert_bool(true, test_base64);
+	assert_bool(true, test_random);
+	assert_bool(true, test_get_local_ip_list);
+    assert_bool(true, test_get_mac_address);
+    assert_bool(true, test_ip_to_str);
 
-    //assert_bool(true, test_strtok);
+    assert_bool(true, test_strtok);
 
-	//assert_bool(true, test_cpp_class);
+	assert_bool(true, test_cpp_class);
 	
-	//assert_bool(true, test_nt_name_to_dos_name);
-	//assert_bool(true, test_query_dos_device);
-	//assert_bool(true, test_get_filepath_by_handle);
-	//assert_bool(true, test_bin_to_hex);
-	//assert_bool(true, test_str_to_xxx);
-	//assert_bool(true, test_set_get_file_position);
-	//assert_bool(true, test_get_module_path);
-	//assert_bool(true, test_dump_memory);
-	//assert_bool(true, test_get_process_name_by_pid);
-	//assert_bool(true, test_get_environment_value);
+	assert_bool(true, test_nt_name_to_dos_name);
+	assert_bool(true, test_query_dos_device);
+	assert_bool(true, test_get_filepath_by_handle);
+	assert_bool(true, test_bin_to_hex);
+	assert_bool(true, test_str_to_xxx);
+	assert_bool(true, test_set_get_file_position);
+	assert_bool(true, test_get_module_path);
+	assert_bool(true, test_dump_memory);
+	assert_bool(true, test_get_process_name_by_pid);
+	assert_bool(true, test_get_environment_value);
  
-	//assert_bool(true, test_rc4_encrypt);
-    //assert_bool(true, test_md5_sha2);
-	//
-	//assert_bool(true, boost_lexical_cast);
-	//assert_bool(true, boost_shared_ptr_void);
-	//assert_bool(true, boost_shared_ptr_handle_01);
-	//assert_bool(true, boost_shared_ptr_handle_02);
-	//assert_bool(true, boost_shared_ptr_handle_03);
-	//assert_bool(true, boost_tuple);
+	assert_bool(true, test_rc4_encrypt);
+    assert_bool(true, test_md5_sha2);
+	
+	assert_bool(true, boost_lexical_cast);
+	assert_bool(true, boost_shared_ptr_void);
+	assert_bool(true, boost_shared_ptr_handle_01);
+	assert_bool(true, boost_shared_ptr_handle_02);
+	assert_bool(true, boost_shared_ptr_handle_03);
+	assert_bool(true, boost_tuple);
 
-	//assert_bool(true, boost_format);
+	assert_bool(true, boost_format);
 
-	//assert_bool(true, boost_bind);
-	//assert_bool(true, boost_bind2);
-	//assert_bool(true, boost_bind3);
-	//assert_bool(true, boost_bind4);
-	//assert_bool(true, boost_bind5);
+	assert_bool(true, boost_bind);
+	assert_bool(true, boost_bind2);
+	assert_bool(true, boost_bind3);
+	assert_bool(true, boost_bind4);
+	assert_bool(true, boost_bind5);
 
-	//assert_bool(true, test_std_map);
-	//assert_bool(true, test_map_plus_algorithm_1);
-	//assert_bool(true, test_map_plus_algorithm_2);
-	//assert_bool(true, test_map_plus_algorithm_3);
-	//assert_bool(true, test_map_plus_algorithm_4);
-    //assert_bool(true, test_std_unordered_map);
-    //assert_bool(true, test_std_unordered_map_object);
-    //assert_bool(true, test_unorded_map_test_move);
+	assert_bool(true, test_std_map);
+	assert_bool(true, test_map_plus_algorithm_1);
+	assert_bool(true, test_map_plus_algorithm_2);
+	assert_bool(true, test_map_plus_algorithm_3);
+	assert_bool(true, test_map_plus_algorithm_4);
+    assert_bool(true, test_std_unordered_map);
+    assert_bool(true, test_std_unordered_map_object);
+    assert_bool(true, test_unorded_map_test_move);
 
 
-	//assert_bool(true, test_registry_util);
-    //assert_bool(true, test_read_mouted_device);
-    //assert_bool(true, test_set_binary_data);
+	assert_bool(true, test_registry_util);
+    assert_bool(true, test_read_mouted_device);
+    assert_bool(true, test_set_binary_data);
     
 
 	con_info
@@ -327,8 +333,12 @@ int _tmain(int argc, _TCHAR* argv[])
 		_fail_count
 	log_end
 
-	con_info "press any key to terminate..." con_end
-	_pause;
+	//con_info "press any key to terminate..." con_end
+	//_pause;
+
+	finalize_log();
+
+	_CrtMemDumpAllObjectsSince(&memoryState);
 	return 0;
 }
 
@@ -634,7 +644,10 @@ bool test_initialize_string()
 bool proc_tree_callback(_In_ process& process_info, _In_ DWORD_PTR callback_tag)
 {
     UNREFERENCED_PARAMETER(callback_tag);
-	con_info "pid = %u, %ws", process_info.pid(), process_info.process_name() log_end
+	con_info "pid = %u, %ws", 
+		process_info.pid(), 
+		process_info.process_name() 
+		log_end
 	return true;
 }
 

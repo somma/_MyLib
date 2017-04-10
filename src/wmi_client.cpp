@@ -25,7 +25,7 @@ WmiClient::~WmiClient()
 
 bool WmiClient::initialize()
 {
-    // #1, init COM
+    //	#1, init COM
     HRESULT hres = CoInitializeEx(0, COINIT_MULTITHREADED);
     if (!SUCCEEDED(hres))
     {
@@ -33,7 +33,7 @@ bool WmiClient::initialize()
         return false;
     }
 
-    // #2, set general COM security levels
+    //	#2, set general COM security levels
     hres = CoInitializeSecurity(NULL,
                                 -1,                             // COM authentication
                                 NULL,                           // Authentication services
@@ -46,9 +46,16 @@ bool WmiClient::initialize()
                                 );
     if (!SUCCEEDED(hres))
     {
-        log_err "CoInitializeSeciruty() failed. hres=%u", hres log_end;
-        CoUninitialize();
-        return false;
+		// 
+		//	CoInitializeSecurity() 함수는 프로세스에서 한번만 호출할 수 있다. 
+		//	두번호출 되면 RPC_E_TOO_LATE 를 리턴함
+		// 
+		if (RPC_E_TOO_LATE != hres)
+		{
+			log_err "CoInitializeSeciruty() failed. hres=%u", hres log_end;
+			CoUninitialize();
+			return false;
+		}
     }
 
     // #3, Obtain the initial locator to WMI

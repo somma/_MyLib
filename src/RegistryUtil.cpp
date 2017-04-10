@@ -11,16 +11,6 @@
 #include "RegistryUtil.h"
 
 
-class RegHandle
-{
-public:
-    RegHandle(HKEY key) : m_key(key) {}
-	~RegHandle()    { if (NULL != m_key) RegCloseKey(m_key);  }
-    HKEY get()      { return m_key; };
-protected:
-private:
-	HKEY m_key;
-};
 
 
 
@@ -69,7 +59,7 @@ RUOpenKey(
     
     \endcode        
 -----------------------------------------------------------------------------*/
-bool
+void
 RUCloseKey(
     HKEY Key
     )
@@ -77,11 +67,8 @@ RUCloseKey(
     DWORD ret = RegCloseKey(Key);
     if (ERROR_SUCCESS != ret)
     {
-        log_err "RegCloseKey() failed, ret = %u", ret log_end        
-        return false;
+        log_err "RegCloseKey() failed, ret = %u", ret log_end
     }
-
-    return true;
 }
 
 /**----------------------------------------------------------------------------

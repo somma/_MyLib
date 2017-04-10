@@ -134,7 +134,11 @@ cprocess_tree::build_process_tree()
                 }
 
                 FILETIME dummy_time;
-				if (!GetProcessTimes(process_handle, &create_time, &dummy_time, &dummy_time, &dummy_time))
+				if (!GetProcessTimes(process_handle, 
+									 &create_time, 
+									 &dummy_time, 
+									 &dummy_time, 
+									 &dummy_time))
 				{
 					log_err "GetProcessTimes() failed, gle = %u", GetLastError() log_end
 					// use create time 0!
@@ -143,8 +147,11 @@ cprocess_tree::build_process_tree()
 				CloseHandle(process_handle); process_handle = NULL;
 			}			
 						
-			add_process(proc_entry.th32ParentProcessID, proc_entry.th32ProcessID, create_time, proc_entry.szExeFile, full_path);
-
+			add_process(proc_entry.th32ParentProcessID, 
+						proc_entry.th32ProcessID, 
+						create_time, 
+						proc_entry.szExeFile, 
+						full_path);
 		} while (Process32Next(snap, &proc_entry));
 
 	} while (false);
@@ -264,7 +271,11 @@ const wchar_t* cprocess_tree::get_parent_name(_In_ DWORD child_pid)
  * @endcode	
  * @return	
 **/
-void cprocess_tree::iterate_process(_In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag)
+void 
+cprocess_tree::iterate_process(
+	_In_ fnproc_tree_callback callback, 
+	_In_ DWORD_PTR callback_tag
+	)
 {
 	_ASSERTE(NULL != callback);		
 	if (NULL == callback) return;
@@ -286,15 +297,20 @@ void cprocess_tree::iterate_process(_In_ fnproc_tree_callback callback, _In_ DWO
  * @endcode	
  * @return	
 **/
-void cprocess_tree::iterate_process_tree(_In_ DWORD root_pid, _In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag)
+void 
+cprocess_tree::iterate_process_tree(
+	_In_ DWORD root_pid, 
+	_In_ fnproc_tree_callback callback, 
+	_In_ DWORD_PTR callback_tag
+	)
 {
 	_ASSERTE(NULL != callback);		
 	if (NULL == callback) return;
 
 	process_map::iterator it = _proc_map.find(root_pid);
 	if (it == _proc_map.end()) return;
-	process root = it->second;
 
+	process root = it->second;
 	iterate_process_tree(root, callback, callback_tag);
 }
 
@@ -516,20 +532,45 @@ void cprocess_tree::kill_process_tree(_In_ process& root)
  * @endcode	
  * @return	
 **/
-void cprocess_tree::iterate_process_tree(_In_ process& root, _In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag)
+void 
+cprocess_tree::iterate_process_tree(
+	_In_ process& root, 
+	_In_ fnproc_tree_callback callback, 
+	_In_ DWORD_PTR callback_tag
+	)
 {
 	// parent first
 	if (true != callback(root, callback_tag)) return;
+
+	//
+	//	pid == 0 인 프로세스라면 recursive call 을 하지 않는다. 
+	//	win10 에서 toolhelp 를 이용한 경우 
+	// 
+	//	`[System Process]` : 
+	//	`System` 
+	// 
+	//	이렇게 두개의 프로세스 정보가 리턴되는데, [System Process] 의 경우
+	//	pid, ppid, create time 등이 모두 0 이다. 
+	//	[System Process] 의 자식 프로세스는 없으므로 recursive call 을 하지 않는다.
+	//	
+	if (0 == root.pid())
+	{
+		return;
+	}
 
 	// childs
 	process_map::iterator its = _proc_map.begin();
 	process_map::iterator ite= _proc_map.end();
 	for(; its != ite; ++its)
 	{
-		// ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, ppid 를 할당받은 경우가 
-		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다.
-		// 수정: Jang, Hyowon (jang.hw73@gmail.com)
-		// 생성시간이 동일한 경우 print되지 않는 프로세스가 존재하기 때문에(ex. creation_time == 0) 생성시간의 값이 더 크거나 같은 값으로 해야 한다.
+		//	ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, 
+		//	ppid 를 할당받은 경우가 발생할 수 있다. 
+		//	따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 
+		//	더 커야 한다.
+		// 
+		//	수정: Jang, Hyowon (jang.hw73@gmail.com)
+		//	생성시간이 동일한 경우 print되지 않는 프로세스가 존재하기 때문에(ex. creation_time == 0) 
+		//	생성시간의 값이 더 크거나 같은 값으로 해야 한다.
 		if ( its->second.ppid() == root.pid() && 
 			 its->second.creation_time() >= root.creation_time())
 		{
