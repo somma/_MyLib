@@ -1566,7 +1566,7 @@ int sqlite3_encode_binary(const unsigned char *in, int n, unsigned char *out){
       if( m==0 ) break;
     }
   }
-  out[0] = e;
+  out[0] = static_cast<unsigned char>(e);
   j = 1;
   for(i=0; i<n; i++){
     int c = (in[i] - e)&0xff;
@@ -1580,7 +1580,7 @@ int sqlite3_encode_binary(const unsigned char *in, int n, unsigned char *out){
       out[j++] = 1;
       out[j++] = 3;
     }else{
-      out[j++] = c;
+      out[j++] = static_cast<unsigned char>(c);
     }
   }
   out[j] = 0;
