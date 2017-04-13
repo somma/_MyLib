@@ -87,10 +87,11 @@ RUDeleteValue(
 	_In_ const wchar_t* value_name
 	);
 
-bool 
+bool
 RUDeleteKey(
-	_In_ HKEY key_handle, 
-	_In_ const wchar_t* sub_key
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ bool recursive
 	);
 
 bool 

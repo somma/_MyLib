@@ -10,25 +10,19 @@
 #include "stdafx.h"
 #include "RegistryUtil.h"
 
+#include "Shlwapi.h"
+#pragma comment(lib, "Shlwapi.lib")
 
 
-
-
-
-/**----------------------------------------------------------------------------
-    \brief      
-    \param      RootKey     HKEY_CLASSES_ROOT
-                            HKEY_CURRENT_CONFIG
-                            HKEY_CURRENT_USER
-                            HKEY_LOCAL_MACHINE
-                            HKEY_USERS
-				SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-							'\' 로 시작하면 안됨
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
+/// @brief	레지스트리 키를 오픈한다. 없으면 nullptr 을 리턴한다.
+/// @param	RootKey	RegCreateKey, RegOpenKey 등이 리턴한 HKEY 또는 아래 나열된 Predefined key.
+///					HKEY_CLASSES_ROOT
+///                 HKEY_CURRENT_CONFIG
+///                 HKEY_CURRENT_USER
+///                 HKEY_LOCAL_MACHINE
+///                 HKEY_USERS
+///	@param	SubKey	Rootkey 이하 서브키 경로. `\` 문자열로 시작하면 안됨
+///					SOFTWARE\Microsoft\Windows\CurrentVersion\Run 
 HKEY 
 RUOpenKey(
     HKEY RootKey,
@@ -42,7 +36,7 @@ RUOpenKey(
     DWORD ret = RegOpenKeyExW(RootKey, SubKey, 0, sam, &hSubKey);
     if (ERROR_SUCCESS != ret)
     {
-        log_err "RegOpenKeyExW(%ws) failed, ret = %u", SubKey, ret log_end        
+        //log_err "RegOpenKeyExW(%ws) failed, ret = %u", SubKey, ret log_end        
         return nullptr;
     }
 
@@ -67,24 +61,19 @@ RUCloseKey(
     DWORD ret = RegCloseKey(Key);
     if (ERROR_SUCCESS != ret)
     {
-        log_err "RegCloseKey() failed, ret = %u", ret log_end
+        //log_err "RegCloseKey() failed, ret = %u", ret log_end
     }
 }
 
-/**----------------------------------------------------------------------------
-    \brief	SubKey 를 생성한다. 이미 존재하는 경우 오픈한다.
-    \param      RootKey     HKEY_CLASSES_ROOT
-                            HKEY_CURRENT_CONFIG
-                            HKEY_CURRENT_USER
-                            HKEY_LOCAL_MACHINE
-                            HKEY_USERS
-				SubKey		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-							'\' 로 시작하면 안됨
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
+/// @brief	SubKey 를 생성한다. 이미 존재하는 경우 오픈한다.
+/// @param	RootKey	RegCreateKey, RegOpenKey 등이 리턴한 HKEY 또는 아래 나열된 Predefined key.
+///					HKEY_CLASSES_ROOT
+///                 HKEY_CURRENT_CONFIG
+///                 HKEY_CURRENT_USER
+///                 HKEY_LOCAL_MACHINE
+///                 HKEY_USERS
+///	@param	SubKey	Rootkey 이하 서브키 경로. `\` 문자열로 시작하면 안됨
+///					SOFTWARE\Microsoft\Windows\CurrentVersion\Run     
 HKEY
 RUCreateKey(
     HKEY RootKey,
@@ -417,28 +406,56 @@ RUDeleteValue(
 	return true;
 }
 
-/// @brief	key 를 삭제한다. 대상 키의 내부에 있는 value 들도 함께 삭제된다.
+/// @brief	sub_key 와 value 를 삭제한다. 
+/// 
+///			recursive 가 true 인 경우 sub key 의 하위키도 몽땅 삭제한다. 
+///			sub key 의 하위 키가 존재하고, recursive 가 flase 인 경우 false 를 리턴한다. 
 bool 
 RUDeleteKey(
 	_In_ HKEY key_handle,
-	_In_ const wchar_t* sub_key
+	_In_ const wchar_t* sub_key, 
+	_In_ bool recursive
 	)
 {
 	_ASSERTE(nullptr != key_handle);
 	_ASSERTE(nullptr != sub_key);
 	if (nullptr == key_handle || nullptr == sub_key) return false;
-
-
-	DWORD ret = RegDeleteKeyW(key_handle, sub_key);
-	if (ERROR_SUCCESS != ret)
+		
+	if (true != recursive)
 	{
-		log_err "RegDeleteKeyW( sub = %ws ) failed. ret = %u",
-			sub_key,
-			ret
-			log_end;
-		return false;
+		//
+		//	key_handle\sub_key 를 삭제한다. 
+		//	key_handle\sub_key\value 가 있다면 함께 삭제한다. 
+		//	key_handle\sub_key\sub_key2 가 있다면 에러를 리턴한다. 
+		// 
+		DWORD ret = RegDeleteKeyW(key_handle, sub_key);
+		if (ERROR_SUCCESS != ret)
+		{
+			log_err "RegDeleteKeyW( sub = %ws ) failed. ret = %u",
+				sub_key,
+				ret
+				log_end;
+			return false;
+		}
+		return true;
 	}
-
+	else
+	{
+		// 
+		//	key_handle\sub_key 를 삭제한다. 
+		//	하위 key/value 까지 몽땅 삭제한다. 
+		// 
+		LSTATUS ls = SHDeleteKeyW(key_handle, sub_key);
+		if (ERROR_SUCCESS != ls)
+		{
+			log_err "SHDeleteKeyW( sub = %ws ) failed. lstatus = %u",
+				sub_key,
+				ls
+				log_end;
+			return false;
+		}
+		return true;
+	}
 	return true;
 }
 

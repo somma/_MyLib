@@ -50,7 +50,7 @@ bool test_registry_util()
 
 	// Delete key
 	// -- key 내부의 value 들도 함께 삭제됨
-	_ASSERTE(true == RUDeleteKey(HKEY_CURRENT_USER, L"_test_key"));
+	_ASSERTE(true == RUDeleteKey(HKEY_CURRENT_USER, L"_test_key", true));
 	    
 	return true;
 }
