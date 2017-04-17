@@ -4998,13 +4998,17 @@ bool	process_in_console_session(_In_ DWORD process_id)
 /// @brief	active console session 에 로그인된 사용자 계정으로 프로세스를 생성한다.
 bool 
 create_process_as_login_user(
+	_In_ uint32_t session_id,
 	_In_ const wchar_t* cmdline
 	)
 {
 	_ASSERTE(NULL != cmdline);
 	if (NULL == cmdline) return false;
 
-	DWORD session_id = WTSGetActiveConsoleSessionId();
+	if (session_id == 0xffffffff)
+	{
+		session_id = WTSGetActiveConsoleSessionId();
+	}
 	DWORD explorer_pid = 0xFFFFFFFF;
 
 	// 

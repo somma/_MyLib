@@ -180,26 +180,28 @@ CServiceBase::ServiceMainEx(
 		throw GetLastError();
 	}
 
-	//
-	//	Register device notification
-	// 
-	_ASSERTE(nullptr == _device_notify_handle);
-	DEV_BROADCAST_DEVICEINTERFACE device_interface = { 0, };
-	device_interface.dbcc_size = sizeof(DEV_BROADCAST_DEVICEINTERFACE);
-	device_interface.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+	//	NOTE 2017/04/13
+	//	Device change notification 을 사용하지 않아 주석처리해두었음
+	////
+	////	Register device notification
+	//// 
+	//// 
+	//_ASSERTE(nullptr == _device_notify_handle);
+	//DEV_BROADCAST_DEVICEINTERFACE device_interface = { 0, };
+	//device_interface.dbcc_size = sizeof(DEV_BROADCAST_DEVICEINTERFACE);
+	//device_interface.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
 
-	_device_notify_handle = RegisterDeviceNotification(
-								s_service->m_statusHandle,													   
-								&device_interface,
-								DEVICE_NOTIFY_SERVICE_HANDLE | 
-								DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
-	if (NULL == _device_notify_handle)
-	{
-		log_err "RegisterDeviceNotification() failed. gle=%u",
-			GetLastError()
-			log_end;
-		throw GetLastError();
-	}
+	//_device_notify_handle = RegisterDeviceNotification(
+	//							s_service->m_statusHandle,													   
+	//							&device_interface,
+	//							DEVICE_NOTIFY_SERVICE_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
+	//if (NULL == _device_notify_handle)
+	//{
+	//	log_err "RegisterDeviceNotification() failed. gle=%u",
+	//		GetLastError()
+	//		log_end;
+	//	throw GetLastError();
+	//}
 
 	// Start the service.
 	s_service->Start(dwArgc, pszArgv);
@@ -261,6 +263,28 @@ CServiceBase::ServiceCtrlHandlerEx(
 		s_service->OnDeviceEvent(dwEventType, lpEventData); 
 		break;
 	}
+	case SERVICE_CONTROL_SESSIONCHANGE:
+	{		
+		//
+		//	dwEventType)
+		// 
+		//		WTS_CONSOLE_CONNECT
+		//		WTS_CONSOLE_DISCONNECT
+		//		WTS_REMOTE_CONNECT
+		//		WTS_REMOTE_DISCONNECT
+		//		WTS_SESSION_LOGON
+		//		WTS_SESSION_LOGOFF
+		//		WTS_SESSION_LOCK
+		//		WTS_SESSION_UNLOCK
+		//		WTS_SESSION_REMOTE_CONTROL
+		//		WTS_SESSION_CREATE
+		//		WTS_SESSION_TERMINATE
+		//
+		//	PWTSSESSION_NOTIFICATION session_noti = (PWTSSESSION_NOTIFICATION)lpEventData;
+		//
+		s_service->OnSessionChange(dwEventType, lpEventData);
+		break;
+	}
 	default: 
 		break;
 	}
@@ -291,7 +315,8 @@ CServiceBase::ServiceCtrlHandlerEx(
 CServiceBase::CServiceBase(PWSTR pszServiceName, 
                            BOOL fCanStop, 
                            BOOL fCanShutdown, 
-                           BOOL fCanPauseContinue)
+                           BOOL fCanPauseContinue, 
+						   BOOL fCanSessionChange)
 {
     // Service name must be a valid string and cannot be NULL.
     m_name = (pszServiceName == NULL) ? L"" : pszServiceName;
@@ -312,6 +337,9 @@ CServiceBase::CServiceBase(PWSTR pszServiceName,
         dwControlsAccepted |= SERVICE_ACCEPT_SHUTDOWN;
     if (fCanPauseContinue) 
         dwControlsAccepted |= SERVICE_ACCEPT_PAUSE_CONTINUE;
+	if (fCanSessionChange)
+		dwControlsAccepted |= SERVICE_ACCEPT_SESSIONCHANGE;
+
     m_status.dwControlsAccepted = dwControlsAccepted;
 
     m_status.dwWin32ExitCode = NO_ERROR;
@@ -349,33 +377,21 @@ CServiceBase::~CServiceBase(void)
 //
 void CServiceBase::Start(DWORD dwArgc, PWSTR *pszArgv)
 {
-    try
-    {
-        // Tell SCM that the service is starting.
-        SetServiceStatus(SERVICE_START_PENDING);
 
-        // Perform service-specific initialization.
-        OnStart(dwArgc, pszArgv);
+    // Tell SCM that the service is starting.
+    SetServiceStatus(SERVICE_START_PENDING);
 
-        // Tell SCM that the service is started.
-        SetServiceStatus(SERVICE_RUNNING);
-    }
-    catch (DWORD dwError)
-    {
-        // Log the error.
-        WriteErrorLogEntry(L"Service Start", dwError);
-
-        // Set the service status to be stopped.
-        SetServiceStatus(SERVICE_STOPPED, dwError);
-    }
-    catch (...)
-    {
-        // Log the error.
-        WriteEventLogEntry(L"Service failed to start.", EVENTLOG_ERROR_TYPE);
-
-        // Set the service status to be stopped.
-        SetServiceStatus(SERVICE_STOPPED);
-    }
+    // Perform service-specific initialization.
+	if (true != OnStart(dwArgc, pszArgv))
+	{
+		WriteEventLogEntry(L"Service failed to start.", EVENTLOG_ERROR_TYPE);
+		SetServiceStatus(SERVICE_STOPPED, 0xFFFFFFFF);
+	}
+	else
+	{
+		// Tell SCM that the service is started.
+		SetServiceStatus(SERVICE_RUNNING);
+	}            
 }
 
 
@@ -394,10 +410,11 @@ void CServiceBase::Start(DWORD dwArgc, PWSTR *pszArgv)
 //   * dwArgc   - number of command line arguments
 //   * lpszArgv - array of command line arguments
 //
-void CServiceBase::OnStart(DWORD dwArgc, PWSTR *pszArgv)
+bool CServiceBase::OnStart(DWORD dwArgc, PWSTR *pszArgv)
 {
 	UNREFERENCED_PARAMETER(dwArgc);
 	UNREFERENCED_PARAMETER(pszArgv);
+	return true;
 }
 
 
@@ -603,29 +620,6 @@ void CServiceBase::Shutdown()
 void CServiceBase::OnShutdown()
 {
 }
-
-//	
-//	FUNCTION: CServiceBase::OnDeviceEvent
-// 
-//	PURPOSE: RegisterServiceCtrlHandlerEx( _handler_ex ) callback의 dwControlCode 값이 
-//	SERVICE_CONTROL_DEVICEEVENT 인 경우 호출되는 가상함수.
-//	
-//	가능한 dwEventType 은 아래와 같다. 
-//	https://msdn.microsoft.com/en-us/library/windows/desktop/ms683241(v=vs.85).aspx
-// 
-//		DBT_DEVICEARRIVAL
-//		DBT_DEVICEREMOVECOMPLETE
-//		DBT_DEVICEQUERYREMOVE
-//		DBT_DEVICEQUERYREMOVEFAILED
-//		DBT_DEVICEREMOVEPENDING
-//		DBT_CUSTOMEVENT
-// 
-void CServiceBase::OnDeviceEvent(DWORD dwEventType, LPVOID lpEventData)
-{	
-	UNREFERENCED_PARAMETER(dwEventType);
-	UNREFERENCED_PARAMETER(lpEventData);
-}
-
 
 #pragma endregion
 

@@ -81,7 +81,7 @@ bool test_minifilter_service()
 					false);
 
 	const wchar_t* svc_name = scm.service_name();
-	log_info "%ws", scm.service_name() log_end;
+	log_info "%ws", svc_name log_end;
 
 	//
 	// install service

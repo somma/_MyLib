@@ -584,7 +584,7 @@ DWORD	get_active_console_session_id();
 bool	get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id);
 bool	process_in_console_session(_In_ DWORD process_id);
 
-bool	create_process_as_login_user(_In_ const wchar_t* cmdline);
+bool	create_process_as_login_user(_In_ uint32_t session_id, _In_ const wchar_t* cmdline);
 
 #if _WIN32_WINNT >= 0x0600	// after vista
 std::wstring get_process_name_by_pid(_In_ DWORD process_id);
