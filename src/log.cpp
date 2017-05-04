@@ -56,6 +56,7 @@ initialize_log(
 		if (true != local_slogger->slog_start(log_level, log_file_path))
 		{
 			OutputDebugStringA("[ERR ] initialize_log(), _logger->slog_start() failed.\n");
+			delete local_slogger;
 			return false;
 		}
 
@@ -71,7 +72,6 @@ initialize_log(
 	//
 	// write log header
 	// 
-
 	std::string now; GetTimeStringA(now);
 	log_info "%s, log start.", now.c_str() log_end;
 
@@ -91,7 +91,7 @@ void
 finalize_log(
 	)
 {
-    boost::lock_guard< boost::mutex > lock(_logger_lock);
+	boost::lock_guard< boost::mutex > lock(_logger_lock);
 	if (NULL == _logger) return;
 	_logger->slog_stop();
 	delete _logger;  _logger = NULL;

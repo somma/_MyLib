@@ -715,9 +715,8 @@ void CServiceBase::WriteEventLogEntry(PWSTR pszMessage, WORD wType)
 //
 void CServiceBase::WriteErrorLogEntry(PWSTR pszFunction, DWORD dwError)
 {
-    wchar_t szMessage[260];
-    StringCchPrintf(szMessage, ARRAYSIZE(szMessage), 
-        L"%s failed w/err 0x%08lx", pszFunction, dwError);
+	wchar_t szMessage[260];
+    StringCchPrintf(szMessage, ARRAYSIZE(szMessage), L"%s failed w/err 0x%08lx", pszFunction, dwError);
     WriteEventLogEntry(szMessage, EVENTLOG_ERROR_TYPE);
 }
 
