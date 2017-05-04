@@ -29,6 +29,9 @@
 #include "ResourceHelper.h"
 #include "gpt_partition_guid.h"
 
+#include <sddl.h>
+#pragma comment(lib, "Advapi32.lib")
+
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "IPHLPAPI.lib")
 #pragma comment(lib, "ws2_32.lib")
@@ -4996,10 +4999,12 @@ bool	process_in_console_session(_In_ DWORD process_id)
 }
 
 /// @brief	active console session 에 로그인된 사용자 계정으로 프로세스를 생성한다.
+///	@remark 이건 여러모로 위험한 함수이므로 쓰지말자. 
 bool 
 create_process_as_login_user(
 	_In_ uint32_t session_id,
-	_In_ const wchar_t* cmdline
+	_In_ const wchar_t* cmdline, 
+	_Out_ PROCESS_INFORMATION& pi
 	)
 {
 	_ASSERTE(NULL != cmdline);
@@ -5019,13 +5024,11 @@ create_process_as_login_user(
 	DWORD creation_flag = NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE;
 	LPVOID env_block = NULL;
 	size_t cmd_len = 0;
-	wchar_t* cmd = NULL;
-	PROCESS_INFORMATION pi = { 0 };
+	wchar_t* cmd = NULL;	
+	STARTUPINFO si = { 0 }; 
 	TOKEN_PRIVILEGES tp = { 0 };
-	LUID luid = { 0 };
-	STARTUPINFO si = { 0 };
+	LUID luid = { 0 };	
 	HANDLE snap = INVALID_HANDLE_VALUE;
-	HANDLE user_token = NULL;
 	HANDLE primary_token = NULL;
 	HANDLE duplicated_token = NULL;
 	HANDLE process_handle = NULL;
@@ -5052,7 +5055,7 @@ create_process_as_login_user(
 
 			do
 			{
-				if (_wcsicmp(proc_entry.szExeFile, L"explorer.exe") == 0)
+				if(true == rstrnicmp(proc_entry.szExeFile, L"explorer.exe"))
 				{
 					DWORD explorer_sessio_id = 0;
 					if (ProcessIdToSessionId(proc_entry.th32ProcessID, &explorer_sessio_id) &&
@@ -5070,13 +5073,6 @@ create_process_as_login_user(
 		if (0xFFFFFFFF == explorer_pid)
 		{
 			log_err "can not find 'explorer.exe'" log_end;			
-			break;
-		}
-
-		if (TRUE != WTSQueryUserToken(session_id, 
-									  &user_token))
-		{	
-			log_err "WTSQueryUserToken(), gle=%u", GetLastError() log_end;
 			break;
 		}
 
@@ -5189,12 +5185,6 @@ create_process_as_login_user(
 			break;
 		}
 
-		if (WAIT_OBJECT_0 != ::WaitForSingleObject(pi.hProcess, 180000))
-		{
-			log_err "WaitForSingleObject Timeout. gle=%u", GetLastError() log_end;
-			break;
-		}
-
 		//
 		//	OK!!!
 		// 
@@ -5206,15 +5196,6 @@ create_process_as_login_user(
 	if (NULL != cmd)
 	{
 		free(cmd);
-	}
-
-	if (NULL != pi.hProcess)
-	{
-		CloseHandle(pi.hProcess);
-	}
-	if (NULL != pi.hThread)
-	{
-		CloseHandle(pi.hThread);
 	}
 
 	if (NULL != process_handle)
@@ -5229,17 +5210,53 @@ create_process_as_login_user(
 	{
 		CloseHandle(duplicated_token);
 	}
-	if (NULL != user_token)
-	{
-		CloseHandle(user_token);
-	}
-
+	
 	if (NULL != env_block)
 	{
 		DestroyEnvironmentBlock(env_block);
 	}
 
 	return ret;
+}
+
+/// @brief	authenticated user 만 접근가능한  DACL 을 설정한다. 
+bool set_security_attributes(_Out_ SECURITY_ATTRIBUTES& sa)
+{
+	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa.bInheritHandle = FALSE;
+
+	//	Creating a DACL
+	//	https://msdn.microsoft.com/en-us/library/windows/desktop/ms717798(v=vs.85).aspx
+	// 
+	//	Security Descriptor String Format
+	//	https://msdn.microsoft.com/en-us/library/windows/desktop/aa379570(v=vs.85).aspx
+	//
+	//	ACE Strings
+	//	https://msdn.microsoft.com/en-us/library/windows/desktop/aa374928(v=vs.85).aspx
+	//
+	//	Define the SDDL for the DACL.This example sets the following access:
+	//     Built-in guests are denied all access.
+	//     Anonymous logon is denied all access.
+	//     Authenticated users are allowed read/write/execute access.
+	//     Administrators are allowed full control.
+	//
+	//	Modify these values as needed to generate the proper DACL for your application. 
+
+	wchar_t* dacl_text = \
+		L"D:"					// Discretionary ACL
+		L"(D;OICI;GA;;;BG)"		// Deny access to built-in guests
+		L"(D;OICI;GA;;;AN)"     // Deny access to anonymous logon
+		L"(A;OICI;GRGWGX;;;AU)" // Allow 
+								// read/write/execute 
+								// to authenticated 
+								// users
+		L"(A;OICI;GA;;;BA)";    // Allow full control to administrators
+
+	BOOL ret = ConvertStringSecurityDescriptorToSecurityDescriptorW(dacl_text,
+																	SDDL_REVISION_1,
+																	&(sa.lpSecurityDescriptor),
+																	NULL);
+	return ret ? true : false;
 }
 
 /**

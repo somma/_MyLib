@@ -37,7 +37,7 @@ bool process::kill(_In_ DWORD exit_code)
 				"OpenProcess() failed, pid = %u, gle = %u", 
 				_pid,
 				GetLastError()
-			log_end
+			log_end;
 			break;
 		}
 	
@@ -47,13 +47,13 @@ bool process::kill(_In_ DWORD exit_code)
 				"TerminateProcess() failed, pid = %u, gle = %u", 
 				_pid,
 				GetLastError()
-			log_end
+			log_end;
 			break;			
 		}
 	
 
 		_killed = true;	
-		log_dbg "pid = %u, %ws terminated", _pid, _process_name.c_str() log_end
+		log_dbg "pid = %u, %ws terminated", _pid, _process_name.c_str() log_end;
 	} while (false);
 #pragma warning(default: 4127)
 
@@ -85,13 +85,13 @@ cprocess_tree::build_process_tree()
 	HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (snap == INVALID_HANDLE_VALUE)
 	{
-		log_err "CreateToolhelp32Snapshot() failed, gle = %u", GetLastError() log_end
+		log_err "CreateToolhelp32Snapshot() failed, gle = %u", GetLastError() log_end;
 		return false;
 	}
 
 	if (true != set_privilege(SE_DEBUG_NAME, TRUE))
 	{
-		log_info "set_privilege(SE_DEBUG_NAME) failed." log_end
+		log_info "set_privilege(SE_DEBUG_NAME) failed." log_end;
 		// just info
 	}
 
@@ -101,7 +101,7 @@ cprocess_tree::build_process_tree()
 		proc_entry.dwSize = sizeof(PROCESSENTRY32W);
 		if (!Process32First(snap, &proc_entry))
 		{
-			log_err "CreateToolhelp32Snapshot() failed, gle = %u", GetLastError() log_end
+			log_err "CreateToolhelp32Snapshot() failed, gle = %u", GetLastError() log_end;
 			break;
 		}
 
@@ -122,7 +122,7 @@ cprocess_tree::build_process_tree()
 				//	proc_entry.th32ProcessID, 
 				//	WcsToMbsEx(proc_entry.szExeFile).c_str(),
 				//	GetLastError() 
-				//log_end
+				//log_end;
 
 				// use create time 0!
 			}
@@ -140,7 +140,7 @@ cprocess_tree::build_process_tree()
 									 &dummy_time, 
 									 &dummy_time))
 				{
-					log_err "GetProcessTimes() failed, gle = %u", GetLastError() log_end
+					log_err "GetProcessTimes() failed, gle = %u", GetLastError() log_end;
 					// use create time 0!
 				}
 
@@ -413,7 +413,7 @@ bool cprocess_tree::kill_process_tree(_In_ DWORD root_pid)
 	// check process is already killed.
 	if (true == root.killed()) 
 	{
-		log_info "already killed. pid = %u, %ws", root.pid(), root.process_name() log_end
+		log_info "already killed. pid = %u, %ws", root.pid(), root.process_name() log_end;
 		return true;
 	}
 
@@ -467,7 +467,7 @@ void cprocess_tree::print_process_tree(_In_ process& p, _In_ DWORD& depth)
 		p.pid(), 
 		p.ppid(), 
 		p.process_name() 
-	log_end
+	log_end;
 
 	// p._pid 를 ppid 로 갖는 item 을 찾자
 	process_map::iterator it = _proc_map.begin();

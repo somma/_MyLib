@@ -455,8 +455,7 @@ RUDeleteKey(
 			return false;
 		}
 		return true;
-	}
-	return true;
+	}	
 }
 
 /// @prarm	root_key	HKEY_CLASSES_ROOT
