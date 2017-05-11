@@ -140,6 +140,136 @@ void reader()
     }
 }
 
+
+class ConditionNotifyBeforeWait
+{
+public: 
+	ConditionNotifyBeforeWait()
+	{
+	}
+
+	~ConditionNotifyBeforeWait()
+	{
+	}
+
+	void notifier()
+	{
+		boost::unique_lock<boost::mutex> lock(_lock);
+		_cond.notify_one();
+		log_info "notified" log_end;
+	}
+
+	void waiter()
+	{
+		boost::unique_lock<boost::mutex> lock(_lock);
+		boost::cv_status wait_ret = _cond.wait_for(lock, boost::chrono::seconds(1));
+		if (wait_ret == boost::cv_status::timeout)
+		{
+			log_info "wait time out" log_end;
+		}
+		else
+		{
+			log_info "awake" log_end;
+		}
+	}
+
+	///	cond.notify() 를 먼저 호출하고, cond.wait() 을 나중에 호출하면 
+	/// 또는 그 반대의 경우 어떻게 되는지 테스트 	
+	void ConditionNotifyWaitTest()
+	{
+		/// wait 보다 notify 를 먼저 호출하면 깨어나지 않는다. 
+		/// 당연한걸 뭐....
+		boost::thread t1(boost::bind(&ConditionNotifyBeforeWait::notifier,
+									 this));
+		boost::thread t2(boost::bind(&ConditionNotifyBeforeWait::waiter,
+									 this));
+
+		t1.join();
+		t2.join();
+
+		/// wait( ) -> notify() 하면 의도대로 잘 깨어나지
+		boost::thread t3(boost::bind(&ConditionNotifyBeforeWait::waiter,
+									 this));
+		boost::thread t4(boost::bind(&ConditionNotifyBeforeWait::notifier,
+									 this));
+		
+		t3.join();
+		t4.join();
+	}
+
+	/// SetEvent(), WaitForSingleObject() 순서에 따라
+	/// 어떻게 동작하는지 테스트 
+	///
+	/// 이벤트 객체는 당연히 상태가 유지되는 커널객체니까
+	/// Set 을 먼저하든 Wait 을 먼저하든 잘 되어야 정상
+	void EventSetAfterWait()
+	{
+		HANDLE event = CreateEvent(NULL, FALSE, FALSE, NULL);
+		_ASSERTE(NULL != event);
+		
+		boost::thread t1([event]()
+		{
+			SetEvent(event);
+		});
+
+
+		boost::thread t2([event]()
+		{
+			Sleep(5000);
+
+			DWORD wait_ret = WaitForSingleObject(event, 1000);
+			if (WAIT_OBJECT_0 == wait_ret)
+			{
+				log_info "event signaled." log_end;
+			}
+			else
+			{
+				log_info "wait failed. ret=%u", wait_ret log_end;
+			}
+		});
+
+		t1.join();
+		t2.join();
+		CloseHandle(event);
+	}
+
+
+	void EventWaitAfterSet()
+	{
+		HANDLE event = CreateEvent(NULL, FALSE, FALSE, NULL);
+		_ASSERTE(NULL != event);
+
+		boost::thread t1([event]()
+		{
+			Sleep(1000);
+			DWORD wait_ret = WaitForSingleObject(event, 1000);
+			if (WAIT_OBJECT_0 == wait_ret)
+			{
+				log_info "event signaled." log_end;
+			}
+			else
+			{
+				log_info "wait failed. ret=%u", wait_ret log_end;
+			}
+		});
+
+
+		boost::thread t2([event]()
+		{			
+			SetEvent(event);
+		});
+
+		t1.join();
+		t2.join();
+		CloseHandle(event);
+	}
+
+
+	boost::mutex _lock;
+	boost::condition_variable _cond;
+};
+
+
 /// @brief boost thread test 
 bool test_boost_thread()
 {
@@ -163,12 +293,17 @@ bool test_boost_thread()
     //t22.join();
     //log_info "=======================" log_end
 
-    // #4 boost::condition 
-    boost::thread t13(&reader);
-    boost::thread t23(&writer);
-    t13.join();
-    t23.join();
+    //// #4 boost::condition 
+    //boost::thread t13(&reader);
+    //boost::thread t23(&writer);
+    //t13.join();
+    //t23.join();
 
+
+	ConditionNotifyBeforeWait cnbw;
+	cnbw.ConditionNotifyWaitTest();
+	cnbw.EventSetAfterWait();
+	cnbw.EventWaitAfterSet();
 
     return true;
 }
