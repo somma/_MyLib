@@ -673,20 +673,20 @@ bin_to_hexw(
 	_Out_ std::wstring& hex_string
 	);
 
-bool str_to_int32(_In_ const char* int32_string, _Out_ INT32& int32_val);
-bool str_to_uint32(_In_ const char* uint32_string, _Out_ UINT32& uint32_val);
-bool str_to_int64(_In_ const char* int64_string, _Out_ INT64& int64_val);
-bool str_to_uint64(_In_ const char* uint64_string, _Out_ UINT64& uint64_val);
+bool str_to_int32(_In_ const char* int32_string, _Out_ int32_t& int32_val);
+bool str_to_uint32(_In_ const char* uint32_string, _Out_ uint32_t& uint32_val);
+bool str_to_int64(_In_ const char* int64_string, _Out_ int64_t& int64_val);
+bool str_to_uint64(_In_ const char* uint64_string, _Out_ uint64_t& uint64_val);
     
 
-bool wstr_to_int32(_In_ const wchar_t* int32_string, _Out_ INT32& int32_val);
-bool wstr_to_uint32(_In_ const wchar_t* uint32_string, _Out_ UINT32& uint32_val);
-bool wstr_to_int64(_In_ const wchar_t* int64_string, _Out_ INT64& int64_val);
-bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ UINT64& uint64_val);
+bool wstr_to_int32(_In_ const wchar_t* int32_string, _Out_ int32_t& int32_val);
+bool wstr_to_uint32(_In_ const wchar_t* uint32_string, _Out_ uint32_t& uint32_val);
+bool wstr_to_int64(_In_ const wchar_t* int64_string, _Out_ int64_t& int64_val);
+bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ uint64_t& uint64_val);
 
-UINT16 swap_endian_16(_In_ UINT16 value); 
-UINT32 swap_endian_32(_In_ UINT32 value); 
-UINT64 swap_endian_64(_In_ UINT64 value);
+uint16_t swap_endian_16(_In_ uint16_t value);
+uint32_t swap_endian_32(_In_ uint32_t value);
+uint64_t swap_endian_64(_In_ uint64_t value);
 
 typedef struct WU_PROCESSOR_INFO
 {

@@ -5682,7 +5682,7 @@ bin_to_hexw(
  * @endcode	
  * @return	
 **/
-bool str_to_int32(_In_ const char* int32_string, _Out_ INT32& int32_val)
+bool str_to_int32(_In_ const char* int32_string, _Out_ int32_t& int32_val)
 {
 	if (NULL == int32_string) return false;
 	
@@ -5693,7 +5693,7 @@ bool str_to_int32(_In_ const char* int32_string, _Out_ INT32& int32_val)
 	return true;
 }
 
-bool str_to_uint32(_In_ const char* uint32_string, _Out_ UINT32& uint32_val)
+bool str_to_uint32(_In_ const char* uint32_string, _Out_ uint32_t& uint32_val)
 {
 	if (NULL == uint32_string) return false;
 
@@ -5708,7 +5708,7 @@ bool str_to_uint32(_In_ const char* uint32_string, _Out_ UINT32& uint32_val)
 	return true;	
 }
 
-bool str_to_int64(_In_ const char* int64_string, _Out_ INT64& int64_val)
+bool str_to_int64(_In_ const char* int64_string, _Out_ int64_t& int64_val)
 {
 	if (NULL == int64_string) return false;
 
@@ -5731,7 +5731,7 @@ bool str_to_int64(_In_ const char* int64_string, _Out_ INT64& int64_val)
 	return true;
 }
 
-bool str_to_uint64(_In_ const char* uint64_string, _Out_ UINT64& uint64_val)
+bool str_to_uint64(_In_ const char* uint64_string, _Out_ uint64_t& uint64_val)
 {
 	if (NULL == uint64_string) return false;
 
@@ -5762,25 +5762,25 @@ bool str_to_uint64(_In_ const char* uint64_string, _Out_ UINT64& uint64_val)
 	return true;
 }
 
-bool wstr_to_int32(_In_ const wchar_t* int32_string, _Out_ INT32& int32_val)
+bool wstr_to_int32(_In_ const wchar_t* int32_string, _Out_ int32_t& int32_val)
 {
 	if (NULL == int32_string) return false;
 	return str_to_int32(WcsToMbsEx(int32_string).c_str(), int32_val);	
 }
 
-bool wstr_to_uint32(_In_ const wchar_t* uint32_string, _Out_ UINT32& uint32_val)
+bool wstr_to_uint32(_In_ const wchar_t* uint32_string, _Out_ uint32_t& uint32_val)
 {
 	if (NULL == uint32_string) return false;
 	return str_to_uint32(WcsToMbsEx(uint32_string).c_str(), uint32_val);
 }
 
-bool wstr_to_int64(_In_ const wchar_t* int64_string, _Out_ INT64& int64_val)
+bool wstr_to_int64(_In_ const wchar_t* int64_string, _Out_ int64_t& int64_val)
 {
 	if (NULL == int64_string) return false;
 	return str_to_int64(WcsToMbsEx(int64_string).c_str(), int64_val);
 }
 
-bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ UINT64& uint64_val)
+bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ uint64_t& uint64_val)
 {
 	if (NULL == uint64_string) return false;
 	return str_to_uint64(WcsToMbsEx(uint64_string).c_str(), uint64_val);
