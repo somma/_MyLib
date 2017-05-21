@@ -10,6 +10,8 @@
 #include "stdafx.h"
 #include "RegistryUtil.h"
 
+
+#define NO_SHLWAPI_STRFCNS
 #include "Shlwapi.h"
 #pragma comment(lib, "Shlwapi.lib")
 
