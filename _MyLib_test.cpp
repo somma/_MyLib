@@ -84,6 +84,7 @@ bool test_cpp_class();
 
 
 // win32utils.cpp
+bool test_find_files();
 bool test_get_filepath_by_handle();
 bool test_nt_name_to_dos_name();
 bool test_query_dos_device();
@@ -250,7 +251,7 @@ int _tmain(int argc, _TCHAR* argv[])
  //   assert_bool(true, test_get_drive_type);
  //   assert_bool(true, test_os_version);
 
-    assert_bool(true, test_boost_thread);
+    //assert_bool(true, test_boost_thread);
 	//assert_bool(true, test_thread_pool);
  //   
  //   assert_bool(true, test_boost_asio_timer);
@@ -281,6 +282,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_nt_name_to_dos_name);
 	//assert_bool(true, test_query_dos_device);
 	//assert_bool(true, test_get_filepath_by_handle);
+	assert_bool(true, test_find_files);
+	
 	//assert_bool(true, test_bin_to_hex);
 	//assert_bool(true, test_str_to_xxx);
 	//assert_bool(true, test_set_get_file_position);
@@ -859,6 +862,107 @@ bool test_strtok()
     printf("\n");
 
     return true;
+}
+
+/// @brief	c:\temp\dbg			X
+///			c:\temp\dbg\		O
+///			c:\temp\dbg\*		O
+///			c:\temp\dbg\*.*		O
+///			c:\temp\dbg\*.exe	O
+///			c:\temp\dbg\*.txt	O
+bool WINAPI ffcb(_In_ DWORD_PTR tag, _In_ const wchar_t* path)
+{
+	std::list<std::wstring>* files = (std::list<std::wstring>*)tag;
+	files->push_back(path);
+	return true;
+}
+
+bool test_find_files()
+{
+	//
+	//	테스트용 디렉토리/파일 생성
+	// 
+	{
+		if (true == is_file_existsW(L"c:\\temp\\dbg"))
+		{
+			if (!WUDeleteDirectoryW(L"c:\\temp\\dbg"))
+			{
+				return false;
+			}
+		}
+
+		if (true != WUCreateDirectory(L"c:\\temp\\dbg"))
+		{
+			return false;
+		}
+
+		HANDLE h = open_file_to_write(L"c:\\temp\\dbg\\1111.txt");
+		if (INVALID_HANDLE_VALUE == h)
+			return false;
+		else
+			CloseHandle(h);
+
+		h = open_file_to_write(L"c:\\temp\\dbg\\1112.txt");
+		if (INVALID_HANDLE_VALUE == h)
+			return false;
+		else
+			CloseHandle(h);
+
+
+		h = open_file_to_write(L"c:\\temp\\dbg\\1111.exe");
+		if (INVALID_HANDLE_VALUE == h)
+			return false;
+		else
+			CloseHandle(h);
+
+		h = open_file_to_write(L"c:\\temp\\dbg\\1111.dll");
+		if (INVALID_HANDLE_VALUE == h)
+			return false;
+		else
+			CloseHandle(h);
+
+		h = open_file_to_write(L"c:\\temp\\dbg\\1111");
+		if (INVALID_HANDLE_VALUE == h)
+			return false;
+		else
+			CloseHandle(h);
+	}
+
+
+	typedef struct root_and_count
+	{
+		wchar_t* root_path;
+		int32_t	count;
+	} *proot_and_count;
+
+	root_and_count roots[] = {
+		{ L"c:\\temp\\dbg\\1112.txt", 1 },
+		{ L"c:\\temp\\dbg\\1111.*", 4 },
+		{ L"c:\\temp\\dbg\\1111", 1 },
+		{L"c:\\temp\\dbg", 5},
+		{ L"c:\\temp\\dbg\\", 5},
+		{ L"c:\\temp\\dbg\\*", 5 },
+		{ L"c:\\temp\\dbg\\*.*", 5},
+		{ L"c:\\temp\\dbg\\*.exe", 1},
+		{ L"c:\\temp\\dbg\\*.txt", 2}
+	};
+
+	for (int i = 0; i < sizeof(roots) / sizeof(root_and_count); ++i)
+	{
+		std::list<std::wstring> files;
+		_ASSERTE(true == find_files(roots[i].root_path, ffcb, (DWORD_PTR)&files, false));
+
+		_ASSERTE(roots[i].count == files.size());
+
+		std::wstringstream strm;
+		for (auto file: files)
+		{
+			strm << file << std::endl;
+		}
+		log_info "root=%ws\n%ws", roots[i].root_path, strm.str().c_str() log_end;
+	}
+
+	return true;
 }
 
 /**

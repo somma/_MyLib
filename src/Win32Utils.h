@@ -242,7 +242,7 @@ BOOL SaveBinaryFile(
                 IN PBYTE    Data
                 );
 
-typedef BOOL (WINAPI *fnFindFilesCallback)(IN DWORD_PTR Tag, IN LPCWSTR path);
+typedef bool (WINAPI *fnFindFilesCallback)(_In_ DWORD_PTR tag, _In_ const wchar_t* path);
 
 bool
 find_files(

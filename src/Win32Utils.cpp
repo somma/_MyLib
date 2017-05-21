@@ -1813,7 +1813,7 @@ LoadFileToMemory(
 
 	if (0 == fileSize.QuadPart)
 	{
-		log_err "can not map zero length file" log_end
+		log_err "Can not map zero length file" log_end
 		return FALSE;
 	}
    
@@ -1908,7 +1908,7 @@ SaveBinaryFile(
                                 )))
     {
         log_err
-            "can not generate target path, dir=%S, file=%S", 
+            "Can not generate target path, dir=%S, file=%S", 
             Directory, FileName
         log_end
         return FALSE;
@@ -1930,7 +1930,7 @@ SaveBinaryFile(
     if (INVALID_HANDLE_VALUE == hFile)
     {
         log_err
-            "can not create file=%S, check path or privilege", 
+            "Can not create file=%S, check path or privilege", 
             DataPath
         log_end
         return FALSE;
@@ -2421,10 +2421,14 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 /**
  * @brief      하위 디렉토리에 존재하는 모든 파일들을 enum 하는 함수
 
-				아래 형태 4가지는 모두 동일한 결과를 출력함				
+				아래 형태 4가지는 모두 동일한 결과를 출력함	
+				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData",
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\",
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*",
-				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.*"	
+				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.*"
+
+				확장자 필터링 같은것도 가능함
+				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.txt"
  * @param	
  * @see		
  * @remarks	
@@ -2444,13 +2448,31 @@ find_files(
     if (NULL == root) return false;
 
 
-	// root 파라미터가 '\' 로 끝나면 안되므로 \* 로 강제 변경
-	// 
 	std::wstring root_dir(root);
+
     if (root[wcslen(root)-1] == L'\\')
     {
+		//
+		//	root 파라미터가 '\' 로 끝나면 안되므로 `\*` 로 강제 변경
+		//
         root_dir.append(L"*");
     }
+	else 
+	{
+		//	`d:\dir\` 인 경우는 이미 검사했으므로 root 는 아래 두 타입 중 하나일것이다.
+		// 
+		//	d:\dir
+		//	d:\dir\*, d:\dir\*.*, d:\dir\*.txt, ...
+		//	
+		//	`d:\dir\*` 형태라면 어차피 is_dir() 에서 false 를 리턴하므로 
+		//	is_dir() 가 true 를 리턴하는 경우라면 강제로 `\*` 를 붙여준다. 
+		// 
+		if (true == is_dir(root))
+		{
+			root_dir.append(L"\\*");
+		}		
+	}
+
 
     HANDLE hSrch = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW wfd = {0};
@@ -2492,18 +2514,24 @@ find_files(
                 continue;                
             }
         }
-        else if ( (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)  && true == recursive )
+        else if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
         {
-			if (0 != _wcsnicmp(&wfd.cFileName[0], L".", 1))
+			if (true == recursive)
 			{
-				StringCbPrintfW(newpath, sizeof(newpath), L"%s%s%s\\*.*", drive, dir, wfd.cFileName);
-				find_files(newpath, cb, tag, recursive);
-			}            
+				if (0 != _wcsnicmp(&wfd.cFileName[0], L".", 1))
+				{
+					StringCbPrintfW(newpath, sizeof(newpath), L"%s%s%s\\*.*", drive, dir, wfd.cFileName);
+					find_files(newpath, cb, tag, recursive);
+				}
+			}			            
         } 
         else 
         {
-            StringCbPrintfW(fname, sizeof(fname), L"%s%s%s", drive, dir, wfd.cFileName);
-
+			//
+			//	파일 경로만 callback 으로 전달한다. 디렉토리는 전달하지 않음.
+			// 
+            
+			StringCbPrintfW(fname, sizeof(fname), L"%s%s%s", drive, dir, wfd.cFileName);
             if (NULL != cb)
             {
                 if(TRUE != cb(tag, fname)) break;
@@ -5074,7 +5102,7 @@ create_process_as_login_user(
 
 		if (0xFFFFFFFF == explorer_pid)
 		{
-			log_err "can not find 'explorer.exe'" log_end;			
+			log_err "Can not find 'explorer.exe'" log_end;			
 			break;
 		}
 
