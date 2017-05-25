@@ -73,15 +73,34 @@ set_log_mask(
     _In_ uint32_t mask
     );        
 
+#ifdef _NO_LOG_
+
+inline
 void
 log_write_fmt(
-    _In_ uint32_t log_mask,
-    _In_ uint32_t log_level,
+	_In_ uint32_t log_mask,
+	_In_ uint32_t log_level,
 	_In_ uint32_t log_to,
 	_In_z_ const char* function,
-    _In_z_ const char* fmt, 
-    _In_ ...
-    );
+	_In_z_ const char* fmt,
+	_In_ ...
+)
+{
+}
+
+#else
+
+void
+log_write_fmt(
+	_In_ uint32_t log_mask,
+	_In_ uint32_t log_level,
+	_In_ uint32_t log_to,
+	_In_z_ const char* function,
+	_In_z_ const char* fmt,
+	_In_ ...
+);
+
+#endif // _NO_LOG_
 
 void
 log_write_fmt_without_deco(
@@ -103,13 +122,11 @@ log_write_fmt_without_deco(
 #define log_dbg		log_write_fmt( log_mask_sys, log_level_debug, log_to_con | log_to_ods | log_to_file, __FUNCTION__, 
 #define log_msg     log_write_fmt_without_deco( log_mask_sys, log_level_debug, log_to_ods | log_to_file, 
 
-
 #define con_err		log_write_fmt( log_mask_sys, log_level_error, log_to_con, __FUNCTION__, 
 #define con_warn	log_write_fmt( log_mask_sys, log_level_warn, log_to_con, __FUNCTION__,  
 #define con_info	log_write_fmt( log_mask_sys, log_level_info, log_to_con, __FUNCTION__, 
 #define con_dbg		log_write_fmt( log_mask_sys, log_level_debug, log_to_con, __FUNCTION__, 
 #define con_msg     log_write_fmt_without_deco( log_mask_sys, log_level_debug, log_to_con, 
-
 
 #define log_end		);
 #define con_end		);

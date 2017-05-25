@@ -4731,7 +4731,7 @@ bool get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wst
 			else
 			{
 				// enforce null terminate string.
-				netbios_name[NetbiosNameLen] = 0x0000;
+				netbios_name[NetbiosNameLen] = 0x00;
 			}
 		}
 	}

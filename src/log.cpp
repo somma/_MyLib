@@ -142,6 +142,8 @@ set_log_mask(
  * @endcode	
  * @return	
 **/
+#ifndef _NO_LOG_
+
 void
 log_write_fmt(
     _In_ uint32_t log_mask,
@@ -276,6 +278,10 @@ log_write_fmt(
         }
     }
 }
+#endif// _NO_LOG_
+
+
+
 
 /// @brief  Writes log without decoration
 void
