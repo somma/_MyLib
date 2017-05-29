@@ -123,13 +123,13 @@ bool scm_context::install_driver()
 	// 
 
 	service_handle = CreateServiceW(scm_handle,
-									_service_name.c_str(),
-									_service_display_name.c_str(),
+									_service_name.c_str(), //서비스 이름
+									_service_display_name.c_str(), //
 									GENERIC_READ, // SERVICE_ALL_ACCESS,
 									SERVICE_KERNEL_DRIVER,
 									SERVICE_DEMAND_START,
 									SERVICE_ERROR_NORMAL,
-									_driver_path.c_str(),
+									_driver_path.c_str(), //
 									NULL,
 									NULL,
 									NULL,
@@ -162,6 +162,17 @@ bool scm_context::install_driver()
 			<< L"SYSTEM\\CurrentControlSet\\Services\\"
 			<< _service_name
 			<< L"\\Instances";
+
+		//xinfolab code add
+		if (nullptr != RUCreateKey(HKEY_LOCAL_MACHINE, key_path.str().c_str(), false))
+		{
+			_installed = true;
+		}
+		else
+		{
+			_installed = false;
+		}
+
 		HKEY key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
 									key_path.str().c_str(),
 									false);
@@ -202,6 +213,16 @@ bool scm_context::install_driver()
 			<< L"SYSTEM\\CurrentControlSet\\Services\\"
 			<< _service_name
 			<< L"\\Instances\\AltitudeAndFlags";
+
+		//xinfolab code add
+		if (nullptr != RUCreateKey(HKEY_LOCAL_MACHINE, key_path.str().c_str(), false))
+		{
+			_installed = true;
+		}
+		else
+		{
+			_installed = false;
+		}
 
 		key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
 							   key_path.str().c_str(),
