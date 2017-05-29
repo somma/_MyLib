@@ -163,16 +163,17 @@ bool scm_context::install_driver()
 			<< _service_name
 			<< L"\\Instances";
 
-		//xinfolab code add
-		if (nullptr != RUCreateKey(HKEY_LOCAL_MACHINE, key_path.str().c_str(), false))
-		{
+		HKEY create_handle = RUCreateKey(HKEY_LOCAL_MACHINE, key_path.str().c_str(), false);
+		if (nullptr != )
+		{	
 			_installed = true;
+			RUCloseKey(create_handle); create_handle = nullptr;
 		}
 		else
-		{
+		{	
 			_installed = false;
 		}
-
+		
 		HKEY key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
 									key_path.str().c_str(),
 									false);
@@ -214,13 +215,14 @@ bool scm_context::install_driver()
 			<< _service_name
 			<< L"\\Instances\\AltitudeAndFlags";
 
-		//xinfolab code add
-		if (nullptr != RUCreateKey(HKEY_LOCAL_MACHINE, key_path.str().c_str(), false))
-		{
+		create_handle = RUCreateKey(HKEY_LOCAL_MACHINE, key_path.str().c_str(), false);
+		if (nullptr != )
+		{	
 			_installed = true;
+			RUCloseKey(create_handle); create_handle = nullptr;
 		}
 		else
-		{
+		{	
 			_installed = false;
 		}
 
