@@ -164,7 +164,7 @@ bool scm_context::install_driver()
 			<< L"\\Instances";
 
 		HKEY create_handle = RUCreateKey(HKEY_LOCAL_MACHINE, key_path.str().c_str(), false);
-		if (nullptr != )
+		if (nullptr != create_handle)
 		{	
 			_installed = true;
 			RUCloseKey(create_handle); create_handle = nullptr;
@@ -216,7 +216,7 @@ bool scm_context::install_driver()
 			<< L"\\Instances\\AltitudeAndFlags";
 
 		create_handle = RUCreateKey(HKEY_LOCAL_MACHINE, key_path.str().c_str(), false);
-		if (nullptr != )
+		if (nullptr != create_handle)
 		{	
 			_installed = true;
 			RUCloseKey(create_handle); create_handle = nullptr;
