@@ -12,7 +12,7 @@
 #include <memory>				// std::shared_ptr
 #include "RegistryUtil.h"
 
-//> todo - SCM Á¢±Ù½Ã ±ÇÇÑÀº ÇÊ¿äÇÑ ¸¸Å­¸¸ Á¤ÇØ¼­ È£ÃâÇÏ°Ô ÇÏÀÚ. 
+//> todo - SCM ì ‘ê·¼ì‹œ ê¶Œí•œì€ í•„ìš”í•œ ë§Œí¼ë§Œ ì •í•´ì„œ í˜¸ì¶œí•˜ê²Œ í•˜ìž. 
 
 struct sc_handle_deleter
 {
@@ -123,13 +123,13 @@ bool scm_context::install_driver()
 	// 
 
 	service_handle = CreateServiceW(scm_handle,
-									_service_name.c_str(), //¼­ºñ½º ÀÌ¸§
-									_service_display_name.c_str(), //
+									_service_name.c_str(), 
+									_service_display_name.c_str(), 
 									GENERIC_READ, // SERVICE_ALL_ACCESS,
 									SERVICE_KERNEL_DRIVER,
 									SERVICE_DEMAND_START,
 									SERVICE_ERROR_NORMAL,
-									_driver_path.c_str(), //
+									_driver_path.c_str(), 
 									NULL,
 									NULL,
 									NULL,
@@ -285,11 +285,11 @@ bool scm_context::uninstall_driver()
 		{
 			log_err "scm_context::stop_driver() failed, can not uninstall driver..." log_end
 			
-			//> stop_driver() °¡ ½ÇÆÐÇØµµ »èÁ¦½Ãµµ¸¦ ÇØ¾ß ÇÑ´Ù. 
-			//    - driver :: DriverEntry() ¿¡¼­ STATUS_SUCCESS ¸¦ ¸®ÅÏÇßÀ¸³ª ¾Æ¹«Áþµµ ¾ÈÇÏ°í, ¸®ÅÏÇÑ °æ¿ì
-			//    - driver handle À» ´©±º°¡ ¹°°í ÀÖ´Â °æ¿ì
-			//  °­Á¦·Î ¼­ºñ½º¸¦ »èÁ¦ (registry ¿¡¼­ ¼­ºñ½º Á¦°Å)ÇÏ°í, ¸®ºÎÆÃÇÏ¸é ¼­ºñ½º°¡ 
-			//  Á¦°ÅµÈ »óÅÂ·Î (Á¤»ó) µ¹¾Æ¿Ã ¼ö ÀÖ´Ù. 
+			//> stop_driver() ê°€ ì‹¤íŒ¨í•´ë„ ì‚­ì œì‹œë„ë¥¼ í•´ì•¼ í•œë‹¤. 
+			//    - driver :: DriverEntry() ì—ì„œ STATUS_SUCCESS ë¥¼ ë¦¬í„´í–ˆìœ¼ë‚˜ ì•„ë¬´ì§“ë„ ì•ˆí•˜ê³ , ë¦¬í„´í•œ ê²½ìš°
+			//    - driver handle ì„ ëˆ„êµ°ê°€ ë¬¼ê³  ìžˆëŠ” ê²½ìš°
+			//  ê°•ì œë¡œ ì„œë¹„ìŠ¤ë¥¼ ì‚­ì œ (registry ì—ì„œ ì„œë¹„ìŠ¤ ì œê±°)í•˜ê³ , ë¦¬ë¶€íŒ…í•˜ë©´ ì„œë¹„ìŠ¤ê°€ 
+			//  ì œê±°ëœ ìƒíƒœë¡œ (ì •ìƒ) ëŒì•„ì˜¬ ìˆ˜ ìžˆë‹¤. 
 			//
 			//return false;
 
@@ -432,9 +432,9 @@ bool scm_context::stop_driver()
 	sc_handle_ptr service_handle_ptr(new SC_HANDLE(service_handle), sc_handle_deleter());
 
 	// 2007.05.17 by somma
-	// ´Ù¸¥ ÇÁ·Î¼¼½º°¡ SCM À» ÅëÇØ¼­ SERVICE_CONTROL_STOP À» ÀÌ¹Ì¿äÃ»ÇÑ °æ¿ì
-	// ¿©±â¼­ È£ÃâÇÑ ControlService() ÇÔ¼ö´Â FALSE ¸¦ ¸®ÅÏÇÑ´Ù.
-	// ±×·¯³ª ¼­ºñ½º´Â Á¤»ó Á¾·áµÈ´Ù.
+	// ë‹¤ë¥¸ í”„ë¡œì„¸ìŠ¤ê°€ SCM ì„ í†µí•´ì„œ SERVICE_CONTROL_STOP ì„ ì´ë¯¸ìš”ì²­í•œ ê²½ìš°
+	// ì—¬ê¸°ì„œ í˜¸ì¶œí•œ ControlService() í•¨ìˆ˜ëŠ” FALSE ë¥¼ ë¦¬í„´í•œë‹¤.
+	// ê·¸ëŸ¬ë‚˜ ì„œë¹„ìŠ¤ëŠ” ì •ìƒ ì¢…ë£Œëœë‹¤.
 	//
 	SERVICE_STATUS service_status={0};
 	if (FALSE == ControlService(service_handle, SERVICE_CONTROL_STOP, &service_status))
