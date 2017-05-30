@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    service control manager helper class
  * @brief   
  * @ref     
@@ -123,13 +123,13 @@ bool scm_context::install_driver()
 	// 
 
 	service_handle = CreateServiceW(scm_handle,
-									_service_name.c_str(), 
-									_service_display_name.c_str(), 
+									_service_name.c_str(),
+									_service_display_name.c_str(),
 									GENERIC_READ, // SERVICE_ALL_ACCESS,
 									SERVICE_KERNEL_DRIVER,
 									SERVICE_DEMAND_START,
 									SERVICE_ERROR_NORMAL,
-									_driver_path.c_str(), 
+									_driver_path.c_str(),
 									NULL,
 									NULL,
 									NULL,
@@ -144,97 +144,101 @@ bool scm_context::install_driver()
 		return false;
 	}
 	CloseServiceHandle(service_handle);
-
-
-	//
-	// If this service is for minifilter, write additional information on registry.
-	//
-	if (_is_minifilter)
+	
+	if (true != _is_minifilter)
 	{
-		//
-		// key  : HKLM\SYSTEM\CurrentControlSet\Services\[xxx]\Instances
-		// value: "DefaultInstance" = "AltitudeAndFlags"
-		//
-#define	MF_DEFAULT_INSTANCE	L"DefaultInstance"
-#define	MF_ALTITUDE_N_FLAGS	L"AltitudeAndFlags"
-		std::wstringstream key_path;
-		key_path 
+		return true;
+	}
+	
+
+
+	
+	//
+	//	미니필터용 추가 정보 설정 #1
+	//
+	//	key  : HKLM\SYSTEM\CurrentControlSet\Services\[xxx]\Instances
+	//	value: "DefaultInstance" = "AltitudeAndFlags"
+	//
+	bool ret = false;
+	HKEY key_handle = NULL;
+	std::wstringstream key_path;
+	do
+	{
+		#define	MF_DEFAULT_INSTANCE	L"DefaultInstance"
+		#define	MF_ALTITUDE_N_FLAGS	L"AltitudeAndFlags"			
+		key_path
 			<< L"SYSTEM\\CurrentControlSet\\Services\\"
 			<< _service_name
 			<< L"\\Instances";
 
-		HKEY create_handle = RUCreateKey(HKEY_LOCAL_MACHINE, key_path.str().c_str(), false);
-		if (nullptr != create_handle)
-		{	
-			_installed = true;
-			RUCloseKey(create_handle); create_handle = nullptr;
-		}
-		else
-		{	
-			_installed = false;
-		}
-		
-		HKEY key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
+		//
+		//	Instances 키가 없으므로 생성한다 (만일 있다면 open 한다).
+		// 
+		key_handle = RUCreateKey(HKEY_LOCAL_MACHINE,
 									key_path.str().c_str(),
 									false);
-		if (nullptr == key_handle)
+		if (NULL == key_handle)
 		{
-			log_err "RUOpenKey() failed. key=%ws",
+			log_err "RUCreateKey() failed. key=%ws",
 				key_path.str().c_str()
 				log_end;
-			return false;
+			break;
 		}
 
 		if (!RUSetString(key_handle,
-						 MF_DEFAULT_INSTANCE,
-						 MF_ALTITUDE_N_FLAGS))
+							MF_DEFAULT_INSTANCE,
+							MF_ALTITUDE_N_FLAGS))
 		{
 			log_err "RUSetString(HKLM, %ws, %ws) failed.",
 				key_path.str().c_str(),
 				MF_DEFAULT_INSTANCE
 				log_end;
-
-			RUCloseKey(key_handle); key_handle = nullptr;
-			return false;
+			break;
 		}
-		RUCloseKey(key_handle); key_handle = nullptr;
 
-
-		// 
-		// key  : HKLM\SYSTEM\CurrentControlSet\Services\scanner\Instances\AltitudeAndFlags
-		// value: "Altitude" = "0"
-		//		  "Flags" = dword:00000000
 		//
-#define	MF_ALTITUDE		L"Altitude"
-#define	MF_FLAGS		L"Flags"
-		_ASSERTE(nullptr == key_handle);
+		//	ok
+		//
+		ret = true;
 
+	} while (false);		
+		
+	RUCloseKey(key_handle); 
+	key_handle = NULL;
+
+	if (!ret) 
+	{
+		return false;
+	}
+
+	//	미니필터용 추가 정보 설정 #2
+	// 
+	//	key  : HKLM\SYSTEM\CurrentControlSet\Services\scanner\Instances\AltitudeAndFlags
+	//	value:	"Altitude" = "0"
+	//			"Flags" = dword:00000000
+	//
+	ret = false;
+	do
+	{
+		_ASSERTE(key_handle == NULL);
+			
+		#define	MF_ALTITUDE		L"Altitude"
+		#define	MF_FLAGS		L"Flags"
 		clear_str_stream_w(key_path);
-		key_path 
+		key_path
 			<< L"SYSTEM\\CurrentControlSet\\Services\\"
 			<< _service_name
 			<< L"\\Instances\\AltitudeAndFlags";
 
-		create_handle = RUCreateKey(HKEY_LOCAL_MACHINE, key_path.str().c_str(), false);
-		if (nullptr != create_handle)
-		{	
-			_installed = true;
-			RUCloseKey(create_handle); create_handle = nullptr;
-		}
-		else
-		{	
-			_installed = false;
-		}
-
-		key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
-							   key_path.str().c_str(),
-							   false);
+		key_handle = RUCreateKey(HKEY_LOCAL_MACHINE,
+								 key_path.str().c_str(),
+								 false);
 		if (nullptr == key_handle)
 		{
-			log_err "RUOpenKey() failed. key=%ws",
+			log_err "RUCreateKey() failed. key=%ws",
 				key_path.str().c_str()
 				log_end;
-			return false;
+			break;
 		}
 
 		if (!RUSetString(key_handle,
@@ -245,27 +249,31 @@ bool scm_context::install_driver()
 				key_path.str().c_str(),
 				MF_ALTITUDE
 				log_end;
-			RUCloseKey(key_handle); key_handle = nullptr;
-			return false;
+			break;
 		}
 
 		if (!RUWriteDword(key_handle,
-							MF_FLAGS,
-							_flags))
+						  MF_FLAGS,
+						  _flags))
 		{
 			log_err "RUWriteDword(HKLM, %ws, %ws) failed.",
 				key_path.str().c_str(),
 				MF_FLAGS
 				log_end;
-			RUCloseKey(key_handle); key_handle = nullptr;
-			return false;
+			break;
 		}
 
-		RUCloseKey(key_handle); key_handle = nullptr;
-		return true;
-	}
+		//
+		//	OK
+		// 
+		ret = true;
 
-	return false;	// never reach here.
+	} while (false);
+
+	RUCloseKey(key_handle);
+	key_handle = NULL;
+	
+	return ret;
 }
 
 /**
