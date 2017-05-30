@@ -147,10 +147,9 @@ bool scm_context::install_driver()
 	
 	if (true != _is_minifilter)
 	{
+		_installed = true;
 		return true;
 	}
-	
-
 
 	
 	//
@@ -266,13 +265,14 @@ bool scm_context::install_driver()
 		//
 		//	OK
 		// 
+		_installed = true;
 		ret = true;
 
 	} while (false);
 
 	RUCloseKey(key_handle);
 	key_handle = NULL;
-	
+		
 	return ret;
 }
 
