@@ -126,7 +126,7 @@ int get_random_int(_In_ int min, _In_ int max);
 // 시간 관련
 //=============================================================================
 
-// FILETIME 관련 매크로 (based on 100-nanosecond intervals)
+// FILETIME (1601년 1월 1일부터 100-nanosecond 단위 카운트)
 // 1 nano sec = 1/1,000,000,000 (1e-9) sec 
 // 100 nonosecond = 1/10,000,000 (1e-7) sec
 #define _file_time_to_sec  ((uint64_t) 10000000)
@@ -154,7 +154,7 @@ uint64_t file_time_to_int(_In_ const PFILETIME file_time);
 void int_to_file_time(_In_ uint64_t file_time_int, _Out_ PFILETIME const file_time);
 
 int64_t file_time_delta_sec(_In_ const PFILETIME ftl, _In_ const PFILETIME ftr);
-int64_t file_time_delta_day(_In_ const PFILETIME ftl, _In_ const PFILETIME ft2);
+int64_t file_time_delta_day(_In_ const PFILETIME ftl, _In_ const PFILETIME ftr);
 FILETIME add_day_to_file_time(_In_ const PFILETIME file_time, _In_ int32_t day);
 
 std::string file_time_to_str(_In_ const PFILETIME file_time, _In_ bool localtime, _In_ bool show_misec = false);

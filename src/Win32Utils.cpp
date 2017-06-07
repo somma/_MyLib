@@ -128,25 +128,24 @@ int_to_file_time(
 	file_time->dwHighDateTime = ((PLARGE_INTEGER)&file_time_int)->HighPart;
 }
 
-/// @brief  ftl - ftr 값을 초단위로 리턴한다. 
+/// @brief  ftl, ftr 값의 차를 초단위로 리턴한다. 
 int64_t 
 file_time_delta_sec(
 	_In_ const PFILETIME ftl, 
 	_In_ const PFILETIME ftr
 	)
 {
-    // return ((file_time_to_int(ftl) - file_time_to_int(ftr)) * 1e-7); 
-	return ((file_time_to_int(ftl) - file_time_to_int(ftr)) / _file_time_to_sec);
+	return (llabs( file_time_to_int(ftl) - file_time_to_int(ftr) ) / _file_time_to_sec);
 }
 
-/// @brief	ftl - ftl2 값을 일단위로 리턴한다. 
+/// @brief	ftl, ftr 값의 차를 일단위로 리턴한다. 
 int64_t 
 file_time_delta_day(
 	_In_ const PFILETIME ftl, 
 	_In_ const PFILETIME ft2
 	)
 {
-	return ((file_time_to_int(ftl) - file_time_to_int(ft2)) / _file_time_to_day);
+	return (llabs( file_time_to_int(ftl) - file_time_to_int(ft2) ) / _file_time_to_day);
 }
 
 /// @brief file_time 에 day 만큼 더한 파일타임을 리턴한다.
