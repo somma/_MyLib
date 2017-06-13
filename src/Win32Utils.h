@@ -10,14 +10,7 @@
 #ifndef _win32_utils_
 #define _win32_utils_
 
-#include "boost/shared_ptr.hpp"			// boost::shared_ptr
-#include "boost/type_traits.hpp"		// boost::remove_pointer
 #include "boost/algorithm/string.hpp"	// to_uppper, to_lower
-
-#include <iosfwd>
-#include <sstream>
-
-#include <vector>
 
 #include <conio.h>
 #include <winioctl.h>
@@ -505,7 +498,7 @@ find_and_replace_string_exw(
 /******************************************************************************
  * RAII (Resource Acquisition Is Initialization ), raii
 ******************************************************************************/
-#pragma todo("unique_ptr 로 변경하는것을 고려해보자.")
+#pragma todo("boost::shared_ptr -> unique_ptr ")
 /*	ex)
 	raii_handle map_handle(
 					CreateFileMapping(file_handle, NULL, PAGE_READONLY, 0, 1, NULL), 
