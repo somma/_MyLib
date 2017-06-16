@@ -293,8 +293,8 @@ log_write_fmt_without_deco(
     _In_ ...
     )
 {
-    // check log mask
-    if (log_mask == (_log_mask & log_mask)) return;
+	// check log mask
+	if (log_mask != (_log_mask & log_mask)) return;
 
     // check base log level
     {
