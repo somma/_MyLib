@@ -27,26 +27,24 @@ typedef std::shared_ptr<SC_HANDLE> sc_handle_ptr;
 
 /// @brief	service context manager for legacy dirver or win32 service.
 scm_context::scm_context(
-	_In_z_ const wchar_t* driver_path, 
+	_In_z_ const wchar_t* bin_path, 
 	_In_z_ const wchar_t* service_name, 
 	_In_z_ const wchar_t* service_display_name,
 	_In_ bool uninstall_service_on_free)
 :	_uninstall_service_on_free(uninstall_service_on_free),
 	_driver_handle(INVALID_HANDLE_VALUE), 
-	_driver_path(driver_path),
+	_bin_path(bin_path),
 	_service_name(service_name),
 	_service_display_name(service_display_name),
 	_is_minifilter(false),
 	_altitude(L"none"),
-	_flags(0),
-	_installed(false), 
-	_running(false)
+	_flags(0)
 {
 }
 
 /// @brief	service context manager for minifilter driver
 scm_context::scm_context(
-	_In_z_ const wchar_t* driver_path,
+	_In_z_ const wchar_t* bin_path,
 	_In_z_ const wchar_t* service_name,
 	_In_z_ const wchar_t* service_display_name,
 	_In_z_ const wchar_t* altitude,
@@ -54,14 +52,12 @@ scm_context::scm_context(
 	_In_ bool uninstall_service_on_free)
 :	_uninstall_service_on_free(uninstall_service_on_free),
 	_driver_handle(INVALID_HANDLE_VALUE),
-	_driver_path(driver_path),
+	_bin_path(bin_path),
 	_service_name(service_name),
 	_service_display_name(service_display_name),
 	_is_minifilter(true),
 	_altitude(altitude),
-	_flags(flags),
-	_installed(false),
-	_running(false)
+	_flags(flags)
 {
 }
 
@@ -80,11 +76,11 @@ scm_context::~scm_context()
 	{
 		CloseHandle(_driver_handle); _driver_handle = INVALID_HANDLE_VALUE;
 	}
-	stop_driver();
-	
+		
 	if (true == _uninstall_service_on_free)
 	{
-		uninstall_driver();
+		stop_service();
+		uninstall_service();
 	}
 }
 
@@ -97,7 +93,7 @@ scm_context::~scm_context()
 * @endcode	
 * @return	
 */
-bool scm_context::install_driver()
+bool scm_context::install_service()
 {
 	SC_HANDLE scm_handle = OpenSCManagerW(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 	if (NULL == scm_handle)
@@ -113,7 +109,6 @@ bool scm_context::install_driver()
 	{
 		log_dbg "service=%ws. already exists", _service_name.c_str() log_end
 		CloseServiceHandle(service_handle);
-		_installed = true;
 		return true;
 	}
 
@@ -129,7 +124,7 @@ bool scm_context::install_driver()
 									SERVICE_KERNEL_DRIVER,
 									SERVICE_DEMAND_START,
 									SERVICE_ERROR_NORMAL,
-									_driver_path.c_str(),
+									_bin_path.c_str(),
 									NULL,
 									NULL,
 									NULL,
@@ -139,7 +134,7 @@ bool scm_context::install_driver()
 	{
 		log_err
 			"CreateServcieW(path=%ws, svc_name=%ws, svc_display=%ws) failed. gle = %u",
-			_driver_path.c_str(), _service_name.c_str(), _service_display_name.c_str(), GetLastError()
+			_bin_path.c_str(), _service_name.c_str(), _service_display_name.c_str(), GetLastError()
 			log_end;
 		return false;
 	}
@@ -147,7 +142,6 @@ bool scm_context::install_driver()
 	
 	if (true != _is_minifilter)
 	{
-		_installed = true;
 		return true;
 	}
 
@@ -265,7 +259,6 @@ bool scm_context::install_driver()
 		//
 		//	OK
 		// 
-		_installed = true;
 		ret = true;
 
 	} while (false);
@@ -285,41 +278,38 @@ bool scm_context::install_driver()
 * @endcode	
 * @return	
 */
-bool scm_context::uninstall_driver()
+bool scm_context::uninstall_service()
 {
-	if (true != _installed) return true;
-
-	if (true == _running)
+	if (true != stop_service())
 	{
-		if(true != stop_driver())
-		{
-			log_err "scm_context::stop_driver() failed, can not uninstall driver..." log_end
-			
-			//> stop_driver() 가 실패해도 삭제시도를 해야 한다. 
+		log_err 
+			"scm_context::stop_service() failed, can not uninstall driver..." 
+			log_end
+
+			//> stop_service() 가 실패해도 삭제시도를 해야 한다. 
 			//    - driver :: DriverEntry() 에서 STATUS_SUCCESS 를 리턴했으나 아무짓도 안하고, 리턴한 경우
 			//    - driver handle 을 누군가 물고 있는 경우
 			//  강제로 서비스를 삭제 (registry 에서 서비스 제거)하고, 리부팅하면 서비스가 
 			//  제거된 상태로 (정상) 돌아올 수 있다. 
 			//
 			//return false;
-
-			_running = false;
-		}
 	}
 
-	SC_HANDLE scm_handle = OpenSCManagerW(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+	SC_HANDLE scm_handle = OpenSCManagerW(NULL, 
+										  NULL, 
+										  SC_MANAGER_ALL_ACCESS);
 	if (NULL == scm_handle)
 	{
-		log_err "OpenSCManagerW() faield. gle = %u", GetLastError() log_end
+		log_err "OpenSCManagerW() faield. gle = %u", 
+			GetLastError() 
+			log_end
 		return false;
 	}
 	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
 
-	SC_HANDLE service_handle = OpenServiceW(
-									scm_handle,
-									_service_name.c_str(), 
-									SERVICE_ALL_ACCESS
-									);
+	SC_HANDLE service_handle = OpenServiceW(scm_handle,
+											_service_name.c_str(),
+											SERVICE_ALL_ACCESS);
 	if (NULL == service_handle)
 	{
 		log_err 
@@ -343,7 +333,6 @@ bool scm_context::uninstall_driver()
 		}
 	}
 
-	_installed = false;
 	log_info "service=%ws deleted successfully", _service_name.c_str() log_end
 	return true;
 }
@@ -357,16 +346,16 @@ bool scm_context::uninstall_driver()
 * @endcode	
 * @return	
 */
-bool scm_context::start_driver()
+bool scm_context::start_service()
 {
-	_ASSERTE(true == _installed);
-	if (true != _installed) return false;
-	if (true == _running) return true;
-
-	SC_HANDLE scm_handle = OpenSCManagerW(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+	SC_HANDLE scm_handle = OpenSCManagerW(NULL, 
+										  NULL, 
+										  SC_MANAGER_ALL_ACCESS);
 	if (NULL == scm_handle)
 	{
-		log_err "OpenSCManagerW() faield. gle = %u", GetLastError() log_end
+		log_err "OpenSCManagerW() faield. gle = %u", 
+			GetLastError() 
+			log_end
 		return false;
 	}
 	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
@@ -399,9 +388,39 @@ bool scm_context::start_driver()
 		}
 	}
 
-	_running = true;
-	log_info "service=%ws started successfully", _service_name.c_str() log_end
-	return true;
+	//
+	//	서비스가 시작될 때까지 기다린다. 
+	// 
+	SERVICE_STATUS svc_status = { 0 };
+	while (QueryServiceStatus(service_handle, &svc_status))
+	{
+		if (svc_status.dwCurrentState == SERVICE_START_PENDING)
+		{
+			Sleep(1000);
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	if (svc_status.dwCurrentState == SERVICE_RUNNING)
+	{
+		log_info "service is started. svc=%ws",
+			_service_name.c_str()
+			log_end;
+
+		//_running = true;
+		return true;
+	}
+	else
+	{
+		log_info "service start failed. svc=%ws",
+			_service_name.c_str()
+			log_end;
+
+		return false;
+	}
 }
 
 /**
@@ -413,24 +432,23 @@ bool scm_context::start_driver()
 * @endcode	
 * @return	
 */
-bool scm_context::stop_driver()
+bool scm_context::stop_service()
 {
-	if (true != _installed) return false;
-	if (true != _running) return true;
-
-	SC_HANDLE scm_handle = OpenSCManagerW(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+	SC_HANDLE scm_handle = OpenSCManagerW(NULL, 
+										  NULL, 
+										  SC_MANAGER_ALL_ACCESS);
 	if (NULL == scm_handle)
 	{
-		log_err "OpenSCManagerW() faield. gle = %u", GetLastError() log_end
+		log_err "OpenSCManagerW() faield. gle = %u", 
+			GetLastError() 
+			log_end
 		return false;
 	}
 	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
 
-	SC_HANDLE service_handle = OpenServiceW(
-									scm_handle,
-									_service_name.c_str(), 
-									SERVICE_ALL_ACCESS
-									);
+	SC_HANDLE service_handle = OpenServiceW(scm_handle,
+											_service_name.c_str(),
+											SERVICE_ALL_ACCESS);
 	if (NULL == service_handle)
 	{
 		log_err 
@@ -456,8 +474,41 @@ bool scm_context::stop_driver()
 		return false;
 	}
 
-	_running = false;
-	log_info "service=%ws stopped successfully", _service_name.c_str() log_end
+	//
+	//	서비스가 종료될 때까지 기다린다. 
+	// 
+	SERVICE_STATUS svc_status = { 0 };
+	while (QueryServiceStatus(service_handle, &svc_status))
+	{
+		if (svc_status.dwCurrentState == SERVICE_STOP_PENDING)
+		{
+			Sleep(1000);
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	if (svc_status.dwCurrentState == SERVICE_STOPPED)
+	{
+		log_info "service is stopped. svc=%ws",
+			_service_name.c_str()
+			log_end;
+	}
+	else
+	{
+		log_info "service stop failed. svc=%ws",
+			_service_name.c_str()
+			log_end;
+
+		//
+		//	서비스 종료 상태는 아니지만 어찌되었든 실행 상태는 아니므로
+		//	에러처리않고, 진행한다. 
+		// 
+	}
+
+	//_running = false;
 	return true;
 }
 
@@ -481,10 +532,6 @@ scm_context::send_command(
 		_Out_ uint32_t* bytes_returned
 		)
 {
-	_ASSERTE(true == _installed);
-	_ASSERTE(true == _running);
-	if (true != _installed || true != _running) return false;
-
 	if (INVALID_HANDLE_VALUE == _driver_handle)
 	{
 		_driver_handle = open_driver();
@@ -495,16 +542,14 @@ scm_context::send_command(
 		}
 	}
 
-	BOOL ret = DeviceIoControl(
-					_driver_handle, 
-					io_code, 
-					input_buffer, 
-					input_buffer_size, 
-					output_buffer, 
-					output_buffer_size, 
-					reinterpret_cast<LPDWORD>(bytes_returned),
-					NULL
-					);
+	BOOL ret = DeviceIoControl(_driver_handle,
+							   io_code,
+							   input_buffer,
+							   input_buffer_size,
+							   output_buffer,
+							   output_buffer_size,
+							   reinterpret_cast<LPDWORD>(bytes_returned),
+							   NULL);
 	if(TRUE != ret)
 	{
 		log_err "DeviceIoControl( io_code=0x%08x ) failed", io_code log_end
@@ -526,22 +571,17 @@ scm_context::send_command(
 */
 HANDLE scm_context::open_driver()
 {
-	_ASSERTE(true == _installed);
-	_ASSERTE(true == _running);
-	_ASSERTE(INVALID_HANDLE_VALUE == _driver_handle);
-	if (true != _installed || true != _running) return INVALID_HANDLE_VALUE;
+	_ASSERTE(INVALID_HANDLE_VALUE == _driver_handle);	
 	if (INVALID_HANDLE_VALUE != _driver_handle) return _driver_handle;
 
 	std::wstring driver_object_name= L"\\\\.\\" + _service_name;
-	HANDLE driver_handle = CreateFileW(
-							driver_object_name.c_str(),
-							GENERIC_READ | GENERIC_WRITE, 
-							0, // exclusive open
-							NULL, 
-							OPEN_EXISTING, 
-							FILE_ATTRIBUTE_NORMAL, 
-							0
-							);
+	HANDLE driver_handle = CreateFileW(driver_object_name.c_str(),
+									   GENERIC_READ | GENERIC_WRITE,
+									   0, // exclusive open
+									   NULL,
+									   OPEN_EXISTING,
+									   FILE_ATTRIBUTE_NORMAL,
+									   0);
 	if (INVALID_HANDLE_VALUE == driver_handle)
 	{
 		log_err

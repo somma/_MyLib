@@ -13,13 +13,13 @@ typedef class scm_context
 {
 public:
 	scm_context(
-		_In_z_ const wchar_t* driver_path, 
+		_In_z_ const wchar_t* bin_path, 
 		_In_z_ const wchar_t* service_name, 
 		_In_z_ const wchar_t* service_display_name, 
 		_In_ bool uninstall_service_on_free = true
 		);
 	scm_context(
-		_In_z_ const wchar_t* driver_path,
+		_In_z_ const wchar_t* bin_path,
 		_In_z_ const wchar_t* service_name,
 		_In_z_ const wchar_t* service_display_name,
 		_In_z_ const wchar_t* altitude, 
@@ -28,10 +28,10 @@ public:
 		);
 	~scm_context();
 
-	bool	install_driver();
-	bool	uninstall_driver();
-	bool	start_driver();
-	bool	stop_driver();
+	bool install_service();
+	bool uninstall_service();
+	bool start_service();
+	bool stop_service();
 	bool	
 	send_command(
 		_In_ uint32_t io_code, 
@@ -46,16 +46,13 @@ public:
 private:
 	bool			_uninstall_service_on_free;
 	HANDLE			_driver_handle;
-	std::wstring	_driver_path;
+	std::wstring	_bin_path;
 	std::wstring	_service_name;
 	std::wstring	_service_display_name;
 
 	bool			_is_minifilter;
 	std::wstring	_altitude;	// for minifilter
 	uint32_t		_flags;		// for minifilter
-
-	bool			_installed;
-	bool			_running;
 
 	HANDLE			open_driver();
 

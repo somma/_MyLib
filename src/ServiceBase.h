@@ -48,6 +48,9 @@ public:
 	// Stop the service.
 	void Stop();
 
+	// Get service name
+	const wchar_t* ServiceName() { return m_name; }
+
 protected:
 
 	// When implemented in a derived class, executes when a Start command is 
