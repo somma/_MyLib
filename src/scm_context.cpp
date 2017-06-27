@@ -512,6 +512,56 @@ bool scm_context::stop_service()
 	return true;
 }
 
+/// @brief	
+bool scm_context::started()
+{
+	SC_HANDLE scm_handle = OpenSCManagerW(NULL,
+										  NULL,
+										  SC_MANAGER_ALL_ACCESS);
+	if (NULL == scm_handle)
+	{
+		log_err "OpenSCManagerW() faield. gle = %u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
+
+	SC_HANDLE service_handle = OpenServiceW(scm_handle,
+											_service_name.c_str(),
+											SERVICE_ALL_ACCESS);
+	if (NULL == service_handle)
+	{
+		log_err
+			"OpenServiceW( service_name=%ws ) failed. gle = %u",
+			_service_name.c_str(), GetLastError()
+			log_end
+			return false;
+	}
+	sc_handle_ptr service_handle_ptr(new SC_HANDLE(service_handle), sc_handle_deleter());
+
+	//
+	//	서비스가 상태를 조회한다. 
+	// 
+	SERVICE_STATUS svc_status = { 0 };
+	if(!QueryServiceStatus(service_handle, &svc_status))
+	{
+		log_err "QueryServiceStatus() failed. service=%ws",
+			_service_name.c_str()
+			log_end;
+		return false;
+	}
+
+	if (svc_status.dwCurrentState == SERVICE_RUNNING)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 
 /**
 * @brief	

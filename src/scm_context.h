@@ -32,6 +32,9 @@ public:
 	bool uninstall_service();
 	bool start_service();
 	bool stop_service();
+
+	bool started();
+
 	bool	
 	send_command(
 		_In_ uint32_t io_code, 

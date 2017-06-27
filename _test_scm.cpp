@@ -32,18 +32,18 @@ bool test_legacy_driver_service()
 	//
 	// install service
 	// 
-	if (!scm.install_driver())
+	if (!scm.install_service())
 	{
-		log_err "%ws, install_driver() failed.", scm.service_name() log_end;
+		log_err "%ws, install_service() failed.", scm.service_name() log_end;
 		return false;
 	}
 
 	//
 	// start service
 	// 
-	if (!scm.start_driver())
+	if (!scm.start_service())
 	{
-		log_err "%ws, start_driver() failed.", scm.service_name() log_end;
+		log_err "%ws, start_service() failed.", scm.service_name() log_end;
 		return false;
 	}
 
@@ -52,18 +52,18 @@ bool test_legacy_driver_service()
 	// 
 	// stop service
 	//
-	if (!scm.stop_driver())
+	if (!scm.stop_service())
 	{
-		log_err "%ws, stop_driver() failed.", scm.service_name() log_end;
+		log_err "%ws, stop_service() failed.", scm.service_name() log_end;
 		return false;
 	}
 
 	//
 	// un-install service
 	//
-	if (!scm.uninstall_driver())
+	if (!scm.uninstall_service())
 	{
-		log_err "%ws, uninstall_driver() failed.", scm.service_name() log_end;
+		log_err "%ws, uninstall_service() failed.", scm.service_name() log_end;
 		return false;
 	}
 
@@ -86,18 +86,18 @@ bool test_minifilter_service()
 	//
 	// install service
 	// 
-	if (!scm.install_driver())
+	if (!scm.install_service())
 	{
-		log_err "%ws, install_driver() failed.", scm.service_name() log_end;
+		log_err "%ws, install_service() failed.", scm.service_name() log_end;
 		return false;
 	}
 
 	//
 	// start service
 	// 
-	if (!scm.start_driver())
+	if (!scm.start_service())
 	{
-		log_err "%ws, start_driver() failed.", scm.service_name() log_end;
+		log_err "%ws, start_service() failed.", scm.service_name() log_end;
 		return false;
 	}
 
@@ -107,18 +107,18 @@ bool test_minifilter_service()
 	// 
 	// stop service
 	//
-	if (!scm.stop_driver())
+	if (!scm.stop_service())
 	{
-		log_err "%ws, stop_driver() failed.", scm.service_name() log_end;
+		log_err "%ws, stop_service() failed.", scm.service_name() log_end;
 		return false;
 	}
 
 	//
 	// un-install service
 	//
-	if (!scm.uninstall_driver())
+	if (!scm.uninstall_service())
 	{
-		log_err "%ws, uninstall_driver() failed.", scm.service_name() log_end;
+		log_err "%ws, uninstall_service() failed.", scm.service_name() log_end;
 		return false;
 	}
 
