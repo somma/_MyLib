@@ -122,6 +122,7 @@ int get_random_int(_In_ int min, _In_ int max);
 // FILETIME (1601년 1월 1일부터 100-nanosecond 단위 카운트)
 // 1 nano sec = 1/1,000,000,000 (1e-9) sec 
 // 100 nonosecond = 1/10,000,000 (1e-7) sec
+#define _file_time_to_msec  ((uint64_t) 10000)
 #define _file_time_to_sec  ((uint64_t) 10000000)
 #define _file_time_to_min	(_file_time_to_sec * 60)
 #define _file_time_to_hour	(_file_time_to_min * 60)
