@@ -69,6 +69,17 @@ typedef struct _continuous_memory
 #define ClearFlag(_F,_SF)     ((_F) &= ~(_SF))
 #endif
 
+/// @brief	상수 이름->문자열 변환
+///			#define love 0
+///			#define	you 1
+///			...
+///			TO_STR(love)  --> "love"
+///			TO_STR(you)  --> "you"
+///			TO_STRS(love,you)  --> "loveyou"
+#define	TO_STR( v )	#v
+#define TO_STRS(x,y) TO_STR(x)##TO_STR(y)
+
+
 
 /**	-----------------------------------------------------------------------
 	빌드시에 TODO 메세지를 출력하기 위한 매크로 

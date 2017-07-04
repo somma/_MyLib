@@ -22,6 +22,7 @@
 #include "crc64.h"
 
 
+bool test_to_str();
 bool test_convert_file_time();
 
 // _test_ppl.cpp
@@ -229,6 +230,7 @@ int _tmain(int argc, _TCHAR* argv[])
     //    wstr.size(), wcslen(wstr.c_str())
     //    log_end;
 	
+	assert_bool(true, test_to_str);
 	//assert_bool(true, test_convert_file_time);
 
 	//assert_bool(true, test_ppl);
@@ -283,7 +285,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_nt_name_to_dos_name);
 	//assert_bool(true, test_query_dos_device);
 	//assert_bool(true, test_get_filepath_by_handle);
-	assert_bool(true, test_find_files);
+	//assert_bool(true, test_find_files);
 	
 	//assert_bool(true, test_bin_to_hex);
 	//assert_bool(true, test_str_to_xxx);
@@ -2109,6 +2111,17 @@ bool test_crc64()
         (unsigned long long) crc64(0, (unsigned char*)"123456789", 9)
         log_end;
     return true;
+}
+
+bool test_to_str()
+{
+#define love 0
+#define	you 1
+
+	if (0 != _strnicmp(TO_STR(love), "love", 4)) return false;
+	if (0 != _strnicmp(TO_STR(you), "you", 3)) return false;
+	if (0 != _strnicmp(TO_STRS(love,you), "loveyou", 7)) return false;
+	return true;
 }
 
 /// 
