@@ -146,6 +146,9 @@ bool test_thread_pool();
 // _test_boost_thread.cpp
 extern bool test_boost_thread();
 
+//_test_aes256.cpp
+bool test_aes256();
+
 class aaa
 {
 public:
@@ -230,7 +233,7 @@ int _tmain(int argc, _TCHAR* argv[])
     //    wstr.size(), wcslen(wstr.c_str())
     //    log_end;
 	
-	assert_bool(true, test_to_str);
+	//assert_bool(true, test_to_str);
 	//assert_bool(true, test_convert_file_time);
 
 	//assert_bool(true, test_ppl);
@@ -327,7 +330,7 @@ int _tmain(int argc, _TCHAR* argv[])
  //   assert_bool(true, test_read_mouted_device);
  //   assert_bool(true, test_set_binary_data);
     
-
+	assert_bool(true, test_aes256);
 	con_info
 		"----------------------------------------------------"
 	log_end

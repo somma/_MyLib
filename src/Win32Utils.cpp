@@ -30,6 +30,7 @@
 
 #include "ResourceHelper.h"
 #include "gpt_partition_guid.h"
+#include "AirCrypto.h"
 
 #include <sddl.h>
 #pragma comment(lib, "Advapi32.lib")
@@ -2630,8 +2631,151 @@ FindSubDirectory(
     FindClose(hSrch);
     return TRUE;
 }
+/**
+* @brief	aes-gcm은 파일 사이즈가 16배수가 아니면 마지막이 깨진다.16배수로 파일 사이즈 재조정 함.
+* @param
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
+**/
+bool file_size_padding(
+	IN wchar_t* file_path,
+	IN OUT int64_t &padding
+)
+{
+	_ASSERTE(NULL != file_path);
+	_ASSERTE(NULL == padding);
+	if (NULL == file_path || NULL != padding)
+		return FALSE;
+
+	HANDLE hfile = open_file_to_write(file_path);
+	int64_t file_size = 0;
+
+	if (!get_file_size(hfile, file_size))
+	{
+		log_err "get_file_size err" log_end;
+		CloseHandle(hfile);
+		return FALSE;
+	}
+
+	//16 배수만큼 재조정
+	//16 배수면 종료
+	if (file_size % 16)
+		padding = 16 - file_size % 16;
+	else
+		return TRUE;
+
+	if (!set_file_size(hfile, file_size + padding))
+	{
+		log_err "set_file_size err" log_end;
+		CloseHandle(hfile);
+		return FALSE;
+	}
+
+	CloseHandle(hfile);
+	return TRUE;
+}
+
+/**
+* @brief	aes256 파일 암호화
+* @param
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
+**/
+bool aes256_encrypt(
+	IN unsigned char *key,
+	IN const wchar_t *path,
+	IN const wchar_t *target_file_path,
+	IN const wchar_t *encrypt_file_name,
+	OUT unsigned char * out_encrypt
+)
+{
+	_ASSERTE(NULL != key);
+	_ASSERTE(NULL != path);
+	_ASSERTE(NULL != target_file_path);
+	_ASSERTE(NULL != encrypt_file_name);
+	_ASSERTE(NULL == out_encrypt);
+	if (NULL == key || NULL == path || NULL == target_file_path || NULL == encrypt_file_name || NULL != out_encrypt)
+		return FALSE;
 
 
+	PBYTE buffer = nullptr;
+	DWORD file_size = 0;
+	unsigned char *encrypt_data = nullptr;
+	UINT32 length = 0;
+
+	//암호화할 파일를 메모리에 로드
+	if (LoadFileToMemory(target_file_path, file_size, buffer))
+	{
+
+		AirCryptBuffer(key, strlen((const char*)key), buffer, file_size + 1, encrypt_data, length, TRUE);
+		//암호화 내용을 새로운 파일로 저장
+		SaveBinaryFile(path, encrypt_file_name, file_size, encrypt_data);
+		free(buffer);
+		//free(encrypt_data);	//테스트 코드에서는 decrypt 할 때 할당 해제
+		//나중에 사용할 땐 free 하자
+		out_encrypt = encrypt_data;
+	}
+	else
+	{
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
+* @brief	aes256 파일 복호화
+* @param
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
+**/
+bool aes256_decrypt(
+	IN unsigned char *key,
+	IN const wchar_t *path,
+	IN const wchar_t *target_file_path,
+	IN const wchar_t *encrypt_file_name,
+	IN const wchar_t *decrypt_file_name,
+	IN  unsigned char * encrypt
+)
+{
+	_ASSERTE(NULL != key);
+	_ASSERTE(NULL != path);
+	_ASSERTE(NULL != target_file_path);
+	_ASSERTE(NULL != encrypt_file_name);
+	_ASSERTE(NULL == encrypt);
+	if (NULL == key || NULL == path || NULL == target_file_path || NULL == encrypt_file_name || NULL != encrypt)
+		return FALSE;
+
+	PBYTE buffer = nullptr;
+	DWORD file_size = 0;
+	UINT32 length = 0;
+
+	//복호화할 파일를 메모리에 로드
+	if (LoadFileToMemory(encrypt_file_name, file_size, buffer))
+	{
+		//복호화
+		AirCryptBuffer(key, strlen((const char*)key), buffer, file_size + 1, encrypt, length, FALSE);
+		//복호화 내용을 새로운 파일로 저장
+		SaveBinaryFile(path, decrypt_file_name, file_size, encrypt);
+		free(buffer);
+		free(encrypt);
+	}
+	else
+	{
+		return FALSE;
+	}
+
+	return TRUE;
+}
 
 /**
  * @brief	ASCII(Multibyte) --> WIDE CHAR 로 변환, caller 는 리턴되는 포인터를 소멸시켜주어야 함

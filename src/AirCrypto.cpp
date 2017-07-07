@@ -18,8 +18,7 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 
-#include "slogger.h"
-#include "Win32Utils.h"
+//#include "slogger.h"
 
 #include "AIRCrypto.h"
 #pragma comment(lib, "libeay32.lib")
@@ -55,7 +54,7 @@ aes_init(
 	//	DBG_OPN
 	//		"[ERR ]", "RAND_pseudo_bytes() failed, ssl_err=%s",
 	//		ERR_error_string(ERR_get_error(), NULL)
-	//	DBG_END
+	//	log_end;
 
 	//	return DTS_OPENSSL_PRNG_FAIL;
 	//}
@@ -78,7 +77,7 @@ aes_init(
 				);
 	if (ret != 32) 
 	{
-		DBG_ERR "Key size is %d bits - should be 256 bits", ret DBG_END
+		log_err "Key size is %d bits - should be 256 bits", ret log_end;
 		return DTS_OPENSSL_KEYGEN_FAIL;
 	}
 
@@ -204,7 +203,7 @@ AirCryptBuffer(
 	DTSTATUS status = aes_init(PassPhrase, PassPhraseLen, &ctx, Encrypt);
 	if (TRUE != DT_SUCCEEDED(status))
 	{
-		DBG_ERR "aes_init() failed, status=0x%08x", status DBG_END
+		log_err "aes_init() failed, status=0x%08x", status log_end;
 		ERR_free_strings();
 		return status;
 	}
@@ -218,7 +217,7 @@ AirCryptBuffer(
 		out = aes_encrypt(&ctx, Input, &outlen);
 		if (NULL == out)
 		{
-			DBG_ERR "%s", "aes_encrypt() failed" DBG_END
+			log_err "%s", "aes_encrypt() failed" log_end;
 			ERR_free_strings();
 			return DTS_OPENSSL_ERROR;
 		}		
@@ -228,7 +227,7 @@ AirCryptBuffer(
 		out = aes_decrypt(&ctx, Input, &outlen);
 		if (NULL == out)
 		{
-			DBG_ERR "%s", "aes_encrypt() failed" DBG_END
+			log_err "%s", "aes_encrypt() failed" log_end;
 			ERR_free_strings();
 			return DTS_OPENSSL_ERROR;
 		}
@@ -240,7 +239,7 @@ AirCryptBuffer(
 	EVP_CIPHER_CTX_cleanup(&ctx);
 	ERR_free_strings();
 
-	DBG_INFO "encrypt=%s, input len=%u, output len=%u",  TRUE == Encrypt ? "true" : "false", InputLength, OutputLength DBG_END
+	log_info "encrypt=%s, input len=%u, output len=%u",  TRUE == Encrypt ? "true" : "false", InputLength, OutputLength log_end;
 	return DTS_SUCCESS;
 }
 
