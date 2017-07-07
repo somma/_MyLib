@@ -18,11 +18,99 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 
-#include "slogger.h"
-#include "Win32Utils.h"
-
 #include "AIRCrypto.h"
 #pragma comment(lib, "libeay32.lib")
+
+/**
+* @brief	aes256 파일 암호화
+* @param
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
+**/
+bool aes256_encrypt(
+	IN unsigned char *key,
+	IN const wchar_t *path,
+	IN const wchar_t *target_file_path,
+	IN const wchar_t *encrypt_file_name
+)
+{
+	_ASSERTE(NULL != key);
+	_ASSERTE(NULL != path);
+	_ASSERTE(NULL != target_file_path);
+	_ASSERTE(NULL != encrypt_file_name);
+	if (NULL == key || NULL == path || NULL == target_file_path || NULL == encrypt_file_name)
+		return FALSE;
+
+	PBYTE buffer = nullptr;
+	DWORD file_size = 0;
+	unsigned char *encrypt_data = nullptr;
+	UINT32 length = 0;
+
+	//암호화할 파일를 메모리에 로드
+	if (LoadFileToMemory(target_file_path, file_size, buffer))
+	{
+		AirCryptBuffer(key, strlen((const char*)key), buffer, file_size, encrypt_data, length, TRUE);
+		//암호화 내용을 새로운 파일로 저장
+		SaveBinaryFile(path, encrypt_file_name, file_size, encrypt_data);
+		free(buffer);
+		free(encrypt_data);
+	}
+	else
+	{
+		log_err "LoadFileToMemory err" log_end;
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
+* @brief	aes256 파일 복호화
+* @param
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
+**/
+bool aes256_decrypt(
+	IN unsigned char *key,
+	IN const wchar_t *path,
+	IN const wchar_t *encrypt_file_name,
+	IN const wchar_t *decrypt_file_name
+)
+{
+	_ASSERTE(NULL != key);
+	_ASSERTE(NULL != path);
+	_ASSERTE(NULL != encrypt_file_name);
+	if (NULL == key || NULL == path || NULL == encrypt_file_name)
+		return FALSE;
+
+	PBYTE buffer = nullptr;
+	DWORD file_size = 0;
+	UINT32 length = 0;
+	unsigned char *encrypt_data = nullptr;
+
+	//복호화할 파일를 메모리에 로드
+	if (LoadFileToMemory(encrypt_file_name, file_size, buffer))
+	{
+		AirCryptBuffer(key, strlen((const char*)key), buffer, file_size, encrypt_data, length, FALSE);
+		//복호화 내용을 새로운 파일로 저장
+		SaveBinaryFile(path, decrypt_file_name, file_size, encrypt_data);
+		free(buffer);
+		free(encrypt_data);
+	}
+	else
+	{
+		log_err "LoadFileToMemory err" log_end;
+		return FALSE;
+	}
+
+	return TRUE;
+}
 
 
 /**----------------------------------------------------------------------------
@@ -47,27 +135,14 @@ aes_init(
 {
 	unsigned char key[EVP_MAX_KEY_LENGTH]={0};
 	unsigned char iv[EVP_MAX_IV_LENGTH]={0};
-	//unsigned char salt[8]={0};
-
-	//int ret = RAND_pseudo_bytes(salt, sizeof(salt));
-	//if (ret < 0)
-	//{
-	//	DBG_OPN
-	//		"[ERR ]", "RAND_pseudo_bytes() failed, ssl_err=%s",
-	//		ERR_error_string(ERR_get_error(), NULL)
-	//	DBG_END
-
-	//	return DTS_OPENSSL_PRNG_FAIL;
-	//}
-	
 
 	/*
-	* Gen key & IV for AES 256 CBC mode. A SHA1 digest is used to hash the supplied key material.
+	* Gen key & IV for AES 256 GCM mode. A SHA1 digest is used to hash the supplied key material.
 	* nrounds is the number of times the we hash the material. More rounds are more secure but
 	* slower.
 	*/
 	int ret = EVP_BytesToKey(
-				EVP_aes_256_cbc(), 
+				EVP_aes_256_gcm(), 
 				EVP_sha1(), 
 				NULL, //salt, 
 				key_data, 
@@ -78,19 +153,19 @@ aes_init(
 				);
 	if (ret != 32) 
 	{
-		DBG_ERR "Key size is %d bits - should be 256 bits", ret DBG_END
+		log_err "Key size is %d bits - should be 256 bits", ret log_end;
 		return DTS_OPENSSL_KEYGEN_FAIL;
 	}
 
 	if (TRUE == encrypt)
 	{
 		EVP_CIPHER_CTX_init(ctx);
-		EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
+		EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, key, iv);
 	}
 	else
 	{
 		EVP_CIPHER_CTX_init(ctx);
-		EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);	
+		EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL, key, iv);
 	}
 
 	return DTS_SUCCESS;
@@ -115,14 +190,12 @@ aes_encrypt(
 {
 	int BlockSize = EVP_CIPHER_CTX_block_size(e);
 	
-	/* max ciphertext len for a n bytes of plaintext is n + AES_BLOCK_SIZE -1 bytes */
-	/*int c_len = *len + AES_BLOCK_SIZE, f_len = 0;*/
 	int c_len = *len + BlockSize;
 	int f_len = 0;
 	unsigned char *ciphertext = (unsigned char *) malloc(c_len);
 
 	/* allows reusing of 'e' for multiple encryption cycles */
-//	EVP_EncryptInit_ex(e, NULL, NULL, NULL, NULL);
+	//	EVP_EncryptInit_ex(e, NULL, NULL, NULL, NULL);
 
 	/* update ciphertext, c_len is filled with the length of ciphertext generated,
      * len is the size of plaintext in bytes 
@@ -204,21 +277,20 @@ AirCryptBuffer(
 	DTSTATUS status = aes_init(PassPhrase, PassPhraseLen, &ctx, Encrypt);
 	if (TRUE != DT_SUCCEEDED(status))
 	{
-		DBG_ERR "aes_init() failed, status=0x%08x", status DBG_END
+		log_err "aes_init() failed, status=0x%08x", status log_end;
 		ERR_free_strings();
 		return status;
 	}
 
-
 	unsigned char* out=NULL;
 	int outlen=InputLength;
-	
+
 	if (TRUE == Encrypt)
 	{
 		out = aes_encrypt(&ctx, Input, &outlen);
 		if (NULL == out)
 		{
-			DBG_ERR "%s", "aes_encrypt() failed" DBG_END
+			log_err "%s", "aes_encrypt() failed" log_end;
 			ERR_free_strings();
 			return DTS_OPENSSL_ERROR;
 		}		
@@ -228,7 +300,7 @@ AirCryptBuffer(
 		out = aes_decrypt(&ctx, Input, &outlen);
 		if (NULL == out)
 		{
-			DBG_ERR "%s", "aes_encrypt() failed" DBG_END
+			log_err "%s", "aes_encrypt() failed" log_end;
 			ERR_free_strings();
 			return DTS_OPENSSL_ERROR;
 		}
@@ -240,10 +312,12 @@ AirCryptBuffer(
 	EVP_CIPHER_CTX_cleanup(&ctx);
 	ERR_free_strings();
 
-	DBG_INFO "encrypt=%s, input len=%u, output len=%u",  TRUE == Encrypt ? "true" : "false", InputLength, OutputLength DBG_END
+	log_info "encrypt=%s, input len=%u, output len=%u",  TRUE == Encrypt ? "true" : "false", InputLength, OutputLength log_end;
+
 	return DTS_SUCCESS;
 }
 
+//AirCryptBuffer 사용하지 않고 aes 암호화
 //
 //
 //int main(int argc, char **argv)

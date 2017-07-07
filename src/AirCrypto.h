@@ -9,8 +9,23 @@
 **---------------------------------------------------------------------------*/
 #pragma once
 
-#include <intsafe.h>
 #include "StatusCode.h"
+
+bool 
+aes256_encrypt(
+	IN unsigned char *key,
+	IN const wchar_t *path,
+	IN const wchar_t *target_file_path,
+	IN const wchar_t *encrypt_file_name
+);
+
+bool 
+aes256_decrypt(
+	IN unsigned char *key,
+	IN const wchar_t *path,
+	IN const wchar_t *encrypt_file_name,
+	IN const wchar_t *decrypt_file_name
+);
 
 DTSTATUS 
 AirCryptBuffer(
