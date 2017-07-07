@@ -264,6 +264,28 @@ FindSubDirectory(
 	IN BOOL Recursive
 	);
 
+bool file_size_padding(
+	IN wchar_t* file_path,
+	IN OUT int64_t &padding
+);
+
+bool aes256_encrypt(
+	IN unsigned char *key,
+	IN const wchar_t *path,
+	IN const wchar_t *target_file_path,
+	IN const wchar_t *encrypt_file_name,
+	OUT unsigned char * out_encrypt
+);
+
+bool aes256_decrypt(
+	IN unsigned char *key,
+	IN const wchar_t *path,
+	IN const wchar_t *target_file_path,
+	IN const wchar_t *encrypt_file_name,
+	IN const wchar_t *decrypt_file_name,
+	IN  unsigned char * encrypt
+);
+
 /******************************************************************************
  * directory management 
 ******************************************************************************/
