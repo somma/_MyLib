@@ -4905,47 +4905,6 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 }
 
 /**
-* @brief	raise_privilege 가 true 인 경우 SE_DEBUG_NAME 권한을 획득한 후 프로세스를 오픈한다. 
-			획득한 권한은 명시적으로 제거해줄때까지 계속 유지 된다. 
-			SE_DEBUG_NAME 가 원래 있었을 수도 있었기 때문에 제거하면 문제가 생길 수 있고,
-			이 함수가 리턴한 핸들에 I/O 가 발생할 때 오픈할 때 있던 SE_DEBUG_NAME 가 없어서 문제가 
-			생길 수 있다 (빡신 버그 생성...)
-* @param	
-* @see		
-* @remarks	
-* @code		HANDLE process_handle = privileged_open_process(pid, PROCESS_ALL_ACCESS, true);
-* @endcode	
-* @return	
-*/
-HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege)
-{
-	HANDLE proc_handle = NULL;
-    #pragma warning(disable:4127)
-	do 
-	{
-		// open the process
-		proc_handle = OpenProcess(rights, FALSE, pid);
-		if (NULL != proc_handle) break;		// 성공!
-
-		// SeDebugPrivilege	권한을 활성화하고 재 시도 해본다. (권한이 없으면 안될 수도 있음)
-		if (true != raise_privilege) break;	// 실패!
-
-		if (true != set_privilege(SE_DEBUG_NAME, TRUE) ) break;
-		
-		// SeDebugPrivilege 를 얻었다면 다시 오픈 시도
-		proc_handle = OpenProcess(rights, FALSE, pid);
-		if (NULL == proc_handle)
-		{
-			//log_info "OpenProcess( pid = %u ) failed. gle = %u", pid, GetLastError() log_end
-		}
-		
-	} while(false);
-    #pragma warning(default: 4127)
-
-	return proc_handle;
-}
-
-/**
  * @brief	
  * @param	
  * @see		
@@ -5288,6 +5247,193 @@ bool set_security_attributes(_Out_ SECURITY_ATTRIBUTES& sa)
 	return ret ? true : false;
 }
 
+/// @brief	Suspend process
+bool suspend_process_by_pid(_In_ DWORD pid)
+{
+	HANDLE proc_handle = NULL;
+	do
+	{
+		proc_handle = OpenProcess(PROCESS_SUSPEND_RESUME,
+								  FALSE,
+								  pid);
+		if (NULL != proc_handle) break;
+		
+		if (!set_privilege(SE_DEBUG_NAME, true))
+		{
+			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
+			break;
+		}
+
+		proc_handle = OpenProcess(PROCESS_SUSPEND_RESUME,
+								  FALSE,
+								  pid);
+		set_privilege(SE_DEBUG_NAME, false);
+
+	} while (false);
+	
+	if (NULL == proc_handle)
+	{
+		log_err "Can not access process. pid=%u",
+			pid
+			log_end;
+		return false;
+	}
+
+	if (true != suspend_process_by_handle(proc_handle))
+	{
+		log_err "suspend_process_by_handle() failed. pid=%u",
+			pid
+			log_end;
+	}
+
+	CloseHandle(proc_handle);
+	return true;
+}
+
+/// @brief	Resume process
+bool resume_process_by_pid(_In_ DWORD pid)
+{
+	HANDLE proc_handle = NULL;
+	do
+	{
+		proc_handle = OpenProcess(PROCESS_SUSPEND_RESUME,
+								  FALSE,
+								  pid);
+		if (NULL != proc_handle) break;
+		
+		if (!set_privilege(SE_DEBUG_NAME, true))
+		{
+			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
+			break;
+		}
+
+		proc_handle = OpenProcess(PROCESS_SUSPEND_RESUME,
+								  FALSE,
+								  pid);
+		set_privilege(SE_DEBUG_NAME, false);
+
+	} while (false);
+	
+	if (NULL == proc_handle)
+	{
+		log_err "Can not access process. pid=%u",
+			pid
+			log_end;
+		return false;
+	}
+
+	if (true != resume_process_by_handle(proc_handle))
+	{
+		log_err "resume_process_by_handle() failed. pid=%u",
+			pid
+			log_end;
+	}
+
+	CloseHandle(proc_handle);
+	return true;
+}
+
+/// @brief	Terminate process
+bool terminate_process_by_pid(_In_ DWORD pid, _In_ DWORD exit_code)
+{
+	HANDLE proc_handle = NULL;
+	do
+	{
+		proc_handle = OpenProcess(PROCESS_TERMINATE,
+								  FALSE,
+								  pid);
+		if (NULL != proc_handle) break;
+
+		if (!set_privilege(SE_DEBUG_NAME, true))
+		{
+			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
+			break;
+		}
+
+		proc_handle = OpenProcess(PROCESS_TERMINATE,
+								  FALSE,
+								  pid);
+		set_privilege(SE_DEBUG_NAME, false);
+
+	} while (false);
+
+	if (NULL == proc_handle)
+	{
+		log_err "Can not access process. pid=%u",
+			pid
+			log_end;
+		return false;
+	}
+
+	return terminate_process_by_handle(proc_handle, exit_code) ? true : false;
+}
+
+bool suspend_process_by_handle(_In_ HANDLE handle)
+{
+	typedef LONG NTSTATUS;
+#define NT_SUCCESS(Status)  (((NTSTATUS)(Status)) >= 0)
+
+	typedef NTSTATUS(NTAPI *NtSuspendProcess)(IN HANDLE ProcessHandle);
+	NtSuspendProcess pfnNtSuspendProcess = (NtSuspendProcess)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "NtSuspendProcess");
+	if (NULL == pfnNtSuspendProcess)
+	{
+		log_err "No NtSuspendProcess api." log_end;
+		return false;
+	}
+
+	NTSTATUS status = pfnNtSuspendProcess(handle);
+	if (!NT_SUCCESS(status))
+	{
+		log_err "NtSuspendProcess() failed., status=0x%08x",
+			status
+			log_end;
+		return false;
+	}
+
+	return true;
+}
+
+bool resume_process_by_handle(_In_ HANDLE handle)
+{
+	typedef LONG NTSTATUS;
+#define NT_SUCCESS(Status)  (((NTSTATUS)(Status)) >= 0)
+
+	typedef NTSTATUS(NTAPI *NtResumeProcess)(IN HANDLE ProcessHandle);
+	NtResumeProcess pfnNtResumeProcess = (NtResumeProcess)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "NtResumeProcess");
+	if (NULL == pfnNtResumeProcess)
+	{
+		log_err "No NtResumeProcess api." log_end;
+		return false;
+	}
+
+	NTSTATUS status = pfnNtResumeProcess(handle);
+	if (!NT_SUCCESS(status))
+	{
+		log_err "NtResumeProcess() failed., status=0x%08x",
+			status
+			log_end;
+		return false;
+	}
+
+	return true;
+}
+
+bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code)
+{
+	if (0 == TerminateProcess(handle, exit_code))
+	{
+		log_err "TerminateProcess() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;			
+	}
+
+	//DWORD ret = WaitForSingleObject(handle, INFINITE);
+	return true;
+}
+
+
+
 /**
  * @brief	pid 로 프로세스의 전체 이름을 구한다. (vista 이상)
 			ZwQuerySystemInformation 처럼 length 를 0 을 넘겨주면 필요한 버퍼의 길이를...
@@ -5303,12 +5449,36 @@ bool set_security_attributes(_Out_ SECURITY_ATTRIBUTES& sa)
 
 std::wstring get_process_name_by_pid(_In_ DWORD process_id)
 {
-	raii_handle process_handle(
-					privileged_open_process(process_id, PROCESS_QUERY_INFORMATION, true),
-					raii_CloseHandle
-					);
-	if (NULL == process_handle.get()) return _null_stringw;
+	HANDLE phandle = NULL;
+	do
+	{
+		phandle = OpenProcess(PROCESS_QUERY_INFORMATION,
+							  FALSE,
+							  process_id);
+		if (NULL != phandle) break;
 
+		if (!set_privilege(SE_DEBUG_NAME, true))
+		{
+			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
+			break;
+		}
+
+		phandle = OpenProcess(PROCESS_QUERY_INFORMATION,
+							  FALSE,
+							  process_id);
+		set_privilege(SE_DEBUG_NAME, false);
+
+	} while (false);
+
+	if (NULL == phandle)
+	{
+		//log_err "Can not access process. pid=%u",
+		//	pid
+		//	log_end;
+		return false;
+	}
+	raii_handle process_handle(phandle, raii_CloseHandle);
+	
 	// get size
 	wchar_t*	name = NULL;
 	DWORD		name_len = 20;//MAX_PATH;

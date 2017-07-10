@@ -582,7 +582,6 @@ bool	get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wst
 bool    get_local_mac_by_ipv4(_In_ const wchar_t* ip_str, _Out_ std::wstring& mac_str);
  
 bool	set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
-HANDLE	privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege);
 
 bool    get_active_window_pid(_Out_ DWORD& pid, _Out_ DWORD& tid);
 DWORD	get_active_console_session_id();
@@ -592,6 +591,14 @@ bool	process_in_console_session(_In_ DWORD process_id);
 bool	create_process_as_login_user(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _Out_ PROCESS_INFORMATION& pi);
 
 bool set_security_attributes(_Out_ SECURITY_ATTRIBUTES& sa);
+
+bool suspend_process_by_pid(_In_ DWORD pid);
+bool resume_process_by_pid(_In_ DWORD pid);
+bool terminate_process_by_pid(_In_ DWORD pid, _In_ DWORD exit_code);
+bool suspend_process_by_handle(_In_ HANDLE handle);
+bool resume_process_by_handle(_In_ HANDLE handle);
+bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code);
+
 
 #if _WIN32_WINNT >= 0x0600	// after vista
 std::wstring get_process_name_by_pid(_In_ DWORD process_id);

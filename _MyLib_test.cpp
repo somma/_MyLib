@@ -21,7 +21,7 @@
 #include "nt_name_conv.h"
 #include "crc64.h"
 
-
+bool test_suspend_resume_process();
 bool test_to_str();
 bool test_convert_file_time();
 
@@ -230,7 +230,8 @@ int _tmain(int argc, _TCHAR* argv[])
     //    wstr.size(), wcslen(wstr.c_str())
     //    log_end;
 	
-	assert_bool(true, test_to_str);
+	assert_bool(true, test_suspend_resume_process);
+	//assert_bool(true, test_to_str);
 	//assert_bool(true, test_convert_file_time);
 
 	//assert_bool(true, test_ppl);
@@ -2112,6 +2113,58 @@ bool test_crc64()
         log_end;
     return true;
 }
+
+bool test_suspend_resume_process()
+{
+	// 
+	//	run notepad.exe
+	// 
+	PROCESS_INFORMATION pi = { 0 };
+	STARTUPINFOW si = { 0 };
+	if (!CreateProcessW(L"c:\\windows\\system32\\notepad.exe",
+						nullptr,
+						nullptr,
+						nullptr,
+						FALSE,
+						0,
+						nullptr,
+						nullptr,
+						&si,
+						&pi))
+	{
+		log_err "CreateProcessW() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	
+
+	//
+	//	suspend notepad
+	//	
+	if (true != suspend_process_by_handle(pi.hProcess)) return false;
+	log_info "suspended, press enter ..." log_end;
+	_pause;
+
+	//	
+	//	resume notepad
+	// 
+	if (true != resume_process_by_handle(pi.hProcess)) return false;
+	log_info "resumed, press enter ..." log_end;
+	_pause;		
+
+	// 
+	//	terminate notepd
+	// 
+	terminate_process_by_handle(pi.hProcess, 0);
+	log_info "terminated, proess enter ..." log_end;
+	_pause;
+
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+	return true;
+}
+
 
 bool test_to_str()
 {
