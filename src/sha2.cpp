@@ -97,7 +97,7 @@
 #  if defined( INC_ALL )
 #    include "crypt.h"
 #  elif defined( INC_CHILD )
-#    include "../crypt.h"
+#    include "..\crypt.h"
 #  else
 #    include "crypt.h"
 #  endif

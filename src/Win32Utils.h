@@ -669,7 +669,23 @@ LPCWSTR  FileTypeToString(IMAGE_TYPE type);
 /******************************************************************************
  * type cast
 ******************************************************************************/
-bool 
+bool
+bin_to_hexa_fast(
+	_In_ uint32_t size,
+	_In_reads_bytes_(size) uint8_t* buffer,
+	_In_ bool upper_case,
+	_Out_ std::string& hex_string
+	);
+
+bool
+bin_to_hexw_fast(
+	_In_ uint32_t size,
+	_In_reads_bytes_(size) uint8_t* buffer,
+	_In_ bool upper_case,
+	_Out_ std::wstring& hex_string
+	);
+
+bool
 bin_to_hexa(
 	_In_ UINT32 code_size, 
 	_In_ const UINT8* code, 

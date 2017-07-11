@@ -20,6 +20,7 @@
 #include "wmi_client.h"
 #include "nt_name_conv.h"
 #include "crc64.h"
+#include "StopWatch.h"
 
 bool test_suspend_resume_process();
 bool test_to_str();
@@ -214,7 +215,7 @@ int _tmain(int argc, _TCHAR* argv[])
     if (true != initialize_log(log_level_debug, f.str().c_str())) return false;
     set_log_format(false, false, false);
     
-
+	
 
 	//uint64_t t = 0xffffffff00112233;
 	//log_info "0x%llx, 0x%016llx", t, t log_end;
@@ -230,7 +231,7 @@ int _tmain(int argc, _TCHAR* argv[])
     //    wstr.size(), wcslen(wstr.c_str())
     //    log_end;
 	
-	assert_bool(true, test_suspend_resume_process);
+	//assert_bool(true, test_suspend_resume_process);
 	//assert_bool(true, test_to_str);
 	//assert_bool(true, test_convert_file_time);
 
@@ -288,7 +289,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_get_filepath_by_handle);
 	//assert_bool(true, test_find_files);
 	
-	//assert_bool(true, test_bin_to_hex);
+	assert_bool(true, test_bin_to_hex);
 	//assert_bool(true, test_str_to_xxx);
 	//assert_bool(true, test_set_get_file_position);
 	//assert_bool(true, test_get_module_path);
@@ -1092,7 +1093,7 @@ bool test_bin_to_hex()
 					0x10, 0x00, 0x01		
 					};
 
-	std::string hexa;
+	/*std::string hexa;
 	if (true != bin_to_hexa(sizeof(code), code, true, hexa)) return false;	
 	if (0 != hexa.compare(orgau)) return false;
 	
@@ -1105,7 +1106,71 @@ bool test_bin_to_hex()
 
 	if (true != bin_to_hexw(sizeof(code), code, false, hexw)) return false;	
 	if (0 != hexw.compare(orgwl)) return false;
-	
+
+	*/
+	std::string hexa; 
+	std::string hexa_fast;
+	StopWatch sw; sw.Start();
+	if (true != bin_to_hexa(sizeof(code), code, true, hexa)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexa()", sw.GetDurationMilliSecond() log_end;
+
+	sw.Start();
+	if (true != bin_to_hexa_fast(sizeof(code), code, true, hexa_fast)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexa_fast()", sw.GetDurationMilliSecond() log_end;
+
+	if (0 != hexa.compare(orgau)) return false;
+	if (0 != hexa_fast.compare(orgau)) return false;
+
+	sw.Start();
+	if (true != bin_to_hexa(sizeof(code), code, false, hexa)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexa()", sw.GetDurationMilliSecond() log_end;
+
+	sw.Start();
+	if (true != bin_to_hexa_fast(sizeof(code), code, false, hexa_fast)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexa_fast()", sw.GetDurationMilliSecond() log_end;
+
+	if (0 != hexa.compare(orgal)) return false;
+	if (0 != hexa_fast.compare(orgal)) return false;
+
+
+
+
+
+	std::wstring hexw;
+	std::wstring hexw_fast;
+	sw.Start();
+	if (true != bin_to_hexw(sizeof(code), code, true, hexw)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexw()", sw.GetDurationMilliSecond() log_end;
+
+	sw.Start();
+	if (true != bin_to_hexw_fast(sizeof(code), code, true, hexw_fast)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexw_fast()", sw.GetDurationMilliSecond() log_end;
+
+	if (0 != hexw.compare(orgwu)) return false;
+	if (0 != hexw_fast.compare(orgwu)) return false;
+
+	sw.Start();
+	if (true != bin_to_hexw(sizeof(code), code, false, hexw)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexw()", sw.GetDurationMilliSecond() log_end;
+
+	sw.Start();
+	if (true != bin_to_hexw_fast(sizeof(code), code, false, hexw_fast)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexw_fast()", sw.GetDurationMilliSecond() log_end;
+
+	if (0 != hexw.compare(orgwl)) return false;
+	if (0 != hexw_fast.compare(orgwl)) return false;
+
+
+
+
 	return true;
 }
 

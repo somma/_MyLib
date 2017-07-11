@@ -50,6 +50,25 @@
 #pragma comment (lib, "Wtsapi32.lib")
 
 
+char _int_to_char_table[] = {
+	"0123456789" /* 0 - 9 */
+	"abcdefghijklmnopqrstuvwxyz" /* 10 - 35 */
+	" !\"#$%&'()*+,-./" /* 36 - 51 */
+	":;<=>?@" /* 52 - 58 */
+	"[\\]^_`" /* 59 - 64 */
+	"{|}~" /* 65 - 68 */
+};
+
+char _int_to_uchar_table[] = {
+	"0123456789" /* 0 - 9 */
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ" /* 10 - 35 */
+	" !\"#$%&'()*+,-./" /* 36 - 51 */
+	":;<=>?@" /* 52 - 58 */
+	"[\\]^_`" /* 59 - 64 */
+	"{|}~" /* 65 - 68 */
+};
+
+
 /// @brief	int type 랜덤값을 리턴한다.
 int get_random_int(_In_ int min, _In_ int max)
 {
@@ -5842,6 +5861,65 @@ bin_to_hexa(
 
 	return true;
 }
+
+bool 
+bin_to_hexa_fast(
+	_In_ uint32_t size,
+	_In_reads_bytes_(size) uint8_t* buffer,
+	_In_ bool upper_case,
+	_Out_ std::string& hex_string
+	)
+{
+	char* table = _int_to_char_table;
+	if (true == upper_case)
+	{
+		table = _int_to_uchar_table;
+	}
+	
+	uint32_t buffer_size = ((size * 2) + 1) * sizeof(char);
+	raii_char_ptr hex_buffer((char*)malloc(buffer_size), raii_free);
+	if (nullptr == hex_buffer.get()) return false;
+
+	for (uint32_t i = 0; i < size; ++i)
+	{
+		hex_buffer.get()[i * 2] = table[buffer[i] >> 4];
+		hex_buffer.get()[i * 2 + 1] = table[buffer[i] & 0xf];
+	}
+	hex_buffer.get()[buffer_size - 1] = 0x00;
+
+	hex_string = hex_buffer.get();
+	return true;
+}
+
+bool 
+bin_to_hexw_fast(
+	_In_ uint32_t size,
+	_In_reads_bytes_(size) uint8_t* buffer,
+	_In_ bool upper_case,
+	_Out_ std::wstring& hex_string
+	)
+{
+	char* table = _int_to_char_table;
+	if (true == upper_case)
+	{
+		table = _int_to_uchar_table;
+	}
+	
+	uint32_t buffer_size = ((size * 2) + 1) * sizeof(wchar_t);
+	raii_wchar_ptr hex_buffer((wchar_t*)malloc(buffer_size), raii_free);
+	if (nullptr == hex_buffer.get()) return false;
+
+	for (uint32_t i = 0; i < size; ++i)
+	{
+		hex_buffer.get()[i * 2] = table[buffer[i] >> 4];
+		hex_buffer.get()[i * 2 + 1] = table[buffer[i] & 0xf];
+	}
+	hex_buffer.get()[(buffer_size / sizeof(wchar_t)) - 1] = 0x00;
+
+	hex_string = hex_buffer.get();
+	return true;
+}
+
 
 /**
  * @brief	
