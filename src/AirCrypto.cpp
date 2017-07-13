@@ -23,7 +23,8 @@
 
 /**
 * @brief	aes256 파일 암호화
-* @param
+* @param 	target_file_path ex) C:\\test_folder\\a.txt
+* @param	encrypt_file_path ex) C:\\test_folder\\a.txt.crypto
 * @see
 * @remarks
 * @code
@@ -31,17 +32,16 @@
 * @return
 **/
 bool aes256_encrypt(
-	IN unsigned char *key,
-	IN const wchar_t *path,
-	IN const wchar_t *target_file_path,
-	IN const wchar_t *encrypt_file_name
+	_In_ unsigned char *key,
+	_In_ std::wstring& target_file_path,
+	_In_ std::wstring& encrypt_file_path
 )
 {
 	_ASSERTE(NULL != key);
-	_ASSERTE(NULL != path);
-	_ASSERTE(NULL != target_file_path);
-	_ASSERTE(NULL != encrypt_file_name);
-	if (NULL == key || NULL == path || NULL == target_file_path || NULL == encrypt_file_name)
+	_ASSERTE(NULL != target_file_path.c_str());
+	_ASSERTE(NULL != encrypt_file_path.c_str());
+	_ASSERTE(target_file_path.compare(encrypt_file_path));
+	if (NULL == key || NULL == target_file_path.c_str() || NULL == encrypt_file_path.c_str() || !target_file_path.compare(encrypt_file_path))
 		return FALSE;
 
 	PBYTE buffer = nullptr;
@@ -49,12 +49,15 @@ bool aes256_encrypt(
 	unsigned char *encrypt_data = nullptr;
 	UINT32 length = 0;
 
-	//암호화할 파일를 메모리에 로드
-	if (LoadFileToMemory(target_file_path, file_size, buffer))
+	std::wstring encrypt_file_name;
+	extract_last_tokenW(encrypt_file_path, L"\\", encrypt_file_name, FALSE, FALSE);
+	std::wstring target_file_directory;
+	extract_last_tokenW(target_file_path, L"\\", target_file_directory, TRUE, FALSE);
+
+	if (LoadFileToMemory(target_file_path.c_str(), file_size, buffer))
 	{
 		AirCryptBuffer(key, strlen((const char*)key), buffer, file_size, encrypt_data, length, TRUE);
-		//암호화 내용을 새로운 파일로 저장
-		SaveBinaryFile(path, encrypt_file_name, file_size, encrypt_data);
+		SaveBinaryFile(target_file_directory.c_str(), encrypt_file_name.c_str(), file_size, encrypt_data);
 		free(buffer);
 		free(encrypt_data);
 	}
@@ -69,7 +72,8 @@ bool aes256_encrypt(
 
 /**
 * @brief	aes256 파일 복호화
-* @param
+* @param 	encrypt_file_path ex) C:\\test_folder\\a.txt.crypto
+* @param	decrypt_file_path ex) C:\\test_folder\\a.txt
 * @see
 * @remarks
 * @code
@@ -77,29 +81,33 @@ bool aes256_encrypt(
 * @return
 **/
 bool aes256_decrypt(
-	IN unsigned char *key,
-	IN const wchar_t *path,
-	IN const wchar_t *encrypt_file_name,
-	IN const wchar_t *decrypt_file_name
+	_In_ unsigned char *key,
+	_In_ std::wstring& encrypt_file_path,
+	_In_ std::wstring& decrypt_file_path
 )
 {
 	_ASSERTE(NULL != key);
-	_ASSERTE(NULL != path);
-	_ASSERTE(NULL != encrypt_file_name);
-	if (NULL == key || NULL == path || NULL == encrypt_file_name)
+	_ASSERTE(NULL != encrypt_file_path.c_str());
+	_ASSERTE(NULL != decrypt_file_path.c_str());
+	_ASSERTE(encrypt_file_path.compare(decrypt_file_path));
+	if (NULL == key || NULL == decrypt_file_path.c_str() || NULL == encrypt_file_path.c_str() || !encrypt_file_path.compare(decrypt_file_path))
 		return FALSE;
+
 
 	PBYTE buffer = nullptr;
 	DWORD file_size = 0;
 	UINT32 length = 0;
 	unsigned char *encrypt_data = nullptr;
 
-	//복호화할 파일를 메모리에 로드
-	if (LoadFileToMemory(encrypt_file_name, file_size, buffer))
+	std::wstring decrypt_file_name;
+	extract_last_tokenW(decrypt_file_path, L"\\", decrypt_file_name, FALSE, FALSE);
+	std::wstring decrypt_file_directory;
+	extract_last_tokenW(decrypt_file_path, L"\\", decrypt_file_directory, TRUE, FALSE);
+
+	if (LoadFileToMemory(encrypt_file_path.c_str(), file_size, buffer))
 	{
 		AirCryptBuffer(key, strlen((const char*)key), buffer, file_size, encrypt_data, length, FALSE);
-		//복호화 내용을 새로운 파일로 저장
-		SaveBinaryFile(path, decrypt_file_name, file_size, encrypt_data);
+		SaveBinaryFile(decrypt_file_directory.c_str(), decrypt_file_name.c_str(), file_size, encrypt_data);
 		free(buffer);
 		free(encrypt_data);
 	}
@@ -127,9 +135,9 @@ bool aes256_decrypt(
 -----------------------------------------------------------------------------*/
 DTSTATUS 
 aes_init(
-	IN unsigned char *key_data, 
-	IN int key_data_len, 
-	OUT EVP_CIPHER_CTX *ctx, 
+	_In_ unsigned char *key_data, 
+	_In_ int key_data_len, 
+	_Out_ EVP_CIPHER_CTX *ctx, 
 	BOOL encrypt
 	)
 {
@@ -183,9 +191,9 @@ aes_init(
 -----------------------------------------------------------------------------*/
 unsigned char*
 aes_encrypt(
-	IN EVP_CIPHER_CTX *e, 
-	IN unsigned char *plaintext, 
-	IN OUT int *len
+	_In_ EVP_CIPHER_CTX *e, 
+	_In_ unsigned char *plaintext, 
+	_Inout_  int *len
 	)
 {
 	int BlockSize = EVP_CIPHER_CTX_block_size(e);
@@ -220,9 +228,9 @@ aes_encrypt(
 -----------------------------------------------------------------------------*/
 unsigned char *
 aes_decrypt(
-	IN EVP_CIPHER_CTX *e, 
-	IN unsigned char *ciphertext, 
-	IN OUT int *len
+	_In_ EVP_CIPHER_CTX *e, 
+	_In_ unsigned char *ciphertext, 
+	_Inout_ int *len
 	)
 {
   /* plaintext will always be equal to or lesser than length of ciphertext*/
@@ -249,13 +257,13 @@ aes_decrypt(
 -----------------------------------------------------------------------------*/
 DTSTATUS 
 AirCryptBuffer(
-	IN unsigned char* PassPhrase,
-	IN UINT32 PassPhraseLen,
-	IN unsigned char* Input, 
-	IN UINT32 InputLength, 
-	OUT unsigned char*& Output, 
-	OUT UINT32& OutputLength, 
-	IN BOOL Encrypt
+	_In_ unsigned char* PassPhrase,
+	_In_ UINT32 PassPhraseLen,
+	_In_ unsigned char* Input, 
+	_In_ UINT32 InputLength, 
+	_Out_ unsigned char*& Output,
+	_Out_ UINT32& OutputLength,
+	_In_ BOOL Encrypt
 	)
 {
 	_ASSERTE(NULL != PassPhrase);

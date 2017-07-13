@@ -13,27 +13,25 @@
 
 bool 
 aes256_encrypt(
-	IN unsigned char *key,
-	IN const wchar_t *path,
-	IN const wchar_t *target_file_path,
-	IN const wchar_t *encrypt_file_name
-);
+	_In_ unsigned char *key,
+	_In_ std::wstring& target_file_path,
+	_In_ std::wstring& encrypt_file_path
+	);
 
 bool 
 aes256_decrypt(
-	IN unsigned char *key,
-	IN const wchar_t *path,
-	IN const wchar_t *encrypt_file_name,
-	IN const wchar_t *decrypt_file_name
+	_In_ unsigned char *key,
+	_In_ std::wstring& encrypt_file_path,
+	_In_ std::wstring& decrypt_file_path
 );
 
 DTSTATUS 
 AirCryptBuffer(
-	IN unsigned char* PassPhrase,
-	IN UINT32 PassPhraseLen,
-	IN unsigned char* Input, 
-	IN UINT32 InputLength, 
-	OUT unsigned char*& Output, 
-	OUT UINT32& OutputLength, 
-	IN BOOL Encrypt
+	_In_ unsigned char* PassPhrase,
+	_In_ UINT32 PassPhraseLen,
+	_In_ unsigned char* Input, 
+	_In_ UINT32 InputLength, 
+	_Out_ unsigned char*& Output, 
+	_Out_ UINT32& OutputLength, 
+	_In_ BOOL Encrypt
 	);

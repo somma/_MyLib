@@ -78,9 +78,9 @@ bool key_recover(
 bool test_aes256()
 {
 	wchar_t *path = (wchar_t*)malloc(sizeof(wchar_t)*MAX_PATH);
-	wchar_t *target_file_path = L"ase256_test_before.conf";
-	wchar_t * encrypt_file_name = L"ase256_test_file";
-	wchar_t * decrypt_file_name = L"ase256_test_after.conf";
+	std::wstring target_file_path = L"C:\\pull_request\\ase256_test_before.conf";
+	std::wstring encrypt_file_path = L"C:\\pull_request\\ase256_test.crypto";
+	std::wstring  decrypt_file_path = L"C:\\pull_request\\ase256_test_after.conf";
 //	unsigned char origin_key[] = "xinfolab";	//원본키
 	unsigned char *origin_key = nullptr;		//key_recover에서 키가 복호화해서 나오기 때문에 NULL,
 	unsigned char second_key[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890*!=&?&/";
@@ -94,36 +94,23 @@ bool test_aes256()
 	}	
 
 	//테스트 파일 존재 확인
-	if (!is_file_existsW(target_file_path))
+	if (!is_file_existsW(target_file_path.c_str()))
 	{
 		log_info "no search file!!" log_end;
 		return FALSE;
 	}
 
-	//암호화 파일 경로
-	WCHAR encrypt_file[MAX_PATH + 1] = { 0 };
-	if (TRUE != SUCCEEDED(StringCbPrintfW(
-		encrypt_file,
-		sizeof(encrypt_file),
-		L"%s\\%s",
-		path,
-		encrypt_file_name)))
-	{
-		log_err "Can not generate target path, dir=%s, file=%s" log_end;
-		return FALSE;
-	}
-
 	//이미 암호화 파일이 존재하면 삭제
-	if (is_file_existsW(encrypt_file))
+	if (is_file_existsW(encrypt_file_path.c_str()))
 	{
 		log_err "same file exits, delete file!!" log_end;
-		DeleteFileW(encrypt_file);
+		::DeleteFileW(encrypt_file_path.c_str());
 	}
 
 	key_recover(second_key, origin_key);
 
 	//aes256 암호화
-	if (!aes256_encrypt(origin_key, path, target_file_path, encrypt_file_name))
+	if (!aes256_encrypt(origin_key, target_file_path, encrypt_file_path))
 	{
 		log_err "aes256_encrypt err" log_end;
 		free(path);
@@ -131,7 +118,7 @@ bool test_aes256()
 	}
 
 	//aes256 복호화
-	if (!aes256_decrypt(origin_key, path, encrypt_file_name, decrypt_file_name))
+	if (!aes256_decrypt(origin_key, encrypt_file_path, decrypt_file_path))
 	{
 		log_err "aes256_encrypt err" log_end;
 		free(encrypt);
@@ -139,7 +126,7 @@ bool test_aes256()
 		return FALSE;
 	}
 
-	if (!aes256_read_only(origin_key, path, encrypt_file_name, encrypt))
+	if (!aes256_read_only(origin_key, path, encrypt_file_path.c_str(), encrypt))
 	{
 		log_err "aes256_read_only err" log_end;
 		free(path);
