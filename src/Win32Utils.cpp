@@ -127,13 +127,18 @@ LPCWSTR FAT2Str(IN FATTIME& fat)
 	return FT2Str(ft);
 }
 
-/// @brief  
+/// @brief	FILETIME -> uint64_t
+///	@remark	Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64*
+///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
+
 uint64_t file_time_to_int(_In_ const PFILETIME file_time)
 {
 	return ((LARGE_INTEGER*)file_time)->QuadPart;
 }
 
-/// @brief
+/// @brief	uint64_t -> FILETIME
+///	@remark	Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64*
+///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
 void 
 int_to_file_time(
 	_In_ uint64_t file_time_int, 
