@@ -10,6 +10,7 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #pragma once
+#include "Win32Utils.h"
 #include "RegistryUtil.h"
 #include <Winnetwk.h>
 #pragma comment(lib, "Mpr.lib")
@@ -35,7 +36,7 @@ public:
         to_lower_string(_device_name);
 
     }
-
+	
     std::wstring    _logical_drive; // `c:`, `d:`, ...              (소문자)
     std::wstring    _device_name;   // `\device\harddiskvolume1\`, ... (소문자)
     uint32_t        _drive_type;    // DRIVE_UNKNOWN(0), 
@@ -57,7 +58,9 @@ public:
     NameConverter() {}
     ~NameConverter() {}
 
-    std::wstring get_file_name(_In_ const wchar_t* file_name);
+    std::wstring get_canon_name(_In_ const wchar_t* file_name);
+	bool get_nt_path_by_dos_path(_In_ const wchar_t* dos_path, 
+								 _Out_ std::wstring& nt_device_path);
     bool reload();
 
 private:

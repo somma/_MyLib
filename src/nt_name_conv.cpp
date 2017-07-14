@@ -33,7 +33,20 @@ bool NameConverter::reload()
 }
 
 /// @brief  nt path name 을 dos path name 으로 변환한다. 
-std::wstring NameConverter::get_file_name(_In_ const wchar_t* file_name)
+///			\??\c:\windows\system32\abc.exe->c:\windows\system32\abc.exe
+///			\Systemroot\abc.exe->C:\WINDOWS\abc.exe
+///			system32\abc.exe->C:\WINDOWS\system32\abc.exe
+///			\windows\system32\abc.exe->C:\WINDOWS\system32\abc.exe
+///			\Device\Mup\1.1.1.1\abc.exe -> \\1.1.1.1\abc.exe
+///			\Device\Unknown\aaaa.exe -> \Device\Unknown\aaaa.exe
+///			\device\lanmanredirector\;x:000000000008112d\192.168.153.144\sfr022\ -> \\192.168.153.144\sfr022\
+///			x:\->x:\
+///			\Device\Mup\192.168.153.144\sfr022\ -> \\192.168.153.144\sfr022\
+///
+std::wstring 
+NameConverter::get_canon_name(
+	_In_ const wchar_t* file_name
+	)
 {
     _ASSERTE(NULL != file_name);
     if (NULL == file_name) return std::wstring(L"");
@@ -137,6 +150,62 @@ std::wstring NameConverter::get_file_name(_In_ const wchar_t* file_name)
     }
 }
 
+/// @brief	c:\windows\system32\test.txt -> \Device\HarddiskVolume1\windows\test.txt 로 변환
+bool
+NameConverter::get_nt_path_by_dos_path(
+	_In_ const wchar_t* dos_path, 
+	_Out_ std::wstring& nt_device_path
+)
+{
+	_ASSERTE(dos_path);
+	if (nullptr == dos_path) return false;
+
+	// 
+	// dos_path 는 최소한 `c:\` 형식이어야 한다. 
+	// 
+	if (3 > wcslen(dos_path) || dos_path[2] != L'\\')
+	{
+		log_err "Invalid dos_path format. dos_path=%ws",
+			dos_path
+			log_end;
+		return false;
+	}
+
+	bool found = false;
+	std::wstringstream out_path;
+	{
+		boost::lock_guard<boost::mutex> lock(_lock);
+		for (auto& ddi : _dos_devices)
+		{
+			//
+			//	`c:` 두 글자만 비교
+			// 
+			if (0 == _wcsnicmp(ddi._logical_drive.c_str(), dos_path, 2))
+			{
+				out_path << ddi._device_name;
+				found = true;
+				break;
+			}
+		}
+	}
+	
+	if (true != found)
+	{
+		log_err "Can not find device name. dos_path=%ws",
+			dos_path
+			log_end;
+		return false;
+	}
+
+	// 
+	//	dos_path =                      c:\windows\system32\test.txt
+	//	out_path = \device\harddiskvolume1\
+	// 
+	out_path << &dos_path[3];
+	nt_device_path = out_path.str();
+	return true;
+}
+
 /// @brief  device prefix 를 인식, 적절히 변환해서 리턴한다. 
 /// @remark dos_device prefix 의 경우
 ///             \device\harddiskvolume1\abc.exe -> c:\abc.exe
@@ -146,7 +215,11 @@ std::wstring NameConverter::get_file_name(_In_ const wchar_t* file_name)
 ///             
 ///         mup_device 의 경우
 ///             \device\mup\1.1.1.1\share\abc.exe -> \\1.1.1.1\share\abc.exe
-bool NameConverter::resolve_device_prefix(_In_ const wchar_t* file_name, _Out_ std::wstring& resolved_file_name)
+bool 
+NameConverter::resolve_device_prefix(
+	_In_ const wchar_t* file_name, 
+	_Out_ std::wstring& resolved_file_name
+	)
 {
     _ASSERTE(NULL != file_name);
     if (NULL == file_name || file_name[0] != L'\\') return false;
@@ -224,7 +297,8 @@ bool NameConverter::resolve_device_prefix(_In_ const wchar_t* file_name, _Out_ s
         if (pos == 0)
         {
             resolved_file_name = L'\\';
-            resolved_file_name += qualified_file_name.substr(mup_device.size(), qualified_file_name.size());
+            resolved_file_name += qualified_file_name.substr(mup_device.size(), 
+															 qualified_file_name.size());
             return true;
         }
     }

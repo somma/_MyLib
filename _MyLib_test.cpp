@@ -37,7 +37,8 @@ extern bool test_scm_context();
 
 bool test_alignment_error_test();
 bool test_crc64();
-bool test_canonicalize_file_name();
+bool test_NameConverter_get_canon_name();
+bool test_NameConverter_dosname_to_devicename();
 extern bool test_NtCreateFile();
 extern bool test_wmi_client();
 bool test_ping();
@@ -244,9 +245,13 @@ int _tmain(int argc, _TCHAR* argv[])
 
  //   assert_bool(true, test_regexp);
  //   assert_bool(true, test_ping);
- //   assert_bool(true, test_canonicalize_file_name);
 	//assert_bool(true, test_alignment_error_test);
  //   assert_bool(true, test_crc64);
+
+
+	assert_bool(true, test_NameConverter_get_canon_name);
+	assert_bool(true, test_NameConverter_dosname_to_devicename);
+
  //   
  //   assert_bool(true, test_wmi_client);
  //   assert_bool(true, test_NtCreateFile);
@@ -289,7 +294,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_get_filepath_by_handle);
 	//assert_bool(true, test_find_files);
 	
-	assert_bool(true, test_bin_to_hex);
+	//assert_bool(true, test_bin_to_hex);
 	//assert_bool(true, test_str_to_xxx);
 	//assert_bool(true, test_set_get_file_position);
 	//assert_bool(true, test_get_module_path);
@@ -2061,10 +2066,7 @@ bool test_ping()
     return true;
 }
 
-
-
-
-bool test_canonicalize_file_name()
+bool test_NameConverter_get_canon_name()
 {
     //[INFO] \ ? ? \c : \windows\system32\abc.exe->c:\windows\system32\abc.exe
     //[INFO] \Systemroot\abc.exe->C:\WINDOWS\abc.exe
@@ -2096,8 +2098,28 @@ bool test_canonicalize_file_name()
 
     for (int i = 0; i < sizeof(file_names) / sizeof(wchar_t*); ++i)
     {
-        std::wstring name = nc.get_file_name(file_names[i]);
+        std::wstring name = nc.get_canon_name(file_names[i]);
         log_info "%ws -> %ws", file_names[i], name.c_str() log_end;
+    }
+
+    return true;
+}
+
+bool test_NameConverter_dosname_to_devicename()
+{
+     wchar_t* file_names[] = {
+        L"c:\\windows\\system32\\abc.exe"	//--> \device\harddiskvolume1\windows\system32
+    };
+
+    NameConverter nc;
+    if (true != nc.reload()) return false;
+
+    for (int i = 0; i < sizeof(file_names) / sizeof(wchar_t*); ++i)
+    {
+		std::wstring nt_path;
+		_ASSERTE(true == nc.get_nt_path_by_dos_path(file_names[i], nt_path));
+
+        log_info "%ws -> %ws", file_names[i], nt_path.c_str() log_end;
     }
 
     return true;
