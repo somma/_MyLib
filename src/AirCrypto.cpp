@@ -24,7 +24,7 @@
 /**
 * @brief	aes256 파일 암호화
 * @param 	target_file_path ex) C:\\test_folder\\a.txt
-* @param	encrypt_file_path ex) C:\\test_folder\\a.txt.crypto
+*			encrypt_file_path ex) C:\\test_folder\\a.txt.crypto
 **/
 bool 
 aes256_encrypt(
@@ -108,7 +108,7 @@ aes256_encrypt(
 /**
 * @brief	aes256 파일 복호화
 * @param 	encrypt_file_path ex) C:\\test_folder\\a.txt.crypto
-* @param	decrypt_file_path ex) C:\\test_folder\\a.txt
+*			decrypt_file_path ex) C:\\test_folder\\a.txt
 **/
 bool 
 aes256_decrypt(
@@ -193,18 +193,12 @@ aes256_decrypt(
     \brief  
 			Create an 256 bit key and IV using the supplied key_data. 
 			salt can be added for taste.
-			Fills in the encryption and decryption ctx objects and returns 0 on success
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
+			Fills in the encryption and decryption ctx objects and returns 0 on success  
 -----------------------------------------------------------------------------*/
 bool 
 aes_init(
-	_In_ unsigned char* key_data, 
-	_In_ int key_data_len, 
+	_In_ const unsigned char* key_data, 
+	_In_ const int key_data_len, 
 	_Outptr_ EVP_CIPHER_CTX* ctx, 
 	bool encrypt
 	)
@@ -256,17 +250,12 @@ aes_init(
 /**----------------------------------------------------------------------------
     \brief  
 				Encrypt *len bytes of data    
-				All data going in & out is considered binary (unsigned char[])
-    \param  
-    \return
-    \code
-    
-    \endcode        
+				All data going in & out is considered binary (unsigned char[])      
 -----------------------------------------------------------------------------*/
 unsigned char*
 aes_encrypt(
 	_In_ EVP_CIPHER_CTX* e, 
-	_In_ unsigned char* plaintext, 
+	_In_ const unsigned char* plaintext, 
 	_Inout_  int* len
 	)
 {
@@ -298,18 +287,12 @@ aes_encrypt(
 }
 
 /**----------------------------------------------------------------------------
-    \brief  Decrypt *len bytes of ciphertext
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
+    \brief  Decrypt *len bytes of ciphertext     
 -----------------------------------------------------------------------------*/
 unsigned char*
 aes_decrypt(
 	_In_ EVP_CIPHER_CTX* e, 
-	_In_ unsigned char* ciphertext, 
+	_In_ const unsigned char* ciphertext, 
 	_Inout_ int* len
 	)
 {
@@ -332,22 +315,12 @@ aes_decrypt(
   return plaintext;
 }
 
-
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
 bool 
 AirCryptBuffer(
-	_In_ unsigned char* PassPhrase,
-	_In_ uint32_t PassPhraseLen,
-	_In_ unsigned char* Input, 
-	_In_ uint32_t InputLength,
+	_In_ const unsigned char* PassPhrase,
+	_In_ const uint32_t PassPhraseLen,
+	_In_ const unsigned char* Input, 
+	_In_ const uint32_t InputLength,
 	_Outptr_ unsigned char*& Output,
 	_Out_ uint32_t& OutputLength,
 	_In_ bool Encrypt

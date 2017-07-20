@@ -1885,8 +1885,7 @@ LoadFileToMemory(
 }
 
 /**
-* @brief	바이너리 파일로 데이터를 저장한다.
-* @return	
+* @brief	바이너리 파일로 데이터를 저장한다.	
 */
 bool 
 SaveBinaryFile(
@@ -3174,12 +3173,6 @@ extract_first_tokenExA(
 					    KLMN	: out_string if forward = FALSE
 
 			delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
 **/
 bool 
 extract_last_tokenW(
