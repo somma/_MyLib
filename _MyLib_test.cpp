@@ -20,8 +20,9 @@
 #include "wmi_client.h"
 #include "nt_name_conv.h"
 #include "crc64.h"
+#include "StopWatch.h"
 
-
+bool test_suspend_resume_process();
 bool test_to_str();
 bool test_convert_file_time();
 
@@ -217,7 +218,7 @@ int _tmain(int argc, _TCHAR* argv[])
     if (true != initialize_log(log_level_debug, f.str().c_str())) return false;
     set_log_format(false, false, false);
     
-
+	
 
 	//uint64_t t = 0xffffffff00112233;
 	//log_info "0x%llx, 0x%016llx", t, t log_end;
@@ -233,7 +234,7 @@ int _tmain(int argc, _TCHAR* argv[])
     //    wstr.size(), wcslen(wstr.c_str())
     //    log_end;
 	
-	//assert_bool(true, test_to_str);
+	//assert_bool(true, test_suspend_resume_process);
 	//assert_bool(true, test_convert_file_time);
 
 	//assert_bool(true, test_ppl);
@@ -1096,7 +1097,7 @@ bool test_bin_to_hex()
 					0x10, 0x00, 0x01		
 					};
 
-	std::string hexa;
+	/*std::string hexa;
 	if (true != bin_to_hexa(sizeof(code), code, true, hexa)) return false;	
 	if (0 != hexa.compare(orgau)) return false;
 	
@@ -1109,7 +1110,71 @@ bool test_bin_to_hex()
 
 	if (true != bin_to_hexw(sizeof(code), code, false, hexw)) return false;	
 	if (0 != hexw.compare(orgwl)) return false;
-	
+
+	*/
+	std::string hexa; 
+	std::string hexa_fast;
+	StopWatch sw; sw.Start();
+	if (true != bin_to_hexa(sizeof(code), code, true, hexa)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexa()", sw.GetDurationMilliSecond() log_end;
+
+	sw.Start();
+	if (true != bin_to_hexa_fast(sizeof(code), code, true, hexa_fast)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexa_fast()", sw.GetDurationMilliSecond() log_end;
+
+	if (0 != hexa.compare(orgau)) return false;
+	if (0 != hexa_fast.compare(orgau)) return false;
+
+	sw.Start();
+	if (true != bin_to_hexa(sizeof(code), code, false, hexa)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexa()", sw.GetDurationMilliSecond() log_end;
+
+	sw.Start();
+	if (true != bin_to_hexa_fast(sizeof(code), code, false, hexa_fast)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexa_fast()", sw.GetDurationMilliSecond() log_end;
+
+	if (0 != hexa.compare(orgal)) return false;
+	if (0 != hexa_fast.compare(orgal)) return false;
+
+
+
+
+
+	std::wstring hexw;
+	std::wstring hexw_fast;
+	sw.Start();
+	if (true != bin_to_hexw(sizeof(code), code, true, hexw)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexw()", sw.GetDurationMilliSecond() log_end;
+
+	sw.Start();
+	if (true != bin_to_hexw_fast(sizeof(code), code, true, hexw_fast)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexw_fast()", sw.GetDurationMilliSecond() log_end;
+
+	if (0 != hexw.compare(orgwu)) return false;
+	if (0 != hexw_fast.compare(orgwu)) return false;
+
+	sw.Start();
+	if (true != bin_to_hexw(sizeof(code), code, false, hexw)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexw()", sw.GetDurationMilliSecond() log_end;
+
+	sw.Start();
+	if (true != bin_to_hexw_fast(sizeof(code), code, false, hexw_fast)) return false;
+	sw.Stop();
+	log_info "%f, bin_to_hexw_fast()", sw.GetDurationMilliSecond() log_end;
+
+	if (0 != hexw.compare(orgwl)) return false;
+	if (0 != hexw_fast.compare(orgwl)) return false;
+
+
+
+
 	return true;
 }
 
@@ -2117,6 +2182,58 @@ bool test_crc64()
         log_end;
     return true;
 }
+
+bool test_suspend_resume_process()
+{
+	// 
+	//	run notepad.exe
+	// 
+	PROCESS_INFORMATION pi = { 0 };
+	STARTUPINFOW si = { 0 };
+	if (!CreateProcessW(L"c:\\windows\\system32\\notepad.exe",
+						nullptr,
+						nullptr,
+						nullptr,
+						FALSE,
+						0,
+						nullptr,
+						nullptr,
+						&si,
+						&pi))
+	{
+		log_err "CreateProcessW() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	
+
+	//
+	//	suspend notepad
+	//	
+	if (true != suspend_process_by_handle(pi.hProcess)) return false;
+	log_info "suspended, press enter ..." log_end;
+	_pause;
+
+	//	
+	//	resume notepad
+	// 
+	if (true != resume_process_by_handle(pi.hProcess)) return false;
+	log_info "resumed, press enter ..." log_end;
+	_pause;		
+
+	// 
+	//	terminate notepd
+	// 
+	terminate_process_by_handle(pi.hProcess, 0);
+	log_info "terminated, proess enter ..." log_end;
+	_pause;
+
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+	return true;
+}
+
 
 bool test_to_str()
 {

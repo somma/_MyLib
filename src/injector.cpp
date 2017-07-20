@@ -62,10 +62,33 @@ bool inject_dll(_In_ DWORD pid, _In_z_ const char* dll_path)
 {
 	// Å¸°Ù ÇÁ·Î¼¼½º ¿ÀÇÂ		
 	DWORD rights = PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ;
-	HANDLE process_handle = privileged_open_process(pid, rights, true);
-	if (NULL==process_handle)
+		
+	HANDLE process_handle = NULL;	
+	do
 	{
-		//log_err "privileged_open_process(pid=%u) failed", pid log_end
+		process_handle = OpenProcess(rights,
+									 FALSE,
+									 pid);
+		if (NULL != process_handle) break;
+
+		if (!set_privilege(SE_DEBUG_NAME, true))
+		{
+			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
+			break;
+		}
+
+		process_handle = OpenProcess(rights,
+									 FALSE,
+									 pid);
+		set_privilege(SE_DEBUG_NAME, false);
+
+	} while (false);
+
+	if (NULL == process_handle)
+	{
+		//log_err "Can not access process. pid=%u",
+		//	pid
+		//	log_end;
 		return false;
 	}
 

@@ -235,17 +235,19 @@ BOOL SaveToFileAsUTF8W(
                 IN LPCWSTR FilePathDoesNotExists, 
                 IN LPCWSTR NullTerminatedWideString
                 );
-BOOL LoadFileToMemory(
-                IN LPCWSTR FilePath, 
-                OUT DWORD& MemorySize, 
-                OUT PBYTE& Memory
-                );
-BOOL SaveBinaryFile(
-                IN LPCWSTR  Directory,
-                IN LPCWSTR  FileName, 
-                IN DWORD    Size,
-                IN PBYTE    Data
-                );
+bool
+LoadFileToMemory(
+	_In_ const LPCWSTR  FilePath,
+	_Out_ DWORD&  MemorySize,
+	_Outptr_ PBYTE&  Memory
+	);
+bool
+SaveBinaryFile(
+	_In_ const LPCWSTR  Directory,
+	_In_ const LPCWSTR  FileName,
+	_In_ DWORD    Size,
+	_In_ PBYTE    Data
+	);
 
 typedef bool (WINAPI *fnFindFilesCallback)(_In_ DWORD_PTR tag, _In_ const wchar_t* path);
 
@@ -582,7 +584,6 @@ bool	get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wst
 bool    get_local_mac_by_ipv4(_In_ const wchar_t* ip_str, _Out_ std::wstring& mac_str);
  
 bool	set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
-HANDLE	privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege);
 
 bool    get_active_window_pid(_Out_ DWORD& pid, _Out_ DWORD& tid);
 DWORD	get_active_console_session_id();
@@ -592,6 +593,14 @@ bool	process_in_console_session(_In_ DWORD process_id);
 bool	create_process_as_login_user(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _Out_ PROCESS_INFORMATION& pi);
 
 bool set_security_attributes(_Out_ SECURITY_ATTRIBUTES& sa);
+
+bool suspend_process_by_pid(_In_ DWORD pid);
+bool resume_process_by_pid(_In_ DWORD pid);
+bool terminate_process_by_pid(_In_ DWORD pid, _In_ DWORD exit_code);
+bool suspend_process_by_handle(_In_ HANDLE handle);
+bool resume_process_by_handle(_In_ HANDLE handle);
+bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code);
+
 
 #if _WIN32_WINNT >= 0x0600	// after vista
 std::wstring get_process_name_by_pid(_In_ DWORD process_id);
@@ -662,7 +671,23 @@ LPCWSTR  FileTypeToString(IMAGE_TYPE type);
 /******************************************************************************
  * type cast
 ******************************************************************************/
-bool 
+bool
+bin_to_hexa_fast(
+	_In_ uint32_t size,
+	_In_reads_bytes_(size) uint8_t* buffer,
+	_In_ bool upper_case,
+	_Out_ std::string& hex_string
+	);
+
+bool
+bin_to_hexw_fast(
+	_In_ uint32_t size,
+	_In_reads_bytes_(size) uint8_t* buffer,
+	_In_ bool upper_case,
+	_Out_ std::wstring& hex_string
+	);
+
+bool
 bin_to_hexa(
 	_In_ UINT32 code_size, 
 	_In_ const UINT8* code, 

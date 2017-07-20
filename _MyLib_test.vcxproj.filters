@@ -96,9 +96,6 @@
     <ClInclude Include="src\Singleton.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\StatusCode.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\StopWatch.h">
       <Filter>src</Filter>
     </ClInclude>

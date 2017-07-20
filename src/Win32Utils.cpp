@@ -50,6 +50,25 @@
 #pragma comment (lib, "Wtsapi32.lib")
 
 
+char _int_to_char_table[] = {
+	"0123456789" /* 0 - 9 */
+	"abcdefghijklmnopqrstuvwxyz" /* 10 - 35 */
+	" !\"#$%&'()*+,-./" /* 36 - 51 */
+	":;<=>?@" /* 52 - 58 */
+	"[\\]^_`" /* 59 - 64 */
+	"{|}~" /* 65 - 68 */
+};
+
+char _int_to_uchar_table[] = {
+	"0123456789" /* 0 - 9 */
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ" /* 10 - 35 */
+	" !\"#$%&'()*+,-./" /* 36 - 51 */
+	":;<=>?@" /* 52 - 58 */
+	"[\\]^_`" /* 59 - 64 */
+	"{|}~" /* 65 - 68 */
+};
+
+
 /// @brief	int type 랜덤값을 리턴한다.
 int get_random_int(_In_ int min, _In_ int max)
 {
@@ -108,13 +127,18 @@ LPCWSTR FAT2Str(IN FATTIME& fat)
 	return FT2Str(ft);
 }
 
-/// @brief  
+/// @brief	FILETIME -> uint64_t
+///	@remark	Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64*
+///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
+
 uint64_t file_time_to_int(_In_ const PFILETIME file_time)
 {
 	return ((LARGE_INTEGER*)file_time)->QuadPart;
 }
 
-/// @brief
+/// @brief	uint64_t -> FILETIME
+///	@remark	Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64*
+///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
 void 
 int_to_file_time(
 	_In_ uint64_t file_time_int, 
@@ -1766,34 +1790,35 @@ SaveToFileAsUTF8W(
 /**
 * @brief	파일을 메모리에 로드한다. 반환되는 메모리는 동적할당된 메모리이므로 caller 가 해제해야 함
 */
-BOOL 
+bool 
 LoadFileToMemory(
-    IN LPCWSTR  FilePath, 
-    OUT DWORD&  MemorySize, 
-    OUT PBYTE&  Memory
+    _In_ const LPCWSTR  FilePath, 
+    _Out_ DWORD&  MemorySize, 
+	_Outptr_ PBYTE&  Memory
     )
 {
-    _ASSERTE(NULL != FilePath);
-    _ASSERTE(TRUE == is_file_existsW(FilePath));
-    if (NULL == FilePath || TRUE != is_file_existsW(FilePath)) return FALSE;
-
-    HANDLE hFile = CreateFileW(
-                        (LPCWSTR)FilePath, 
-                        GENERIC_READ, 
-                        FILE_SHARE_READ/* | FILE_SHARE_WRITE*/,
-                        NULL, 
-                        OPEN_EXISTING, 
-                        FILE_ATTRIBUTE_NORMAL, 
-                        NULL
-                        );
+    _ASSERTE(nullptr != FilePath);
+    _ASSERTE(true == is_file_existsW(FilePath));
+	if (nullptr == FilePath ||
+		true != is_file_existsW(FilePath))
+	{
+		return false;
+	}
+    HANDLE hFile = CreateFileW((LPCWSTR)FilePath, 
+								GENERIC_READ, 
+								FILE_SHARE_READ/* | FILE_SHARE_WRITE*/,
+								NULL, 
+								OPEN_EXISTING, 
+								FILE_ATTRIBUTE_NORMAL, 
+								NULL);
     if (INVALID_HANDLE_VALUE == hFile)
     {
         log_err
             "CreateFile(%ws) failed, gle=%u", 
             FilePath, 
             GetLastError()
-        log_end
-        return FALSE;
+			log_end
+        return false;
     }
     SmrtHandle sfFile(hFile);
 
@@ -1806,85 +1831,82 @@ LoadFileToMemory(
             "%ws, can not get file size, gle=%u", 
             FilePath, 
             GetLastError() 
-        log_end
-        return FALSE;
+			log_end
+        return false;
     }
 
 	if (0 == fileSize.QuadPart)
 	{
 		log_err "Can not map zero length file" log_end
-		return FALSE;
+		return false;
 	}
    
-    HANDLE hImageMap = CreateFileMapping(
-                            hFile, 
-                            NULL, 
-                            PAGE_READONLY, 
-                            0, 
-                            0, 
-                            NULL
-                            );
+    HANDLE hImageMap = CreateFileMapping(hFile, 
+										 NULL, 
+										 PAGE_READONLY, 
+										 0, 
+										 0, 
+										 NULL);
     if (NULL == hImageMap)
     {
         log_err
             "CreateFileMapping(%ws) failed, gle=%u", 
             FilePath, 
             GetLastError() 
-        log_end
+			log_end
 
-        return FALSE;
+        return false;
     }
     SmrtHandle sfMap(hImageMap);
 
-    PBYTE ImageView = (LPBYTE) MapViewOfFile(
-                                    hImageMap, 
-                                    FILE_MAP_READ, 
-                                    0, 
-                                    0, 
-                                    0
-                                    );
-    if(ImageView == NULL)
+    PBYTE ImageView = (LPBYTE) MapViewOfFile(hImageMap, 
+											 FILE_MAP_READ, 
+											 0, 
+											 0, 
+											 0);
+    if(ImageView == nullptr)
     {
         log_err
             "MapViewOfFile(%ws) failed, gle=%u", 
             FilePath, 
             GetLastError() 
-        log_end
-
-        return FALSE;
+			log_end
+        return false;
     }
     SmrtView sfView(ImageView);
 
     MemorySize = fileSize.LowPart;  // max config fileSize = 4 MB 이므로 안전함
     Memory = (PBYTE) malloc(MemorySize);
-    if (NULL == Memory) {return FALSE;}
+    if (nullptr == Memory) {return false;}
 
     RtlZeroMemory(Memory, MemorySize);
     RtlCopyMemory(Memory, ImageView, MemorySize);
-    return TRUE;
+    return true;
 }
 
 /**
 * @brief	바이너리 파일로 데이터를 저장한다.
 * @return	
 */
-BOOL 
+bool 
 SaveBinaryFile(
-    IN LPCWSTR  Directory,
-    IN LPCWSTR  FileName, 
-    IN DWORD    Size,
-    IN PBYTE    Data
+	_In_ const LPCWSTR  Directory,
+    _In_ const LPCWSTR  FileName, 
+    _In_ DWORD    Size,
+    _In_ PBYTE    Data
     )
 {
-    _ASSERTE(NULL != Directory);
-    _ASSERTE(NULL != FileName);
+    _ASSERTE(nullptr != Directory);
+    _ASSERTE(nullptr != FileName);
     _ASSERTE(0 < Size);
-    _ASSERTE(NULL != Data);
-    if (NULL == Directory || NULL == FileName || 0 >= Size || NULL == Data)
-    {
-        return FALSE;
-    }
-
+    _ASSERTE(nullptr != Data);
+	if (nullptr == Directory ||
+		nullptr == FileName ||
+		0 >= Size ||
+		nullptr == Data)
+	{
+		return false;
+	}
     // create data directory
     //
     int ret=SHCreateDirectoryExW(NULL, Directory, NULL);
@@ -1893,34 +1915,32 @@ SaveBinaryFile(
         log_err
             "SHCreateDirectoryExW(path=%S) failed, ret=0x%08x",
             Directory, ret
-        log_end
-        return FALSE;
+			log_end
+        return false;
     }
 
     WCHAR DataPath[MAX_PATH + 1] = {0};
-    if (TRUE != SUCCEEDED(StringCbPrintfW(
-                                DataPath, 
-                                sizeof(DataPath), 
-                                L"%s\\%s", 
-                                Directory, 
-                                FileName
-                                )))
+    if (true != SUCCEEDED(StringCbPrintfW(DataPath, 
+										  sizeof(DataPath), 
+										  L"%s\\%s", 
+										  Directory, 
+										  FileName)))
     {
         log_err
             "Can not generate target path, dir=%S, file=%S", 
             Directory, FileName
-        log_end
-        return FALSE;
+			log_end
+        return false;
     }
 
     // 동일한 파일이 존재하는 경우 기존 파일을 삭제 후 새롭게 생성함
     // 
-    if (TRUE == is_file_existsW(DataPath))
+    if (true == is_file_existsW(DataPath))
     {
         log_err
             "same file exists, file=%S will be replaced by new file",
             DataPath
-        log_end
+			log_end
         
         ::DeleteFileW(DataPath);
     }
@@ -1931,27 +1951,26 @@ SaveBinaryFile(
         log_err
             "Can not create file=%S, check path or privilege", 
             DataPath
-        log_end
-        return FALSE;
+			log_end
+        return false;
     }
     SmrtHandle sh(hFile);
 
     DWORD cbWritten=0;
-    if (TRUE != ::WriteFile(
-                        hFile, 
-                        Data, 
-                        Size, 
-                        &cbWritten, 
-                        NULL))
+    if (TRUE != ::WriteFile(hFile, 
+							Data, 
+							Size, 
+							&cbWritten, 
+							NULL))
     {
         log_err
             "WriteFile(path=%S) failed, gle=%u",
             DataPath, GetLastError()
-        log_end
-        return FALSE;
+			log_end
+        return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 /// @brief	DirectoryPath 디렉토리를 생성한다. 중간에 없는 디렉토리 경로가 존재하면
@@ -4905,47 +4924,6 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 }
 
 /**
-* @brief	raise_privilege 가 true 인 경우 SE_DEBUG_NAME 권한을 획득한 후 프로세스를 오픈한다. 
-			획득한 권한은 명시적으로 제거해줄때까지 계속 유지 된다. 
-			SE_DEBUG_NAME 가 원래 있었을 수도 있었기 때문에 제거하면 문제가 생길 수 있고,
-			이 함수가 리턴한 핸들에 I/O 가 발생할 때 오픈할 때 있던 SE_DEBUG_NAME 가 없어서 문제가 
-			생길 수 있다 (빡신 버그 생성...)
-* @param	
-* @see		
-* @remarks	
-* @code		HANDLE process_handle = privileged_open_process(pid, PROCESS_ALL_ACCESS, true);
-* @endcode	
-* @return	
-*/
-HANDLE privileged_open_process(_In_ DWORD pid, _In_ DWORD rights, _In_ bool raise_privilege)
-{
-	HANDLE proc_handle = NULL;
-    #pragma warning(disable:4127)
-	do 
-	{
-		// open the process
-		proc_handle = OpenProcess(rights, FALSE, pid);
-		if (NULL != proc_handle) break;		// 성공!
-
-		// SeDebugPrivilege	권한을 활성화하고 재 시도 해본다. (권한이 없으면 안될 수도 있음)
-		if (true != raise_privilege) break;	// 실패!
-
-		if (true != set_privilege(SE_DEBUG_NAME, TRUE) ) break;
-		
-		// SeDebugPrivilege 를 얻었다면 다시 오픈 시도
-		proc_handle = OpenProcess(rights, FALSE, pid);
-		if (NULL == proc_handle)
-		{
-			//log_info "OpenProcess( pid = %u ) failed. gle = %u", pid, GetLastError() log_end
-		}
-		
-	} while(false);
-    #pragma warning(default: 4127)
-
-	return proc_handle;
-}
-
-/**
  * @brief	
  * @param	
  * @see		
@@ -5288,6 +5266,193 @@ bool set_security_attributes(_Out_ SECURITY_ATTRIBUTES& sa)
 	return ret ? true : false;
 }
 
+/// @brief	Suspend process
+bool suspend_process_by_pid(_In_ DWORD pid)
+{
+	HANDLE proc_handle = NULL;
+	do
+	{
+		proc_handle = OpenProcess(PROCESS_SUSPEND_RESUME,
+								  FALSE,
+								  pid);
+		if (NULL != proc_handle) break;
+		
+		if (!set_privilege(SE_DEBUG_NAME, true))
+		{
+			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
+			break;
+		}
+
+		proc_handle = OpenProcess(PROCESS_SUSPEND_RESUME,
+								  FALSE,
+								  pid);
+		set_privilege(SE_DEBUG_NAME, false);
+
+	} while (false);
+	
+	if (NULL == proc_handle)
+	{
+		log_err "Can not access process. pid=%u",
+			pid
+			log_end;
+		return false;
+	}
+
+	if (true != suspend_process_by_handle(proc_handle))
+	{
+		log_err "suspend_process_by_handle() failed. pid=%u",
+			pid
+			log_end;
+	}
+
+	CloseHandle(proc_handle);
+	return true;
+}
+
+/// @brief	Resume process
+bool resume_process_by_pid(_In_ DWORD pid)
+{
+	HANDLE proc_handle = NULL;
+	do
+	{
+		proc_handle = OpenProcess(PROCESS_SUSPEND_RESUME,
+								  FALSE,
+								  pid);
+		if (NULL != proc_handle) break;
+		
+		if (!set_privilege(SE_DEBUG_NAME, true))
+		{
+			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
+			break;
+		}
+
+		proc_handle = OpenProcess(PROCESS_SUSPEND_RESUME,
+								  FALSE,
+								  pid);
+		set_privilege(SE_DEBUG_NAME, false);
+
+	} while (false);
+	
+	if (NULL == proc_handle)
+	{
+		log_err "Can not access process. pid=%u",
+			pid
+			log_end;
+		return false;
+	}
+
+	if (true != resume_process_by_handle(proc_handle))
+	{
+		log_err "resume_process_by_handle() failed. pid=%u",
+			pid
+			log_end;
+	}
+
+	CloseHandle(proc_handle);
+	return true;
+}
+
+/// @brief	Terminate process
+bool terminate_process_by_pid(_In_ DWORD pid, _In_ DWORD exit_code)
+{
+	HANDLE proc_handle = NULL;
+	do
+	{
+		proc_handle = OpenProcess(PROCESS_TERMINATE,
+								  FALSE,
+								  pid);
+		if (NULL != proc_handle) break;
+
+		if (!set_privilege(SE_DEBUG_NAME, true))
+		{
+			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
+			break;
+		}
+
+		proc_handle = OpenProcess(PROCESS_TERMINATE,
+								  FALSE,
+								  pid);
+		set_privilege(SE_DEBUG_NAME, false);
+
+	} while (false);
+
+	if (NULL == proc_handle)
+	{
+		log_err "Can not access process. pid=%u",
+			pid
+			log_end;
+		return false;
+	}
+
+	return terminate_process_by_handle(proc_handle, exit_code) ? true : false;
+}
+
+bool suspend_process_by_handle(_In_ HANDLE handle)
+{
+	typedef LONG NTSTATUS;
+#define NT_SUCCESS(Status)  (((NTSTATUS)(Status)) >= 0)
+
+	typedef NTSTATUS(NTAPI *NtSuspendProcess)(IN HANDLE ProcessHandle);
+	NtSuspendProcess pfnNtSuspendProcess = (NtSuspendProcess)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "NtSuspendProcess");
+	if (NULL == pfnNtSuspendProcess)
+	{
+		log_err "No NtSuspendProcess api." log_end;
+		return false;
+	}
+
+	NTSTATUS status = pfnNtSuspendProcess(handle);
+	if (!NT_SUCCESS(status))
+	{
+		log_err "NtSuspendProcess() failed., status=0x%08x",
+			status
+			log_end;
+		return false;
+	}
+
+	return true;
+}
+
+bool resume_process_by_handle(_In_ HANDLE handle)
+{
+	typedef LONG NTSTATUS;
+#define NT_SUCCESS(Status)  (((NTSTATUS)(Status)) >= 0)
+
+	typedef NTSTATUS(NTAPI *NtResumeProcess)(IN HANDLE ProcessHandle);
+	NtResumeProcess pfnNtResumeProcess = (NtResumeProcess)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "NtResumeProcess");
+	if (NULL == pfnNtResumeProcess)
+	{
+		log_err "No NtResumeProcess api." log_end;
+		return false;
+	}
+
+	NTSTATUS status = pfnNtResumeProcess(handle);
+	if (!NT_SUCCESS(status))
+	{
+		log_err "NtResumeProcess() failed., status=0x%08x",
+			status
+			log_end;
+		return false;
+	}
+
+	return true;
+}
+
+bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code)
+{
+	if (0 == TerminateProcess(handle, exit_code))
+	{
+		log_err "TerminateProcess() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;			
+	}
+
+	//DWORD ret = WaitForSingleObject(handle, INFINITE);
+	return true;
+}
+
+
+
 /**
  * @brief	pid 로 프로세스의 전체 이름을 구한다. (vista 이상)
 			ZwQuerySystemInformation 처럼 length 를 0 을 넘겨주면 필요한 버퍼의 길이를...
@@ -5303,12 +5468,36 @@ bool set_security_attributes(_Out_ SECURITY_ATTRIBUTES& sa)
 
 std::wstring get_process_name_by_pid(_In_ DWORD process_id)
 {
-	raii_handle process_handle(
-					privileged_open_process(process_id, PROCESS_QUERY_INFORMATION, true),
-					raii_CloseHandle
-					);
-	if (NULL == process_handle.get()) return _null_stringw;
+	HANDLE phandle = NULL;
+	do
+	{
+		phandle = OpenProcess(PROCESS_QUERY_INFORMATION,
+							  FALSE,
+							  process_id);
+		if (NULL != phandle) break;
 
+		if (!set_privilege(SE_DEBUG_NAME, true))
+		{
+			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
+			break;
+		}
+
+		phandle = OpenProcess(PROCESS_QUERY_INFORMATION,
+							  FALSE,
+							  process_id);
+		set_privilege(SE_DEBUG_NAME, false);
+
+	} while (false);
+
+	if (NULL == phandle)
+	{
+		//log_err "Can not access process. pid=%u",
+		//	pid
+		//	log_end;
+		return false;
+	}
+	raii_handle process_handle(phandle, raii_CloseHandle);
+	
 	// get size
 	wchar_t*	name = NULL;
 	DWORD		name_len = 20;//MAX_PATH;
@@ -5672,6 +5861,65 @@ bin_to_hexa(
 
 	return true;
 }
+
+bool 
+bin_to_hexa_fast(
+	_In_ uint32_t size,
+	_In_reads_bytes_(size) uint8_t* buffer,
+	_In_ bool upper_case,
+	_Out_ std::string& hex_string
+	)
+{
+	char* table = _int_to_char_table;
+	if (true == upper_case)
+	{
+		table = _int_to_uchar_table;
+	}
+	
+	uint32_t buffer_size = ((size * 2) + 1) * sizeof(char);
+	raii_char_ptr hex_buffer((char*)malloc(buffer_size), raii_free);
+	if (nullptr == hex_buffer.get()) return false;
+
+	for (uint32_t i = 0; i < size; ++i)
+	{
+		hex_buffer.get()[i * 2] = table[buffer[i] >> 4];
+		hex_buffer.get()[i * 2 + 1] = table[buffer[i] & 0xf];
+	}
+	hex_buffer.get()[buffer_size - 1] = 0x00;
+
+	hex_string = hex_buffer.get();
+	return true;
+}
+
+bool 
+bin_to_hexw_fast(
+	_In_ uint32_t size,
+	_In_reads_bytes_(size) uint8_t* buffer,
+	_In_ bool upper_case,
+	_Out_ std::wstring& hex_string
+	)
+{
+	char* table = _int_to_char_table;
+	if (true == upper_case)
+	{
+		table = _int_to_uchar_table;
+	}
+	
+	uint32_t buffer_size = ((size * 2) + 1) * sizeof(wchar_t);
+	raii_wchar_ptr hex_buffer((wchar_t*)malloc(buffer_size), raii_free);
+	if (nullptr == hex_buffer.get()) return false;
+
+	for (uint32_t i = 0; i < size; ++i)
+	{
+		hex_buffer.get()[i * 2] = table[buffer[i] >> 4];
+		hex_buffer.get()[i * 2 + 1] = table[buffer[i] & 0xf];
+	}
+	hex_buffer.get()[(buffer_size / sizeof(wchar_t)) - 1] = 0x00;
+
+	hex_string = hex_buffer.get();
+	return true;
+}
+
 
 /**
  * @brief	
