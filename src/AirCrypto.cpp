@@ -75,7 +75,7 @@ aes256_encrypt(
 	if (LoadFileToMemory(target_file_path.c_str(), file_size, buffer))
 	{
 		if (!AirCryptBuffer(const_cast<unsigned char*>(key),
-							strlen((const char*)key),
+							(uint32_t)strlen((const char*)key),
 							buffer,
 							file_size,
 							encrypt_data,
@@ -158,7 +158,7 @@ aes256_decrypt(
 	if (LoadFileToMemory(encrypt_file_path.c_str(), file_size, buffer))
 	{
 		if (!AirCryptBuffer(const_cast<unsigned char*>(key),
-							strlen((char*)key),
+							(uint32_t)strlen((char*)key),
 							buffer,
 							file_size,
 							encrypt_data,

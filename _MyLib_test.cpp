@@ -946,7 +946,7 @@ bool test_find_files()
 	typedef struct root_and_count
 	{
 		wchar_t* root_path;
-		int32_t	count;
+		size_t count;
 	} *proot_and_count;
 
 	root_and_count roots[] = {

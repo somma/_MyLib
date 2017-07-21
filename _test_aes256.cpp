@@ -60,7 +60,7 @@ bool create_test_sample(_In_ const std::wstring& target_file_path)
 
 	if (!WriteFile(create_file, 
 				   buf, 
-				   strlen(buf), 
+				   (uint32_t)strlen(buf),
 				   &write_length, 
 				   NULL))
 	{
