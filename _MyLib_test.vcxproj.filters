@@ -96,9 +96,6 @@
     <ClInclude Include="src\Singleton.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\StatusCode.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\StopWatch.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -121,6 +118,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\GeneralHashFunctions.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AirCrypto.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
@@ -232,6 +232,12 @@
     </ClCompile>
     <ClCompile Include="_test_ppl.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_aes256.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AirCrypto.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

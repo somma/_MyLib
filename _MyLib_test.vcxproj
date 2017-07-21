@@ -192,6 +192,7 @@ echo "done."</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\AirCrypto.h" />
     <ClInclude Include="src\AKSyncObjs.h" />
     <ClInclude Include="src\arch.h" />
     <ClInclude Include="src\base64.h" />
@@ -216,7 +217,6 @@ echo "done."</Command>
     <ClInclude Include="src\send_ping.h" />
     <ClInclude Include="src\sha2.h" />
     <ClInclude Include="src\Singleton.h" />
-    <ClInclude Include="src\StatusCode.h" />
     <ClInclude Include="src\StopWatch.h" />
     <ClInclude Include="src\targetver.h" />
     <ClInclude Include="src\ThreadManager.h" />
@@ -228,6 +228,7 @@ echo "done."</Command>
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\AirCrypto.cpp" />
     <ClCompile Include="src\AKSyncObjs.cpp" />
     <ClCompile Include="src\base64.cpp" />
     <ClCompile Include="src\crc64.cpp" />
@@ -255,6 +256,7 @@ echo "done."</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="_MyLib_test.cpp" />
+    <ClCompile Include="_test_aes256.cpp" />
     <ClCompile Include="_test_asm.cpp" />
     <ClCompile Include="_test_boost.cpp" />
     <ClCompile Include="_test_boost_asio_timer.cpp" />
