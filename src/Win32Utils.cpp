@@ -1790,34 +1790,35 @@ SaveToFileAsUTF8W(
 /**
 * @brief	파일을 메모리에 로드한다. 반환되는 메모리는 동적할당된 메모리이므로 caller 가 해제해야 함
 */
-BOOL 
+bool 
 LoadFileToMemory(
-    IN LPCWSTR  FilePath, 
-    OUT DWORD&  MemorySize, 
-    OUT PBYTE&  Memory
+    _In_ const LPCWSTR  FilePath, 
+    _Out_ DWORD&  MemorySize, 
+	_Outptr_ PBYTE&  Memory
     )
 {
-    _ASSERTE(NULL != FilePath);
-    _ASSERTE(TRUE == is_file_existsW(FilePath));
-    if (NULL == FilePath || TRUE != is_file_existsW(FilePath)) return FALSE;
-
-    HANDLE hFile = CreateFileW(
-                        (LPCWSTR)FilePath, 
-                        GENERIC_READ, 
-                        FILE_SHARE_READ/* | FILE_SHARE_WRITE*/,
-                        NULL, 
-                        OPEN_EXISTING, 
-                        FILE_ATTRIBUTE_NORMAL, 
-                        NULL
-                        );
+    _ASSERTE(nullptr != FilePath);
+    _ASSERTE(true == is_file_existsW(FilePath));
+	if (nullptr == FilePath ||
+		true != is_file_existsW(FilePath))
+	{
+		return false;
+	}
+    HANDLE hFile = CreateFileW((LPCWSTR)FilePath, 
+								GENERIC_READ, 
+								FILE_SHARE_READ/* | FILE_SHARE_WRITE*/,
+								NULL, 
+								OPEN_EXISTING, 
+								FILE_ATTRIBUTE_NORMAL, 
+								NULL);
     if (INVALID_HANDLE_VALUE == hFile)
     {
         log_err
             "CreateFile(%ws) failed, gle=%u", 
             FilePath, 
             GetLastError()
-        log_end
-        return FALSE;
+			log_end
+        return false;
     }
     SmrtHandle sfFile(hFile);
 
@@ -1830,85 +1831,81 @@ LoadFileToMemory(
             "%ws, can not get file size, gle=%u", 
             FilePath, 
             GetLastError() 
-        log_end
-        return FALSE;
+			log_end
+        return false;
     }
 
 	if (0 == fileSize.QuadPart)
 	{
 		log_err "Can not map zero length file" log_end
-		return FALSE;
+		return false;
 	}
    
-    HANDLE hImageMap = CreateFileMapping(
-                            hFile, 
-                            NULL, 
-                            PAGE_READONLY, 
-                            0, 
-                            0, 
-                            NULL
-                            );
+    HANDLE hImageMap = CreateFileMapping(hFile, 
+										 NULL, 
+										 PAGE_READONLY, 
+										 0, 
+										 0, 
+										 NULL);
     if (NULL == hImageMap)
     {
         log_err
             "CreateFileMapping(%ws) failed, gle=%u", 
             FilePath, 
             GetLastError() 
-        log_end
+			log_end
 
-        return FALSE;
+        return false;
     }
     SmrtHandle sfMap(hImageMap);
 
-    PBYTE ImageView = (LPBYTE) MapViewOfFile(
-                                    hImageMap, 
-                                    FILE_MAP_READ, 
-                                    0, 
-                                    0, 
-                                    0
-                                    );
-    if(ImageView == NULL)
+    PBYTE ImageView = (LPBYTE) MapViewOfFile(hImageMap, 
+											 FILE_MAP_READ, 
+											 0, 
+											 0, 
+											 0);
+    if(ImageView == nullptr)
     {
         log_err
             "MapViewOfFile(%ws) failed, gle=%u", 
             FilePath, 
             GetLastError() 
-        log_end
-
-        return FALSE;
+			log_end
+        return false;
     }
     SmrtView sfView(ImageView);
 
     MemorySize = fileSize.LowPart;  // max config fileSize = 4 MB 이므로 안전함
     Memory = (PBYTE) malloc(MemorySize);
-    if (NULL == Memory) {return FALSE;}
+    if (nullptr == Memory) {return false;}
 
     RtlZeroMemory(Memory, MemorySize);
     RtlCopyMemory(Memory, ImageView, MemorySize);
-    return TRUE;
+    return true;
 }
 
 /**
-* @brief	바이너리 파일로 데이터를 저장한다.
-* @return	
+* @brief	바이너리 파일로 데이터를 저장한다.	
 */
-BOOL 
+bool 
 SaveBinaryFile(
-    IN LPCWSTR  Directory,
-    IN LPCWSTR  FileName, 
-    IN DWORD    Size,
-    IN PBYTE    Data
+	_In_ const LPCWSTR  Directory,
+    _In_ const LPCWSTR  FileName, 
+    _In_ DWORD    Size,
+    _In_ PBYTE    Data
     )
 {
-    _ASSERTE(NULL != Directory);
-    _ASSERTE(NULL != FileName);
+    _ASSERTE(nullptr != Directory);
+    _ASSERTE(nullptr != FileName);
     _ASSERTE(0 < Size);
-    _ASSERTE(NULL != Data);
-    if (NULL == Directory || NULL == FileName || 0 >= Size || NULL == Data)
-    {
-        return FALSE;
-    }
-
+    _ASSERTE(nullptr != Data);
+	if (nullptr == Directory ||
+		nullptr == FileName ||
+		0 >= Size ||
+		nullptr == Data)
+	{
+		return false;
+	}
     // create data directory
     //
     int ret=SHCreateDirectoryExW(NULL, Directory, NULL);
@@ -1917,34 +1914,32 @@ SaveBinaryFile(
         log_err
             "SHCreateDirectoryExW(path=%S) failed, ret=0x%08x",
             Directory, ret
-        log_end
-        return FALSE;
+			log_end
+        return false;
     }
 
     WCHAR DataPath[MAX_PATH + 1] = {0};
-    if (TRUE != SUCCEEDED(StringCbPrintfW(
-                                DataPath, 
-                                sizeof(DataPath), 
-                                L"%s\\%s", 
-                                Directory, 
-                                FileName
-                                )))
+    if (true != SUCCEEDED(StringCbPrintfW(DataPath, 
+										  sizeof(DataPath), 
+										  L"%s\\%s", 
+										  Directory, 
+										  FileName)))
     {
         log_err
             "Can not generate target path, dir=%S, file=%S", 
             Directory, FileName
-        log_end
-        return FALSE;
+			log_end
+        return false;
     }
 
     // 동일한 파일이 존재하는 경우 기존 파일을 삭제 후 새롭게 생성함
     // 
-    if (TRUE == is_file_existsW(DataPath))
+    if (true == is_file_existsW(DataPath))
     {
         log_err
             "same file exists, file=%S will be replaced by new file",
             DataPath
-        log_end
+			log_end
         
         ::DeleteFileW(DataPath);
     }
@@ -1955,27 +1950,26 @@ SaveBinaryFile(
         log_err
             "Can not create file=%S, check path or privilege", 
             DataPath
-        log_end
-        return FALSE;
+			log_end
+        return false;
     }
     SmrtHandle sh(hFile);
 
     DWORD cbWritten=0;
-    if (TRUE != ::WriteFile(
-                        hFile, 
-                        Data, 
-                        Size, 
-                        &cbWritten, 
-                        NULL))
+    if (TRUE != ::WriteFile(hFile, 
+							Data, 
+							Size, 
+							&cbWritten, 
+							NULL))
     {
         log_err
             "WriteFile(path=%S) failed, gle=%u",
             DataPath, GetLastError()
-        log_end
-        return FALSE;
+			log_end
+        return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 /// @brief	DirectoryPath 디렉토리를 생성한다. 중간에 없는 디렉토리 경로가 존재하면
@@ -3179,12 +3173,6 @@ extract_first_tokenExA(
 					    KLMN	: out_string if forward = FALSE
 
 			delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
 **/
 bool 
 extract_last_tokenW(

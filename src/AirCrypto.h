@@ -9,16 +9,27 @@
 **---------------------------------------------------------------------------*/
 #pragma once
 
-#include <intsafe.h>
-#include "StatusCode.h"
+bool 
+aes256_encrypt(
+	_In_ const unsigned char* key,
+	_In_ const std::wstring& target_file_path,
+	_In_ const std::wstring& encrypt_file_path
+	);
 
-DTSTATUS 
+bool 
+aes256_decrypt(
+	_In_ const unsigned char* key,
+	_In_ const std::wstring& encrypt_file_path,
+	_In_ const std::wstring& decrypt_file_path
+	);
+
+bool 
 AirCryptBuffer(
-	IN unsigned char* PassPhrase,
-	IN UINT32 PassPhraseLen,
-	IN unsigned char* Input, 
-	IN UINT32 InputLength, 
-	OUT unsigned char*& Output, 
-	OUT UINT32& OutputLength, 
-	IN BOOL Encrypt
+	_In_ const unsigned char* PassPhrase,
+	_In_ const uint32_t PassPhraseLen,
+	_In_ const unsigned char* Input, 
+	_In_ const uint32_t InputLength,
+	_Outptr_ unsigned char*& Output,
+	_Out_ uint32_t& OutputLength,
+	_In_ bool Encrypt
 	);

@@ -235,17 +235,19 @@ BOOL SaveToFileAsUTF8W(
                 IN LPCWSTR FilePathDoesNotExists, 
                 IN LPCWSTR NullTerminatedWideString
                 );
-BOOL LoadFileToMemory(
-                IN LPCWSTR FilePath, 
-                OUT DWORD& MemorySize, 
-                OUT PBYTE& Memory
-                );
-BOOL SaveBinaryFile(
-                IN LPCWSTR  Directory,
-                IN LPCWSTR  FileName, 
-                IN DWORD    Size,
-                IN PBYTE    Data
-                );
+bool
+LoadFileToMemory(
+	_In_ const LPCWSTR  FilePath,
+	_Out_ DWORD&  MemorySize,
+	_Outptr_ PBYTE&  Memory
+	);
+bool
+SaveBinaryFile(
+	_In_ const LPCWSTR  Directory,
+	_In_ const LPCWSTR  FileName,
+	_In_ DWORD    Size,
+	_In_ PBYTE    Data
+	);
 
 typedef bool (WINAPI *fnFindFilesCallback)(_In_ DWORD_PTR tag, _In_ const wchar_t* path);
 
