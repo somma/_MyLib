@@ -98,8 +98,8 @@ file_copy_mmio(
 /// @brief	test main
 bool test_file_io_helper()
 {
-	const wchar_t* src_file = L"c:\\dbg\\ars.VC.db";
-	const wchar_t* dst_file = L"c:\\dbg\\test_dstfile.dat";
+	const wchar_t* src_file = L"c:\\dbg\\ucrtbased.dll";
+	const wchar_t* dst_file = L"c:\\dbg\\ucrtbased.dll.copy";
 
 	SYSTEM_INFO si;
 	GetSystemInfo(&si);

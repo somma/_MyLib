@@ -239,7 +239,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_ppl);
 
 	//assert_bool(true, test_find_and_replace);
-	//assert_bool(true, test_file_io_helper);
+	assert_bool(true, test_file_io_helper);
 
 	//assert_bool(true, test_scm_context);
 
@@ -249,8 +249,8 @@ int _tmain(int argc, _TCHAR* argv[])
  //   assert_bool(true, test_crc64);
 
 
-	assert_bool(true, test_NameConverter_get_canon_name);
-	assert_bool(true, test_NameConverter_dosname_to_devicename);
+	//assert_bool(true, test_NameConverter_get_canon_name);
+	//assert_bool(true, test_NameConverter_dosname_to_devicename);
 
  //   
  //   assert_bool(true, test_wmi_client);

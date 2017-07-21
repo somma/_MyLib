@@ -31,8 +31,10 @@ public:
 	BOOL IsReadOnly()	{ return (TRUE == mReadOnly) ? TRUE : FALSE;}	
 
 	bool OpenForRead(_In_ const wchar_t* file_path);
-	bool OpenForRead(_In_ const HANDLE file_handle);
+	bool OpenForRead(_In_ const HANDLE file_handle);	
 	bool OpenForWrite(_In_ const wchar_t* file_path, _In_ uint64_t file_size);
+	bool OpenForReadWrite(_In_ const wchar_t* file_path);
+	bool OpenForReadWrite(_In_ const HANDLE file_handle);
 	void close();
 
 	bool GetMappedFileName(_In_ bool convet_to_dosname, _Out_ std::wstring& file_path);

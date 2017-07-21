@@ -54,89 +54,49 @@ uint32_t FileIoHelper::GetOptimizedBlockSize()
 /// @brief	파일을 읽기모드로 오픈한다. 
 bool FileIoHelper::OpenForRead(_In_ const wchar_t* file_path)
 {
-	if (TRUE == Initialized()) { close(); }
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path) return false;
 
-	mReadOnly = TRUE;	
 	if (TRUE != is_file_existsW(file_path))
 	{
-		log_err "no file exists. file=%ws", file_path log_end
+		log_err "no file exists. file=%ws",
+			file_path
+			log_end;
+		return false;
+	}
+	
+	if (TRUE == Initialized()) { close(); }
+	
+	HANDLE file_handle = CreateFileW(file_path,
+									 GENERIC_READ,
+									 NULL,
+									 NULL,
+									 OPEN_EXISTING,
+									 FILE_ATTRIBUTE_NORMAL,
+									 NULL);
+	if (INVALID_HANDLE_VALUE == file_handle)
+	{
+		log_err
+			"CreateFile() failed, file=%ws, gle=%u",
+			file_path,
+			GetLastError()
+			log_end
+			return false;
+	}
+
+	if (true != OpenForRead(file_handle))
+	{
+		CloseHandle(file_handle);		
 		return false;
 	}
 
-#pragma warning(disable: 4127)
-	bool ret = false;
-    do 
-    {
-        mFileHandle = CreateFileW(file_path,
-								  GENERIC_READ,
-								  NULL,
-								  NULL, 
-								  OPEN_EXISTING,
-								  FILE_ATTRIBUTE_NORMAL, 
-								  NULL);
-        if (INVALID_HANDLE_VALUE == mFileHandle)
-        {
-            log_err
-                "CreateFile() failed, file=%ws, gle=%u", 
-                file_path,
-                GetLastError()
-            log_end
-            break;
-        }
-
-        // check file size 
-        // 
-		if (TRUE != GetFileSizeEx(mFileHandle, (PLARGE_INTEGER)&mFileSize))
-        {
-            log_err
-                "GetFileSizeEx() failed. file=%ws, gle=%u", 
-                file_path,
-                GetLastError() 
-            log_end
-            break;
-        }
-        
-        mFileMap = CreateFileMapping(mFileHandle, 
-									 NULL, 
-									 PAGE_READONLY,
-									 0, 
-									 0, 
-									 NULL);
-        if (NULL == mFileMap)
-        {
-            log_err
-                "CreateFileMapping() failed, file=%ws, gle=%u", 
-				file_path,
-                GetLastError() 
-            log_end
-            break;
-        }
-				
-		ret = true;
-    } while (FALSE);
-#pragma warning(default: 4127)
-
-    if (true != ret)
-    {
-        if (INVALID_HANDLE_VALUE!=mFileHandle) 
-		{
-			CloseHandle(mFileHandle);
-			mFileHandle = INVALID_HANDLE_VALUE;
-		}
-
-		if (NULL != mFileMap)
-		{
-			CloseHandle(mFileMap);
-		}
-    }
-
-	return ret;
+	_ASSERTE(mFileHandle == file_handle);
+	_ASSERTE(mReadOnly == TRUE);
+	_ASSERTE(mFileMap != NULL);
+	return true;
 }
 
 /// @brief	파일을 읽기모드로 오픈한다. 
-///			file_handle 은 외부에서 오픈해서 전달한 파라미터 이므로 
-///			여기서는 섹션 객체를 만드는데만 사용하고, CloseHandle() 같은 
-///			행위는 하지 않는다. 
 bool 
 FileIoHelper::OpenForRead(
 	_In_ const HANDLE file_handle
@@ -152,44 +112,43 @@ FileIoHelper::OpenForRead(
 	{
 		close();
 	}
-
-	mReadOnly = TRUE;
+		
+	uint64_t file_size = 0;
+	HANDLE file_map = NULL;
 
 #pragma warning(disable: 4127)
 	bool ret = false;
 	do
 	{
-		mFileHandle = file_handle;
-
 		// check file size 
 		// 
-		if (TRUE != GetFileSizeEx(mFileHandle, (PLARGE_INTEGER)&mFileSize))
+		if (TRUE != GetFileSizeEx(file_handle, (PLARGE_INTEGER)&file_size))
 		{
 			log_err
 				"GetFileSizeEx() failed. file_handle=0x%p, gle=%u",
-				mFileHandle,
+				file_handle,
 				GetLastError()
 				log_end
 				break;
 		}
 
-		if (mFileSize == 0)
+		if (file_size == 0)
 		{
 			log_err "Empty file specified." log_end;
 			break;
 		}
 		
-		mFileMap = CreateFileMapping(mFileHandle,
+		file_map = CreateFileMapping(file_handle,
 									 NULL,
 									 PAGE_READONLY,
 									 0,
 									 0,
 									 NULL);
-		if (NULL == mFileMap)
+		if (NULL == file_map)
 		{
 			log_err
 				"CreateFileMapping() failed, file_handle=0x%p, gle=%u",
-				mFileHandle,
+				file_handle,
 				GetLastError()
 				log_end
 				break;
@@ -201,20 +160,18 @@ FileIoHelper::OpenForRead(
 
 	if (true != ret)
 	{
-		if (NULL != mFileMap)
+		if (NULL != file_map)
 		{
-			CloseHandle(mFileMap);
-			mFileMap = NULL;
+			CloseHandle(file_map);			
 		}
-
-		//
-		//	mFileHandle 은 외부에서 오픈해서 전달한 파라미터 이므로 
-		//	여기서는 섹션 객체를 만드는데만 사용하고, CloseHandle() 같은 
-		//	행위는 하지 않는다. 
-		// 
-		mFileHandle = INVALID_HANDLE_VALUE;
 	}
-
+	else
+	{
+		mReadOnly = TRUE;
+		mFileSize = file_size;
+		mFileHandle = file_handle;
+		mFileMap = file_map;
+	}
 	return ret;
 }
 
@@ -309,6 +266,127 @@ FileIoHelper::OpenForWrite(
         if (NULL!= mFileMap) CloseHandle(mFileMap);
     }	
 
+	return ret;
+}
+
+/// @brief	파일을 읽기/쓰기모드로 오픈한다. 
+bool FileIoHelper::OpenForReadWrite(_In_ const wchar_t* file_path)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path) return false;
+
+	if (TRUE != is_file_existsW(file_path))
+	{
+		log_err "no file exists. file=%ws",
+			file_path
+			log_end;
+		return false;
+	}
+	
+	if (TRUE == Initialized()) { close(); }
+	
+	HANDLE file_handle = CreateFileW(file_path,
+									 GENERIC_READ | GENERIC_WRITE,
+									 NULL,
+									 NULL,
+									 OPEN_EXISTING,
+									 FILE_ATTRIBUTE_NORMAL,
+									 NULL);
+	if (INVALID_HANDLE_VALUE == file_handle)
+	{
+		log_err
+			"CreateFile() failed, file=%ws, gle=%u",
+			file_path,
+			GetLastError()
+			log_end
+			return false;
+	}
+
+	if (true != OpenForReadWrite(file_handle))
+	{
+		CloseHandle(file_handle);		
+		return false;
+	}
+
+	_ASSERTE(mFileHandle == file_handle);
+	_ASSERTE(mReadOnly == false);
+	_ASSERTE(mFileMap != NULL);
+	return true;
+}
+
+/// @brief	파일을 읽기/쓰기모드로 오픈한다. 
+bool 
+FileIoHelper::OpenForReadWrite(
+	_In_ const HANDLE file_handle
+	)
+{
+	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);	
+	if (INVALID_HANDLE_VALUE == file_handle)
+	{
+		return false;
+	}
+
+	if (TRUE == Initialized()) { close(); }
+		
+	uint64_t file_size = 0;
+	HANDLE file_map = NULL;
+
+#pragma warning(disable: 4127)
+	bool ret = false;
+	do
+	{
+		// check file size 
+		// 
+		if (TRUE != GetFileSizeEx(file_handle, (PLARGE_INTEGER)&file_size))
+		{
+			log_err
+				"GetFileSizeEx() failed. file_handle=0x%p, gle=%u",
+				file_handle,
+				GetLastError()
+				log_end
+				break;
+		}
+
+		if (file_size == 0)
+		{
+			log_err "Empty file specified." log_end;
+			break;
+		}
+		
+		file_map = CreateFileMapping(file_handle,
+									 NULL,
+									 PAGE_READWRITE,
+									 0,
+									 0,
+									 NULL);
+		if (NULL == file_map)
+		{
+			log_err
+				"CreateFileMapping() failed, file_handle=0x%p, gle=%u",
+				file_handle,
+				GetLastError()
+				log_end
+				break;
+		}
+
+		ret = true;
+	} while (FALSE);
+#pragma warning(default: 4127)
+
+	if (true != ret)
+	{
+		if (NULL != file_map)
+		{
+			CloseHandle(file_map);			
+		}
+	}
+	else
+	{
+		mReadOnly = false;
+		mFileSize = file_size;
+		mFileHandle = file_handle;
+		mFileMap = file_map;
+	}
 	return ret;
 }
 
