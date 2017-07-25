@@ -309,40 +309,26 @@ log_write_fmt_without_deco(
     char* pos = log_buffer;
     va_list args;
 
-    // log level
-    switch (log_level)
-    {
-    case log_level_debug: StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[DEBG] "); break;
-    case log_level_info:  StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[INFO] "); break;
-    case log_level_warn:  StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[WARN] "); break;
-    case log_level_error: StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[EROR] "); break;
-    default:
-        _ASSERTE(!"never reach here!");
-        return;
-    }
-
     va_start(args, fmt);
-    HRESULT hRes = StringCbVPrintfExA(
-                        pos,
-                        remain,
-                        &pos,
-                        &remain,
-                        0,
-                        fmt,
-                        args
-                        );
+	HRESULT hRes = StringCbVPrintfExA(pos,
+									  remain,
+									  &pos,
+									  &remain,
+									  0,
+									  fmt,
+									  args
+	);
 
     if (S_OK != hRes)
     {
         // invalid character 가 끼어있는 경우 발생 할 수 있음
-        StringCbPrintfExA(
-            pos,
-            remain,
-            &pos,
-            &remain,
-            0,
-            "invalid function call parameters"
-            );
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  "invalid function call parameters"
+		);
     }
     va_end(args);
 
@@ -422,12 +408,12 @@ slogger::slog_start(
 	if (NULL != log_file_path)
 	{
 		_log_file_handle = CreateFileW(log_file_path,
-								   GENERIC_WRITE,
-								   FILE_SHARE_READ,
-								   NULL,
-								   OPEN_ALWAYS,
-								   FILE_ATTRIBUTE_NORMAL,
-								   NULL);
+									   GENERIC_WRITE,
+									   FILE_SHARE_READ,
+									   NULL,
+									   OPEN_ALWAYS,
+									   FILE_ATTRIBUTE_NORMAL,
+									   NULL);
 		if (INVALID_HANDLE_VALUE == _log_file_handle)
 		{
 			return false;
