@@ -434,6 +434,8 @@ bool scm_context::start_service()
 */
 bool scm_context::stop_service()
 {
+	if (true != started()) return true;
+
 	SC_HANDLE scm_handle = OpenSCManagerW(NULL, 
 										  NULL, 
 										  SC_MANAGER_ALL_ACCESS);
@@ -464,14 +466,14 @@ bool scm_context::stop_service()
 	// 여기서 호출한 ControlService() 함수는 FALSE 를 리턴한다.
 	// 그러나 서비스는 정상 종료된다.
 	//
-	SERVICE_STATUS service_status={0};
+	SERVICE_STATUS service_status = { 0 };
 	if (FALSE == ControlService(service_handle, SERVICE_CONTROL_STOP, &service_status))
 	{
 		log_err
-			"ControlService( service name=%ws ) failed, gle = %u", 
+			"ControlService( service name=%ws ) failed, gle = %u",
 			_service_name.c_str(), GetLastError()
-		log_end
-		return false;
+			log_end
+			return false;
 	}
 
 	//
