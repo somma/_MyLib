@@ -251,54 +251,67 @@ NameConverter::resolve_device_prefix(
         return false;
     case 2:
         // '\' 하나 더 붙여준다.            
-        strm << file_name << L"\\";
+		strm << file_name << L"\\";
         break;
     case 3:
-        strm << file_name;
+		strm << file_name;
         break;
     }
-    std::wstring qualified_file_name = strm.str();
+    
+	std::wstring revised_file_name = strm.str();
+	std::wstring small_rfn = revised_file_name;
+	to_lower_string(small_rfn);
 
+    
+	boost::lock_guard<boost::mutex> lock(this->_lock);
 
-    boost::lock_guard<boost::mutex> lock(this->_lock);
-
-    // #1, is this a dos device?
+	//
+	//	#1, is this a dos device?
+	// 
     for (auto dos_device : _dos_devices)
     {
-        // \Device\HarddiskVolume1, \Device\HarddiskVolume11 이 매칭되지 않도록
-        // dos_device._device_name 필드는 `\Device\HarddiskVolume1\` 처럼 `\` 로 끝난다.
-        size_t pos = qualified_file_name.find(dos_device._device_name);
+		// 
+        //	\Device\HarddiskVolume1, \Device\HarddiskVolume11 이 매칭되지 않도록
+        //	dos_device._device_name 필드는 `\Device\HarddiskVolume1\` 처럼 `\` 로 끝난다.
+		//
+
+		std::wstring smal_dn = dos_device._device_name;
+		to_lower_string(smal_dn);
+
+        size_t pos = small_rfn.find(smal_dn);
         if (pos == 0)
         {
             if (DRIVE_REMOTE == dos_device._drive_type)
             {
                 resolved_file_name = dos_device._network_name;
                 resolved_file_name += L"\\";
-                resolved_file_name += qualified_file_name.substr(dos_device._device_name.size(),
-                                                                 qualified_file_name.size());
+                resolved_file_name += revised_file_name.substr(dos_device._device_name.size(),
+															   revised_file_name.size());
 
             }
             else
             {
                 resolved_file_name = dos_device._logical_drive;
                 resolved_file_name += L"\\";
-                resolved_file_name += qualified_file_name.substr(dos_device._device_name.size(),
-                                                                 qualified_file_name.size());
+                resolved_file_name += revised_file_name.substr(dos_device._device_name.size(),
+															   revised_file_name.size());
             }
 
             return true;
         }
     }
 
-    // #2. is this a mup device? (network providers)
+	// 
+    //	#2. is this a mup device? (network providers)
+	// 
     for (auto mup_device : _mup_devices)
     {
-        size_t pos = qualified_file_name.find(mup_device);
+        size_t pos = revised_file_name.find(mup_device);
         if (pos == 0)
         {
             resolved_file_name = L'\\';
-            resolved_file_name += qualified_file_name.substr(mup_device.size(), 
-															 qualified_file_name.size());
+            resolved_file_name += revised_file_name.substr(mup_device.size(),
+														   revised_file_name.size());
             return true;
         }
     }

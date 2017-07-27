@@ -31,10 +31,6 @@ public:
             _network_name = L"";
         else
             _network_name = network_name;
-
-        to_lower_string(_logical_drive);
-        to_lower_string(_device_name);
-
     }
 	
     std::wstring    _logical_drive; // `c:`, `d:`, ...              (¼Ò¹®ÀÚ)
@@ -62,7 +58,7 @@ public:
 	bool get_nt_path_by_dos_path(_In_ const wchar_t* dos_path, 
 								 _Out_ std::wstring& nt_device_path);
     bool reload();
-
+	int a;
 private:
     boost::mutex                _lock;
     std::list<DosDeviceInfo>    _dos_devices;
@@ -71,4 +67,4 @@ private:
     bool resolve_device_prefix(_In_ const wchar_t* file_name, _Out_ std::wstring& resolved_file_name);
     bool update_dos_device_prefixes();
     bool update_mup_device_prefixes();
-} *PPrefixResolver;
+} *PNameConverter;
