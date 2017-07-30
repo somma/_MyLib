@@ -16,7 +16,8 @@ public:
 		_In_z_ const wchar_t* bin_path, 
 		_In_z_ const wchar_t* service_name, 
 		_In_z_ const wchar_t* service_display_name, 
-		_In_ bool uninstall_service_on_free = true
+		_In_ bool win32_service,
+		_In_ bool uninstall_service_on_free
 		);
 	scm_context(
 		_In_z_ const wchar_t* bin_path,
@@ -24,7 +25,7 @@ public:
 		_In_z_ const wchar_t* service_display_name,
 		_In_z_ const wchar_t* altitude, 
 		_In_ uint32_t flags, 
-		_In_ bool uninstall_service_on_free = true
+		_In_ bool uninstall_service_on_free
 		);
 	~scm_context();
 
@@ -52,6 +53,8 @@ private:
 	std::wstring	_bin_path;
 	std::wstring	_service_name;
 	std::wstring	_service_display_name;
+
+	uint32_t		_service_type;
 
 	bool			_is_minifilter;
 	std::wstring	_altitude;	// for minifilter

@@ -30,16 +30,19 @@ scm_context::scm_context(
 	_In_z_ const wchar_t* bin_path, 
 	_In_z_ const wchar_t* service_name, 
 	_In_z_ const wchar_t* service_display_name,
+	_In_ bool win32_service,
 	_In_ bool uninstall_service_on_free)
 :	_uninstall_service_on_free(uninstall_service_on_free),
 	_driver_handle(INVALID_HANDLE_VALUE), 
 	_bin_path(bin_path),
 	_service_name(service_name),
 	_service_display_name(service_display_name),
+	_service_type((true == win32_service ? SERVICE_WIN32_OWN_PROCESS : SERVICE_KERNEL_DRIVER)),
 	_is_minifilter(false),
 	_altitude(L"none"),
 	_flags(0)
 {
+	
 }
 
 /// @brief	service context manager for minifilter driver
@@ -55,6 +58,7 @@ scm_context::scm_context(
 	_bin_path(bin_path),
 	_service_name(service_name),
 	_service_display_name(service_display_name),
+	_service_type(SERVICE_KERNEL_DRIVER),
 	_is_minifilter(true),
 	_altitude(altitude),
 	_flags(flags)
@@ -121,7 +125,7 @@ bool scm_context::install_service()
 									_service_name.c_str(),
 									_service_display_name.c_str(),
 									GENERIC_READ, // SERVICE_ALL_ACCESS,
-									SERVICE_KERNEL_DRIVER,
+									_service_type,
 									SERVICE_DEMAND_START,
 									SERVICE_ERROR_NORMAL,
 									_bin_path.c_str(),
