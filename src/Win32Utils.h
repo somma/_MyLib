@@ -315,8 +315,17 @@ BOOL GetImageFullPathFromPredefinedPathA(
 #define GetImageFullPathFromPredefinedPath  GetImageFullPathFromPredefinedPathA	
 #endif//UNICODE
 
+
 bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring& full_path);
 
+#if _WIN32_WINNT >= 0x0600	// after vista
+bool 
+image_path_by_pid(
+	_In_ DWORD process_id, 
+	_In_ bool win32_format, 
+	_Out_ std::wstring& image_path
+	);
+#endif
 
 /// @brief  system direcotry 경로 리턴 (c:\windows\system32 )
 bool get_system_dir(_Out_ std::wstring& system_dir);        
@@ -602,9 +611,10 @@ bool resume_process_by_handle(_In_ HANDLE handle);
 bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code);
 
 
-#if _WIN32_WINNT >= 0x0600	// after vista
-std::wstring get_process_name_by_pid(_In_ DWORD process_id);
-#endif
+
+
+
+
 /******************************************************************************
  * console stuff
 ******************************************************************************/

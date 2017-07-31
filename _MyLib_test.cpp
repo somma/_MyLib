@@ -73,7 +73,8 @@ bool test_std_string_find_and_substr();
 bool test_to_lower_uppper_string();
 //bool test_const_position();	// 컴파일 불가 테스트
 bool test_initialize_string();
-bool test_process_tree();     
+bool test_process_tree();
+bool test_image_path_by_pid();
 
 bool test_base64();
 bool test_random();
@@ -97,7 +98,6 @@ bool test_str_to_xxx();
 bool test_set_get_file_position();
 bool test_get_module_path();
 bool test_dump_memory();
-bool test_get_process_name_by_pid();
 bool test_get_environment_value();
 
 // rc4.cpp
@@ -241,7 +241,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_ppl);
 
 	//assert_bool(true, test_find_and_replace);
-	assert_bool(true, test_file_io_helper);
+	//assert_bool(true, test_file_io_helper);
 
 	//assert_bool(true, test_scm_context);
 
@@ -281,6 +281,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	////assert_bool(true, test_const_position);		// 컴파일 불가 테스트
 	//assert_bool(true, test_initialize_string);
 	//assert_bool(true, test_process_tree);
+	assert_bool(true, test_image_path_by_pid);
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
 	//assert_bool(true, test_get_local_ip_list);
@@ -301,7 +302,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	//assert_bool(true, test_set_get_file_position);
 	//assert_bool(true, test_get_module_path);
 	//assert_bool(true, test_dump_memory);
-	//assert_bool(true, test_get_process_name_by_pid);
 	//assert_bool(true, test_get_environment_value);
  //
 	//assert_bool(true, test_rc4_encrypt);
@@ -336,7 +336,7 @@ int _tmain(int argc, _TCHAR* argv[])
  //   assert_bool(true, test_read_mouted_device);
  //   assert_bool(true, test_set_binary_data);
     
-	assert_bool(true, test_aes256);
+	//assert_bool(true, test_aes256);
 
 
 	con_info
@@ -685,6 +685,26 @@ bool test_process_tree()
 
     proc_tree.print_process_tree(L"explorer.exe");
 
+	return true;
+}
+
+bool test_image_path_by_pid()
+{
+	cprocess_tree proc_tree;
+	if (!proc_tree.build_process_tree()) return false;
+
+	DWORD pid = proc_tree.find_process(L"explorer.exe");
+
+	std::wstring win32_path;
+	std::wstring native_path;
+	if (!image_path_by_pid(pid, true, win32_path)) return false;
+	if (!image_path_by_pid(pid, false, native_path)) return false;
+
+	log_info "pid=%u, explorer.exe, \nwin32_path=%ws\nnative_path=%ws",
+		pid,
+		win32_path.c_str(),
+		native_path.c_str()
+		log_end;
 	return true;
 }
 
@@ -1379,16 +1399,6 @@ bool test_dump_memory()
 	}
 
 	dump.clear();
-	return true;
-}
-
-/**
- * @brief	
-**/
-bool test_get_process_name_by_pid()
-{
-	std::wstring name = get_process_name_by_pid(GetCurrentProcessId());
-	log_dbg "name = %ws", name.c_str() log_end
 	return true;
 }
 

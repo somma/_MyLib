@@ -2158,7 +2158,9 @@ GetImageFullPathFromPredefinedPathW(
     }
 }
 
-/// @ brief GetProcessImageFileName() wrapper
+/// @brief	Process handle 로 full path 를 구한다. 
+///	@return	nt device name format 의 프로세스의 이미지 경로
+///			( e.g. \Device\Harddisk0\Partition1\Windows\System32\Ctype.nls )
 bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring& full_path)
 {
     bool ret = false;
@@ -2199,6 +2201,96 @@ bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring&
     return ret;
 }
 
+
+/// @brief	pid 로 프로세스의 전체 이름을 구한다. (vista 이상)
+///	@param	win32_format
+///				true 인 경우 `c:\dbg\sound.dll` 형태 (Win32 format) string 리턴
+///				false 인 경우 `\Device\HarddiskVolume1\dbg\sound.dll` 포맷 리턴		
+#if _WIN32_WINNT >= 0x0600	// after vista
+bool 
+image_path_by_pid(
+	_In_ DWORD process_id, 
+	_In_ bool win32_format,
+	_Out_ std::wstring& image_path
+	)
+{
+	HANDLE phandle = NULL;
+	do
+	{
+		phandle = OpenProcess(PROCESS_QUERY_INFORMATION,
+							  FALSE,
+							  process_id);
+		if (NULL != phandle) break;
+
+		if (!set_privilege(SE_DEBUG_NAME, true))
+		{
+			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
+			break;
+		}
+
+		phandle = OpenProcess(PROCESS_QUERY_INFORMATION,
+							  FALSE,
+							  process_id);
+		set_privilege(SE_DEBUG_NAME, false);
+
+	} while (false);
+
+	if (NULL == phandle)
+	{
+		//log_err "Can not access process. pid=%u",
+		//	pid
+		//	log_end;
+		return false;
+	}
+	raii_handle process_handle(phandle, raii_CloseHandle);
+	
+	wchar_t*	name = NULL;
+	DWORD		name_len = MAX_PATH;
+	DWORD		ret = 0;
+	
+	//
+	//	ZwQuerySystemInformation 처럼 length 를 0 을 넘겨주면 필요한 버퍼의 길이를
+	//	리턴해 주지 않는다. 큼직하게 버퍼 잡아서 호출해야 함
+	//
+	for(int i = 0; i < 3; ++i)		// name buffer 를 두배씩 키우는것도 3회만 시도한다.
+	{
+		if (NULL != name) free(name);
+		name = (wchar_t*) malloc((name_len + 1) * sizeof(wchar_t));
+		if (NULL == name) return false;
+
+		ret = QueryFullProcessImageNameW(process_handle.get(),
+										 (win32_format == true) ? 0 : PROCESS_NAME_NATIVE,
+										 name,
+										 &name_len);
+		if (ret > 0)
+		{
+			name[name_len] = 0x00;
+			break;
+		}
+		else
+		{
+			DWORD gle = GetLastError();
+			if (ret == 0 && ERROR_INSUFFICIENT_BUFFER == gle)
+			{
+				name_len *= 2;
+				continue;
+			}
+			else 
+			{
+				log_err "QueryFullProcessImageName() failed. gle = %u", 
+					gle 
+					log_end;
+				return false;
+			}
+		}		
+	}
+
+	image_path = name;	// copy
+	if (NULL != name) free(name);
+	return true;
+}
+
+#endif
 
 /// @brief  GetSystemDirectoryW() wrapper (c:\windows\system32)
 bool get_system_dir(_Out_ std::wstring& system_dir)
@@ -5443,98 +5535,6 @@ bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code)
 	//DWORD ret = WaitForSingleObject(handle, INFINITE);
 	return true;
 }
-
-
-
-/**
- * @brief	pid 로 프로세스의 전체 이름을 구한다. (vista 이상)
-			ZwQuerySystemInformation 처럼 length 를 0 을 넘겨주면 필요한 버퍼의 길이를...
-			리턴해 주지 않는다. 큼직하게 버퍼 잡아서 호출해야 함
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	c:\dbg\sound.dll 형태 (Win32 format) string 리턴
-**/
-#if _WIN32_WINNT >= 0x0600	// after vista
-
-std::wstring get_process_name_by_pid(_In_ DWORD process_id)
-{
-	HANDLE phandle = NULL;
-	do
-	{
-		phandle = OpenProcess(PROCESS_QUERY_INFORMATION,
-							  FALSE,
-							  process_id);
-		if (NULL != phandle) break;
-
-		if (!set_privilege(SE_DEBUG_NAME, true))
-		{
-			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
-			break;
-		}
-
-		phandle = OpenProcess(PROCESS_QUERY_INFORMATION,
-							  FALSE,
-							  process_id);
-		set_privilege(SE_DEBUG_NAME, false);
-
-	} while (false);
-
-	if (NULL == phandle)
-	{
-		//log_err "Can not access process. pid=%u",
-		//	pid
-		//	log_end;
-		return false;
-	}
-	raii_handle process_handle(phandle, raii_CloseHandle);
-	
-	// get size
-	wchar_t*	name = NULL;
-	DWORD		name_len = 20;//MAX_PATH;
-	DWORD		ret = 0;
-	
-	for(int i = 0; i < 3; ++i)		// name buffer 를 두배씩 키우는것도 3회만 시도한다.
-	{
-		if (NULL != name) free(name);
-		name = (wchar_t*) malloc((name_len + 1) * sizeof(wchar_t));
-		if (NULL == name) return _null_stringw;
-
-		ret = QueryFullProcessImageNameW(
-					process_handle.get(), 
-					0,	// Win32 Format
-					name,
-					&name_len
-					);	
-		if (ret > 0)
-		{
-			name[name_len] = 0x00;
-			break;
-		}
-		else
-		{
-			DWORD gle = GetLastError();
-			if (ret == 0 && ERROR_INSUFFICIENT_BUFFER == gle)
-			{
-				name_len *= 2;
-				continue;
-			}
-			else 
-			{
-				log_err "QueryFullProcessImageName() failed. gle = %u", gle log_end
-				return _null_stringw;
-			}
-		}		
-	}
-
-	std::wstring name_str = name;
-	if (NULL != name) free(name); name = NULL;
-	return name_str;	
-}
-
-#endif
 
 /**
 * @brief	

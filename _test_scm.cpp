@@ -27,7 +27,7 @@ bool test_scm_context()
 /// @brief	test for legacy driver service using scm_context class
 bool test_legacy_driver_service()
 {
-	scm_context scm(L"c:\\dbg\\scanner.sys", L"scanner", L"scanner", false);
+	scm_context scm(L"c:\\dbg\\scanner.sys", L"scanner", L"scanner", false, false);
 
 	//
 	// install service
