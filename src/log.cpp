@@ -73,7 +73,7 @@ initialize_log(
 	// write log header
 	// 
 	std::string now; GetTimeStringA(now);
-	log_info "%s, log start.", now.c_str() log_end;
+	log_info "\n==\n== %s, log start.\n==", now.c_str() log_end;
 
 	return true;
 }
@@ -409,7 +409,7 @@ slogger::slog_start(
 	{
 		_log_file_handle = CreateFileW(log_file_path,
 									   GENERIC_WRITE,
-									   FILE_SHARE_READ,
+									   FILE_SHARE_WRITE | FILE_SHARE_READ,
 									   NULL,
 									   OPEN_ALWAYS,
 									   FILE_ATTRIBUTE_NORMAL,
