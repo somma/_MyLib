@@ -132,9 +132,14 @@ scm_context::install_service(
 	DWORD start_type = SERVICE_DEMAND_START;
 	if (true == auto_start) 
 	{
+#pragma todo("미니필터인 경우 SERVICE_BOOT_START 으로 설치")
+		//
+		//	ARSE Issue #47 참고
+		//	추가 정보가 없으면 SERVICE_BOOT_START 타입으로 설치가 안됨
+		//
 		if (_service_type == SERVICE_KERNEL_DRIVER)
 		{
-			start_type = SERVICE_BOOT_START;
+			start_type = SERVICE_AUTO_START;// SERVICE_BOOT_START;
 		}
 		else if (_service_type == SERVICE_WIN32_OWN_PROCESS)
 		{
