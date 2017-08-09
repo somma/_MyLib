@@ -32,7 +32,7 @@ bool test_legacy_driver_service()
 	//
 	// install service
 	// 
-	if (!scm.install_service())
+	if (!scm.install_service(false))
 	{
 		log_err "%ws, install_service() failed.", scm.service_name() log_end;
 		return false;
@@ -86,7 +86,7 @@ bool test_minifilter_service()
 	//
 	// install service
 	// 
-	if (!scm.install_service())
+	if (!scm.install_service(false))
 	{
 		log_err "%ws, install_service() failed.", scm.service_name() log_end;
 		return false;

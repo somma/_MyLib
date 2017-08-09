@@ -9,7 +9,9 @@
 
 #include "stdafx.h"
 #include "scm_context.h"
+#include "log.h"
 #include <memory>				// std::shared_ptr
+
 #include "RegistryUtil.h"
 
 //> todo - SCM 접근시 권한은 필요한 만큼만 정해서 호출하게 하자. 
@@ -97,48 +99,69 @@ scm_context::~scm_context()
 * @endcode	
 * @return	
 */
-bool scm_context::install_service()
+bool 
+scm_context::install_service(
+	_In_ bool auto_start
+	)
 {
-	SC_HANDLE scm_handle = OpenSCManagerW(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+	SC_HANDLE scm_handle = OpenSCManagerW(NULL, 
+										  NULL, 
+										  SC_MANAGER_ALL_ACCESS);
 	if (NULL == scm_handle)
 	{
 		log_err "OpenSCManagerW() faield. gle = %u", GetLastError() log_end
 		return false;
 	}
-	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
-	SC_HANDLE service_handle = OpenServiceW(scm_handle, 
-											_service_name.c_str(), 
-											SERVICE_QUERY_CONFIG);
-	if (NULL != service_handle)
+	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), 
+								 sc_handle_deleter());
+	
+	//
+	//	이미 설치된 서비스가 있다면 삭제한다. 
+	//
+	if (true != uninstall_service(scm_handle))
 	{
-		log_dbg "service=%ws. already exists", _service_name.c_str() log_end
-		CloseServiceHandle(service_handle);
-		return true;
+		log_err "uninstall_service() failed. service=%ws",
+			_service_name.c_str()
+			log_end;
+		return false;
 	}
-
 
 	//
 	//	Install service 
 	// 
+	DWORD start_type = SERVICE_DEMAND_START;
+	if (true == auto_start) 
+	{
+		if (_service_type == SERVICE_KERNEL_DRIVER)
+		{
+			start_type = SERVICE_BOOT_START;
+		}
+		else if (_service_type == SERVICE_WIN32_OWN_PROCESS)
+		{
+			start_type = SERVICE_AUTO_START;
+		}
+	}	
 
-	service_handle = CreateServiceW(scm_handle,
-									_service_name.c_str(),
-									_service_display_name.c_str(),
-									GENERIC_READ, // SERVICE_ALL_ACCESS,
-									_service_type,
-									SERVICE_DEMAND_START,
-									SERVICE_ERROR_NORMAL,
-									_bin_path.c_str(),
-									NULL,
-									NULL,
-									NULL,
-									NULL,
-									NULL);
+	SC_HANDLE service_handle = CreateServiceW(scm_handle,
+											  _service_name.c_str(),
+											  _service_display_name.c_str(),
+											  GENERIC_READ, // SERVICE_ALL_ACCESS,
+											  _service_type,
+											  start_type,
+											  SERVICE_ERROR_NORMAL,
+											  _bin_path.c_str(),
+											  NULL,
+											  NULL,
+											  NULL,
+											  NULL,
+											  NULL);
 	if (service_handle == NULL)
 	{
 		log_err
-			"CreateServcieW(path=%ws, svc_name=%ws, svc_display=%ws) failed. gle = %u",
-			_bin_path.c_str(), _service_name.c_str(), _service_display_name.c_str(), GetLastError()
+			"CreateServcieW(path=%ws, svc_name=%ws) failed. gle = %u",
+			_bin_path.c_str(), 
+			_service_name.c_str(), 			
+			GetLastError()
 			log_end;
 		return false;
 	}
@@ -284,50 +307,108 @@ bool scm_context::install_service()
 */
 bool scm_context::uninstall_service()
 {
-	if (true != stop_service())
-	{
-		log_err 
-			"scm_context::stop_service() failed, can not uninstall driver..." 
-			log_end
-
-			//> stop_service() 가 실패해도 삭제시도를 해야 한다. 
-			//    - driver :: DriverEntry() 에서 STATUS_SUCCESS 를 리턴했으나 아무짓도 안하고, 리턴한 경우
-			//    - driver handle 을 누군가 물고 있는 경우
-			//  강제로 서비스를 삭제 (registry 에서 서비스 제거)하고, 리부팅하면 서비스가 
-			//  제거된 상태로 (정상) 돌아올 수 있다. 
-			//
-			//return false;
-	}
-
-	SC_HANDLE scm_handle = OpenSCManagerW(NULL, 
-										  NULL, 
+	SC_HANDLE scm_handle = OpenSCManagerW(NULL,
+										  NULL,
 										  SC_MANAGER_ALL_ACCESS);
 	if (NULL == scm_handle)
 	{
-		log_err "OpenSCManagerW() faield. gle = %u", 
-			GetLastError() 
+		log_err "OpenSCManagerW() faield. gle = %u",
+			GetLastError()
 			log_end
-		return false;
+			return false;
 	}
-	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
+	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), 
+								 sc_handle_deleter());
 
+	return uninstall_service(scm_handle);
+}
+
+bool 
+scm_context::uninstall_service(
+	_In_ SC_HANDLE scm_handle
+	)
+{
+	_ASSERTE(NULL != scm_handle);
+	if (NULL == scm_handle) return false;
+	
+	//
+	//	서비스가 설치되어있지 않다면 true 를 리턴한다.
+	//
+	{
+		bool installed = false;
+		if (true != service_installed(scm_handle, installed))
+		{
+			log_err "service_installed() failed. service=%ws",
+				_service_name.c_str()
+				log_end;
+			return false;
+		}
+		if (true != installed) return true;
+	}
+			
+	//
+	//	서비스 핸들을 오픈한다. 
+	// 
 	SC_HANDLE service_handle = OpenServiceW(scm_handle,
 											_service_name.c_str(),
 											SERVICE_ALL_ACCESS);
 	if (NULL == service_handle)
 	{
-		log_err 
-			"OpenServiceW( service_name=%ws ) failed. gle = %u", 
-			_service_name.c_str(), GetLastError() 
-		log_end
-		return false;
+		log_err
+			"OpenServiceW( service_name=%ws ) failed. gle = %u",
+			_service_name.c_str(), GetLastError()
+			log_end
+			return false;
 	}
-	sc_handle_ptr service_handle_ptr(new SC_HANDLE(service_handle), sc_handle_deleter());
+	sc_handle_ptr service_handle_ptr(new SC_HANDLE(service_handle), 
+									 sc_handle_deleter());
 
+	//
+	//	서비스가 실행중이라면 중지한다. 
+	// 
+	{
+		bool started = false;
+		if (true != service_started(service_handle, started))
+		{
+			log_err "service_started() failed. service=%ws",
+				_service_name.c_str()
+				log_end;
+			return false;
+		}
+
+		if (true == started)
+		{
+			if (true != stop_service(service_handle))
+			{
+				log_err
+					"scm_context::stop_service() failed, can not uninstall driver..."
+					log_end
+
+					//> stop_service() 가 실패해도 삭제시도를 해야 한다. 
+					//    - driver :: DriverEntry() 에서 STATUS_SUCCESS 를 리턴했으나 아무짓도 안하고, 리턴한 경우
+					//    - driver handle 을 누군가 물고 있는 경우
+					//  강제로 서비스를 삭제 (registry 에서 서비스 제거)하고, 리부팅하면 서비스가 
+					//  제거된 상태로 (정상) 돌아올 수 있다. 
+					//
+					//return false;
+			}
+		}
+	}
+
+	//
+	//	서비스를 제거한다. 
+	// 
 	if (FALSE == DeleteService(service_handle))
 	{
 		DWORD err = GetLastError();
-		if (ERROR_SERVICE_MARKED_FOR_DELETE != err)
+		if (ERROR_SERVICE_MARKED_FOR_DELETE == err)
+		{
+			log_warn "Service marked for delete (need reboot). service=%ws",
+				_service_name.c_str()
+				log_end;
+			return true;
+		}
+		else
 		{
 			log_err 
 				"DeleteService( service name=%ws ) failed, gle = %u", 
@@ -337,7 +418,10 @@ bool scm_context::uninstall_service()
 		}
 	}
 
-	log_info "service=%ws deleted successfully", _service_name.c_str() log_end
+	log_info "Service deleted successfully. service=%ws", 
+		_service_name.c_str() 
+		log_end
+
 	return true;
 }
 
@@ -362,13 +446,12 @@ bool scm_context::start_service()
 			log_end
 		return false;
 	}
-	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
+	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), 
+								 sc_handle_deleter());
 
-	SC_HANDLE service_handle = OpenServiceW(
-									scm_handle,
-									_service_name.c_str(), 
-									SERVICE_ALL_ACCESS
-									);
+	SC_HANDLE service_handle = OpenServiceW(scm_handle,
+											_service_name.c_str(),
+											SERVICE_ALL_ACCESS);
 	if (NULL == service_handle)
 	{
 		log_err 
@@ -377,9 +460,48 @@ bool scm_context::start_service()
 		log_end
 		return false;
 	}
-	sc_handle_ptr service_handle_ptr(new SC_HANDLE(service_handle), sc_handle_deleter());
+	sc_handle_ptr service_handle_ptr(new SC_HANDLE(service_handle), 
+									 sc_handle_deleter());
 
-	if (TRUE != StartService(service_handle, 0, NULL))
+
+	//
+	//	이미 실행중이라면 true 를 리턴한다. 
+	//
+	{
+		bool started = false;
+		if (true != service_started(service_handle, started))
+		{
+			log_err "service_started() failed. service=%ws",
+				_service_name.c_str()
+				log_end;
+			return false;
+		}
+		if (true == started) return true;
+	}
+	
+	//
+	//	서비스 시작
+	//
+	if (true != start_service(service_handle))
+	{
+		log_err "start_service() failed." log_end;
+		return false;
+	}
+
+	return true;
+}
+
+bool 
+scm_context::start_service(
+	_In_ SC_HANDLE service_handle
+	)
+{
+	_ASSERTE(NULL != service_handle);
+	if (NULL == service_handle) return false;
+
+	if (TRUE != StartService(service_handle, 
+							 0, 
+							 NULL))
 	{
 		DWORD err = GetLastError();
 		if (err != ERROR_SERVICE_ALREADY_RUNNING)
@@ -408,16 +530,7 @@ bool scm_context::start_service()
 		}
 	}
 
-	if (svc_status.dwCurrentState == SERVICE_RUNNING)
-	{
-		log_info "service is started. svc=%ws",
-			_service_name.c_str()
-			log_end;
-
-		//_running = true;
-		return true;
-	}
-	else
+	if (svc_status.dwCurrentState != SERVICE_RUNNING)
 	{
 		log_info "service start failed. svc=%ws",
 			_service_name.c_str()
@@ -425,6 +538,12 @@ bool scm_context::start_service()
 
 		return false;
 	}
+
+	log_info "service is started. svc=%ws",
+		_service_name.c_str()
+		log_end;
+
+	return true;
 }
 
 /**
@@ -438,8 +557,6 @@ bool scm_context::start_service()
 */
 bool scm_context::stop_service()
 {
-	if (true != started()) return true;
-
 	SC_HANDLE scm_handle = OpenSCManagerW(NULL, 
 										  NULL, 
 										  SC_MANAGER_ALL_ACCESS);
@@ -450,34 +567,99 @@ bool scm_context::stop_service()
 			log_end
 		return false;
 	}
-	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
+	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), 
+								 sc_handle_deleter());
 
+	//
+	//	서비스가 설치되어있지 않다면 true 를 리턴한다.
+	//
+	{
+		bool installed = false;
+		if (!service_installed(scm_handle, installed))
+		{
+			log_err "service_installed() failed. service=%ws",
+				_service_name.c_str()
+				log_end;
+			return false;
+		}
+
+		if (true != installed)
+		{
+			return true;
+		}
+	}
+
+	//
+	//	서비스 중지
+	//
 	SC_HANDLE service_handle = OpenServiceW(scm_handle,
 											_service_name.c_str(),
 											SERVICE_ALL_ACCESS);
 	if (NULL == service_handle)
 	{
 		log_err 
-			"OpenServiceW( service_name=%ws ) failed. gle = %u", 
-			_service_name.c_str(), GetLastError() 
+			"OpenServiceW( ) failed. service=%ws, gle = %u", 
+			_service_name.c_str(), 
+			GetLastError() 
 		log_end
 		return false;
 	}
-	sc_handle_ptr service_handle_ptr(new SC_HANDLE(service_handle), sc_handle_deleter());
+	sc_handle_ptr service_handle_ptr(new SC_HANDLE(service_handle), 
+									 sc_handle_deleter());
 
-	// 2007.05.17 by somma
-	// 다른 프로세스가 SCM 을 통해서 SERVICE_CONTROL_STOP 을 이미요청한 경우
-	// 여기서 호출한 ControlService() 함수는 FALSE 를 리턴한다.
-	// 그러나 서비스는 정상 종료된다.
 	//
+	//	서비스가 실행중이지 않다면 true 를 리턴한다. 
+	//
+	{
+		bool started = false;
+		if (!service_started(service_handle, started))
+		{
+			log_err "service_started() failed. service=%ws",
+				_service_name.c_str()
+				log_end;
+			return false;
+		}
+
+		if (true != started) return true;
+	}
+	
+	//
+	//	서비스를 중지한다. 
+	// 
+	if (true != stop_service(service_handle))
+	{
+		log_err "stop_service() failed. " log_end;
+		return false;
+	}
+
+	return true;
+}
+
+bool 
+scm_context::stop_service(
+	_In_ SC_HANDLE service_handle
+	)
+{
+	_ASSERTE(NULL != service_handle);
+	if (NULL == service_handle) return false;
+
+	//
+	//	2007.05.17 by somma
+	//	다른 프로세스가 SCM 을 통해서 SERVICE_CONTROL_STOP 을 이미요청한 경우
+	//	여기서 호출한 ControlService() 함수는 FALSE 를 리턴한다.
+	//	그러나 서비스는 정상 종료된다.
+	//
+
 	SERVICE_STATUS service_status = { 0 };
-	if (FALSE == ControlService(service_handle, SERVICE_CONTROL_STOP, &service_status))
+	if (FALSE == ControlService(service_handle, 
+								SERVICE_CONTROL_STOP, 
+								&service_status))
 	{
 		log_err
 			"ControlService( service name=%ws ) failed, gle = %u",
 			_service_name.c_str(), GetLastError()
-			log_end
-			return false;
+			log_end;
+		return false;
 	}
 
 	//
@@ -513,13 +695,71 @@ bool scm_context::stop_service()
 		//	에러처리않고, 진행한다. 
 		// 
 	}
+	return true;
+}
 
-	//_running = false;
+bool 
+scm_context::service_installed(
+	_Out_ bool& installed
+	)
+{
+	SC_HANDLE scm_handle = OpenSCManagerW(NULL,
+										  NULL,
+										  SC_MANAGER_ALL_ACCESS);
+	if (NULL == scm_handle)
+	{
+		log_err "OpenSCManagerW() faield. gle = %u",
+			GetLastError()
+			log_end
+			return false;
+	}
+	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), 
+								 sc_handle_deleter());
+
+	return service_installed(scm_handle, installed);
+}
+
+bool 
+scm_context::service_installed(
+	_In_ SC_HANDLE scm_handle, 
+	_Out_ bool& installed
+	)
+{
+	_ASSERTE(NULL != scm_handle);
+	if (NULL == scm_handle) return false;
+
+	SC_HANDLE service_handle = OpenServiceW(scm_handle,
+											_service_name.c_str(),
+											SERVICE_QUERY_STATUS);
+	if (NULL == service_handle)
+	{
+		DWORD gle = GetLastError();
+
+		if (ERROR_SERVICE_DOES_NOT_EXIST == gle)
+		{
+			installed = false;
+			return true;
+		}
+		else
+		{
+			log_err
+				"OpenServiceW( service_name=%ws ) failed. gle = %u",
+				_service_name.c_str(), GetLastError()
+				log_end;
+			return false;
+		}
+	}
+
+	CloseServiceHandle(service_handle);
+	installed = true;
 	return true;
 }
 
 /// @brief	
-bool scm_context::started()
+bool 
+scm_context::service_started(
+	_Out_ bool& started
+	)
 {
 	SC_HANDLE scm_handle = OpenSCManagerW(NULL,
 										  NULL,
@@ -531,11 +771,12 @@ bool scm_context::started()
 			log_end;
 		return false;
 	}
-	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), sc_handle_deleter());
+	sc_handle_ptr scm_handle_ptr(new SC_HANDLE(scm_handle), 
+								 sc_handle_deleter());
 
 	SC_HANDLE service_handle = OpenServiceW(scm_handle,
 											_service_name.c_str(),
-											SERVICE_ALL_ACCESS);
+											SERVICE_QUERY_STATUS);
 	if (NULL == service_handle)
 	{
 		log_err
@@ -544,13 +785,26 @@ bool scm_context::started()
 			log_end
 			return false;
 	}
-	sc_handle_ptr service_handle_ptr(new SC_HANDLE(service_handle), sc_handle_deleter());
+	sc_handle_ptr service_handle_ptr(new SC_HANDLE(service_handle), 
+									 sc_handle_deleter());
+
+	return service_started(service_handle, started);
+}
+
+bool 
+scm_context::service_started(
+	_In_ SC_HANDLE service_handle, 
+	_Out_ bool& started
+	)
+{
+	_ASSERTE(NULL != service_handle);
+	if (NULL == service_handle) return false;
 
 	//
 	//	서비스가 상태를 조회한다. 
 	// 
 	SERVICE_STATUS svc_status = { 0 };
-	if(!QueryServiceStatus(service_handle, &svc_status))
+	if (!QueryServiceStatus(service_handle, &svc_status))
 	{
 		log_err "QueryServiceStatus() failed. service=%ws",
 			_service_name.c_str()
@@ -560,14 +814,15 @@ bool scm_context::started()
 
 	if (svc_status.dwCurrentState == SERVICE_RUNNING)
 	{
-		return true;
+		started = true;		
 	}
 	else
 	{
-		return false;
+		started = false;
 	}
-}
 
+	return true;
+}
 
 /**
 * @brief	

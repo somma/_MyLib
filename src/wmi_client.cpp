@@ -195,7 +195,5 @@ std::string variant_to_str(const VARIANT& var)
         return std::string(buf);
     };
 #pragma todo("complete this function...")
-
-    return "";
 }
 

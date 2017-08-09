@@ -6,8 +6,10 @@
  * @date    2011/11/30 created.
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
-
 #pragma once
+#include <Windows.h>
+#include <sal.h>
+#include <string>
 
 typedef class scm_context
 {
@@ -29,12 +31,22 @@ public:
 		);
 	~scm_context();
 
-	bool install_service();
+	bool install_service(_In_ bool auto_start);
+	
 	bool uninstall_service();
-	bool start_service();
-	bool stop_service();
+	bool uninstall_service(_In_ SC_HANDLE scm_handle);
 
-	bool started();
+	bool start_service();
+	bool start_service(_In_ SC_HANDLE service_handle);
+
+	bool stop_service();
+	bool stop_service(_In_ SC_HANDLE service_handle);
+
+	bool service_installed(_Out_ bool& installed);
+	bool service_installed(_In_ SC_HANDLE scm_handle, _Out_ bool& installed);
+
+	bool service_started(_Out_ bool& started);
+	bool service_started(_In_ SC_HANDLE service_handle, _Out_ bool& started);
 
 	bool	
 	send_command(
