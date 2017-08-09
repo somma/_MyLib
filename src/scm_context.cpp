@@ -685,7 +685,7 @@ scm_context::stop_service(
 
 	if (svc_status.dwCurrentState == SERVICE_STOPPED)
 	{
-		log_info "service is stopped. svc=%ws",
+		log_info "service has stopped. svc=%ws",
 			_service_name.c_str()
 			log_end;
 	}
