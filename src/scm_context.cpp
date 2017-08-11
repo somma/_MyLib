@@ -14,8 +14,6 @@
 
 #include "RegistryUtil.h"
 
-//> todo - SCM 접근시 권한은 필요한 만큼만 정해서 호출하게 하자. 
-
 struct sc_handle_deleter
 {
 	void operator()(SC_HANDLE* phandle) const
