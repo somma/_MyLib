@@ -73,8 +73,6 @@ bool test_std_string_find_and_substr();
 bool test_to_lower_uppper_string();
 //bool test_const_position();	// 컴파일 불가 테스트
 bool test_initialize_string();
-bool test_process_tree();
-bool test_image_path_by_pid();
 
 bool test_base64();
 bool test_random();
@@ -83,6 +81,11 @@ bool test_get_mac_address();
 bool test_ip_to_str();
 
 bool test_strtok();
+
+// test_process_tree.cpp
+extern bool test_process_tree();
+extern bool test_image_path_by_pid();
+extern bool test_get_process_creation_time();
 
 // _test_cpp_test.cpp
 bool test_cpp_class();
@@ -281,7 +284,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	////assert_bool(true, test_const_position);		// 컴파일 불가 테스트
 	//assert_bool(true, test_initialize_string);
 	//assert_bool(true, test_process_tree);
-	assert_bool(true, test_image_path_by_pid);
+	//assert_bool(true, test_image_path_by_pid);
+	assert_bool(true, test_get_process_creation_time);
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
 	//assert_bool(true, test_get_local_ip_list);
@@ -350,8 +354,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		_fail_count
 	log_end
 
-	//con_info "press any key to terminate..." con_end
-	//_pause;
+	con_info "press any key to terminate..." con_end
+	_pause;
 
 	finalize_log();
 
@@ -645,68 +649,7 @@ bool test_initialize_string()
 	return true;
 }
 
-/**
- * @brief	test for cprocess_tree class 
-			
-			테스트를 위해서는 
-			cmd.exe -> procexp.exe -> procexp64.exe(자동으로 만들어짐) -> notepad.exe
-			순서로 프로세스를 생성해 두고 해야 한다. 
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-bool proc_tree_callback(_In_ process& process_info, _In_ DWORD_PTR callback_tag)
-{
-    UNREFERENCED_PARAMETER(callback_tag);
-	con_info "pid = %u, %ws", 
-		process_info.pid(), 
-		process_info.process_name() 
-		log_end
-	return true;
-}
 
-bool test_process_tree()
-{
-	cprocess_tree proc_tree;
-	if (!proc_tree.build_process_tree()) return false;
-
-	// 프로세스 열거 테스트 (by callback)
-	proc_tree.iterate_process(proc_tree_callback, 0);
-	proc_tree.iterate_process_tree(proc_tree.find_process(L"cmd.exe"), proc_tree_callback, 0);
-	
-	// print 
-	proc_tree.print_process_tree(L"cmd.exe");
-
-	// 프로세스 종료 테스트	
-	proc_tree.kill_process_tree( proc_tree.find_process(L"cmd.exe") );	
-
-    proc_tree.print_process_tree(L"explorer.exe");
-
-	return true;
-}
-
-bool test_image_path_by_pid()
-{
-	cprocess_tree proc_tree;
-	if (!proc_tree.build_process_tree()) return false;
-
-	DWORD pid = proc_tree.find_process(L"explorer.exe");
-
-	std::wstring win32_path;
-	std::wstring native_path;
-	if (!image_path_by_pid(pid, true, win32_path)) return false;
-	if (!image_path_by_pid(pid, false, native_path)) return false;
-
-	log_info "pid=%u, explorer.exe, \nwin32_path=%ws\nnative_path=%ws",
-		pid,
-		win32_path.c_str(),
-		native_path.c_str()
-		log_end;
-	return true;
-}
 
 /**
  * @brief	

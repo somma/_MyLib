@@ -24,7 +24,13 @@ bool process::kill(_In_ DWORD exit_code)
 	_ASSERTE(true != _killed);	
 	if (true == _killed) return true;
 
-	set_privilege(SE_DEBUG_NAME, TRUE);
+	if (!set_privilege(SE_DEBUG_NAME, true))
+	{
+		log_err "set_privilege() failed. pid=%u",
+			_pid
+			log_end;
+		return false;
+	}
 	
 	HANDLE h = NULL;
 #pragma warning(disable: 4127)
@@ -54,6 +60,7 @@ bool process::kill(_In_ DWORD exit_code)
 
 		_killed = true;	
 		log_dbg "pid = %u, %ws terminated", _pid, _process_name.c_str() log_end;
+
 	} while (false);
 #pragma warning(default: 4127)
 
@@ -62,7 +69,7 @@ bool process::kill(_In_ DWORD exit_code)
 		CloseHandle(h); // TerminateProcess() is asynchronous, so must call CloseHandle()
 	}
 
-	set_privilege(SE_DEBUG_NAME, FALSE);
+	set_privilege(SE_DEBUG_NAME, false);
 
 	return (true == _killed) ? true : false;
 }

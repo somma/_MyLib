@@ -610,7 +610,8 @@ bool suspend_process_by_handle(_In_ HANDLE handle);
 bool resume_process_by_handle(_In_ HANDLE handle);
 bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code);
 
-
+bool get_process_creation_time(_In_ DWORD pid, _Out_ PFILETIME const creation_time);
+bool get_process_creation_time(_In_ HANDLE process_handle, _Out_ PFILETIME const creation_time);
 
 
 

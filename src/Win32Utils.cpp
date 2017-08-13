@@ -5536,6 +5536,89 @@ bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code)
 	return true;
 }
 
+/// @brief	프로세스의 실행시간을 구한다.
+bool 
+get_process_creation_time(
+	_In_ DWORD pid,
+	_Out_ PFILETIME const creation_time
+	)
+{
+	_ASSERTE(0 != pid);
+	_ASSERTE(4 != pid);
+	_ASSERTE(nullptr != creation_time);
+	if (0 == pid || 4 == pid || nullptr == creation_time) return false;
+
+	bool got_privilege = false;
+	HANDLE process_handle = NULL;
+	
+	do
+	{
+		process_handle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+		if (NULL != process_handle)
+		{
+			break;
+		}
+
+		if (!set_privilege(SE_DEBUG_NAME, true))
+		{
+			break;
+		}
+		got_privilege = true;
+
+		process_handle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+
+	} while (false);
+
+
+	if (true == got_privilege)
+	{
+		set_privilege(SE_DEBUG_NAME, false);
+	}
+
+	if (NULL == process_handle)
+	{
+		log_err "Can not access process. pid=%u",
+			pid
+			log_end;		
+		return false;
+	}
+
+	raii_handle hg(process_handle, raii_CloseHandle);
+	return get_process_creation_time(process_handle, creation_time);
+}
+
+/// @brief	프로세스의 실행시간을 구한다.
+bool 
+get_process_creation_time(
+	_In_ HANDLE process_handle, 
+	_Out_ PFILETIME const creation_time
+	)
+{
+	_ASSERTE(nullptr != creation_time);
+	if (nullptr == creation_time) return false;
+	
+	FILETIME CreationTime;
+	FILETIME ExitTime;
+	FILETIME KernelTime;
+	FILETIME UserTime;
+
+	if (!GetProcessTimes(process_handle,
+						 &CreationTime,
+						 &ExitTime,
+						 &KernelTime,
+						 &UserTime))
+	{
+		log_err "GetProcessTimes() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	creation_time->dwLowDateTime = CreationTime.dwLowDateTime;
+	creation_time->dwHighDateTime = CreationTime.dwHighDateTime;
+	return true;
+}
+
 /**
 * @brief	
 * @param	
