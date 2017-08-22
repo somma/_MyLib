@@ -43,110 +43,151 @@ bool NameConverter::reload()
 ///			x:\->x:\
 ///			\Device\Mup\192.168.153.144\sfr022\ -> \\192.168.153.144\sfr022\
 ///
-std::wstring 
+bool
 NameConverter::get_canon_name(
-	_In_ const wchar_t* file_name
+	_In_ const wchar_t* file_name, 
+	_Out_ std::wstring& canonical_file_name
 	)
 {
     _ASSERTE(NULL != file_name);
-    if (NULL == file_name) return std::wstring(L"");
+	if (NULL == file_name) return false;
 
     uint32_t cch_file_name = (uint32_t)wcslen(file_name);
     uint32_t cch_canon_file = 0;
-    wchar_t* canon_file = NULL;
+    wchar_t* canon_file = nullptr;
     raii_wchar_ptr wp(canon_file, raii_free);
 
-    // "\??\" refers to \GLOBAL??\. Just remove it.
+	//
+    //	"\??\" refers to \GLOBAL??\. Just remove it.
+	//
     if (true == lstrnicmp(file_name, L"\\??\\"))
     {
         cch_canon_file = cch_file_name - 4;
         canon_file = (wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t));
-        if (NULL == canon_file) return std::wstring(file_name);
+		if (nullptr == canon_file)
+		{
+			log_err "Not enough memory. size=%u", 
+				(cch_canon_file + 1) * sizeof(wchar_t)
+				log_end;
+			return false;
+		}
 
         RtlCopyMemory(canon_file, &file_name[4], (cch_canon_file * sizeof(wchar_t)));
         canon_file[cch_canon_file] = 0x0000;
-        return std::wstring(canon_file);
+		canonical_file_name = canon_file;
+		return true;
     }
 
-    // "\SystemRoot" means "C:\Windows".    
+	//
+    //	"\SystemRoot" means "C:\Windows".    
+	//
     else if (true == lstrnicmp(file_name, L"\\SystemRoot"))
     {
         std::wstring windows_dir;                    // c:\windows
         if (true != get_windows_dir(windows_dir))
         {
             log_err "get_windows_dir() failed." log_end;
-            return std::wstring(file_name);
+			return false;
         }
 
         cch_canon_file = (cch_file_name - 11) + (uint32_t)windows_dir.size();
         canon_file = (wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t));
-        if (NULL == canon_file) return std::wstring(file_name);
+		if (nullptr == canon_file)
+		{
+			log_err "Not enough memory. size=%u",
+				(cch_canon_file + 1) * sizeof(wchar_t)
+				log_end;
+			return false;
+		}
 
         RtlCopyMemory(canon_file, windows_dir.c_str(), (windows_dir.size() * sizeof(wchar_t)));
         RtlCopyMemory(&canon_file[windows_dir.size()], &file_name[11], (cch_file_name - 11) * sizeof(wchar_t));
         canon_file[cch_canon_file] = 0x0000;
-        return std::wstring(canon_file);
+		canonical_file_name = canon_file;
+		return true;
     }
-    // "system32\" means "C:\Windows\system32\".
+
+	//
+    //	"system32\" means "C:\Windows\system32\"
+	//
     else if (true == lstrnicmp(file_name, L"system32\\"))
     {
         std::wstring windows_dir;                    // c:\windows
         if (true != get_windows_dir(windows_dir))
         {
             log_err "get_windows_dir() failed." log_end;
-            return std::wstring(file_name);
+			return false;
         }
         windows_dir += L"\\";   // `c:\windows` => `c:\windows\\`
 
         cch_canon_file = cch_file_name + (uint32_t)windows_dir.size();
         canon_file = (wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t));
-        if (NULL == canon_file) return std::wstring(file_name);
+		if (nullptr == canon_file)
+		{
+			log_err "Not enough memory. size=%u",
+				(cch_canon_file + 1) * sizeof(wchar_t)
+				log_end;
+			return false;
+		}
 
         RtlCopyMemory(canon_file, windows_dir.c_str(), (windows_dir.size() * sizeof(wchar_t)));
         RtlCopyMemory(&canon_file[windows_dir.size()], file_name, cch_file_name * sizeof(wchar_t));
         canon_file[cch_canon_file] = 0x0000;
-        return std::wstring(canon_file);
+		canonical_file_name = canon_file;
+		return true;
     }
     else if (file_name[0] == L'\\')
     {
-        std::wstring resolved_file_name;
-        if (true == resolve_device_prefix(file_name, resolved_file_name))
+        if (true == resolve_device_prefix(file_name, canonical_file_name))
         {
-            return resolved_file_name;
+			//
+			//	resolve_device_prefix() 가 성공하면 성공
+			//
+			return true;
         }
         else
         {
-            // We didn't find a match.
-            // If the file name starts with "\Windows", prepend the system drive.
+			// 
+			//	resolve_device_prefix() 가 실패하면 다시 시도해본다. 
+            // 
+            //	If the file name starts with "\Windows", prepend the system drive.
+			// 
             if (true == lstrnicmp(file_name, L"\\windows"))
             {
                 std::wstring windows_dir;                    // c:\windows
                 if (true != get_windows_dir(windows_dir))
                 {
                     log_err "get_windows_dir() failed." log_end;
-                    return std::wstring(file_name);
+					return false;
                 }
 
                 cch_canon_file = (cch_file_name - 8) + (uint32_t)windows_dir.size();
                 canon_file = (wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t));
-                if (NULL == canon_file) return std::wstring(file_name);
+				if (nullptr == canon_file)
+				{
+					log_err "Not enough memory. size=%u",
+						(cch_canon_file + 1) * sizeof(wchar_t)
+						log_end;
+					return false;
+				}
 
                 RtlCopyMemory(canon_file, windows_dir.c_str(), (windows_dir.size() * sizeof(wchar_t)));
                 RtlCopyMemory(&canon_file[windows_dir.size()], &file_name[8], (cch_file_name - 8) * sizeof(wchar_t));
                 canon_file[cch_canon_file] = 0x0000;
-                return std::wstring(canon_file);
+				canonical_file_name = canon_file;
+				return true;
             }
             else
             {
                 // unknown
-                return std::wstring(file_name);
+				return false;
             }
         }
     }
     else
     {
         // unknown
-        return std::wstring(file_name);
+		return false;
     }
 }
 

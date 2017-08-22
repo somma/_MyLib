@@ -54,7 +54,7 @@ public:
     NameConverter() {}
     ~NameConverter() {}
 
-    std::wstring get_canon_name(_In_ const wchar_t* file_name);
+    bool get_canon_name(_In_ const wchar_t* file_name, _Out_ std::wstring& canonical_file_name);
 	bool get_nt_path_by_dos_path(_In_ const wchar_t* dos_path, 
 								 _Out_ std::wstring& nt_device_path);
     bool reload();	
