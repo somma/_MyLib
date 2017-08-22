@@ -249,6 +249,24 @@ SaveBinaryFile(
 	_In_ PBYTE    Data
 	);
 
+/// 콜백 대신 람다를 사용할 수 있음
+//	if (true != find_files(root,
+//						   [](_In_ DWORD_PTR tag, _In_ const wchar_t* path)->bool
+//   					   {
+//						       std::list<std::wstring>* files = (std::list<std::wstring>*)(tag);
+//							   files->push_back(path);
+//							   return true;
+//							},
+//							(DWORD_PTR)&file_list,
+//							true))
+//	{
+//		// error
+//	}
+//	else
+//	{
+//		// success
+//	}
+//
 typedef bool (WINAPI *fnFindFilesCallback)(_In_ DWORD_PTR tag, _In_ const wchar_t* path);
 
 bool

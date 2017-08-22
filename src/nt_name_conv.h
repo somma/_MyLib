@@ -57,8 +57,7 @@ public:
     std::wstring get_canon_name(_In_ const wchar_t* file_name);
 	bool get_nt_path_by_dos_path(_In_ const wchar_t* dos_path, 
 								 _Out_ std::wstring& nt_device_path);
-    bool reload();
-	int a;
+    bool reload();	
 private:
     boost::mutex                _lock;
     std::list<DosDeviceInfo>    _dos_devices;
