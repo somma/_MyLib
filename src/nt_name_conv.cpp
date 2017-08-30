@@ -493,16 +493,13 @@ NameConverter::resolve_device_prefix(
 			}
 			default:
 			{
-				pos = 0;
+				return false;
 			}
 		}
 
-		if (0 != pos)
-		{
-			resolved_file_name += mup_path.substr(pos,
-												  mup_path.size());
-			return true;
-		}
+		resolved_file_name += mup_path.substr(pos,
+											  mup_path.size());
+		return true;
 	}
 
     // #3, no match    
