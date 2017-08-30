@@ -43,6 +43,17 @@ bool NameConverter::reload()
 ///			x:\->x:\
 ///			\Device\Mup\192.168.153.144\sfr022\ -> \\192.168.153.144\sfr022\
 ///
+///			\Device\WebDavRedirector\192.168.0.1\DavWWWRoot\ -> \\192.168.0.1\davwwwroot\
+///			\Device\Mup\192.168.0.1\ -> \\192.168.0.1\
+///			\Device\Mup\192.168.0.1\temp.*\ -> \\192.168.0.1\temp.*\
+///			\Device\Mup\192.168.59.134\ADMIN$\PSEXESVC.EXE -> \\192.168.59.134\admin$\psexesvc.exe
+///			\Device\Mup\; Csc\.\.\ -> \Device\csc\.\.\
+///			\Device\Mup\;          WebDavRedirector\ -> \Device\webdavredirector\
+///			\Device\Mup\; WebDavRedirector\192.168.0.1\DavWWWRoot\ -> \Device\webdavredirector\192.168.0.1\davwwwroot\
+///			\Device\Mup\; RdpDr\; :1\192.168.59.134\IPC$\ -> \\192.168.59.134\ipc$\
+///			\Device\Floppy0\temp\123.txt -> \Device\Floppy0\temp\123.txt
+///			\Device\CdRom0\temp\123.txt -> \Device\CdRom0\temp\123.txt
+///
 bool
 NameConverter::get_canon_name(
 	_In_ const wchar_t* file_name, 
@@ -189,6 +200,82 @@ NameConverter::get_canon_name(
         // unknown
 		return false;
     }
+}
+
+/// @brief  nt_name( ex. \Device\HarddiskVolume4\Windows\...\MicrosoftEdge.exe ) 
+///         이 removeable drive 이면 true 를 리턴한다.
+///			만일 nt_name 이 알수 없는 이름이라면  false 를 리턴한다. 
+bool
+NameConverter::is_removable_drive(
+	_In_ const wchar_t* nt_name
+	)
+{
+	_ASSERTE(NULL != nt_name);
+	if (NULL == nt_name) return false;
+
+	//
+	//	비교할 문자열 길이를 계산
+	//	input: \Device\HarddiskVolume4\
+	//        ^      ^               ^  : `\` 를 3번 만날때까지의 길이를 구한다. (`\` 포함)
+	//                                    `\' 를 빼면 Volume44 == Volume4 가 동일함으로 인식될 수 있음
+	//
+	//	ex) \\Device\\HarddiskVolume4\\Windows -> \\Device\\HarddiskVolume4\\
+	//      \\Device\\HarddiskVolume4          -> \\Device\\HarddiskVolume4
+	//      \\Device\\HarddiskVolume455\\xyz   -> \\Device\\HarddiskVolume455\\
+	//
+	uint32_t cmp_count = 0;
+	uint32_t met_count = 0;
+	uint32_t max_count = (uint32_t)wcslen(nt_name);
+	for (cmp_count = 0; cmp_count <= max_count; ++cmp_count)
+	{
+		if (met_count == 3) break;
+		if (nt_name[cmp_count] == L'\\')
+		{
+			++met_count;
+		}
+	}
+
+	boost::lock_guard<boost::mutex> lock(_lock);
+	for (auto drive_info : _dos_devices)
+	{
+		if (0 != _wcsnicmp(drive_info._device_name.c_str(),
+						   nt_name,
+						   cmp_count))
+		{
+			continue;
+		}
+
+		return DRIVE_REMOVABLE == drive_info._drive_type ? true : false;
+	}
+
+	return false;
+}
+
+/// @brief  nt_name( ex. \\Device\\Mup\\192.168.153.144\\sfr022\\ ) 
+///         이 network 이면 true 를 리턴한다.
+///			만일 nt_name 이 알수 없는 이름이라면  false 를 리턴한다. 
+bool
+NameConverter::is_natwork_path(
+	_In_ const wchar_t* nt_name
+)
+{
+	_ASSERTE(NULL != nt_name);
+	if (NULL == nt_name) return false;
+
+	boost::lock_guard<boost::mutex> lock(_lock);
+	for (auto mup_device : _mup_devices)
+	{
+		if (0 != _wcsnicmp(mup_device.c_str(),
+						   nt_name,
+						   mup_device.length()))
+		{
+			continue;
+		}
+
+		return true;
+	}
+	
+	return false;
 }
 
 /// @brief	c:\windows\system32\test.txt -> \Device\HarddiskVolume1\windows\test.txt 로 변환
@@ -342,20 +429,81 @@ NameConverter::resolve_device_prefix(
         }
     }
 
-	// 
-    //	#2. is this a mup device? (network providers)
-	// 
-    for (auto mup_device : _mup_devices)
-    {
-        size_t pos = revised_file_name.find(mup_device);
-        if (pos == 0)
-        {
-            resolved_file_name = L'\\';
-            resolved_file_name += revised_file_name.substr(mup_device.size(),
-														   revised_file_name.size());
-            return true;
-        }
-    }
+	//
+	//	#2. is this a mup device? (network providers)
+	//  ';' 가 0개인 경우 mup prefix만 제거
+	//				ex)	\Device\Mup\192.168.0.1\						->\\192.168.0.1\
+	//		   1개인 경우 앞에 \\Device prefix 추가
+	//				ex)	\Device\Mup\; WebDavRedirector\					-> \Device\WebDavRedirector\
+	//				ex)	\Device\Mup\;      WebDavRedirector\			-> \Device\WebDavRedirector\
+	//		   2개인 경우 앞에 \\Device prefix 추가
+	//				ex)	\Device\Mup\; RdpDr\; :1\192.168.59.134\IPC$\	-> \\192.168.59.134\IPC$\
+	//				ex)	\Device\Mup\; RdpDr\; :xxxx\192.168.59.134\IPC$\-> \\192.168.59.134\IPC$\
+	//
+	for (auto mup_device : _mup_devices)
+	{
+		if (0 != revised_file_name.find(mup_device))
+		{
+			continue;
+		}
+
+		std::vector<std::wstring> tokens;
+		if (!split_stringw(small_rfn.c_str(), L";", tokens))
+		{
+			log_err "split_stringw( %ws ) failed.", small_rfn.c_str() log_end;
+			return false;
+		}
+
+		std::wstring mup_path;
+		size_t pos = 0;
+		switch (tokens.size())
+		{
+			case 1:
+			{
+				mup_path = tokens[0];
+				pos = (uint32_t)wcslen(mup_device.c_str());
+
+				if (std::string::npos == mup_path.find(_device_path))
+				{
+					resolved_file_name = L"\\";
+				}
+				break;
+			}
+			case 2:
+			{
+				mup_path = tokens[1];
+				pos = mup_path.find_first_not_of(L" ");
+
+				if (std::string::npos == mup_path.find(_device_path))
+				{
+					resolved_file_name = _device_path;
+				}
+				break;
+			}
+			case 3:
+			{
+				mup_path = tokens[2];
+				pos = mup_path.find(L'\\');
+
+				if (std::string::npos == mup_path.find(_device_path))
+				{
+					resolved_file_name = L"\\";
+				}
+				break;
+			}
+			default:
+			{
+				pos = 0;
+			}
+		}
+
+		if (0 != pos)
+		{
+			resolved_file_name += mup_path.substr(pos,
+												  mup_path.size());
+			return true;
+		}
+	}
 
     // #3, no match    
     return false;
