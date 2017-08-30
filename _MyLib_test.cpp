@@ -2055,8 +2055,9 @@ bool test_NameConverter_get_canon_name()
 
     for (int i = 0; i < sizeof(file_names) / sizeof(wchar_t*); ++i)
     {
-        std::wstring name = nc.get_canon_name(file_names[i]);
-        log_info "%ws -> %ws", file_names[i], name.c_str() log_end;
+		std::wstring name;
+		bool ret = nc.get_canon_name(file_names[i], name);
+		log_info "[ret=%d] %ws -> %ws", ret, file_names[i], name.c_str() log_end;
     }
 
     return true;
