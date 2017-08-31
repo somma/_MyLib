@@ -2035,6 +2035,17 @@ bool test_NameConverter_get_canon_name()
     //[INFO] x:\->x:\
     //[INFO] \Device\Mup\192.168.153.144\sfr022\ -> \\192.168.153.144\sfr022\
 
+	//[INFO] \Device\WebDavRedirector\192.168.0.1\DavWWWRoot\ -> \\192.168.0.1\davwwwroot\
+	//[INFO] \Device\Mup\192.168.0.1\ -> \\192.168.0.1\
+	//[INFO] \Device\Mup\192.168.0.1\temp.*\ -> \\192.168.0.1\temp.*\
+	//[INFO] \Device\Mup\192.168.59.134\ADMIN$\PSEXESVC.EXE -> \\192.168.59.134\admin$\psexesvc.exe
+	//[INFO] \Device\Mup\; Csc\.\.\ -> \Device\csc\.\.\
+	//[INFO] \Device\Mup\;          WebDavRedirector\ -> \Device\webdavredirector\
+	//[INFO] \Device\Mup\; WebDavRedirector\192.168.0.1\DavWWWRoot\ -> \Device\webdavredirector\192.168.0.1\davwwwroot\
+	//[INFO] \Device\Mup\; RdpDr\; :1\192.168.59.134\IPC$\ -> \\192.168.59.134\ipc$\
+	//[INFO] \Device\Floppy0\temp\123.txt -> \Device\Floppy0\temp\123.txt
+	//[INFO] \Device\CdRom0\temp\123.txt -> \Device\CdRom0\temp\123.txt
+
     wchar_t* file_names[] = {
         L"\\??\\c:\\windows\\system32\\abc.exe",
         L"\\Systemroot\\abc.exe",
@@ -2045,9 +2056,21 @@ bool test_NameConverter_get_canon_name()
 
         // net use x: \\192.168.153.144\\sfr022\\ /user:vmuser * 명령으로 x 드라이브 매핑해둠
         // 
-        L"\\device\\lanmanredirector\\;x:000000000008112d\\192.168.153.144\\sfr022\\",
+		L"\\Device\\Mup\\; lanmanredirector\\; x:000000000008112d\\192.168.153.144\\sfr022\\",
         L"x:\\",
-        L"\\Device\\Mup\\192.168.153.144\\sfr022\\"
+        L"\\Device\\Mup\\192.168.153.144\\sfr022\\",
+
+		L"\\Device\\WebDavRedirector\\192.168.0.1\\DavWWWRoot\\",
+		L"\\Device\\Mup\\192.168.0.1\\",
+		L"\\Device\\Mup\\192.168.0.1\\temp.*\\",
+		L"\\Device\\Mup\\192.168.59.134\\ADMIN$\\PSEXESVC.EXE",	
+		L"\\Device\\Mup\\; Csc\\.\\.\\",
+		L"\\Device\\Mup\\;          WebDavRedirector\\",
+		L"\\Device\\Mup\\; WebDavRedirector\\192.168.0.1\\DavWWWRoot\\",
+		L"\\Device\\Mup\\; RdpDr\\; :1\\192.168.59.134\\IPC$\\",
+		L"\\Device\\Floppy0\\temp\\123.txt",
+		L"\\Device\\CdRom0\\temp\\123.txt",
+		L"\\Device\\HarddiskVolume10\\boot"
     };
 
     NameConverter nc;
@@ -2055,8 +2078,17 @@ bool test_NameConverter_get_canon_name()
 
     for (int i = 0; i < sizeof(file_names) / sizeof(wchar_t*); ++i)
     {
-        std::wstring name = nc.get_canon_name(file_names[i]);
-        log_info "%ws -> %ws", file_names[i], name.c_str() log_end;
+		std::wstring name;
+		bool ret = nc.get_canon_name(file_names[i], name);
+		bool is_natwork = nc.is_natwork_path(file_names[i]);
+		bool is_removable = nc.is_removable_drive(file_names[i]);
+        log_info "[ret=%d][net=%d][removable=%d] %ws -> %ws", 
+			ret,
+			is_natwork, 
+			is_removable, 
+			file_names[i], 
+			name.c_str() 
+			log_end;
     }
 
     return true;

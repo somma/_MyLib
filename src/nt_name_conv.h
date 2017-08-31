@@ -15,6 +15,8 @@
 #include <Winnetwk.h>
 #pragma comment(lib, "Mpr.lib")
 
+#define _mup_path		L"\\Device\\Mup"
+#define _device_path	L"\\Device\\"
 
 class DosDeviceInfo
 {
@@ -57,6 +59,8 @@ public:
     bool get_canon_name(_In_ const wchar_t* file_name, _Out_ std::wstring& canonical_file_name);
 	bool get_nt_path_by_dos_path(_In_ const wchar_t* dos_path, 
 								 _Out_ std::wstring& nt_device_path);
+	bool is_removable_drive(_In_ const wchar_t* nt_name);
+	bool is_natwork_path(_In_ const wchar_t* nt_name);
     bool reload();	
 private:
     boost::mutex                _lock;
