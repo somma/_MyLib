@@ -3426,10 +3426,23 @@ extract_last_tokenExA(
 
 }
 
+/// @brief	c:\dbg\abc.txt -> txt 를 리턴한다. 
+bool get_file_extensionw(_In_ const wchar_t* file_path, _Out_ std::wstring& ext)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path) return false;
+
+	std::wstring tmp(file_path);
+	return extract_last_tokenW(tmp, 
+							   L".", 
+							   ext, 
+							   false, 
+							   false);
+}
 
 
 /**
-* @brief	trim 함수들
+ * @brief	trim 함수들
 
             string szbuf="__12345_____";  
             cout<<"Before trim: "<<szbuf<<endl;  
@@ -3440,13 +3453,7 @@ extract_last_tokenExA(
             Before trim: __12345_____
             After  trim: 12345
             After rtrim: __12345
-            After ltrim: 12345
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
+            After ltrim: 12345 
 */
 std::string trima(std::string& s, const std::string& drop)
 {

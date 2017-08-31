@@ -460,6 +460,7 @@ extract_last_tokenExA(
 	_In_ bool forward
     );
 
+bool get_file_extensionw(_In_ const wchar_t* file_path, _Out_ std::wstring& ext);
 
 std::string  trima(std::string& s, const std::string& drop = " ");
 std::string rtrima(std::string& s, const std::string& drop = " ");
@@ -469,13 +470,7 @@ std::wstring  trimw(std::wstring& s, const std::wstring& drop = L" ");
 std::wstring rtrimw(std::wstring& s, const std::wstring& drop = L" ");
 std::wstring ltrimw(std::wstring& s, const std::wstring& drop = L" ");
 
-#ifdef UNICODE
-	#define ExtractFirstToken	ExtractFirstTokenW
-	#define ExtractLastToken	ExtractLastTokenW
-#else
-	#define ExtractFirstToken	ExtractFirstTokenA
-	#define ExtractLastToken	ExtractLastTokenA
-#endif//UNICODE
+
 
 bool 
 split_stringa(
