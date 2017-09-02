@@ -96,14 +96,13 @@ bool test_NtCreateFile()
         // \Device\HarddiskVolume1 µð¹ÙÀÌ½º¸¦ ¿ÀÇÂ, ÇÚµéÀ» È¹µæÇÑ´Ù. 
         _RtlInitUnicodeString(&on, files[i]);
         InitializeObjectAttributes(&oa, &on, OBJ_CASE_INSENSITIVE, NULL, NULL);
-        status = _NtOpenFile(
-            &file_handle,
-            FILE_GENERIC_READ,
-            &oa,
-            &isb,
-            FILE_SHARE_READ | FILE_SHARE_WRITE,
-            FILE_NON_DIRECTORY_FILE
-            );
+        status = _NtOpenFile(&file_handle,
+							 FILE_GENERIC_READ,
+							 &oa,
+							 &isb,
+							 FILE_SHARE_READ | FILE_SHARE_WRITE,
+							 FILE_NON_DIRECTORY_FILE
+		);
         if (!NT_SUCCESS(status))
         {
             log_err "NtOpenFile(%ws) failed. status=0x%08x", files[i], status log_end;

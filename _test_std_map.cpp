@@ -52,12 +52,10 @@ bool test_std_map()
 		my_map.insert( std::make_pair(i, obj) );
 	}
 
-	//getchar();
-
-	// 소멸자가 호출되지 않음, memory leak
-	my_map.erase(0);		
-
-	// 객체의 소멸자를 강제로 호출 후 erase 호출해야 함
+	// 
+	//	map.erase() 만 호출하면 item 의 소멸자는 호출되지 않으므로 
+	//	erase 호출 전에 second 객체의 소멸자를 호출해주어야 한다. 
+	// 
 	std::map<DWORD, pmap_second_object>::iterator it = my_map.find(1);
 	delete it->second;
 	my_map.erase(it);
@@ -451,51 +449,57 @@ public:
 
 bool test_unorded_map_test_move()
 {
-    typedef std::list<PSomeClass> SomeClassList, *PSomeClassList;
-    std::unordered_map< int, PSomeClassList > um;
+	//_CrtMemState memoryState = { 0 };
+	//_CrtMemCheckpoint(&memoryState);
 
-    
-
-    PSomeClassList l1 = new SomeClassList();
-    PSomeClass o11 = new SomeClass(11); l1->push_back(o11);
-    PSomeClass o12 = new SomeClass(12); l1->push_back(o12);
-    PSomeClass o13 = new SomeClass(13); l1->push_back(o13);
-    PSomeClass o14 = new SomeClass(14); l1->push_back(o14);
-    // make_pare< RValueRef, RValueRef > 가 와야 하는데, PSomeClassList 는 lvalue 이므로
-    // 에러남. LValue 를 RValue 로 변환해주는 std::move() 를 이용해서 PSomeClassList 를 전달
-    um.insert(std::make_pair<int, PSomeClassList>(1, std::move(l1)));
-    
+	{
+		typedef std::list<PSomeClass> SomeClassList, *PSomeClassList;
+		std::unordered_map< int, PSomeClassList > um;
 
 
-    PSomeClassList l2 = new SomeClassList;
-    PSomeClass o21 = new SomeClass(21); l1->push_back(o21);
-    PSomeClass o22 = new SomeClass(22); l1->push_back(o22);
-    PSomeClass o23 = new SomeClass(23); l1->push_back(o23);
-    PSomeClass o24 = new SomeClass(24); l1->push_back(o24);
-    um.insert(std::make_pair<int, PSomeClassList>(2, std::move(l2)));
+
+		PSomeClassList l1 = new SomeClassList();
+		PSomeClass o11 = new SomeClass(11); l1->push_back(o11);
+		PSomeClass o12 = new SomeClass(12); l1->push_back(o12);
+		PSomeClass o13 = new SomeClass(13); l1->push_back(o13);
+		PSomeClass o14 = new SomeClass(14); l1->push_back(o14);
+		// make_pare< RValueRef, RValueRef > 가 와야 하는데, PSomeClassList 는 lvalue 이므로
+		// 에러남. LValue 를 RValue 로 변환해주는 std::move() 를 이용해서 PSomeClassList 를 전달
+		um.insert(std::make_pair<int, PSomeClassList>(1, std::move(l1)));
 
 
-    um[2]->push_back(new SomeClass(31));
-    um[2]->push_back(new SomeClass(32));
-    um[2]->push_back(new SomeClass(33));
-    um[2]->push_back(new SomeClass(34));
-    
 
-    // free all rsrc.
-    for (auto item : um)
-    {
-        //PSomeClassList ln = item.second;
-        auto ln = item.second;
-        SomeClassList::iterator s = ln->begin();
-        SomeClassList::iterator e = ln->end();
-        for (; s != e; ++s)
-        {
-            delete *s;
-        }
-        ln->clear();
-        delete ln;
-    }
-    um.clear();    
+		PSomeClassList l2 = new SomeClassList;
+		PSomeClass o21 = new SomeClass(21); l1->push_back(o21);
+		PSomeClass o22 = new SomeClass(22); l1->push_back(o22);
+		PSomeClass o23 = new SomeClass(23); l1->push_back(o23);
+		PSomeClass o24 = new SomeClass(24); l1->push_back(o24);
+		um.insert(std::make_pair<int, PSomeClassList>(2, std::move(l2)));
 
+
+		um[2]->push_back(new SomeClass(31));
+		um[2]->push_back(new SomeClass(32));
+		um[2]->push_back(new SomeClass(33));
+		um[2]->push_back(new SomeClass(34));
+
+
+		// free all rsrc.
+		for (auto item : um)
+		{
+			//PSomeClassList ln = item.second;
+			auto ln = item.second;
+			SomeClassList::iterator s = ln->begin();
+			SomeClassList::iterator e = ln->end();
+			for (; s != e; ++s)
+			{
+				delete *s;
+			}
+			ln->clear();
+			delete ln;
+		}
+		um.clear();
+	}
+
+//	_CrtMemDumpAllObjectsSince(&memoryState);
     return true;
 }

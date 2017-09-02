@@ -65,17 +65,24 @@ NameConverter::get_canon_name(
 
     uint32_t cch_file_name = (uint32_t)wcslen(file_name);
     uint32_t cch_canon_file = 0;
-    wchar_t* canon_file = nullptr;
-    raii_wchar_ptr wp(canon_file, raii_free);
-
+    
 	//
     //	"\??\" refers to \GLOBAL??\. Just remove it.
 	//
     if (true == lstrnicmp(file_name, L"\\??\\"))
     {
         cch_canon_file = cch_file_name - 4;
-        canon_file = (wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t));
-		if (nullptr == canon_file)
+
+		wchar_ptr canon_file(
+			(wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t)), 
+			[](wchar_t* p) {
+				if (nullptr != p)
+				{
+					free(p);
+				}
+		});
+
+        if (nullptr == canon_file.get())
 		{
 			log_err "Not enough memory. size=%u", 
 				(cch_canon_file + 1) * sizeof(wchar_t)
@@ -83,12 +90,12 @@ NameConverter::get_canon_name(
 			return false;
 		}
 
-        RtlCopyMemory(canon_file, &file_name[4], (cch_canon_file * sizeof(wchar_t)));
-        canon_file[cch_canon_file] = 0x0000;
-		canonical_file_name = canon_file;
+        RtlCopyMemory(canon_file.get(), &file_name[4], (cch_canon_file * sizeof(wchar_t)));
+        canon_file.get()[cch_canon_file] = 0x0000;
+		canonical_file_name = canon_file.get();
 		return true;
     }
-
+	
 	//
     //	"\SystemRoot" means "C:\Windows".    
 	//
@@ -102,8 +109,17 @@ NameConverter::get_canon_name(
         }
 
         cch_canon_file = (cch_file_name - 11) + (uint32_t)windows_dir.size();
-        canon_file = (wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t));
-		if (nullptr == canon_file)
+        
+		wchar_ptr canon_file(
+			(wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t)),
+			[](wchar_t* p) {		
+				if (nullptr != p)
+				{
+					free(p);
+				}
+		});
+
+		if (nullptr == canon_file.get())
 		{
 			log_err "Not enough memory. size=%u",
 				(cch_canon_file + 1) * sizeof(wchar_t)
@@ -111,10 +127,10 @@ NameConverter::get_canon_name(
 			return false;
 		}
 
-        RtlCopyMemory(canon_file, windows_dir.c_str(), (windows_dir.size() * sizeof(wchar_t)));
-        RtlCopyMemory(&canon_file[windows_dir.size()], &file_name[11], (cch_file_name - 11) * sizeof(wchar_t));
-        canon_file[cch_canon_file] = 0x0000;
-		canonical_file_name = canon_file;
+        RtlCopyMemory(canon_file.get(), windows_dir.c_str(), (windows_dir.size() * sizeof(wchar_t)));
+        RtlCopyMemory(&canon_file.get()[windows_dir.size()], &file_name[11], (cch_file_name - 11) * sizeof(wchar_t));
+        canon_file.get()[cch_canon_file] = 0x0000;
+		canonical_file_name = canon_file.get();
 		return true;
     }
 
@@ -132,8 +148,16 @@ NameConverter::get_canon_name(
         windows_dir += L"\\";   // `c:\windows` => `c:\windows\\`
 
         cch_canon_file = cch_file_name + (uint32_t)windows_dir.size();
-        canon_file = (wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t));
-		if (nullptr == canon_file)
+        
+		wchar_ptr canon_file(
+			(wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t)),
+			[](wchar_t* p) {
+				if (nullptr != p)
+				{
+					free(p);
+				}
+		});
+		if (nullptr == canon_file.get())
 		{
 			log_err "Not enough memory. size=%u",
 				(cch_canon_file + 1) * sizeof(wchar_t)
@@ -141,10 +165,10 @@ NameConverter::get_canon_name(
 			return false;
 		}
 
-        RtlCopyMemory(canon_file, windows_dir.c_str(), (windows_dir.size() * sizeof(wchar_t)));
-        RtlCopyMemory(&canon_file[windows_dir.size()], file_name, cch_file_name * sizeof(wchar_t));
-        canon_file[cch_canon_file] = 0x0000;
-		canonical_file_name = canon_file;
+        RtlCopyMemory(canon_file.get(), windows_dir.c_str(), (windows_dir.size() * sizeof(wchar_t)));
+        RtlCopyMemory(&canon_file.get()[windows_dir.size()], file_name, cch_file_name * sizeof(wchar_t));
+        canon_file.get()[cch_canon_file] = 0x0000;
+		canonical_file_name = canon_file.get();
 		return true;
     }
     else if (file_name[0] == L'\\')
@@ -173,8 +197,16 @@ NameConverter::get_canon_name(
                 }
 
                 cch_canon_file = (cch_file_name - 8) + (uint32_t)windows_dir.size();
-                canon_file = (wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t));
-				if (nullptr == canon_file)
+                
+				wchar_ptr canon_file(
+					(wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t)),
+					[](wchar_t* p) {
+						if (nullptr != p)
+						{
+							free(p);
+						}
+				});
+				if (nullptr == canon_file.get())
 				{
 					log_err "Not enough memory. size=%u",
 						(cch_canon_file + 1) * sizeof(wchar_t)
@@ -182,10 +214,10 @@ NameConverter::get_canon_name(
 					return false;
 				}
 
-                RtlCopyMemory(canon_file, windows_dir.c_str(), (windows_dir.size() * sizeof(wchar_t)));
-                RtlCopyMemory(&canon_file[windows_dir.size()], &file_name[8], (cch_file_name - 8) * sizeof(wchar_t));
-                canon_file[cch_canon_file] = 0x0000;
-				canonical_file_name = canon_file;
+                RtlCopyMemory(canon_file.get(), windows_dir.c_str(), (windows_dir.size() * sizeof(wchar_t)));
+                RtlCopyMemory(&canon_file.get()[windows_dir.size()], &file_name[8], (cch_file_name - 8) * sizeof(wchar_t));
+                canon_file.get()[cch_canon_file] = 0x0000;
+				canonical_file_name = canon_file.get();
 				return true;
             }
             else
@@ -193,13 +225,14 @@ NameConverter::get_canon_name(
                 // unknown
 				return false;
             }
-        }
-    }
+        }    
+	}
     else
     {
         // unknown
 		return false;
     }
+
 }
 
 /// @brief  nt_name( ex. \Device\HarddiskVolume4\Windows\...\MicrosoftEdge.exe ) 

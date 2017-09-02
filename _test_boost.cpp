@@ -55,7 +55,7 @@ bool boost_lexical_cast()
 **/
 void my_free(_In_ void* memory)
 {
-	if (NULL != memory) return;
+	if (NULL == memory) return;
 
 	log_dbg "trying to free void pointer at 0x%p", memory log_end
 	free(memory);

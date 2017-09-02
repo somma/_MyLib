@@ -188,6 +188,16 @@ bool boost_bind4()
     int value = 0;
     std::for_each(vA.begin(), vA.end(), boost::bind(&A::start, _1, ++value) );    
 
+	
+
+	//
+	//	free resources
+	// 
+	for (auto aa : vA)
+	{
+		delete aa;
+	}
+	vA.clear();
 	return true;
 }
 

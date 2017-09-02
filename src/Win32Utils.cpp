@@ -377,21 +377,30 @@ get_filepath_by_handle(
 		log_err "zero length file" log_end
 		return false;
 	}
+
+	handle_ptr map_handle(
+		CreateFileMapping(file_handle, NULL, PAGE_READONLY, 0, 1, NULL), 
+		[](HANDLE h) {
+			if (INVALID_HANDLE_VALUE == h) return;
+			if (NULL == h) return;
+			CloseHandle(h);
+	});
 	
-	raii_handle map_handle(
-					CreateFileMapping(file_handle, NULL, PAGE_READONLY, 0, 1, NULL), 
-					raii_CloseHandle
-					);
 	if (NULL == map_handle.get())
 	{
 		log_err "CreateFileMapping(), gle = %u", GetLastError() log_end
 		return false;
 	}
 
-	raii_void_ptr map_ptr(
-					MapViewOfFile(map_handle.get(), FILE_MAP_READ, 0, 0, 1), 
-					raii_UnmapViewOfFile
-					);
+	void_ptr map_ptr(
+		MapViewOfFile(map_handle.get(), FILE_MAP_READ, 0, 0, 1),
+		[](void* p) {
+			if (NULL != p)
+			{
+				UnmapViewOfFile(p);
+			}
+	});
+	
 	if (NULL == map_ptr.get())
 	{
 		log_err "MapViewOfFile(), gle = %u", GetLastError() log_end
@@ -855,27 +864,29 @@ const char* gpt_partition_type_to_str(_In_ GUID& partition_type)
 /// @return 성공시 true, 실패시 false
 bool get_disk_volume_info(_Inout_ disk_volume_info& info)
 {
-    std::wstringstream path;
-    path << L"\\\\.\\PhysicalDrive" << info._disk_number;
+	std::wstringstream path;
+	path << L"\\\\.\\PhysicalDrive" << info._disk_number;
 
-    // open handle for disk as `WIN32 Device Namespace` foramt.
-    HANDLE disk = CreateFileW(
-                        path.str().c_str(),
-                        GENERIC_READ,
-                        FILE_SHARE_READ | FILE_SHARE_WRITE,
-                        NULL,
-                        OPEN_EXISTING,  // for device or file, only if exists.
-                        FILE_ATTRIBUTE_NORMAL,
-                        NULL);
-    if (INVALID_HANDLE_VALUE == disk)
-    {
-        log_err
-            "CreateFile( %ws ) failed. gle = %u",
-            path.str().c_str(),
-            GetLastError());
-        return false;
-    }
-    raii_handle handle_guard(disk, raii_CloseHandle);
+	// open handle for disk as `WIN32 Device Namespace` foramt.
+	HANDLE disk = CreateFileW(
+		path.str().c_str(),
+		GENERIC_READ,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		NULL,
+		OPEN_EXISTING,  // for device or file, only if exists.
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+	if (INVALID_HANDLE_VALUE == disk)
+	{
+		log_err
+			"CreateFile( %ws ) failed. gle = %u",
+			path.str().c_str(),
+			GetLastError());
+			return false;
+	}
+	handle_ptr handle_guard(disk, [](HANDLE h){
+		CloseHandle(h);
+	});
 
     DWORD bytes_returned = 0;
     uint32_t layout_info_size = sizeof(DRIVE_LAYOUT_INFORMATION_EX) * 4;
@@ -925,7 +936,9 @@ bool get_disk_volume_info(_Inout_ disk_volume_info& info)
             break;
         }
     }
-    raii_void_ptr buf_guard(layout_info, raii_free);
+	void_ptr buf_guard(layout_info, [](void* p) {
+		free(p);
+	});
 
     //
     // ok. DeviceIoControl() succeeded.
@@ -2013,10 +2026,21 @@ bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete)
 	// FileOp.pFrom, FileOp.pTo 는 NULL char 가 두개이어야 함 (msdn 참고)
 	// 
 	size_t len = (wcslen(DirctoryPathToDelete) + 2) * sizeof(WCHAR);
-	WCHAR* tmp= (WCHAR*)malloc(len);
-	if (NULL == tmp) return false;
-	RtlZeroMemory(tmp, len);
-	if (TRUE != SUCCEEDED( StringCbPrintfW(tmp, len, L"%s", DirctoryPathToDelete) )) return false;
+	wchar_ptr tmp((wchar_t*)malloc(len), [](wchar_t* p) {
+		if (nullptr != p)
+		{
+			free(p);
+		}
+	});
+	if (NULL == tmp.get()) return false;
+	RtlZeroMemory(tmp.get(), len);
+	if (TRUE != SUCCEEDED(StringCbPrintfW(tmp.get(),
+										  len,
+										  L"%s",
+										  DirctoryPathToDelete)))
+	{
+		return false;
+	}
 
 	FileOp.hwnd = NULL;
 	FileOp.wFunc = FO_DELETE;       // 삭제 속성 설정
@@ -2024,8 +2048,8 @@ bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete)
 	FileOp.fFlags = FOF_SILENT | FOF_NOCONFIRMATION;//FOF_NOCONFIRMATION | FOF_NOERRORUI; // 확인메시지가 안뜨도록 설정
 	FileOp.fAnyOperationsAborted = false;
 	FileOp.hNameMappings = NULL;
-	FileOp.lpszProgressTitle = tmp;
-	FileOp.pFrom = tmp;
+	FileOp.lpszProgressTitle = tmp.get();
+	FileOp.pFrom = tmp.get();
 
 	int ret = SHFileOperation(&FileOp);
 	if(0!=ret)
@@ -2242,7 +2266,7 @@ image_path_by_pid(
 		//	log_end;
 		return false;
 	}
-	raii_handle process_handle(phandle, raii_CloseHandle);
+	handle_ptr process_handle(phandle, [](HANDLE h) {CloseHandle(h); });
 	
 	wchar_t*	name = NULL;
 	DWORD		name_len = MAX_PATH;
@@ -2299,15 +2323,7 @@ bool get_system_dir(_Out_ std::wstring& system_dir)
     uint32_t    buf_len = sizeof(buf);
     wchar_t*    pbuf = buf;
     
-    static  std::wstring _sys_dir;
-
-    if (true != _sys_dir.empty())
-    {
-        system_dir = _sys_dir;
-        return true;
-    }
-
-    UINT32 len = GetSystemDirectoryW(pbuf, buf_len);
+	UINT32 len = GetSystemDirectoryW(pbuf, buf_len);
     if (0 == len)
     {
         log_err "GetSystemDirectoryW() failed. gle=%u", GetLastError() log_end;
@@ -2343,10 +2359,7 @@ bool get_system_dir(_Out_ std::wstring& system_dir)
         else
         {
             pbuf[len] = 0x0000;
-            
-            _sys_dir = pbuf;
             system_dir = pbuf;
-
             free(pbuf); pbuf = NULL;
             return true;
         }
@@ -2369,14 +2382,6 @@ bool get_windows_dir(_Out_ std::wstring& windows_dir)
     wchar_t     buf[MAX_PATH] = { 0x00 };
     uint32_t    buf_len = sizeof(buf);
     wchar_t*    pbuf = buf;
-
-    static  std::wstring _win_dir;
-
-    if (true != _win_dir.empty())
-    {
-        windows_dir = _win_dir;
-        return true;
-    }
 
     UINT32 len = GetWindowsDirectoryW(pbuf, buf_len);
     if (0 == len)
@@ -2415,8 +2420,6 @@ bool get_windows_dir(_Out_ std::wstring& windows_dir)
         {
             pbuf[len] = 0x0000;
             windows_dir = pbuf;
-            _win_dir = pbuf;    // !
-
             free(pbuf); pbuf = NULL;
             return true;
         }
@@ -2881,8 +2884,11 @@ wchar_t* Utf8MbsToWcs(_In_ const char* utf8)
 */
 std::wstring MbsToWcsEx(_In_ const char *mbs)
 {
-    raii_wchar_ptr tmp( MbsToWcs(mbs), raii_free );
-    if (NULL == tmp.get())
+	wchar_ptr tmp(MbsToWcs(mbs), [](wchar_t* p) {
+		if (nullptr != p){ free(p); }
+	});
+
+    if (nullptr == tmp.get())
     {
         return _null_stringw;
     }
@@ -2904,7 +2910,13 @@ std::wstring MbsToWcsEx(_In_ const char *mbs)
 */
 std::string WcsToMbsEx(_In_ const wchar_t *wcs)
 {
-	raii_char_ptr tmp( WcsToMbs(wcs), raii_free );
+	char_ptr tmp(WcsToMbs(wcs), [](char* p) {
+		if (nullptr != p) 
+		{ 
+			free(p); 
+		}
+	});
+
     if (NULL == tmp.get())
     {
         return _null_stringa;
@@ -2926,7 +2938,13 @@ std::string WcsToMbsEx(_In_ const wchar_t *wcs)
 */
 std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs)
 {
-    raii_char_ptr tmp( WcsToMbsUTF8(wcs), raii_free);
+	char_ptr tmp(WcsToMbsUTF8(wcs), [](char*p) {
+		if (nullptr != p)
+		{
+			free(p);
+		}
+	});
+
     if (NULL == tmp.get())
     {
         return _null_stringa;
@@ -2948,7 +2966,13 @@ std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs)
 **/
 std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 {
-    std::auto_ptr<wchar_t> tmp( Utf8MbsToWcs(utf8) );
+	wchar_ptr tmp(Utf8MbsToWcs(utf8), [](wchar_t* p) {
+		if (nullptr != p)
+		{
+			free(p);
+		}
+	});
+
     if (NULL == tmp.get())
     {
         return _null_stringw;
@@ -3505,7 +3529,13 @@ split_stringa(
         return false;
     }
 
-	raii_char_ptr buf((char*)malloc(buf_len), raii_free);
+	char_ptr buf((char*)malloc(buf_len), [](char* p) {
+		if (nullptr != p)
+		{
+			free(p);
+		}
+	});
+
 	if (nullptr == buf.get())
 	{
 		return false;
@@ -3546,7 +3576,13 @@ split_stringw(
         return false;
     }
 
-	raii_wchar_ptr buf((wchar_t*)malloc(buf_len));
+	wchar_ptr buf((wchar_t*)malloc(buf_len), [](wchar_t* p) {
+		if (nullptr != p)
+		{
+			free(p);
+		}
+	});
+
     if (nullptr == buf.get())
     {
         return false;
@@ -3674,53 +3710,6 @@ find_and_replace_string_exw(
 }
 
 /**
- * @brief	custom destructor for Windows HANDLE
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-void raii_CloseHandle(_In_ HANDLE handle)
-{
-	if (NULL == handle || INVALID_HANDLE_VALUE == handle) return;
-	CloseHandle(handle);
-}
-
-/**
- * @brief	custom destructor for void pointer
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-void raii_free(_In_ void* void_ptr)
-{
-	if (NULL == void_ptr) return;
-	free(void_ptr);
-}
-
-/**
- * @brief	custom destructor for MapViewOfFile( )
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-void raii_UnmapViewOfFile(_In_ void* void_ptr)
-{
-	if (NULL != void_ptr)
-	{
-		UnmapViewOfFile(void_ptr);
-	}
-}
-
-/**
 * @brief	현재 디렉토리를 리턴하는 함수 (e.g. c:\debug )
 * @param	
 * @code		
@@ -3843,7 +3832,11 @@ bool get_temp_dirA(_Out_ std::string& temp_dir)
  * @endcode	
  * @return	
 **/
-bool get_module_path(_In_ const wchar_t* module_name, _Out_ std::wstring& module_path)
+bool 
+get_module_path(
+	_In_ const wchar_t* module_name, 
+	_Out_ std::wstring& module_path
+	)
 {
 	DWORD  ret = 0;
 	DWORD  buf_len = MAX_PATH;
@@ -3901,9 +3894,15 @@ bool get_current_module_dir(_Out_ std::wstring& module_dir)
 		return false;
 	}
 	
-	if (true != extract_last_tokenW(module_path, L"\\", module_dir, true, false))
+	if (true != extract_last_tokenW(module_path, 
+									L"\\", 
+									module_dir, 
+									true, 
+									false))
 	{
-		log_err "extract_last_tokenW( org=%s )", module_path.c_str() log_end
+		log_err "extract_last_tokenW( org=%s )", 
+			module_path.c_str() 
+			log_end
 		module_dir = L"";
 		return false;
 	}
@@ -5590,7 +5589,7 @@ get_process_creation_time(
 		return false;
 	}
 
-	raii_handle hg(process_handle, raii_CloseHandle);
+	handle_ptr hg(process_handle, [](HANDLE h) {CloseHandle(h);});
 	return get_process_creation_time(process_handle, creation_time);
 }
 
@@ -5626,15 +5625,7 @@ get_process_creation_time(
 	return true;
 }
 
-/**
-* @brief	
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
-*/
+/// @brief 
 void SetConsoleCoords(COORD xy)
 {
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), xy);
@@ -5902,18 +5893,24 @@ LPCWSTR  FileTypeToString(IMAGE_TYPE type)
 **/
 bool 
 bin_to_hexa(
-	_In_ UINT32 code_size, 
-	_In_ const UINT8* code, 
-	_In_ bool upper_case, 
+	_In_ UINT32 code_size,
+	_In_ const UINT8* code,
+	_In_ bool upper_case,
 	_Out_ std::string& hex_string
-	)
+)
 {
 	_ASSERTE(NULL != code);
 	if (NULL == code) return false;
 
 	//> allocate memory
 	UINT32			buffer_size = ((code_size * 2) + 1) * sizeof(char);
-	raii_char_ptr	hex_buf( (char*)malloc(buffer_size), raii_free);
+
+	char_ptr hex_buf((char*)malloc(buffer_size), [](char* p) {
+		if (nullptr != p)
+		{
+			free(p);
+		}
+	});
 	if (NULL == hex_buf.get()) return false;
 	RtlZeroMemory(hex_buf.get(), buffer_size);
 
@@ -5960,7 +5957,13 @@ bin_to_hexa_fast(
 	}
 	
 	uint32_t buffer_size = ((size * 2) + 1) * sizeof(char);
-	raii_char_ptr hex_buffer((char*)malloc(buffer_size), raii_free);
+	char_ptr hex_buffer((char*)malloc(buffer_size), [](char* p) {
+		if (nullptr != p)
+		{
+			free(p);
+		}
+	});
+
 	if (nullptr == hex_buffer.get()) return false;
 
 	for (uint32_t i = 0; i < size; ++i)
@@ -5989,7 +5992,12 @@ bin_to_hexw_fast(
 	}
 	
 	uint32_t buffer_size = ((size * 2) + 1) * sizeof(wchar_t);
-	raii_wchar_ptr hex_buffer((wchar_t*)malloc(buffer_size), raii_free);
+	wchar_ptr hex_buffer((wchar_t*)malloc(buffer_size), [](wchar_t* p) {
+		if (nullptr != p)
+		{
+			free(p);
+		}
+	});
 	if (nullptr == hex_buffer.get()) return false;
 
 	for (uint32_t i = 0; i < size; ++i)

@@ -22,6 +22,7 @@
 #include "crc64.h"
 #include "StopWatch.h"
 
+bool test_raii_xxx();
 bool test_suspend_resume_process();
 bool test_to_str();
 bool test_convert_file_time();
@@ -183,164 +184,160 @@ public:
 
 
 
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-int _tmain(int argc, _TCHAR* argv[])
+
+void run_test()
 {
-    UNREFERENCED_PARAMETER(argc);
-    UNREFERENCED_PARAMETER(argv);
+	UINT32 _pass_count = 0;
+	UINT32 _fail_count = 0;
+
+	{
+		//std::wstringstream f;
+		//f << get_current_module_dirEx() << L"\\_MyLib_tst.log";
+		boost::wformat f = boost::wformat(L"%s\\%s") % get_current_module_dirEx().c_str() % L"_MyLib_tst.log";
+		if (true != initialize_log(log_level_debug, f.str().c_str())) return;
+		set_log_format(false, false, false);
+	}
+    
+	//
+	//	std::string 관련 
+	// 
+	std::wstring wstr = L"12345";
+	con_info "wstr.size() = %u, wcslen(wstr.c_str() = %u",
+		wstr.size(), wcslen(wstr.c_str())
+		log_end;
+
+	std::wstring s = L"";
+	_ASSERTE(true == s.empty());
+	
+	std::wstring ss = L" ";
+	_ASSERTE(true != ss.empty());
+
+
+
+	//
+	//	64비트 정수 출력
+	// 
+	uint64_t t = 0xffffffff00112233;
+	log_info "0x%llx, 0x%016llx", t, t log_end;
+	
+	uint64_t y = 0x00112233;
+	log_info "0x%llx, 0x%016llx", y, y log_end;
 
 	
-	
-	_CrtMemState memoryState = { 0 };
-	_CrtMemCheckpoint(&memoryState);
-	//_CrtSetBreakAlloc(14255);
 
+	// 
+	//	생성자/소멸자 호출
+	//
+	ccc c(true);
+	c.run();
 
 
 
 	bool ret = false;
-	UINT32 _pass_count = 0;
-	UINT32 _fail_count = 0;
+	assert_bool(true, test_raii_xxx);
+	assert_bool(true, test_suspend_resume_process);
+	assert_bool(true, test_convert_file_time);
 
-    //ccc c(true);
-    //c.run();
+	assert_bool(true, test_ppl);
+
+	assert_bool(true, test_find_and_replace);
+	assert_bool(true, test_file_io_helper);
+
+	assert_bool(true, test_scm_context);
+
+	assert_bool(true, test_regexp);
+	assert_bool(true, test_ping);
+	assert_bool(true, test_alignment_error_test);
+	assert_bool(true, test_crc64);
+
+
+	assert_bool(true, test_NameConverter_get_canon_name);
+	assert_bool(true, test_NameConverter_dosname_to_devicename);
+
+	assert_bool(true, test_wmi_client);
+	assert_bool(true, test_NtCreateFile);
+	assert_bool(true, test_device_name_from_nt_name);
+	assert_bool(true, test_rstrnicmp);
+
+	assert_bool(true, test_get_drive_type);
+	assert_bool(true, test_os_version);
+
+	assert_bool(true, test_boost_thread);
+	assert_bool(true, test_thread_pool);
     
-    //char* p = NULL;
-    //p = (char*)realloc(p, 100);
-    //p[0] = 1;
+	assert_bool(true, test_boost_asio_timer);
+	assert_bool(true, test_for_each);
+	assert_bool(true, test_enum_physical_drive);
+	assert_bool(true, test_get_disk_volume_info);
+	assert_bool(true, test_dump_xxx);
 
-    
-    boost::wformat f = boost::wformat(L"%s\\%s") % get_current_module_dirEx().c_str() % L"_MyLib_tst.log";
-    if (true != initialize_log(log_level_debug, f.str().c_str())) return false;
-    set_log_format(false, false, false);
-    
-	
+	assert_bool(true, test_asm_func);
+	assert_bool(true, test_x64_calling_convension);
+	assert_bool(true, test_2_complement);
+	assert_bool(true , test_print_64int);
+	assert_bool(true, test_std_string_find_and_substr);
+	assert_bool(true, test_to_lower_uppper_string);
 
-	//uint64_t t = 0xffffffff00112233;
-	//log_info "0x%llx, 0x%016llx", t, t log_end;
-	//
-	//uint64_t y = 0x00112233;
-	//log_info "0x%llx, 0x%016llx", y, y log_end;
-
-
-#pragma todo("memory leak 잡자")
-    
-    //std::wstring wstr = L"12345";
-    //con_info "wstr.size() = %u, wcslen(wstr.c_str() = %u",
-    //    wstr.size(), wcslen(wstr.c_str())
-    //    log_end;
-	
-	//assert_bool(true, test_suspend_resume_process);
-	//assert_bool(true, test_convert_file_time);
-
-	//assert_bool(true, test_ppl);
-
-	//assert_bool(true, test_find_and_replace);
-	//assert_bool(true, test_file_io_helper);
-
-	//assert_bool(true, test_scm_context);
-
- //   assert_bool(true, test_regexp);
- //   assert_bool(true, test_ping);
-	//assert_bool(true, test_alignment_error_test);
- //   assert_bool(true, test_crc64);
-
-
-	//assert_bool(true, test_NameConverter_get_canon_name);
-	//assert_bool(true, test_NameConverter_dosname_to_devicename);
-
- //   
- //   assert_bool(true, test_wmi_client);
- //   assert_bool(true, test_NtCreateFile);
- //   assert_bool(true, test_device_name_from_nt_name);
- //   assert_bool(true, test_rstrnicmp);
-
- //   assert_bool(true, test_get_drive_type);
- //   assert_bool(true, test_os_version);
-
-    //assert_bool(true, test_boost_thread);
-	//assert_bool(true, test_thread_pool);
- //   
- //   assert_bool(true, test_boost_asio_timer);
-	//assert_bool(true, test_for_each);
- //   assert_bool(true, test_enum_physical_drive);
- //   assert_bool(true, test_get_disk_volume_info);
- //   assert_bool(true, test_dump_xxx);
- //   //assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
-	//assert_bool(true, test_asm_func);
-	//assert_bool(true, test_x64_calling_convension);
-	//assert_bool(true, test_2_complement);
-	//assert_bool(true , test_print_64int);
-	//assert_bool(true, test_std_string_find_and_substr);
-	//assert_bool(true, test_to_lower_uppper_string);
-	////assert_bool(true, test_const_position);		// 컴파일 불가 테스트
-	//assert_bool(true, test_initialize_string);
-	//assert_bool(true, test_process_tree);
-	//assert_bool(true, test_image_path_by_pid);
+	assert_bool(true, test_initialize_string);
+	assert_bool(true, test_process_tree);
+	assert_bool(true, test_image_path_by_pid);
 	assert_bool(true, test_get_process_creation_time);
-	//assert_bool(true, test_base64);
-	//assert_bool(true, test_random);
-	//assert_bool(true, test_get_local_ip_list);
- //   assert_bool(true, test_get_mac_address);
- //   assert_bool(true, test_ip_to_str);
+	assert_bool(true, test_base64);
+	assert_bool(true, test_random);
+	assert_bool(true, test_get_local_ip_list);
+	assert_bool(true, test_get_mac_address);
+	assert_bool(true, test_ip_to_str);
 
- //   assert_bool(true, test_strtok);
+	assert_bool(true, test_strtok);
+	assert_bool(true, test_cpp_class);	
+	assert_bool(true, test_nt_name_to_dos_name);
 
-	//assert_bool(true, test_cpp_class);
-	//
-	//assert_bool(true, test_nt_name_to_dos_name);
-	//assert_bool(true, test_query_dos_device);
-	//assert_bool(true, test_get_filepath_by_handle);
-	//assert_bool(true, test_find_files);
+	assert_bool(true, test_query_dos_device);
+	assert_bool(true, test_get_filepath_by_handle);
+	assert_bool(true, test_find_files);
 	
-	//assert_bool(true, test_bin_to_hex);
-	//assert_bool(true, test_str_to_xxx);
-	//assert_bool(true, test_set_get_file_position);
-	//assert_bool(true, test_get_module_path);
-	//assert_bool(true, test_dump_memory);
-	//assert_bool(true, test_get_environment_value);
- //
-	//assert_bool(true, test_rc4_encrypt);
- //   assert_bool(true, test_md5_sha2);
-	//
-	//assert_bool(true, boost_lexical_cast);
-	//assert_bool(true, boost_shared_ptr_void);
-	//assert_bool(true, boost_shared_ptr_handle_01);
-	//assert_bool(true, boost_shared_ptr_handle_02);
-	//assert_bool(true, boost_shared_ptr_handle_03);
-	//assert_bool(true, boost_tuple);
+	assert_bool(true, test_bin_to_hex);
+	assert_bool(true, test_str_to_xxx);
+	assert_bool(true, test_set_get_file_position);
+	assert_bool(true, test_get_module_path);
+	assert_bool(true, test_dump_memory);
+	assert_bool(true, test_get_environment_value);
 
-	//assert_bool(true, boost_format);
+	assert_bool(true, test_rc4_encrypt);
+	assert_bool(true, test_md5_sha2);
 
-	//assert_bool(true, boost_bind);
-	//assert_bool(true, boost_bind2);
-	//assert_bool(true, boost_bind3);
-	//assert_bool(true, boost_bind4);
-	//assert_bool(true, boost_bind5);
+	assert_bool(true, boost_lexical_cast);
+	assert_bool(true, boost_shared_ptr_void);
+	assert_bool(true, boost_shared_ptr_handle_01);
+	assert_bool(true, boost_shared_ptr_handle_02);
+	assert_bool(true, boost_shared_ptr_handle_03);
+	assert_bool(true, boost_tuple);
+	assert_bool(true, boost_format);
+	assert_bool(true, boost_bind);
+	assert_bool(true, boost_bind2);
+	assert_bool(true, boost_bind3);
+	assert_bool(true, boost_bind4);
+	assert_bool(true, boost_bind5);
 
-	//assert_bool(true, test_std_map);
-	//assert_bool(true, test_map_plus_algorithm_1);
-	//assert_bool(true, test_map_plus_algorithm_2);
-	//assert_bool(true, test_map_plus_algorithm_3);
-	//assert_bool(true, test_map_plus_algorithm_4);
- //   assert_bool(true, test_std_unordered_map);
- //   assert_bool(true, test_std_unordered_map_object);
- //   assert_bool(true, test_unorded_map_test_move);
+	assert_bool(true, test_std_map);
+	assert_bool(true, test_map_plus_algorithm_1);
+	assert_bool(true, test_map_plus_algorithm_2);
+	assert_bool(true, test_map_plus_algorithm_3);
+	assert_bool(true, test_map_plus_algorithm_4);
+	assert_bool(true, test_std_unordered_map);
+	assert_bool(true, test_std_unordered_map_object);
+	assert_bool(true, test_unorded_map_test_move);
 
 
-	//assert_bool(true, test_registry_util);
- //   assert_bool(true, test_read_mouted_device);
- //   assert_bool(true, test_set_binary_data);
-    
-	//assert_bool(true, test_aes256);
+	assert_bool(true, test_registry_util);
+	assert_bool(true, test_read_mouted_device);
+	assert_bool(true, test_set_binary_data);    
+	assert_bool(true, test_aes256);
+
+
+
+	//assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
+	//assert_bool(true, test_const_position);		// 컴파일 불가 테스트
 
 
 	con_info
@@ -354,13 +351,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		_fail_count
 	log_end
 
-	con_info "press any key to terminate..." con_end
-	_pause;
-
 	finalize_log();
-
-	_CrtMemDumpAllObjectsSince(&memoryState);
-	return 0;
 }
 
 /// @brief
@@ -770,7 +761,12 @@ bool test_ip_to_str()
 }
 
 /// @brief
-bool split_string(_In_ const char* str, _In_ const char* seps, _Out_ std::vector<std::string>& tokens)
+bool 
+split_string(
+	_In_ const char* str, 
+	_In_ const char* seps, 
+	_Out_ std::vector<std::string>& tokens
+	)
 {
 #define max_str_len     2048
 
@@ -787,23 +783,28 @@ bool split_string(_In_ const char* str, _In_ const char* seps, _Out_ std::vector
         return false;
     }
     
-    char* buf = (char*)malloc(len + sizeof(char));
-    if (NULL == buf)
+    char_ptr buf((char*)malloc(len + sizeof(char)), [](char* p) {
+		if (nullptr != p)
+		{
+			free(p);
+		}
+	});
+    if (NULL == buf.get())
     {
         return false;
     }
 
-    RtlCopyMemory(buf, str, len);
-    buf[len] = 0x00;    
+    RtlCopyMemory(buf.get(), str, len);
+    buf.get()[len] = 0x00;
 
     char* next_token = NULL;
-    char* token = strtok_s(buf, seps, &next_token);
+    char* token = strtok_s(buf.get(), seps, &next_token);
     while (NULL != token)
     {
         tokens.push_back(token);
         token = strtok_s(NULL, seps, &next_token);
     }
-    
+	
     return true;
 }
 
@@ -816,27 +817,29 @@ bool test_strtok()
     std::vector<std::string> tokens1;
     std::vector<std::string> tokens2;
     
-    // Establish string and get the first token:
+	//
+    //	Establish string and get the first token:
+	//
     if (false == split_string(string1, seps, tokens1) ||
         false == split_string(string2, seps, tokens2))
     {
         return false;
     }
 
-    printf("tokens1 : %s\n\n", string1);
+	log_info "tokens1 : %s\n", string1 log_end;
     for (auto token: tokens1)
     {
-        printf("\t%s\n", token.c_str());
+		log_info "\t%s", token.c_str() log_end;
     }
-    printf("\n");
+	log_info "\n" log_end;
 
 
-    printf("tokens2 : %s\n\n", string2);
+	log_info "tokens2 : %s\n", string2 log_end;
     for (auto token : tokens2)
     {
-        printf("\t%s\n", token.c_str());
+		log_info "\t%s", token.c_str() log_end;
     }
-    printf("\n");
+	log_info "\n" log_end;
 
     return true;
 }
@@ -988,12 +991,19 @@ bool test_nt_name_to_dos_name()
 	if (true == ret) 
 	{
 		log_dbg 
-			"nt_name = %S -> dos_name = %S", 
+			"nt_name=%ws -> dos_name=%ws", 
 			nt_name,
 			dos_name.c_str()
 		log_end
 	}
-	return ret;
+	else
+	{
+		log_err
+			"nt_name=%ws -> dos_name=failed.",
+			nt_name
+			log_end;
+	}
+	return true;
 }
 
 /**
@@ -1266,48 +1276,49 @@ bool test_str_to_xxx()
  * @endcode	
  * @return	
 **/
-static std::wstring _test_file;
-
-void _CloseHandle(_In_ HANDLE handle)
-{
-	if (NULL == handle || INVALID_HANDLE_VALUE == handle) return;
-	CloseHandle(handle);
-
-
-	DeleteFileW(_test_file.c_str());
-}
-
 bool test_set_get_file_position()
 {
-	if (!get_current_module_dir(_test_file)) return false;
-	_test_file += L"\\testfile.dat";
-
-	raii_handle file_handle(
-					open_file_to_write(_test_file.c_str()), 
-					_CloseHandle
-					);
-	if (NULL == file_handle.get()) return false;
-
-	DWORD bytes_written = 0;
-	for(int i = 0; i < 254; ++i)
-	{
-		if (!WriteFile(file_handle.get(), &i, 1, &bytes_written, NULL)) return false;
-	}
-
-	int64_t pos = 0;
-	int64_t new_pos = 0;
+	std::wstringstream test_file;
+	test_file << get_current_module_dirEx() << L"\\testfile.dat";
+	HANDLE file_handle = open_file_to_write(test_file.str().c_str());
+	if (INVALID_HANDLE_VALUE == file_handle) return false;
 	
-	// get file position
-	if (true != get_file_position(file_handle.get(), pos)) return false;
-	if (254 != pos) return false;
+	do
+	{	
+		DWORD bytes_written = 0;
+		for (int i = 0; i < 254; ++i)
+		{
+			if (!WriteFile(file_handle,
+						   &i,
+						   1,
+						   &bytes_written,
+						   NULL))
+			{
+				break;
+			}
+		}
 
-	// set file position
-	pos = 128;
-	if (true != set_file_position(file_handle.get(), pos, &new_pos)) return false;
-	if (true != get_file_position(file_handle.get(), pos)) return false;
+		int64_t pos = 0;
+		int64_t new_pos = 0;
 
-	if (128 != pos) return false;
+		// get file position
+		if (true != get_file_position(file_handle, pos)) break;
+		if (254 != pos) break;
+
+		// set file position
+		pos = 128;
+		if (true != set_file_position(file_handle, pos, &new_pos)) break;
+		if (true != get_file_position(file_handle, pos)) break;
+
+		if (128 != pos) break;
+		
+	} while (false);
+
+	CloseHandle(file_handle);
+	_ASSERTE(DeleteFileW(test_file.str().c_str()));
+
 	return true;
+
 }
 
 /**
@@ -1407,14 +1418,11 @@ bool test_md5_sha2()
     const uint32_t read_buffer_size = 4096;
     uint8_t read_buffer[read_buffer_size];
     
-    //wchar_t* file_path = L"z:\\Downloads\\ubuntu-14.04.3-desktop-amd64.iso";
-    wchar_t* file_path = L"\\Device\\HarddiskVolume2\\Program Files(x86)\\Microsoft Office\\Root\\Office16\\outllib.dll";
-
-    std::wstring dos_name;
-    if (true != nt_name_to_dos_name(file_path, dos_name)) return false;
+    
+    wchar_t* file_path = L"c:\\windows\\system32\\notepad.exe";
 
     HANDLE file_handle = CreateFileW(
-                            dos_name.c_str(),
+                            file_path,
                             GENERIC_READ,
                             NULL,
                             NULL,
@@ -1614,7 +1622,7 @@ bool test_get_disk_volume_info()
                 GetLastError());
             return false;
         }
-        raii_handle handle_guard(disk, raii_CloseHandle);
+		handle_ptr handle_guard(disk, [](HANDLE h) {CloseHandle(h);});
 
         // dump MBR
         li_distance.QuadPart = 0;
@@ -1736,7 +1744,7 @@ bool test_write_mbr_vbr()
                 GetLastError());
             return false;
         }
-        raii_handle handle_guard(disk, raii_CloseHandle);
+        handle_ptr handle_guard(disk, [](HANDLE h) {CloseHandle(h);});
 
         // #1 write mbr - backup
         if (true != read_file_offset(disk, 0, buf_read, sizeof(buf_read)))
@@ -2076,20 +2084,20 @@ bool test_NameConverter_get_canon_name()
     NameConverter nc;
     if (true != nc.reload()) return false;
 
-    for (int i = 0; i < sizeof(file_names) / sizeof(wchar_t*); ++i)
-    {
+	for (int i = 0; i < sizeof(file_names) / sizeof(wchar_t*); ++i)
+	{
 		std::wstring name;
 		bool ret = nc.get_canon_name(file_names[i], name);
 		bool is_natwork = nc.is_natwork_path(file_names[i]);
 		bool is_removable = nc.is_removable_drive(file_names[i]);
-        log_info "[ret=%d][net=%d][removable=%d] %ws -> %ws", 
+		log_info "[ret=%d][net=%d][removable=%d] %ws -> %ws",
 			ret,
-			is_natwork, 
-			is_removable, 
-			file_names[i], 
-			name.c_str() 
+			is_natwork,
+			is_removable,
+			file_names[i],
+			name.c_str()
 			log_end;
-    }
+	}
 
     return true;
 }
@@ -2190,6 +2198,89 @@ bool test_crc64()
     return true;
 }
 
+
+bool test_raii_xxx()
+{
+	//
+	//	char* 타입 lambda custom deleter 
+	// 	
+	do
+	{
+		char_ptr pchar((char*)malloc(1024), [](char* p) {
+			if (nullptr != p)
+			{
+				free(p);
+			}
+		});
+		if (nullptr == pchar.get()) break;
+
+		RtlFillMemory(pchar.get(), 1024, 0xcc);
+		
+
+		if (nullptr != pchar)
+		{
+			//
+			//	pchar = nullptr 로 설정하는 순간 deleter 가 호출됨
+			// 
+			pchar = nullptr;
+		}		
+
+		//
+		//	이미 deleter 가 호출되었으며, pchar == nullptr 임
+		//
+		if (pchar == nullptr)
+		{
+			break;
+		}
+
+	} while (false);
+	
+
+	// 
+	//	HANDLE 타입 lambda custom deleter
+	// 
+	do
+	{		
+		handle_ptr hptr(open_file_to_read(L"c:\\windows\\system32\\notepad.exe"), [](HANDLE h) {
+			if (INVALID_HANDLE_VALUE == h) return;
+			if (NULL == h) return;
+			
+			CloseHandle(h);
+		});
+
+		if (INVALID_HANDLE_VALUE == hptr.get())
+		{
+			break;
+		}
+		
+		DWORD bytes_read = 0;
+		uint8_t buf[128] = { 0 };
+		if (!ReadFile(hptr.get(), buf, sizeof(buf), &bytes_read, NULL))
+		{
+			log_err "ReadFile() failed. gle=%u",
+				GetLastError()
+				log_end;
+			break;
+		}
+
+		std::vector<std::string> dumps;
+		if (!dump_memory(0, buf, sizeof(buf), dumps))
+		{
+			log_err "dump_memory() failed." log_end;
+			break;
+		}
+
+		for (auto dump : dumps)
+		{
+			log_info "%s", dump.c_str() log_end;
+		}
+
+	} while (false);
+
+	return true;
+
+}
+
 bool test_suspend_resume_process()
 {
 	// 
@@ -2219,22 +2310,22 @@ bool test_suspend_resume_process()
 	//	suspend notepad
 	//	
 	if (true != suspend_process_by_handle(pi.hProcess)) return false;
-	log_info "suspended, press enter ..." log_end;
-	_pause;
+	log_info "suspended..." log_end;
+	Sleep(1000);
 
 	//	
 	//	resume notepad
 	// 
 	if (true != resume_process_by_handle(pi.hProcess)) return false;
-	log_info "resumed, press enter ..." log_end;
-	_pause;		
+	log_info "resumed..." log_end;
+	Sleep(1000);
 
 	// 
 	//	terminate notepd
 	// 
 	terminate_process_by_handle(pi.hProcess, 0);
-	log_info "terminated, proess enter ..." log_end;
-	_pause;
+	log_info "terminated..." log_end;
+	Sleep(1000);
 
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
@@ -2332,4 +2423,30 @@ bool test_convert_file_time()
 
 
 	return true;
+}
+
+
+
+/**
+ * @brief	
+ * @param	
+ * @see		
+ * @remarks	
+ * @code		
+ * @endcode	
+ * @return	
+**/
+int _tmain(int argc, _TCHAR* argv[])
+{
+	UNREFERENCED_PARAMETER(argc);
+	UNREFERENCED_PARAMETER(argv);
+
+	_CrtMemState memoryState = { 0 };
+	_CrtMemCheckpoint(&memoryState);
+	//_CrtSetBreakAlloc(520);
+
+	run_test();
+
+	_CrtMemDumpAllObjectsSince(&memoryState);
+	return 0;
 }

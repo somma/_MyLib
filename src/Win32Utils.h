@@ -534,47 +534,10 @@ find_and_replace_string_exw(
 /******************************************************************************
  * RAII (Resource Acquisition Is Initialization ), raii
 ******************************************************************************/
-#pragma todo("boost::shared_ptr -> unique_ptr ")
-/*	ex)
-	raii_handle map_handle(
-					CreateFileMapping(file_handle, NULL, PAGE_READONLY, 0, 1, NULL), 
-					raii_CloseHandle
-					);
-	if (NULL == map_handle.get())
-	{
-		err...
-	}
-*/
-typedef boost::shared_ptr< boost::remove_pointer<HANDLE>::type > raii_handle;
-void raii_CloseHandle(_In_ HANDLE handle);
-
-/* 
-	raii_void_ptr ods_buf( malloc(ods_size), raii_free );
-	if (NULL == ods_buf.get())
-	{
-		err...
-	}
-	...
-	ods_buf.get();
-	...
-
-
-	raii_void_ptr map_ptr(
-					MapViewOfFile(map_handle.get(), FILE_MAP_READ, 0, 0, 1), 
-					raii_UnmapViewOfFile
-					);
-	if (NULL == map_ptr.get())
-	{
-		err...
-	}
-
-*/
-typedef boost::shared_ptr< boost::remove_pointer<wchar_t*>::type > raii_wchar_ptr;
-typedef boost::shared_ptr< boost::remove_pointer<char*>::type > raii_char_ptr;
-typedef boost::shared_ptr< boost::remove_pointer<void*>::type > raii_void_ptr;
-void raii_free(_In_ void* void_ptr);
-void raii_UnmapViewOfFile(_In_ void* void_ptr);
-
+typedef std::unique_ptr<char, void(*)(char*)> char_ptr;
+typedef std::unique_ptr<wchar_t, void(*)(wchar_t*)> wchar_ptr;
+typedef std::unique_ptr<std::remove_pointer<HANDLE>::type, void(*)(HANDLE)> handle_ptr;
+typedef std::unique_ptr<std::remove_pointer<void*>::type, void(*)(void*)> void_ptr;
 
 
 /******************************************************************************
