@@ -58,7 +58,8 @@ swap_bytes(uint8_t *a, uint8_t *b)
 void
 rc4_init(rc4_state* const state, const uint8_t *key, int keylen)
 {
-	int i, j;
+	uint8_t j;
+	int i;
 
 	/* Initialize state with identity permutation */
 	for (i = 0; i < 256; i++)
