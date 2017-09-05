@@ -172,6 +172,22 @@ file_time_delta_day(
 	return (llabs( file_time_to_int(ftl) - file_time_to_int(ft2) ) / _file_time_to_day);
 }
 
+/// @brief file_time 에 secs 초를 더한 파일타임을 리턴한다.
+FILETIME 
+add_sec_to_file_time(
+	_In_ const PFILETIME file_time, 
+	_In_ int32_t secs
+	)
+{
+	if (secs == 0) return *file_time;
+
+	uint64_t file_time_uint64_t = file_time_to_int(file_time) + (secs * _file_time_to_sec);
+
+	FILETIME added_file_time;
+	int_to_file_time(file_time_uint64_t, &added_file_time);
+	return added_file_time;
+}
+
 /// @brief file_time 에 day 만큼 더한 파일타임을 리턴한다.
 FILETIME 
 add_day_to_file_time(
@@ -186,6 +202,26 @@ add_day_to_file_time(
 	FILETIME added_file_time;
 	int_to_file_time(file_time_uint64_t, &added_file_time);
 	return added_file_time;
+}
+
+
+/// @brief	현재 시각을 `2017-05-23 21:23:24.821` 포맷 문자열로 출력한다. 
+std::string	time_now_to_str(_In_ bool localtime, _In_ bool show_misec)
+{
+	SYSTEMTIME utc_system_time;
+	GetSystemTime(&utc_system_time);
+
+	return sys_time_to_str(&utc_system_time, localtime, show_misec);
+}
+
+
+/// @brief	현재 시각을 `2017-05-23T21:23:24.821+09:00` 포맷 문자열로 출력한다. 
+std::string	time_now_to_str2()
+{
+	SYSTEMTIME utc_system_time;
+	GetSystemTime(&utc_system_time);
+
+	return sys_time_to_str2(&utc_system_time);
 }
 
 /// @brief  FILETIME to `yyyy-mm-dd hh:mi:ss` string representation.
@@ -215,10 +251,9 @@ file_time_to_str(
 }	
 
 /// @brief  SYSTEMTIME (UTC) to `yyyy-mm-dd hh:mi:ss` string representation.
-/// 
 std::string 
 sys_time_to_str(
-	_In_ const PSYSTEMTIME sys_time, 
+	_In_ const PSYSTEMTIME utc_sys_time, 
 	_In_ bool localtime, 
 	_In_ bool show_misec
 	)
@@ -226,40 +261,107 @@ sys_time_to_str(
     char buf[32];
 
     SYSTEMTIME local;
-    PSYSTEMTIME time = sys_time;
+    PSYSTEMTIME time = utc_sys_time;
 
     if (true == localtime)
     {
-        SystemTimeToTzSpecificLocalTime(NULL, sys_time, &local);
+        SystemTimeToTzSpecificLocalTime(NULL, utc_sys_time, &local);
         time = &local;
     }
 
+	HRESULT hr;
+
 	if (!show_misec)
 	{
-		StringCbPrintfA(buf, sizeof(buf),
-						"%04u-%02u-%02u %02u:%02u:%02u",
-						time->wYear,
-						time->wMonth,
-						time->wDay,
-						time->wHour,
-						time->wMinute,
-						time->wSecond);
+		hr = StringCbPrintfA(buf, sizeof(buf),
+							 "%04u-%02u-%02u %02u:%02u:%02u",
+							 time->wYear,
+							 time->wMonth,
+							 time->wDay,
+							 time->wHour,
+							 time->wMinute,
+							 time->wSecond);
 	}
 	else
 	{
-		StringCbPrintfA(buf, sizeof(buf),
-						"%04u-%02u-%02u %02u:%02u:%02u %u",
-						time->wYear,
-						time->wMonth,
-						time->wDay,
-						time->wHour,
-						time->wMinute,
-						time->wSecond, 
-						time->wMilliseconds);
+		hr = StringCbPrintfA(buf, sizeof(buf),
+							 "%04u-%02u-%02u %02u:%02u:%02u %u",
+							 time->wYear,
+							 time->wMonth,
+							 time->wDay,
+							 time->wHour,
+							 time->wMinute,
+							 time->wSecond,
+							 time->wMilliseconds);
 	}
+
+	if (!SUCCEEDED(hr))
+	{
+		log_err "Can't make time string. hr=%u",
+			hr
+			log_end;
+		return std::string("1601-01-01 00:00:000");
+	}
+	
     return std::string(buf);
 }
 
+
+/// @brief  `2017-05-23T21:23:24.821+09:00` 포맷 시간 문자열을 리턴한다. 
+///			[localtime][time zone] 포맷이므로 utc_sys_time 파라미터를 
+///			반드시 localtime 으로 변환해야 한다. 
+///
+///			https://www.w3.org/TR/NOTE-datetime 참고
+std::string 
+sys_time_to_str2(
+	_In_ const PSYSTEMTIME utc_sys_time
+	)
+{
+    char buf[32];
+
+	//
+	//	local time 으로 변환
+	// 
+	SYSTEMTIME local_sys_time;
+	SystemTimeToTzSpecificLocalTime(NULL, utc_sys_time, &local_sys_time);
+	
+	
+	//
+	//	타임존 정보
+	//	UTC+xxx 인 경우 TimeZone.Bias 값은 음수를 가지므로 +/- 기호를 설정한다.
+	TIME_ZONE_INFORMATION lpTimeZone = { 0 };
+	GetTimeZoneInformation(&lpTimeZone);
+
+	char tz_sign = '-';
+	if (0 > lpTimeZone.Bias)
+	{
+		tz_sign = '+';
+	}
+
+		
+	HRESULT hr = StringCbPrintfA(buf,
+								 sizeof(buf),
+								 "%04u-%02u-%02uT%02u:%02u:%02u.%u%c%02u:%02u",
+								 local_sys_time.wYear,
+								 local_sys_time.wMonth,
+								 local_sys_time.wDay,
+								 local_sys_time.wHour,
+								 local_sys_time.wMinute,
+								 local_sys_time.wSecond,
+								 local_sys_time.wMilliseconds,
+								 tz_sign,
+								 labs(lpTimeZone.Bias / 60),
+								 labs(lpTimeZone.Bias % 60));
+	if (!SUCCEEDED(hr))
+	{
+		log_err "Can't make time string. hr=%u",
+			hr
+			log_end;
+		return std::string("1601-01-01T00:00:000+00:00");
+	}
+
+    return std::string(buf);
+}
 
 
 /**

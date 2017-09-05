@@ -68,7 +68,8 @@ rc4_init(rc4_state* const state, const uint8_t *key, int keylen)
 	state->index2 = 0;
   
 	/* Randomize the permutation using key data */
-	for (j = i = 0; i < 256; i++) {
+	for (j = 0, i = 0; i < 256; i++)
+	{
 		j += state->perm[i] + key[i % keylen]; 
 		swap_bytes(&state->perm[i], &state->perm[j]);
 	}

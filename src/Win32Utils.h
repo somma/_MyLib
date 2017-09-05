@@ -160,13 +160,19 @@ void int_to_file_time(_In_ uint64_t file_time_int, _Out_ PFILETIME const file_ti
 
 int64_t file_time_delta_sec(_In_ const PFILETIME ftl, _In_ const PFILETIME ftr);
 int64_t file_time_delta_day(_In_ const PFILETIME ftl, _In_ const PFILETIME ftr);
+FILETIME add_sec_to_file_time(_In_ const PFILETIME file_time, _In_ int32_t secs);
 FILETIME add_day_to_file_time(_In_ const PFILETIME file_time, _In_ int32_t day);
+
+
+
+std::string	time_now_to_str(_In_ bool localtime, _In_ bool show_misec);
+std::string	time_now_to_str2();
 
 std::string file_time_to_str(_In_ const PFILETIME file_time, _In_ bool localtime, _In_ bool show_misec = false);
 std::string file_time_to_str(_In_ uint64_t file_time, _In_ bool localtime, _In_ bool show_misec = false);
-std::string sys_time_to_str(_In_ const PSYSTEMTIME sys_time, _In_ bool localtime, _In_ bool show_misec = false);
 
-
+std::string sys_time_to_str(_In_ const PSYSTEMTIME utc_sys_time, _In_ bool localtime, _In_ bool show_misec = false);
+std::string sys_time_to_str2(_In_ const PSYSTEMTIME utc_sys_time);
 
 
 
