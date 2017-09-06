@@ -831,7 +831,7 @@ bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
         {
             // cdrom 이 비어있거나, network fs 이거나,...
             // 에러나는 상황들이 있을 수 있음
-            log_err 
+            log_warn
                 "CreateFile( %ws ) failed. gle = %u", 
                 path.str().c_str(), 
                 GetLastError() 
