@@ -36,11 +36,11 @@ aes256_encrypt(
 	_ASSERTE(nullptr != key);
 	_ASSERTE(nullptr != target_file_path.c_str());
 	_ASSERTE(nullptr != encrypt_file_path.c_str());
-	_ASSERTE(target_file_path.compare(encrypt_file_path));
+	_ASSERTE(0 != target_file_path.compare(encrypt_file_path));
 	if (nullptr == key ||
 		nullptr == target_file_path.c_str() ||
 		nullptr == encrypt_file_path.c_str() ||
-		!target_file_path.compare(encrypt_file_path))
+		0 == target_file_path.compare(encrypt_file_path))
 	{
 		return false;
 	}
@@ -120,11 +120,11 @@ aes256_decrypt(
 	_ASSERTE(nullptr != key);
 	_ASSERTE(nullptr != encrypt_file_path.c_str());
 	_ASSERTE(nullptr != decrypt_file_path.c_str());
-	_ASSERTE(encrypt_file_path.compare(decrypt_file_path));
+	_ASSERTE(0 != encrypt_file_path.compare(decrypt_file_path));
 	if (nullptr == key ||
 		nullptr == decrypt_file_path.c_str() ||
 		nullptr == encrypt_file_path.c_str() ||
-		!encrypt_file_path.compare(decrypt_file_path))
+		0 == encrypt_file_path.compare(decrypt_file_path))
 	{
 		return false;
 	}

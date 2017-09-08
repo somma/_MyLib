@@ -3553,17 +3553,26 @@ extract_last_tokenExA(
 }
 
 /// @brief	c:\dbg\abc.txt -> txt 를 리턴한다. 
-bool get_file_extensionw(_In_ const wchar_t* file_path, _Out_ std::wstring& ext)
+///			확장자가 없는 경우 false 를 리턴한다.
+bool 
+get_file_extensionw(
+	_In_ const wchar_t* file_path, 
+	_Out_ std::wstring& ext
+	)
 {
 	_ASSERTE(nullptr != file_path);
 	if (nullptr == file_path) return false;
 
-	std::wstring tmp(file_path);
-	return extract_last_tokenW(tmp, 
-							   L".", 
-							   ext, 
-							   false, 
-							   false);
+	std::wstring org_string(file_path);
+
+	size_t pos = org_string.rfind(L".");
+	if (std::wstring::npos == pos)
+	{
+		return false;
+	}
+
+	ext = org_string.substr(pos + 1, org_string.size());
+	return true;	
 }
 
 

@@ -22,6 +22,7 @@
 #include "crc64.h"
 #include "StopWatch.h"
 
+bool test_get_file_extension();
 bool test_raii_xxx();
 bool test_suspend_resume_process();
 bool test_to_str();
@@ -234,108 +235,112 @@ void run_test()
 
 
 	bool ret = false;
-	assert_bool(true, test_raii_xxx);
-	assert_bool(true, test_suspend_resume_process);
-	assert_bool(true, test_convert_file_time);
+	assert_bool(true, test_get_file_extension);
+	//assert_bool(true, test_raii_xxx);
+	//assert_bool(true, test_suspend_resume_process);
+	//assert_bool(true, test_convert_file_time);
 
-	assert_bool(true, test_ppl);
+	//assert_bool(true, test_ppl);
 
-	assert_bool(true, test_find_and_replace);
-	assert_bool(true, test_file_io_helper);
+	//assert_bool(true, test_find_and_replace);
+	//assert_bool(true, test_file_io_helper);
 
-	assert_bool(true, test_scm_context);
+	//assert_bool(true, test_scm_context);
 
-	assert_bool(true, test_regexp);
-	assert_bool(true, test_ping);
-	assert_bool(true, test_alignment_error_test);
-	assert_bool(true, test_crc64);
+	//assert_bool(true, test_regexp);
+	//assert_bool(true, test_ping);
+	//assert_bool(true, test_alignment_error_test);
+	//assert_bool(true, test_crc64);
 
 
-	assert_bool(true, test_NameConverter_get_canon_name);
-	assert_bool(true, test_NameConverter_dosname_to_devicename);
+	//assert_bool(true, test_NameConverter_get_canon_name);
+	//assert_bool(true, test_NameConverter_dosname_to_devicename);
 
-	assert_bool(true, test_wmi_client);
-	assert_bool(true, test_NtCreateFile);
-	assert_bool(true, test_device_name_from_nt_name);
-	assert_bool(true, test_rstrnicmp);
+	//assert_bool(true, test_wmi_client);
+	//assert_bool(true, test_NtCreateFile);
+	//assert_bool(true, test_device_name_from_nt_name);
+	//assert_bool(true, test_rstrnicmp);
 
-	assert_bool(true, test_get_drive_type);
-	assert_bool(true, test_os_version);
+	//assert_bool(true, test_get_drive_type);
+	//assert_bool(true, test_os_version);
 
-	assert_bool(true, test_boost_thread);
-	assert_bool(true, test_thread_pool);
-    
-	assert_bool(true, test_boost_asio_timer);
-	assert_bool(true, test_for_each);
-	assert_bool(true, test_enum_physical_drive);
-	assert_bool(true, test_get_disk_volume_info);
-	assert_bool(true, test_dump_xxx);
+	//assert_bool(true, test_boost_thread);
+	//assert_bool(true, test_thread_pool);
+ //   
+	//assert_bool(true, test_boost_asio_timer);
+	//assert_bool(true, test_for_each);
+	//assert_bool(true, test_enum_physical_drive);
+	//assert_bool(true, test_get_disk_volume_info);
+	//assert_bool(true, test_dump_xxx);
 
-	assert_bool(true, test_asm_func);
-	assert_bool(true, test_x64_calling_convension);
-	assert_bool(true, test_2_complement);
-	assert_bool(true , test_print_64int);
-	assert_bool(true, test_std_string_find_and_substr);
-	assert_bool(true, test_to_lower_uppper_string);
+	//assert_bool(true, test_asm_func);
+	//assert_bool(true, test_x64_calling_convension);
+	//assert_bool(true, test_2_complement);
+	//assert_bool(true , test_print_64int);
+	//assert_bool(true, test_std_string_find_and_substr);
+	//assert_bool(true, test_to_lower_uppper_string);
 
-	assert_bool(true, test_initialize_string);
-	assert_bool(true, test_process_tree);
-	assert_bool(true, test_image_path_by_pid);
-	assert_bool(true, test_get_process_creation_time);
-	assert_bool(true, test_base64);
-	assert_bool(true, test_random);
-	assert_bool(true, test_get_local_ip_list);
-	assert_bool(true, test_get_mac_address);
-	assert_bool(true, test_ip_to_str);
+	//assert_bool(true, test_initialize_string);
+	//assert_bool(true, test_process_tree);
+	//assert_bool(true, test_image_path_by_pid);
+	//assert_bool(true, test_get_process_creation_time);
+	//assert_bool(true, test_base64);
+	//assert_bool(true, test_random);
+	//assert_bool(true, test_get_local_ip_list);
+	//assert_bool(true, test_get_mac_address);
+	//assert_bool(true, test_ip_to_str);
 
-	assert_bool(true, test_strtok);
-	assert_bool(true, test_cpp_class);	
-	assert_bool(true, test_nt_name_to_dos_name);
+	//assert_bool(true, test_strtok);
+	//assert_bool(true, test_cpp_class);	
+	//assert_bool(true, test_nt_name_to_dos_name);
 
-	assert_bool(true, test_query_dos_device);
-	assert_bool(true, test_get_filepath_by_handle);
-	assert_bool(true, test_find_files);
+	//assert_bool(true, test_query_dos_device);
+	//assert_bool(true, test_get_filepath_by_handle);
+	//assert_bool(true, test_find_files);
+	//
+	//assert_bool(true, test_bin_to_hex);
+	//assert_bool(true, test_str_to_xxx);
+	//assert_bool(true, test_set_get_file_position);
+	//assert_bool(true, test_get_module_path);
+	//assert_bool(true, test_dump_memory);
+	//assert_bool(true, test_get_environment_value);
+
+	//assert_bool(true, test_rc4_encrypt);
+	//assert_bool(true, test_md5_sha2);
+
+	//assert_bool(true, boost_lexical_cast);
+	//assert_bool(true, boost_shared_ptr_void);
+	//assert_bool(true, boost_shared_ptr_handle_01);
+	//assert_bool(true, boost_shared_ptr_handle_02);
+	//assert_bool(true, boost_shared_ptr_handle_03);
+	//assert_bool(true, boost_tuple);
+	//assert_bool(true, boost_format);
+	//assert_bool(true, boost_bind);
+	//assert_bool(true, boost_bind2);
+	//assert_bool(true, boost_bind3);
+	//assert_bool(true, boost_bind4);
+	//assert_bool(true, boost_bind5);
+
+	//assert_bool(true, test_std_map);
+	//assert_bool(true, test_map_plus_algorithm_1);
+	//assert_bool(true, test_map_plus_algorithm_2);
+	//assert_bool(true, test_map_plus_algorithm_3);
+	//assert_bool(true, test_map_plus_algorithm_4);
+	//assert_bool(true, test_std_unordered_map);
+	//assert_bool(true, test_std_unordered_map_object);
+	//assert_bool(true, test_unorded_map_test_move);
+
+
+	//assert_bool(true, test_registry_util);
+	//assert_bool(true, test_read_mouted_device);
+	//assert_bool(true, test_set_binary_data);    
+	//assert_bool(true, test_aes256);
+
+
 	
-	assert_bool(true, test_bin_to_hex);
-	assert_bool(true, test_str_to_xxx);
-	assert_bool(true, test_set_get_file_position);
-	assert_bool(true, test_get_module_path);
-	assert_bool(true, test_dump_memory);
-	assert_bool(true, test_get_environment_value);
-
-	assert_bool(true, test_rc4_encrypt);
-	assert_bool(true, test_md5_sha2);
-
-	assert_bool(true, boost_lexical_cast);
-	assert_bool(true, boost_shared_ptr_void);
-	assert_bool(true, boost_shared_ptr_handle_01);
-	assert_bool(true, boost_shared_ptr_handle_02);
-	assert_bool(true, boost_shared_ptr_handle_03);
-	assert_bool(true, boost_tuple);
-	assert_bool(true, boost_format);
-	assert_bool(true, boost_bind);
-	assert_bool(true, boost_bind2);
-	assert_bool(true, boost_bind3);
-	assert_bool(true, boost_bind4);
-	assert_bool(true, boost_bind5);
-
-	assert_bool(true, test_std_map);
-	assert_bool(true, test_map_plus_algorithm_1);
-	assert_bool(true, test_map_plus_algorithm_2);
-	assert_bool(true, test_map_plus_algorithm_3);
-	assert_bool(true, test_map_plus_algorithm_4);
-	assert_bool(true, test_std_unordered_map);
-	assert_bool(true, test_std_unordered_map_object);
-	assert_bool(true, test_unorded_map_test_move);
-
-
-	assert_bool(true, test_registry_util);
-	assert_bool(true, test_read_mouted_device);
-	assert_bool(true, test_set_binary_data);    
-	assert_bool(true, test_aes256);
-
-
-
+//
+//	유닛테스트에 포함되지 않는 그냥 테스트용 코드
+//	
 	//assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
 	//assert_bool(true, test_const_position);		// 컴파일 불가 테스트
 
@@ -2196,6 +2201,47 @@ bool test_crc64()
         (unsigned long long) crc64(0, (unsigned char*)"123456789", 9)
         log_end;
     return true;
+}
+
+
+bool test_get_file_extension()
+{
+	//
+	//	확장자를 가진 경로를 잘 처리하는지 확인
+	// 
+	wchar_t* file_with_ext[] = {
+		L"abc.txt",
+		L"c:\\windows\\xbadsad\\aaaa.txt",
+		L"aaaa.txt",
+		L"aaaa.doc.txt"
+	};
+
+	for (int i = 0; i < sizeof(file_with_ext) / sizeof(wchar_t*); ++i)
+	{
+		std::wstring ext;
+		_ASSERTE(true == get_file_extensionw(file_with_ext[i], ext));
+		_ASSERTE(0 == ext.compare(L"txt"));
+		log_info "file=%ws, ext=%ws", file_with_ext[i], ext.c_str() log_end;
+	}
+
+	//
+	//	확장자가 없는 파일 처리 확인
+	// 	
+	wchar_t* file_without_ext[] = {
+		L"c:\\windows\\xbadsad\\aaaa",
+		L"aaaa",
+		L"aaaadoc_txt"
+	};
+
+	for (int i = 0; i < sizeof(file_without_ext) / sizeof(wchar_t*); ++i)
+	{
+		std::wstring ext;
+		_ASSERTE(false == get_file_extensionw(file_without_ext[i], ext));
+
+		log_info "file=%ws, ext=no ext", file_without_ext[i] log_end;
+	}
+
+	return true;
 }
 
 
