@@ -199,6 +199,7 @@
     <ClInclude Include="src\BaseWindowsHeader.h" />
     <ClInclude Include="src\crc64.h" />
     <ClInclude Include="src\CStream.h" />
+    <ClInclude Include="src\curl_client.h" />
     <ClInclude Include="src\FileIoHelper.h" />
     <ClInclude Include="src\FileIoHelperClass.h" />
     <ClInclude Include="src\GeneralHashFunctions.h" />
@@ -233,6 +234,7 @@
     <ClCompile Include="src\base64.cpp" />
     <ClCompile Include="src\crc64.cpp" />
     <ClCompile Include="src\CStream.cpp" />
+    <ClCompile Include="src\curl_client.cpp" />
     <ClCompile Include="src\FileIoHelper.cpp" />
     <ClCompile Include="src\FileIoHelperClass.cpp" />
     <ClCompile Include="src\GeneralHashFunctions.cpp" />
