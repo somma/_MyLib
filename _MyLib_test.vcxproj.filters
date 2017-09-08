@@ -123,6 +123,9 @@
     <ClInclude Include="src\AirCrypto.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\curl_client.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -241,6 +244,9 @@
     </ClCompile>
     <ClCompile Include="_test_process_tree.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\curl_client.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
