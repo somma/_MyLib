@@ -293,8 +293,8 @@ FindSubDirectory(
 /******************************************************************************
  * directory management 
 ******************************************************************************/
-BOOL WUGetCurrentDirectoryW(IN OUT std::wstring& CurrentDir);
-BOOL WUGetCurrentDirectoryA(IN OUT std::string& CurrentDir);
+bool WUGetCurrentDirectoryW(IN OUT std::wstring& CurrentDir);
+bool WUGetCurrentDirectoryA(IN OUT std::string& CurrentDir);
 
 bool get_temp_dirW(_Out_ std::wstring& temp_dir);
 bool get_temp_dirA(_Out_ std::string& temp_dir);

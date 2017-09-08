@@ -3818,7 +3818,7 @@ find_and_replace_string_exw(
 * @endcode	
 * @return	
 */
-BOOL WUGetCurrentDirectoryW(IN OUT std::wstring& CurrentDir)
+bool WUGetCurrentDirectoryW(_Out_ std::wstring& CurrentDir)
 {
 	UINT32 buflen=0;
 	PWSTR buf=NULL;
@@ -3830,7 +3830,7 @@ BOOL WUGetCurrentDirectoryW(IN OUT std::wstring& CurrentDir)
 			"GetCurrentDirectoryW() failed. gle=%u", 
 			GetLastError()
 		log_end
-		return FALSE;
+		return false;
 	}
 
 	// buflen : NULL 캐릭터를 포함한 필요한 버퍼의 사이즈 in char.
@@ -3844,12 +3844,12 @@ BOOL WUGetCurrentDirectoryW(IN OUT std::wstring& CurrentDir)
 		log_end
 
 		free(buf);
-		return FALSE;
+		return false;
 	}
 
     CurrentDir = buf;
     free(buf);
-    return TRUE;
+    return true;
 }
 
 /**
@@ -3861,12 +3861,12 @@ BOOL WUGetCurrentDirectoryW(IN OUT std::wstring& CurrentDir)
 * @endcode	
 * @return	
 */
-BOOL WUGetCurrentDirectoryA(IN OUT std::string& CurrentDir)
+bool WUGetCurrentDirectoryA(_Out_ std::string& CurrentDir)
 {
 	std::wstring _cur;
-	if (TRUE != WUGetCurrentDirectoryW(_cur))
+	if (! WUGetCurrentDirectoryW(_cur))
 	{
-		return FALSE;
+		return false;
 	}
 	std::string _cura = WcsToMbsEx(_cur.c_str() );
 	CurrentDir = _cura;
