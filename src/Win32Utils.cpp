@@ -3552,7 +3552,11 @@ extract_last_tokenExA(
 
 }
 
-/// @brief	c:\dbg\abc.txt -> txt 를 리턴한다. 
+/// @brief	파일의 확장자를 리턴한다. 
+///
+///			c:\dbg\abc.txt -> txt 
+///			\offsymxl.ttf:WofCompressedData -> ttf
+/// 
 ///			확장자가 없는 경우 false 를 리턴한다.
 bool 
 get_file_extensionw(
@@ -3564,14 +3568,24 @@ get_file_extensionw(
 	if (nullptr == file_path) return false;
 
 	std::wstring org_string(file_path);
-
 	size_t pos = org_string.rfind(L".");
 	if (std::wstring::npos == pos)
 	{
 		return false;
 	}
+	org_string = org_string.substr(pos + 1, org_string.size());
 
-	ext = org_string.substr(pos + 1, org_string.size());
+	//
+	//	ADS 를 잘라낸다.
+	// 
+	pos = org_string.find(L":");
+	if (std::wstring::npos == pos)
+	{
+		ext = org_string;
+		return true;
+	}
+
+	ext = org_string.substr(0, pos);
 	return true;	
 }
 

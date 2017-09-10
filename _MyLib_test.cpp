@@ -2213,7 +2213,8 @@ bool test_get_file_extension()
 		L"abc.txt",
 		L"c:\\windows\\xbadsad\\aaaa.txt",
 		L"aaaa.txt",
-		L"aaaa.doc.txt"
+		L"aaaa.doc.txt", 
+		L"\\offsymxl.txt:WofCompressedData"		// ttf
 	};
 
 	for (int i = 0; i < sizeof(file_with_ext) / sizeof(wchar_t*); ++i)
@@ -2231,6 +2232,7 @@ bool test_get_file_extension()
 		L"c:\\windows\\xbadsad\\aaaa",
 		L"aaaa",
 		L"aaaadoc_txt"
+
 	};
 
 	for (int i = 0; i < sizeof(file_without_ext) / sizeof(wchar_t*); ++i)
