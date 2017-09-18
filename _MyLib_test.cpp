@@ -235,7 +235,7 @@ void run_test()
 
 
 	bool ret = false;
-	assert_bool(true, test_get_file_extension);
+	//assert_bool(true, test_get_file_extension);
 	//assert_bool(true, test_raii_xxx);
 	//assert_bool(true, test_suspend_resume_process);
 	//assert_bool(true, test_convert_file_time);
@@ -254,7 +254,7 @@ void run_test()
 
 
 	//assert_bool(true, test_NameConverter_get_canon_name);
-	//assert_bool(true, test_NameConverter_dosname_to_devicename);
+	assert_bool(true, test_NameConverter_dosname_to_devicename);
 
 	//assert_bool(true, test_wmi_client);
 	//assert_bool(true, test_NtCreateFile);
@@ -2109,20 +2109,59 @@ bool test_NameConverter_get_canon_name()
 
 bool test_NameConverter_dosname_to_devicename()
 {
-     wchar_t* file_names[] = {
-        L"c:\\windows\\system32\\abc.exe"	//--> \device\harddiskvolume1\windows\system32
-    };
+	typedef struct in_out_str
+	{
+		wchar_t* in;
+		wchar_t* out;
+	}*pin_out_str;
 
-    NameConverter nc;
-    if (true != nc.reload()) return false;
+	//
+	//	c: 드라이브(심볼릭링크)의 디바이스 이름을 얻어온다.
+	//
+	wchar_t device_name[MAX_PATH];
+	_ASSERTE(QueryDosDeviceW(L"C:", device_name, MAX_PATH));
 
-    for (int i = 0; i < sizeof(file_names) / sizeof(wchar_t*); ++i)
-    {
-		std::wstring nt_path;
-		_ASSERTE(true == nc.get_nt_path_by_dos_path(file_names[i], nt_path));
+	{
+		//
+		//	get_nt_path_by_dos_path test
+		// 
+		in_out_str in_out_pair[] = {
+			{ L"c:\\windows\\system32\\abc.exe",	L"%ws\\windows\\system32\\abc.exe" },
+			{ L"c:\\", L"%ws\\" }
+		};
 
-        log_info "%ws -> %ws", file_names[i], nt_path.c_str() log_end;
-    }
+		NameConverter nc;
+		_ASSERTE(true == nc.reload());
+		for (int i = 0; i < sizeof(in_out_pair) / sizeof(in_out_str); ++i)
+		{
+			std::wstring nt_path;
+			_ASSERTE(true == nc.get_nt_path_by_dos_path(in_out_pair[i].in,
+														nt_path));
+
+			wchar_t buf[128];
+			StringCbPrintfW(buf, sizeof(buf), in_out_pair[i].out, device_name);
+			_ASSERTE(0 == nt_path.compare(buf));
+			log_info "%ws -> %ws", in_out_pair[i].in, nt_path.c_str() log_end;
+		}
+	}
+	
+	{
+		//
+		//	get_nt_path_by_dos_path test
+		// 
+		NameConverter nc;
+		_ASSERTE(true == nc.reload());
+		
+		std::wstring device_name_str;
+		_ASSERTE(true == nc.get_device_name_by_drive_letter(L"c:", device_name_str));
+		_ASSERTE(0 == device_name_str.compare(device_name));
+
+		/// 잘못된 drive letter 형식
+		_ASSERTE(true != nc.get_device_name_by_drive_letter(L"c", device_name_str));
+		_ASSERTE(true != nc.get_device_name_by_drive_letter(L"c:\\", device_name_str));
+
+	}
+	
 
     return true;
 }

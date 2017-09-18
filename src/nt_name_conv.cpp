@@ -312,11 +312,15 @@ NameConverter::is_natwork_path(
 }
 
 /// @brief	c:\windows\system32\test.txt -> \Device\HarddiskVolume1\windows\test.txt 로 변환
+///
+///			[warning]
+///			c: (drive letter) -> \Device\HardDiskVolume1 (Device name) 변환은 
+///			get_device_name_by_drive_name() 메소드 이용
 bool
 NameConverter::get_nt_path_by_dos_path(
 	_In_ const wchar_t* dos_path, 
 	_Out_ std::wstring& nt_device_path
-)
+	)
 {
 	_ASSERTE(dos_path);
 	if (nullptr == dos_path) return false;
@@ -364,6 +368,58 @@ NameConverter::get_nt_path_by_dos_path(
 	// 
 	out_path << &dos_path[3];
 	nt_device_path = out_path.str();
+	return true;
+}
+
+/// @brief	c: (drive letter) -> \Device\HardDiskVolume1 (Device name) 변환
+bool 
+NameConverter::get_device_name_by_drive_letter(
+	_In_ const wchar_t* drive_letter,
+	_Out_ std::wstring& device_name
+	)
+{
+	_ASSERTE(nullptr != drive_letter);
+	
+	// 
+	// drive_letter 는 반드시 `c:` 형식이어야 한다. 
+	// 
+	if (2 != wcslen(drive_letter) || drive_letter[1] != L':')
+	{
+		log_err "Invalid drive letter. drive_letter=%ws",
+			drive_letter
+			log_end;
+		return false;
+	}
+
+	bool found = false;	
+	{
+		boost::lock_guard<boost::mutex> lock(_lock);
+		for (auto& ddi : _dos_devices)
+		{
+			//
+			//	`c:` 두 글자만 비교
+			// 
+			if (0 == _wcsnicmp(ddi._logical_drive.c_str(), drive_letter, 2))
+			{
+				//
+				//	ddi._device_name 은 항상 `\` 종료되기 때문에 마지막 `\` 문자를
+				//	제거해서 리턴한다. 
+				//
+				device_name = ddi._device_name.substr(0, ddi._device_name.size() - 1);
+				found = true;
+				break;
+			}
+		}
+	}
+	
+	if (true != found)
+	{
+		log_err "Can not find device name. drive letter=%ws",
+			drive_letter
+			log_end;
+		return false;
+	}
+
 	return true;
 }
 

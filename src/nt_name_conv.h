@@ -35,8 +35,8 @@ public:
             _network_name = network_name;
     }
 	
-    std::wstring    _logical_drive; // `c:`, `d:`, ...              (소문자)
-    std::wstring    _device_name;   // `\device\harddiskvolume1\`, ... (소문자)
+    std::wstring    _logical_drive; // `c:`, `d:`, ...
+    std::wstring    _device_name;   // `\device\harddiskvolume1\`, ... 
     uint32_t        _drive_type;    // DRIVE_UNKNOWN(0), 
                                     // DRIVE_NO_ROOT_DIR(1),
                                     // DRIVE_REMOVABLE(2)
@@ -59,6 +59,8 @@ public:
     bool get_canon_name(_In_ const wchar_t* file_name, _Out_ std::wstring& canonical_file_name);
 	bool get_nt_path_by_dos_path(_In_ const wchar_t* dos_path, 
 								 _Out_ std::wstring& nt_device_path);
+	bool get_device_name_by_drive_letter(_In_ const wchar_t* drive_letter,
+										 _Out_ std::wstring& device_name);
 	bool is_removable_drive(_In_ const wchar_t* nt_name);
 	bool is_natwork_path(_In_ const wchar_t* nt_name);
     bool reload();	
