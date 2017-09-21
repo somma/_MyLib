@@ -2147,7 +2147,7 @@ bool test_NameConverter_dosname_to_devicename()
 	
 	{
 		//
-		//	get_nt_path_by_dos_path test
+		//	get_device_name_by_drive_letter test
 		// 
 		NameConverter nc;
 		_ASSERTE(true == nc.reload());
@@ -2156,12 +2156,46 @@ bool test_NameConverter_dosname_to_devicename()
 		_ASSERTE(true == nc.get_device_name_by_drive_letter(L"c:", device_name_str));
 		_ASSERTE(0 == device_name_str.compare(device_name));
 
-		/// 잘못된 drive letter 형식
+		// 잘못된 drive letter 형식
 		_ASSERTE(true != nc.get_device_name_by_drive_letter(L"c", device_name_str));
 		_ASSERTE(true != nc.get_device_name_by_drive_letter(L"c:\\", device_name_str));
 
 	}
 	
+	{
+		//
+		//	get_drive_letter_by_device_name test
+		// 
+		NameConverter nc;
+		_ASSERTE(true == nc.reload());
+
+		// \Device\HarddiskVolume1 포맷 입력
+		std::wstring drive_letter;
+		_ASSERTE(true == nc.get_drive_letter_by_device_name(device_name, drive_letter));
+		_ASSERTE(0 == _wcsnicmp(L"c:", drive_letter.c_str(), 2));
+
+		// \Device\HarddiskVolume1\ 포맷 입력
+		std::wstringstream strm;
+		strm << device_name << L"\\";
+		_ASSERTE(true == nc.get_drive_letter_by_device_name(strm.str().c_str(), drive_letter));
+		_ASSERTE(0 == _wcsnicmp(L"c:", drive_letter.c_str(), 2));
+
+		// \Device\HarddiskVolume1\windows\... 포맷 입력
+		clear_str_stream_w(strm);
+		strm << device_name << L"\\windows\\system32\\aaa.txt";
+		_ASSERTE(true == nc.get_drive_letter_by_device_name(strm.str().c_str(), drive_letter));
+		_ASSERTE(0 == _wcsnicmp(L"c:", drive_letter.c_str(), 2));
+
+		// 없는 디바이스 (볼륨)
+		clear_str_stream_w(strm);
+		strm << L"\\Device\\not_exist\\";
+		_ASSERTE(true != nc.get_drive_letter_by_device_name(strm.str().c_str(), drive_letter));
+				
+		// 잘못된 device name 형식
+		_ASSERTE(true != nc.get_drive_letter_by_device_name(L"\\invalid_device", drive_letter));
+		_ASSERTE(true != nc.get_drive_letter_by_device_name(L"invalid_device", drive_letter));
+
+	}
 
     return true;
 }

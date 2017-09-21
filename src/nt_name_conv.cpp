@@ -379,6 +379,7 @@ NameConverter::get_device_name_by_drive_letter(
 	)
 {
 	_ASSERTE(nullptr != drive_letter);
+	if (nullptr == drive_letter) return false;
 	
 	// 
 	// drive_letter 는 반드시 `c:` 형식이어야 한다. 
@@ -416,6 +417,92 @@ NameConverter::get_device_name_by_drive_letter(
 	{
 		log_err "Can not find device name. drive letter=%ws",
 			drive_letter
+			log_end;
+		return false;
+	}
+
+	return true;
+}
+
+/// @brief	nt device name 문자열을 받아서 drive letter 를 리턴한다. 
+///	@param	device_name		
+///				1) \Device\HardDiskVolume1\windows\system32\calc.exe
+///				2) \Device\HardDiskVolume1\
+///				3) \Device\HardDiskVolume1
+///				형태의 입력을 모두 수용한다. 
+///				1), 2) 형태 입력인 경우 `\Device\HardDiskVolume1\` 부분만 사용한다. 
+/// @prarm	device_name 에 매칭되는 `c:` 형태의 드라이브 레터를 리턴한다.
+bool 
+NameConverter::get_drive_letter_by_device_name(
+	_In_ const wchar_t* device_name,
+	_Out_ std::wstring& drive_letter
+	)
+{
+	_ASSERTE(nullptr != device_name);
+	if (nullptr == device_name) return false;
+	
+	// 
+	//	device name 을 정규화한다.
+	// 
+	//  - \Device, Device 등 '\' 가 2개 미만이면 invalid input
+	//	- \Device\HarddiskVolume4 라면 \Device\HarddiskVolume4\ 로 변환
+	//  - \Device\HarddiskVolume4\, \Device\HarddiskVolume4\aaa 라면 
+	//	  \Device\HarddiskVolume4\ 까지만 사용
+	//
+	int32_t back_slash_count = 0;
+	int32_t compare_count = 0;
+	int32_t max_count = (int32_t)wcslen(device_name);
+	for (compare_count = 0; compare_count <= max_count; ++compare_count)
+	{
+		if (back_slash_count == 3) break;
+		if (device_name[compare_count] == L'\\')
+		{
+			++back_slash_count;
+		}
+	}
+	compare_count = min(max_count, compare_count);
+
+ 	if (back_slash_count < 2 || compare_count < 0)
+	{
+		log_err "Invalid device name format. device_name=%ws", device_name log_end;
+		return false;
+	}
+
+	bool found = false;
+	boost::lock_guard<boost::mutex> lock(_lock);
+	for (auto& ddi : _dos_devices)
+	{
+		if (0 != _wcsnicmp(ddi._device_name.c_str(), device_name, compare_count))
+		{
+			continue;
+		}
+
+		// 
+		//	compare_count 만큼만 비교하기 때문에 \Device\HarddiskVolume4 형태의 입력인 경우
+		//	\Device\HarddiskVolume4\ 와 \Device\HarddiskVolume44\ 두 개 모두 매칭될 수 있다.
+		//	따라서 현재 매칭된 DosDeviceInfo::_device_name[compare_count+1] 가 \ 인지 확인해야 한다.
+		// 
+		if (back_slash_count == 2)
+		{
+			if (ddi._device_name[compare_count+1] != L'\\')
+			{
+				found = true;
+				drive_letter = ddi._logical_drive;
+				break;
+			}
+		}
+		else
+		{
+			found = true;
+			drive_letter = ddi._logical_drive;
+			break;
+		}
+	}
+
+	if (true != found)
+	{
+		log_err "Can not find drive letter, device_name=%ws",
+			device_name
 			log_end;
 		return false;
 	}
