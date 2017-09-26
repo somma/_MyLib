@@ -3727,7 +3727,10 @@ split_stringw(
 
 /// @brief  string to hash
 ///         http://stackoverflow.com/questions/98153/whats-the-best-hashing-algorithm-to-use-on-a-stl-string-when-using-hash-map?answertab=active
-///         검증안해봤음, 아 몰랑, 그냥 써
+///
+///			test_GeneralHashFunctions(), test_GeneralHashFunctions2()
+///			함수를 작성해서 c:\windows 하위 파일들에 대해서 테스트해봤는데, 
+///			꽤 좋다. 계속 쓰자.
 uint32_t hash_string32(_In_ const char* s, _In_opt_ uint32_t seed)
 {
     _ASSERTE(NULL != s);
@@ -4209,12 +4212,37 @@ std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name)
 }
 
 /// @brief	full path 경로명에서 `파일명.확장자` 부분만 떼어낸다. 
-std::wstring file_name_from_file_path(_In_ const wchar_t* file_path)
+std::wstring file_name_from_file_pathw(_In_ const wchar_t* file_path)
 {
 	_ASSERTE(nullptr != file_path);
-	if (nullptr == file_path) return L"";
+	if (nullptr == file_path) return _null_stringw;
 
 	return extract_last_tokenExW(file_path, L"\\", false);
+}
+
+std::string file_name_from_file_patha(_In_ const char* file_path)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path) return _null_stringa;
+
+	return extract_last_tokenExA(file_path, "\\", false);
+}
+
+/// @brief	full path 경로명에서 `파일명.확장자` 를 제외한 디렉토리 부분만 떼어낸다. 
+std::wstring directory_from_file_pathw(_In_ const wchar_t* file_path)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path) return _null_stringw;
+
+	return extract_last_tokenExW(file_path, L"\\", true);
+}
+
+std::string directory_from_file_patha(_In_ const char* file_path)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path) return _null_stringa;
+
+	return extract_last_tokenExA(file_path, "\\", true);
 }
 
 /**

@@ -21,6 +21,11 @@
 #include "nt_name_conv.h"
 #include "crc64.h"
 #include "StopWatch.h"
+#include "GeneralHashFunctions.h"
+#include <unordered_map>
+
+bool test_GeneralHashFunctions();
+bool test_GeneralHashFunctions2();
 
 bool test_get_file_extension();
 bool test_raii_xxx();
@@ -235,6 +240,9 @@ void run_test()
 
 
 	bool ret = false;
+	
+	assert_bool(true, test_GeneralHashFunctions);
+	assert_bool(true, test_GeneralHashFunctions2);
 	//assert_bool(true, test_get_file_extension);
 	//assert_bool(true, test_raii_xxx);
 	//assert_bool(true, test_suspend_resume_process);
@@ -254,7 +262,7 @@ void run_test()
 
 
 	//assert_bool(true, test_NameConverter_get_canon_name);
-	assert_bool(true, test_NameConverter_dosname_to_devicename);
+	//assert_bool(true, test_NameConverter_dosname_to_devicename);
 
 	//assert_bool(true, test_wmi_client);
 	//assert_bool(true, test_NtCreateFile);
@@ -2276,6 +2284,370 @@ bool test_crc64()
     return true;
 }
 
+bool test_GeneralHashFunctions()
+{
+	char* _known_exts[] = {
+		"crt", "pptm", "ppt", "pdb",
+		"p7c", "xps", "ptx", "js",
+		"xls", "nrw", "pdd", "ini",
+		"docm", "ogg", "tiff", "exe",
+		"pyd", "png", "odt", "nc",
+		"arw", "crw", "sys", "key",
+		"class", "mkv", "accdb", "pptx",
+		"eps", "xlsm", "gif", "mp4",
+		"ai", "rc", "x3f", "psd",
+		"py", "one", "pef", "nef",
+		"dbf", "rtf", "config", "dng",
+		"rdp", "cs", "cer", "lnk",
+		"vmx", "css", "db3", "dl",
+		"sqlite", "p7b", "db", "wma",
+		"asp", "bay", "cdr", "rw2",
+		"mdb", "doc", "rar", "cr2",
+		"pst", "lic", "csv", "wps",
+		"mdf", "tap", "p12", "xm",
+		"xlsx", "mp3", "jpeg", "docx",
+		"flac", "dxg", "dxf", "java",
+		"dwg", "h", "ods", "asm",
+		"pdf", "c", "kdc", "hwp",
+		"mef", "cpp", "raw", "pyc",
+		"vmdk", "dcr", "srw", "txt",
+		"der", "7z", "lib", "flv",
+		"inf", "pfx", "tif", "wb2",
+		"odb", "def", "pem", "srf",
+		"dat", "zip", "wmv", "ovf",
+		"uti", "sq", "avi", "cat",
+		"php", "xlsb", "odp", "bmp",
+		"sln", "jpg"
+	};
+	
+	//
+	//	GernalHashFunctions 들의 충돌여부 확인
+	//
+	struct functions
+	{
+		hash_function func;
+		char* name;
+	} _functions[] = {		
+		{ RSHash, "RSHash" },
+		{ JSHash, "JSHash" },
+		{ PJWHash, "PJWHash" },
+		{ ELFHash, "ELFHash" },
+		{ BKDRHash, "BKDRHash" },
+		{ SDBMHash, "SDBMHash" },
+		{ DJBHash, "DJBHash" },
+		{ DEKHash, "DEKHash" },
+		{ BPHash, "BPHash" },
+		{ FNVHash, "FNVHash" },
+		{ APHash, "APHash" }, 
+		{ [](char* str, unsigned int len)->unsigned int 
+			{
+				UNREFERENCED_PARAMETER(len);
+				return hash_string32(str);
+			}, 
+			"hash_string32" }
+	};
+
+
+	for (int i = 0; i < sizeof(_functions) / sizeof(functions); ++i)
+	{
+		uint32_t collision_count = 0;
+		std::unordered_map<uint32_t, char*> _tbl;
+		StopWatch sw;
+		sw.Start();
+		for (int j = 0; j < sizeof(_known_exts) / sizeof(char*); ++j)
+		{
+			uint32_t hash = _functions[i].func(_known_exts[j], (uint32_t)strlen(_known_exts[j]));
+			auto entry = _tbl.find(hash);
+			if (entry == _tbl.end())
+			{
+				_tbl.insert(std::make_pair<uint32_t, char*>(std::move(hash), 
+															std::move(_known_exts[j])));
+			}
+			else
+			{
+				// 충돌
+				log_info "collision, prev=%s, curr=%s, hash=%u",
+					entry->second,
+					_known_exts[j],
+					hash
+					log_end;
+				collision_count++;
+			}
+		}
+		sw.Stop();
+		log_info "func=%s, count=%u, collision=%u, time elapsed=%f msecs",
+			_functions[i].name,
+			sizeof(_known_exts) / sizeof(char*),
+			collision_count, 
+			sw.GetDurationMilliSecond()
+			log_end;
+	}
+	
+
+	return true;
+}
+
+/*
+
+### 결론 ###
+std::unordered_map<std::string, std::string>  은 충분히 쓸만함
+
+
+디버그 버전에서는 std::map 이 std::unordered_map 보다 빠르지만, 
+릴리즈 버전에서는 std::unordered_map 이 확실히 빠르다. 
+
+충돌문제는 BPHash 는 충돌이 너무 많다. 몹쓸...나머지는 고만고만함
+hash_string32() 이 예상외로 쓸만함!
+
+std::unordered_map<std::string, std::string> 를 사용하면 알아서 
+충돌처리를 해줌 (collision = 0). 속도차가 2배 정도 나긴하지만 테이블의 
+카운트가 약 14만개임을 감안하면 뭐 충분히 쓸만하다 (편하고!)
+
+
+
+
+# 릴리즈 버전
+
+[INFO] # std::map<uint32_t, std::string>, file=145718
+[INFO] func=RSHash, collision=3, time elapsed=108.565140 msecs
+[INFO] func=JSHash, collision=11, time elapsed=118.081841 msecs
+[INFO] func=PJWHash, collision=254, time elapsed=122.064140 msecs
+[INFO] func=ELFHash, collision=254, time elapsed=117.629372 msecs
+[INFO] func=BKDRHash, collision=3, time elapsed=108.026054 msecs
+[INFO] func=SDBMHash, collision=2, time elapsed=102.761192 msecs
+[INFO] func=DJBHash, collision=2, time elapsed=106.163803 msecs
+[INFO] func=DEKHash, collision=66, time elapsed=98.259743 msecs
+[INFO] func=BPHash, collision=141966, time elapsed=30.714870 msecs
+[INFO] func=FNVHash, collision=3, time elapsed=103.456375 msecs
+[INFO] func=APHash, collision=4, time elapsed=120.516907 msecs
+[INFO] func=hash_string32, collision=1, time elapsed=121.895775 msecs
+
+[INFO] # std::unordered_map<uint32_t, std::string>, file=145718
+[INFO] func=RSHash, collision=3, time elapsed=74.703918 msecs
+[INFO] func=JSHash, collision=11, time elapsed=74.806114 msecs
+[INFO] func=PJWHash, collision=254, time elapsed=83.417625 msecs
+[INFO] func=ELFHash, collision=254, time elapsed=85.153160 msecs
+[INFO] func=BKDRHash, collision=3, time elapsed=72.944366 msecs
+[INFO] func=SDBMHash, collision=2, time elapsed=76.123161 msecs
+[INFO] func=DJBHash, collision=2, time elapsed=72.482445 msecs
+[INFO] func=DEKHash, collision=66, time elapsed=70.576500 msecs
+[INFO] func=BPHash, collision=141966, time elapsed=27.657179 msecs
+[INFO] func=FNVHash, collision=3, time elapsed=73.280594 msecs
+[INFO] func=APHash, collision=4, time elapsed=82.607208 msecs
+[INFO] func=hash_string32, collision=1, time elapsed=81.336922 msecs
+
+[INFO] # std::unordered_map<std::string, std::string>, file=145718
+[INFO] func=std::unordeded_map, collision=0, time elapsed=140.758255 msecs
+
+
+
+# 디버그 버전
+[INFO] # std::map<uint32_t, std::string>, file=145718
+[INFO] func=RSHash, collision=3, time elapsed=2783.447021 msecs
+[INFO] func=JSHash, collision=11, time elapsed=2711.636963 msecs
+[INFO] func=PJWHash, collision=254, time elapsed=2768.272705 msecs
+[INFO] func=ELFHash, collision=254, time elapsed=2814.179932 msecs
+[INFO] func=BKDRHash, collision=3, time elapsed=2766.507324 msecs
+[INFO] func=SDBMHash, collision=2, time elapsed=2753.156982 msecs
+[INFO] func=DJBHash, collision=2, time elapsed=2693.644531 msecs
+[INFO] func=DEKHash, collision=66, time elapsed=2767.681641 msecs
+[INFO] func=BPHash, collision=141966, time elapsed=1065.056396 msecs
+[INFO] func=FNVHash, collision=3, time elapsed=2765.506348 msecs
+[INFO] func=APHash, collision=4, time elapsed=2695.671387 msecs
+[INFO] func=hash_string32, collision=1, time elapsed=2740.690674 msecs
+
+[INFO] # std::unordered_map<uint32_t, std::string>, file=145718
+[INFO] func=RSHash, collision=3, time elapsed=2868.202393 msecs
+[INFO] func=JSHash, collision=11, time elapsed=2942.227783 msecs
+[INFO] func=PJWHash, collision=254, time elapsed=2929.952393 msecs
+[INFO] func=ELFHash, collision=254, time elapsed=2964.694824 msecs
+[INFO] func=BKDRHash, collision=3, time elapsed=2932.376709 msecs
+[INFO] func=SDBMHash, collision=2, time elapsed=2912.048096 msecs
+[INFO] func=DJBHash, collision=2, time elapsed=2880.731689 msecs
+[INFO] func=DEKHash, collision=66, time elapsed=2923.981689 msecs
+[INFO] func=BPHash, collision=141966, time elapsed=862.678833 msecs
+[INFO] func=FNVHash, collision=3, time elapsed=2875.431152 msecs
+[INFO] func=APHash, collision=4, time elapsed=2892.405273 msecs
+[INFO] func=hash_string32, collision=1, time elapsed=2874.231689 msecs
+
+[INFO] # std::unordered_map<std::string, std::string>, file=145718
+[INFO] func=std::unordeded_map, collision=0, time elapsed=3553.741699 msecs
+
+*/
+bool test_GeneralHashFunctions2()
+{
+	std::list<std::string> _files;
+
+	if (!find_files(
+		L"c:\\windows",
+		[](_In_ DWORD_PTR tag, _In_ const wchar_t* path) 
+		{
+			char_ptr cptr(WcsToMbs(path), [](char* p) {if (nullptr != p) free(p); });
+			if (nullptr == cptr) return true;
+
+			std::list<std::string>* files = (std::list<std::string>*)(tag);
+			files->push_back(cptr.get());
+			return true;
+
+		},
+		(DWORD_PTR)&_files,
+		true))
+	{
+		return false;
+	}
+	
+	//
+	//	GernalHashFunctions 들의 충돌여부 확인
+	//
+	struct functions
+	{
+		hash_function func;
+		char* name;
+	} _functions[] = {		
+		{ RSHash, "RSHash" },
+		{ JSHash, "JSHash" },
+		{ PJWHash, "PJWHash" },
+		{ ELFHash, "ELFHash" },
+		{ BKDRHash, "BKDRHash" },
+		{ SDBMHash, "SDBMHash" },
+		{ DJBHash, "DJBHash" },
+		{ DEKHash, "DEKHash" },
+		{ BPHash, "BPHash" },
+		{ FNVHash, "FNVHash" },
+		{ APHash, "APHash" },
+		{ [](char* str, unsigned int len)->unsigned int
+			{
+				UNREFERENCED_PARAMETER(len);
+				return hash_string32(str);
+			},
+			"hash_string32" }
+	};
+
+
+	//
+	//	std::map 사용
+	//
+	log_info "# std::map<uint32_t, std::string>, file=%u", _files.size() log_end;
+	for (int i = 0; i < sizeof(_functions) / sizeof(functions); ++i)
+	{
+		uint32_t collision_count = 0;
+		std::map<uint32_t, std::string> _tbl;
+		StopWatch sw;
+		sw.Start();
+		for (auto file : _files)
+		{
+			uint32_t hash = _functions[i].func(const_cast<char*>(file.c_str()), 
+											   (uint32_t)strlen(file.c_str()));
+			auto entry = _tbl.find(hash);
+			if (entry == _tbl.end())
+			{
+				_tbl.insert(std::make_pair<uint32_t, std::string>(std::move(hash), 
+															std::move(file)));
+			}
+			else
+			{
+				// 충돌
+				//if (0 == _strnicmp(_functions[i].name, "hash_string32", strlen("hash_string32")))
+				//{
+				//	log_info "collision, prev=%s, curr=%s, hash=%u",
+				//		entry->second.c_str(),
+				//		file.c_str(),
+				//		hash
+				//		log_end;
+				//}
+				collision_count++;
+			}
+		}
+		sw.Stop();		
+		log_info "func=%s, collision=%u, time elapsed=%f msecs",
+			_functions[i].name,
+			collision_count, 
+			sw.GetDurationMilliSecond()
+			log_end;
+	}
+
+	//
+	//	std::unordered_map 사용
+	//
+	log_info "# std::unordered_map<uint32_t, std::string>, file=%u", _files.size() log_end;
+	for (int i = 0; i < sizeof(_functions) / sizeof(functions); ++i)
+	{
+		uint32_t collision_count = 0;
+		std::unordered_map<uint32_t, std::string> _tbl;
+		StopWatch sw;
+		sw.Start();
+		for (auto file : _files)
+		{
+			uint32_t hash = _functions[i].func(const_cast<char*>(file.c_str()),
+				(uint32_t)strlen(file.c_str()));
+			auto entry = _tbl.find(hash);
+			if (entry == _tbl.end())
+			{
+				_tbl.insert(std::make_pair<uint32_t, std::string>(std::move(hash),
+																  std::move(file)));
+			}
+			else
+			{
+				// 충돌
+				//if (0 == _strnicmp(_functions[i].name, "hash_string32", strlen("hash_string32")))
+				//{
+				//	log_info "collision, prev=%s, curr=%s, hash=%u",
+				//		entry->second.c_str(),
+				//		file.c_str(),
+				//		hash
+				//		log_end;
+				//}
+				collision_count++;
+			}
+		}
+		sw.Stop();
+		log_info "func=%s, collision=%u, time elapsed=%f msecs",
+			_functions[i].name,
+			collision_count,
+			sw.GetDurationMilliSecond()
+			log_end;
+	}
+
+	//
+	//	std::unordered_map<std::string, std::string> 사용
+	//	
+	log_info "# std::unordered_map<std::string, std::string>, file=%u", _files.size() log_end;	
+	{
+		uint32_t collision_count = 0;
+		std::unordered_map<std::string, std::string> _tbl;
+		StopWatch sw;
+		sw.Start();
+		for (auto file : _files)
+		{
+			auto entry = _tbl.find(file);
+			if (entry == _tbl.end())
+			{
+				_tbl.insert(std::make_pair<std::string, std::string>(std::move(file),
+																	 std::move(file)));
+			}
+			else
+			{
+				// 충돌
+				//if (0 == _strnicmp(_functions[i].name, "hash_string32", strlen("hash_string32")))
+				//{
+				//	log_info "collision, prev=%s, curr=%s, hash=%u",
+				//		entry->second.c_str(),
+				//		file.c_str(),
+				//		hash
+				//		log_end;
+				//}
+				collision_count++;
+			}
+		}
+		sw.Stop();
+		log_info "func=std::unordeded_map, collision=%u, time elapsed=%f msecs",			
+			collision_count,
+			sw.GetDurationMilliSecond()
+			log_end;
+	}
+	
+	return true;
+}
 
 bool test_get_file_extension()
 {

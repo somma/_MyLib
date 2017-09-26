@@ -319,7 +319,13 @@ std::wstring get_current_module_fileEx();
 std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name);
 
 /// @brief	full path 경로명에서 `파일명.확장자` 부분만 떼어낸다. 
-std::wstring file_name_from_file_path(_In_ const wchar_t* file_path);
+std::wstring file_name_from_file_pathw(_In_ const wchar_t* file_path);
+std::string file_name_from_file_patha(_In_ const char* file_path);
+
+
+/// @brief	full path 경로명에서 `파일명.확장자` 를 제외한 디렉토리 부분만 떼어낸다. 
+std::wstring directory_from_file_pathw(_In_ const wchar_t* file_path);
+std::string directory_from_file_patha(_In_ const char* file_path);
 
 bool WUCreateDirectory(const LPCWSTR DirectoryPath);
 bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete);
