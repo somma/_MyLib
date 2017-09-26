@@ -70,10 +70,18 @@ initialize_log(
 	
 
 	//
-	// write log header
+	//	파일 로그가 활성화된 경우 로그파일에 로그 헤더를 기록한다.
 	// 
-	std::string now; GetTimeStringA(now);
-	log_info "\n==\n== %s, log start.\n==", now.c_str() log_end;
+	if (nullptr != log_file_path)
+	{
+		std::string now; GetTimeStringA(now);		
+		log_write_fmt(log_mask_sys, 
+					  log_level_info, 
+					  log_to_file, 
+					  __FUNCTION__, 
+					  "\n==\n== %s, log start.\n==", 
+					  now.c_str());
+	}
 
 	return true;
 }
