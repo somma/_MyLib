@@ -24,6 +24,8 @@
 #include "GeneralHashFunctions.h"
 #include <unordered_map>
 
+bool test_set_security_attributes();
+
 bool test_GeneralHashFunctions();
 bool test_GeneralHashFunctions2();
 
@@ -241,8 +243,9 @@ void run_test()
 
 	bool ret = false;
 	
-	assert_bool(true, test_GeneralHashFunctions);
-	assert_bool(true, test_GeneralHashFunctions2);
+	assert_bool(true, test_set_security_attributes);
+	//assert_bool(true, test_GeneralHashFunctions);
+	//assert_bool(true, test_GeneralHashFunctions2);
 	//assert_bool(true, test_get_file_extension);
 	//assert_bool(true, test_raii_xxx);
 	//assert_bool(true, test_suspend_resume_process);
@@ -2282,6 +2285,45 @@ bool test_crc64()
         (unsigned long long) crc64(0, (unsigned char*)"123456789", 9)
         log_end;
     return true;
+}
+
+bool test_set_security_attributes()
+{
+	//
+	//	security_attributes.txt 파일을 생성한다. 
+	// 
+	//	생성된 파일은 local system 계정으로만 접근 가능하기 때문에 그냥 삭제할 수 없다. 
+	//	파일->속성->보안->고급->소유자변경 등을 통해 현재 사용자에게 필요한 권한을 주어야
+	//	한다.
+	//
+	std::wstringstream file_path;
+	file_path << get_current_module_dirEx() << L"\\security_attributes.txt";
+	if (is_file_existsW(file_path.str().c_str()))
+	{
+		DeleteFileW(file_path.str().c_str());
+	}
+
+	SECURITY_ATTRIBUTES sa;
+	_ASSERTE(true == set_security_attributes_type2(sa));
+
+	HANDLE file_handle = CreateFileW(file_path.str().c_str(),
+									 FILE_ALL_ACCESS,
+									 FILE_SHARE_READ | FILE_SHARE_WRITE,
+									 &sa,
+									 CREATE_NEW,
+									 FILE_ATTRIBUTE_NORMAL,
+									 NULL);
+	if (INVALID_HANDLE_VALUE == file_handle)
+	{
+		log_err "CreateFileW() failed. file=%ws, gle=%u",
+			file_path.str().c_str(),
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	CloseHandle(file_handle);
+	return true;
 }
 
 bool test_GeneralHashFunctions()

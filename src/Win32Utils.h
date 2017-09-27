@@ -589,7 +589,8 @@ bool	process_in_console_session(_In_ DWORD process_id);
 
 bool	create_process_as_login_user(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _Out_ PROCESS_INFORMATION& pi);
 
-bool set_security_attributes(_Out_ SECURITY_ATTRIBUTES& sa);
+bool set_security_attributes_type1(_Out_ SECURITY_ATTRIBUTES& sa);
+bool set_security_attributes_type2(_Out_ SECURITY_ATTRIBUTES& sa);
 
 bool suspend_process_by_pid(_In_ DWORD pid);
 bool resume_process_by_pid(_In_ DWORD pid);

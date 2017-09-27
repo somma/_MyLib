@@ -2000,8 +2000,8 @@ LoadFileToMemory(
 }
 
 /**
-* @brief	바이너리 파일로 데이터를 저장한다.	
-*/
+ * @brief	바이너리 파일로 데이터를 저장한다.	
+ */
 bool 
 SaveBinaryFile(
 	_In_ const LPCWSTR  Directory,
@@ -2051,11 +2051,10 @@ SaveBinaryFile(
     // 
     if (true == is_file_existsW(DataPath))
     {
-        log_err
-            "same file exists, file=%S will be replaced by new file",
-            DataPath
-			log_end
-        
+		//log_err
+		//	"same file exists, file=%S will be replaced by new file",
+		//	DataPath
+		//	log_end
         ::DeleteFileW(DataPath);
     }
 
@@ -5470,44 +5469,127 @@ create_process_as_login_user(
 	return ret;
 }
 
-/// @brief	authenticated user 만 접근가능한  DACL 을 설정한다. 
-bool set_security_attributes(_Out_ SECURITY_ATTRIBUTES& sa)
+/// @brief	서비스에서 생성한 커널오브젝트에 로그인 사용자 프로그램에서 
+///			접근가능하도록 DACL 을 설정한다. 
+/// 
+///			Built-in guests are denied all access.
+///			Anonymous logon is denied all access.
+///			Authenticated users are allowed read/write/execute access.
+///			Administrators are allowed full control.
+///
+///			Creating a DACL
+///			https://msdn.microsoft.com/en-us/library/windows/desktop/ms717798(v=vs.85).aspx
+/// 
+///			Security Descriptor String Format
+///			https://msdn.microsoft.com/en-us/library/windows/desktop/aa379570(v=vs.85).aspx
+///
+///			ACE Strings
+///			https://msdn.microsoft.com/en-us/library/windows/desktop/aa374928(v=vs.85).aspx
+bool set_security_attributes_type1(_Out_ SECURITY_ATTRIBUTES& sa)
 {
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 	sa.bInheritHandle = FALSE;
-
-	//	Creating a DACL
-	//	https://msdn.microsoft.com/en-us/library/windows/desktop/ms717798(v=vs.85).aspx
-	// 
-	//	Security Descriptor String Format
-	//	https://msdn.microsoft.com/en-us/library/windows/desktop/aa379570(v=vs.85).aspx
-	//
-	//	ACE Strings
-	//	https://msdn.microsoft.com/en-us/library/windows/desktop/aa374928(v=vs.85).aspx
-	//
-	//	Define the SDDL for the DACL.This example sets the following access:
-	//     Built-in guests are denied all access.
-	//     Anonymous logon is denied all access.
-	//     Authenticated users are allowed read/write/execute access.
-	//     Administrators are allowed full control.
-	//
-	//	Modify these values as needed to generate the proper DACL for your application. 
 
 	wchar_t* dacl_text = \
 		L"D:"					// Discretionary ACL
 		L"(D;OICI;GA;;;BG)"		// Deny access to built-in guests
 		L"(D;OICI;GA;;;AN)"     // Deny access to anonymous logon
-		L"(A;OICI;GRGWGX;;;AU)" // Allow 
-								// read/write/execute 
-								// to authenticated 
-								// users
-		L"(A;OICI;GA;;;BA)";    // Allow full control to administrators
 
-	BOOL ret = ConvertStringSecurityDescriptorToSecurityDescriptorW(dacl_text,
-																	SDDL_REVISION_1,
-																	&(sa.lpSecurityDescriptor),
-																	NULL);
-	return ret ? true : false;
+		//	ace_type; ace_flags; rights; object_guid; inherit_object_guid; account_sid; (resource_attribute)
+		//
+		//	A : SDDL_ACCESS_ALLOWED, D: SDDL_ACCESS_DENIED
+		//	OI: SDDL_OBJECT_INHERIT
+		//	CI: SDDL_CONTAINER_INHERIT
+		//	GR: SDDL_GENERIC_READ
+		//	GW: SDDL_GENERIC_WRITE
+		//	GX: SDDL_GENERIC_EXECUTE
+		//	n/a
+		//	n/a
+		//	AU: SDDL_AUTHENTICATED_USERS
+		// 
+		//	Allow 
+		//		- read/write/execute 
+		//		- to authenticated users
+		L"(A;OICI;GRGWGX;;;AU)" 
+
+		//	ace_type; ace_flags; rights; object_guid; inherit_object_guid; account_sid; (resource_attribute)
+		//
+		//	A : SDDL_ACCESS_ALLOWED
+		//	OI: SDDL_OBJECT_INHERIT
+		//	CI: SDDL_CONTAINER_INHERIT
+		//	GA: SDDL_GENERIC_ALL
+		//	n/a
+		//	n/a
+		//	BA: SDDL_BUILTIN_ADMINISTRATORS, SY: SDDL_LOCAL_SYSTEM
+		// 
+		//	Allow full control to administrators
+		L"(A;OICI;GA;;;BA)";    
+	
+	if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(dacl_text,
+															  SDDL_REVISION_1,
+															  &(sa.lpSecurityDescriptor),
+															  NULL))
+	{
+		log_err "ConvertStringSecurityDescriptorToSecurityDescriptorW() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	return true;
+}
+
+/// @brief	LOCAL_SYSTEM 계정으로만 접근 가능한 DACL 을 생성한다. 
+/// 
+///			Built-in guests are denied all access.
+///			Anonymous logon is denied all access.
+///			Authenticated users denied all access.
+///			Local system are allowed full control.
+///
+///			Creating a DACL
+///			https://msdn.microsoft.com/en-us/library/windows/desktop/ms717798(v=vs.85).aspx
+/// 
+///			Security Descriptor String Format
+///			https://msdn.microsoft.com/en-us/library/windows/desktop/aa379570(v=vs.85).aspx
+///
+///			ACE Strings
+///			https://msdn.microsoft.com/en-us/library/windows/desktop/aa374928(v=vs.85).aspx
+bool set_security_attributes_type2(_Out_ SECURITY_ATTRIBUTES& sa)
+{
+	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa.bInheritHandle = FALSE;
+
+	wchar_t* dacl_text = \
+		L"D:"					// Discretionary ACL
+		L"(D;OICI;GA;;;BG)"		// Deny access to built-in guests
+		L"(D;OICI;GA;;;AN)"     // Deny access to anonymous logon
+		L"(D;OICI;GA;;;AU)"		// Deny access to authenticated user
+
+		//	ace_type; ace_flags; rights; object_guid; inherit_object_guid; account_sid; (resource_attribute)
+		//
+		//	A : SDDL_ACCESS_ALLOWED
+		//	OI: SDDL_OBJECT_INHERIT
+		//	CI: SDDL_CONTAINER_INHERIT
+		//	GA: SDDL_GENERIC_ALL
+		//	n/a
+		//	n/a
+		//	SY: SDDL_LOCAL_SYSTEM
+		// 
+		//	Allow full control to LOCAL_SYSTE
+		L"(A;OICI;GA;;;SY)";    
+	
+	if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(dacl_text,
+															  SDDL_REVISION_1,
+															  &(sa.lpSecurityDescriptor),
+															  NULL))
+	{
+		log_err "ConvertStringSecurityDescriptorToSecurityDescriptorW() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	return true;
 }
 
 /// @brief	Suspend process
