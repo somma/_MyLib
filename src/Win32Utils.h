@@ -550,6 +550,7 @@ typedef std::unique_ptr<char, void(*)(char*)> char_ptr;
 typedef std::unique_ptr<wchar_t, void(*)(wchar_t*)> wchar_ptr;
 typedef std::unique_ptr<std::remove_pointer<HANDLE>::type, void(*)(HANDLE)> handle_ptr;
 typedef std::unique_ptr<std::remove_pointer<void*>::type, void(*)(void*)> void_ptr;
+typedef std::unique_ptr<std::remove_pointer<HKEY>::type, void(*)(HKEY)> hkey_ptr;
 
 
 /******************************************************************************
