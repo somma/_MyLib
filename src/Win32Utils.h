@@ -179,6 +179,8 @@ std::string sys_time_to_str2(_In_ const PSYSTEMTIME utc_sys_time);
 /******************************************************************************
  * file, disk, volumes
 ******************************************************************************/
+bool is_file_existsW(_In_ std::wstring& file_path);
+bool is_file_existsA(_In_ std::string& file_path);
 bool is_file_existsW(_In_ const wchar_t* file_path);
 bool is_file_existsA(_In_ const char* file_path);
 bool is_dir(_In_ const wchar_t* file_path);
@@ -327,8 +329,11 @@ std::string file_name_from_file_patha(_In_ const char* file_path);
 std::wstring directory_from_file_pathw(_In_ const wchar_t* file_path);
 std::string directory_from_file_patha(_In_ const char* file_path);
 
-bool WUCreateDirectory(const LPCWSTR DirectoryPath);
-bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete);
+
+bool WUCreateDirectory(_In_ std::wstring& DirectoryPath);
+bool WUDeleteDirectoryW(_In_ std::wstring& DirctoryPathToDelete);
+bool WUCreateDirectory(_In_ const wchar_t* DirectoryPath);
+bool WUDeleteDirectoryW(_In_ const wchar_t* DirctoryPathToDelete);
 BOOL GetImageFullPathFromPredefinedPathW(
                 IN  LPCWSTR ImageName, 
                 IN  DWORD   BufferLen,

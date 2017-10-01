@@ -364,15 +364,16 @@ sys_time_to_str2(
 }
 
 
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
+bool is_file_existsW(_In_ std::wstring& file_path)
+{
+	return is_file_existsW(file_path.c_str());
+}
+
+bool is_file_existsA(_In_ std::string& file_path)
+{
+	return is_file_existsA(file_path.c_str());
+}
+
 bool is_file_existsW(_In_ const wchar_t* file_path)
 {
 	_ASSERTE(NULL != file_path);
@@ -381,24 +382,18 @@ bool is_file_existsW(_In_ const wchar_t* file_path)
 	WIN32_FILE_ATTRIBUTE_DATA info = {0};
 
 	//
-	// CreateFile()이 아닌 GetFileAttributesEx()를 이용하면 파일이 다른 process에 의해 lock되어 있어도
-	// 파일 존재여부를 정확히 체크할 수 있다.
+	//	CreateFile()이 아닌 GetFileAttributesEx()를 이용하면 파일이 
+	//	다른 process에 의해 lock되어 있어도
+	//	파일 존재여부를 정확히 체크할 수 있다.
 	//
-	if (GetFileAttributesExW(file_path, GetFileExInfoStandard, &info)==0) 
+	if (FALSE == GetFileAttributesExW(file_path, 
+									  GetFileExInfoStandard, 
+									  &info)) 
 		return false;
 	else
 		return true;
 }
 
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
 bool is_file_existsA(_In_ const char* file_path)
 {
     WCHAR* wcs=MbsToWcs(file_path);
@@ -413,7 +408,9 @@ bool is_file_existsA(_In_ const char* file_path)
 bool is_dir(_In_ const wchar_t* file_path)
 {   
     WIN32_FILE_ATTRIBUTE_DATA info = { 0 };
-    if (TRUE == GetFileAttributesExW(file_path, GetFileExInfoStandard, &info))
+    if (TRUE == GetFileAttributesExW(file_path, 
+									 GetFileExInfoStandard, 
+									 &info))
     {
         // 파일이 존재하고, 디렉토리라면 true
         if (info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
@@ -430,7 +427,9 @@ bool is_dir(_In_ const wchar_t* file_path)
 bool is_file(_In_ const wchar_t* file_path)
 {
     WIN32_FILE_ATTRIBUTE_DATA info = { 0 };
-    if (TRUE == GetFileAttributesExW(file_path, GetFileExInfoStandard, &info))
+    if (TRUE == GetFileAttributesExW(file_path, 
+									 GetFileExInfoStandard, 
+									 &info))
     {
         // 파일이 존재하고, 디렉토리가 아니면 true
         if (!(info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
@@ -2086,9 +2085,23 @@ SaveBinaryFile(
     return true;
 }
 
-/// @brief	DirectoryPath 디렉토리를 생성한다. 중간에 없는 디렉토리 경로가 존재하면
-///			생성한다.
-bool WUCreateDirectory(const LPCWSTR DirectoryPath)
+
+/// @brief	DirectoryPath 디렉토리를 생성한다. 
+///			중간에 없는 디렉토리 경로가 존재하면 생성한다.
+bool WUCreateDirectory(_In_ std::wstring& DirectoryPath)
+{
+	return WUCreateDirectory(DirectoryPath.c_str());
+}
+
+/// @brief	지정된 디렉토리(내부의 폴더, 파일등까지)를 몽땅 삭제한다. 
+bool WUDeleteDirectoryW(_In_ std::wstring& DirctoryPathToDelete)
+{
+	return WUDeleteDirectoryW(DirctoryPathToDelete.c_str());
+}
+
+/// @brief	DirectoryPath 디렉토리를 생성한다. 
+///			중간에 없는 디렉토리 경로가 존재하면 생성한다.
+bool WUCreateDirectory(_In_ const wchar_t* DirectoryPath)
 {
 	_ASSERTE(NULL != DirectoryPath);
 	if (NULL==DirectoryPath) return false;
@@ -2108,16 +2121,8 @@ bool WUCreateDirectory(const LPCWSTR DirectoryPath)
 	return true;
 }
 
-/**----------------------------------------------------------------------------
-    \brief	지정된 디렉토리(내부의 폴더, 파일등까지)를 몽땅 삭제하는 함수  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
-bool WUDeleteDirectoryW(IN LPCWSTR  DirctoryPathToDelete)
+/// @brief	지정된 디렉토리(내부의 폴더, 파일등까지)를 몽땅 삭제한다. 
+bool WUDeleteDirectoryW(_In_ const wchar_t* DirctoryPathToDelete)
 {
 	_ASSERTE(NULL != DirctoryPathToDelete);
 	if (NULL == DirctoryPathToDelete) return false;

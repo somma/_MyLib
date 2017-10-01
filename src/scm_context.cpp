@@ -459,7 +459,8 @@ bool scm_context::start_service()
 	{
 		log_err 
 			"OpenServiceW( service_name=%ws ) failed. gle = %u", 
-			_service_name.c_str(), GetLastError() 
+			_service_name.c_str(), 
+			GetLastError() 
 		log_end
 		return false;
 	}
@@ -511,7 +512,8 @@ scm_context::start_service(
 		{
             log_err 
 				"StartService( service name=%ws ) failed, gle = %u", 
-				_service_name.c_str(), err
+				_service_name.c_str(), 
+				err
 			log_end
 			return false;
 		}
