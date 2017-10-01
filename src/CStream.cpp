@@ -184,5 +184,30 @@ unsigned long CMemoryStream::WriteToStream(const void *Buffer, unsigned long Cou
 
 
 
+/// @brief	
+unsigned long CMemoryStream::ReadUint16FromStream(_Out_ uint16_t& value)
+{
+	return ReadFromStream((void*)&value, sizeof(uint16_t));
+}
+
+/// @brief	
+unsigned long CMemoryStream::WriteUint16ToStream(_In_ uint16_t value)
+{
+	return WriteToStream(&value, sizeof(uint16_t));
+}
+
+
+/// @brief	
+unsigned long CMemoryStream::ReadUint32FromStream(_Out_ uint32_t& value)
+{
+	return ReadFromStream((void*)&value, sizeof(uint32_t));
+}
+
+/// @brief	
+unsigned long CMemoryStream::WriteUint32ToStream(_In_ uint32_t value)
+{
+	return WriteToStream(&value, sizeof(uint32_t));
+}
+
 
 

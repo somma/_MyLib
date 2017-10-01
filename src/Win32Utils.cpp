@@ -2553,9 +2553,7 @@ get_environment_value(
 	_ASSERTE(NULL != env_variable);
 	if (NULL == env_variable) return false;
 
-	wchar_t* buf = NULL;
-	uint32_t buf_len = 0;
-	DWORD char_count_plus_null = ExpandEnvironmentStrings(env_variable, buf, buf_len);
+	DWORD char_count_plus_null = ExpandEnvironmentStrings(env_variable, NULL, 0);
 	if (0 == char_count_plus_null)
 	{
 		log_err 
@@ -2566,15 +2564,20 @@ get_environment_value(
 		return false;
 	}
 
-	buf_len = char_count_plus_null * sizeof(wchar_t);
-	buf = (wchar_t*) malloc(buf_len);
-	if (NULL == buf)
+	uint32_t buf_len = char_count_plus_null * sizeof(wchar_t);
+	wchar_ptr buf(
+		(wchar_t*)malloc(buf_len), 
+		[](wchar_t* p) {if (nullptr != p) free(p);}
+	);
+	if (NULL == buf.get())
 	{
 		log_err "malloc() failed." log_end
 		return false;
 	}
 
-	char_count_plus_null = ExpandEnvironmentStrings(env_variable, buf, buf_len);
+	char_count_plus_null = ExpandEnvironmentStrings(env_variable, 
+													buf.get(), 
+													buf_len);
 	if (0 == char_count_plus_null)
 	{
 		log_err 
@@ -2582,13 +2585,10 @@ get_environment_value(
 			env_variable, 
 			GetLastError() 
 		log_end
-
-		free(buf);
 		return false;
 	}
 
-	env_value = buf;
-	free(buf);
+	env_value = buf.get();
 	return true;
 }
 
@@ -2608,10 +2608,15 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 
 	wchar_t* short_path = NULL;
 	uint32_t char_count_and_null = 0;
-	char_count_and_null  = GetShortPathNameW(long_file_name, short_path, char_count_and_null);
+	char_count_and_null  = GetShortPathNameW(long_file_name, 
+											 short_path, 
+											 char_count_and_null);
 	if (0 == char_count_and_null)
 	{
-		log_err "GetShortPathNameW( %ws ) failed. gle = %u", long_file_name, GetLastError() log_end
+		log_err "GetShortPathNameW( %ws ) failed. gle = %u",
+			long_file_name,
+			GetLastError()
+			log_end;
 		return false;
 	}
 
@@ -2622,7 +2627,9 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 		return false;
 	}
 
-	if (0 == GetShortPathNameW(long_file_name, short_path, char_count_and_null))
+	if (0 == GetShortPathNameW(long_file_name, 
+							   short_path, 
+							   char_count_and_null))
 	{
 		log_err "GetShortPathNameW( %ws ) failed.", long_file_name log_end
 		free(short_path);

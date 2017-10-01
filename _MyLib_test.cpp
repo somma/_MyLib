@@ -209,10 +209,11 @@ void run_test()
 	//
 	//	std::string ฐüทร 
 	// 
-	std::wstring wstr = L"12345";
-	con_info "wstr.size() = %u, wcslen(wstr.c_str() = %u",
+	std::wstring wstr = L"12345";	
+	log_info "wstr.size() = %u, wcslen(wstr.c_str()) = %u  (same size)",
 		wstr.size(), wcslen(wstr.c_str())
 		log_end;
+	_ASSERTE(wstr.size() == wcslen(wstr.c_str()));
 
 	std::wstring s = L"";
 	_ASSERTE(true == s.empty());

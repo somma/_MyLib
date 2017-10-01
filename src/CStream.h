@@ -54,13 +54,19 @@ public:
 	virtual void ClearStream(void) = 0;
 
 	// 스트림으로 부터 데이터를 읽어서 버퍼에 쓴다.
-	// 
-	virtual unsigned long ReadFromStream(void *Buffer, unsigned long Count) = 0;
+	virtual unsigned long ReadFromStream(_Out_ void *Buffer, unsigned long Count) = 0;
 
 	// 버퍼로부터 데이터를 읽어 스트림의 현재 포지션에 쓴다.
-	//
-	virtual unsigned long WriteToStream(const void *Buffer, unsigned long Count) = 0;	
+	virtual unsigned long WriteToStream(_In_ const void *Buffer, unsigned long Count) = 0;
+	
+	virtual unsigned long ReadUint16FromStream(_Out_ uint16_t& value) = 0;
+	virtual unsigned long WriteUint16ToStream(_In_ uint16_t value) = 0;
+	virtual unsigned long ReadUint32FromStream(_Out_ uint32_t& value) = 0;
+	virtual unsigned long WriteUint32ToStream(_In_ uint32_t value) = 0;
 };
+
+
+
 
 
 //
@@ -70,7 +76,7 @@ public:
 //		이 클래스에서 다른 클래스를 파생하지 말것.
 //		복사/대입/소멸자 등등.. 전혀 파생 객체를 고려하지 않았음. 쿠쿠쿠 :-)
 // 
-class CMemoryStream : public CStream
+typedef class CMemoryStream : public CStream
 {
 private:
 	char *m_pMemory;
@@ -130,18 +136,22 @@ public:
 	}
 
 	// 스트림으로 부터 데이터를 읽어서 버퍼에 쓴다.
-	// 
-	virtual unsigned long ReadFromStream(void *Buffer, unsigned long Count);
+	virtual unsigned long ReadFromStream(_Out_ void *Buffer, unsigned long Count);
 
 	// 버퍼로부터 데이터를 읽어 스트림의 현재 포지션에 쓴다.
-	//
-	virtual unsigned long WriteToStream(const void *Buffer, unsigned long Count);
+	virtual unsigned long WriteToStream(_In_ const void *Buffer, unsigned long Count);
+		
+	virtual unsigned long ReadUint16FromStream(_Out_ uint16_t& value);
+	virtual unsigned long WriteUint16ToStream(_In_ uint16_t value);
+	virtual unsigned long ReadUint32FromStream(_Out_ uint32_t& value);
+	virtual unsigned long WriteUint32ToStream(_In_ uint32_t value);
+
+
 
 	// 메모리 멤버에 직접 엑세스 하기 위한 메소드
-	//
 	const void *GetMemory() { return m_pMemory; };
 
-};
+} *PMemoryStream;
 
 
 
