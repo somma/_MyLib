@@ -81,22 +81,24 @@ initialize_log(
 
 		_logger = local_slogger;
 		local_slogger = NULL;
-	}
-	
+	}	
 
 	//
 	//	파일 로그가 활성화된 경우 로그파일에 로그 헤더를 기록한다.
-	// 
-
+	// 	
 	if (nullptr != log_file_path && FlagOn(log_to, log_to_file))
 	{
 		std::string now; GetTimeStringA(now);		
+
+		uint32_t prev_log_to = get_log_to();
+		set_log_to(log_to_file);
 		log_write_fmt(log_mask_sys, 
 					  log_level,
 					  __FUNCTION__, 
-					  "\n==\n== %s, log start.\n==", 
+					  "== %s, log start.==", 
 					  now.c_str());
-	}
+		set_log_to(prev_log_to);
+	}	
 
 	return true;
 }
