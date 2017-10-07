@@ -27,8 +27,8 @@ static bool			    _show_pid_tid = true;
 static bool			    _show_function_name = true;
 
 static uint32_t         _log_mask = log_mask_all; 
-static uint32_t			_log_level = log_level_error;
-static uint32_t			_log_to = log_to_none;
+static uint32_t			_log_level = log_level_debug;
+static uint32_t			_log_to = log_to_all;
 
 /**
  * @brief	log 모듈을 초기화한다. 
