@@ -21,7 +21,7 @@
 bool proc_tree_callback(_In_ process& process_info, _In_ DWORD_PTR callback_tag)
 {
     UNREFERENCED_PARAMETER(callback_tag);
-	con_info "pid = %u, %ws", 
+	log_info "pid = %u, %ws", 
 		process_info.pid(), 
 		process_info.process_name() 
 		log_end

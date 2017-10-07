@@ -7,7 +7,7 @@
  *
  *			multi thread 환경에서 serialization 이 됨
  *
- *			log_err, con_err 같은 매크로만 사용하면 debugger, console 로 메세지 출력 가능
+ *			log_err, log_err 같은 매크로만 사용하면 debugger, console 로 메세지 출력 가능
  * @ref     
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2015/01/12 created.
@@ -21,11 +21,14 @@
  * @brief	
 **/
 static boost::mutex     _logger_lock;
-static slogger*		    _logger = NULL;
+static slogger*		    _logger = nullptr;
 static bool			    _show_process_name = true;
 static bool			    _show_pid_tid = true;
 static bool			    _show_function_name = true;
-static uint32_t         _log_mask = log_mask_all;
+
+static uint32_t         _log_mask = log_mask_all; 
+static uint32_t			_log_level = log_level_error;
+static uint32_t			_log_to = log_to_none;
 
 /**
  * @brief	log 모듈을 초기화한다. 
@@ -38,22 +41,34 @@ static uint32_t         _log_mask = log_mask_all;
 **/
 bool 
 initialize_log(
+	_In_ uint32_t log_mask,
 	_In_ uint32_t log_level, 
-	_In_opt_z_ const wchar_t* log_file_path
+	_In_ uint32_t log_to,
+	_In_opt_z_ const wchar_t* log_file_path	
 	)
 {
+	_log_mask = log_mask;
+	_log_level = log_level;
+	_log_to = log_to;
+
+	if (nullptr == log_file_path && FlagOn(log_to, log_to_file))
+	{
+		OutputDebugStringA("[ERR ] initialize_log(), Invalid parameter mix \n");
+		return false;
+	}
+
 	{
 		boost::lock_guard< boost::mutex > lock(_logger_lock);
 		if (NULL != _logger) return true;
 
-		slogger* local_slogger = new slogger();
+		slogger* local_slogger = new slogger(log_level, log_to);
 		if (NULL == local_slogger)
 		{
 			OutputDebugStringA("[ERR ] initialize_log(), insufficient resource for slogger.\n");
 			return false;
 		}
 
-		if (true != local_slogger->slog_start(log_level, log_file_path))
+		if (true != local_slogger->slog_start(log_file_path))
 		{
 			OutputDebugStringA("[ERR ] initialize_log(), _logger->slog_start() failed.\n");
 			delete local_slogger;
@@ -72,12 +87,12 @@ initialize_log(
 	//
 	//	파일 로그가 활성화된 경우 로그파일에 로그 헤더를 기록한다.
 	// 
-	if (nullptr != log_file_path)
+
+	if (nullptr != log_file_path && FlagOn(log_to, log_to_file))
 	{
 		std::string now; GetTimeStringA(now);		
 		log_write_fmt(log_mask_sys, 
-					  log_level_info, 
-					  log_to_file, 
+					  log_level,
 					  __FUNCTION__, 
 					  "\n==\n== %s, log start.\n==", 
 					  now.c_str());
@@ -129,17 +144,97 @@ set_log_format(
 }
 
 
-/**
- * @brief	log mask 를 설정한다. ( mask = 0xffffffff : 모든 로그를 활성화 )
- *          (log_mask_sys 는 항상 설정됨)
-**/
+/// @brief	log 설정 갱신
 void
-set_log_mask(
-    _In_ uint32_t mask
+set_log_env(
+    _In_ uint32_t mask, 
+	_In_ uint32_t log_level, 
+	_In_ uint32_t log_to
     )
 {
-    _log_mask = (mask | log_mask_sys);
+	boost::lock_guard< boost::mutex > lock(_logger_lock);
+	
+	bool update_logger = false;
+	if (_log_mask != mask) 
+	{
+		_log_mask = mask;
+	}
+
+	if (_log_level != log_level)
+	{
+		_log_level = log_level;
+		update_logger = true;
+	}
+
+	if (_log_to != log_to)
+	{
+		_log_to = log_to;
+		update_logger = true;
+	}
+
+	if (nullptr != _logger && true == update_logger)
+	{
+		_logger->set_log_env(log_level, log_to);
+	}
 }
+
+/// @brief	_log_mask 
+uint32_t get_log_mask()
+{
+	return _log_mask;
+}
+
+void set_log_mask(_In_ uint32_t mask)
+{
+	boost::lock_guard< boost::mutex > lock(_logger_lock);	
+	if (_log_mask != mask) 
+	{
+		_log_mask = mask;
+	}
+}
+
+/// @brief	_log_level
+uint32_t get_log_level()
+{
+	return _log_level;
+}
+
+void set_log_level(_In_ uint32_t log_level)
+{
+	boost::lock_guard< boost::mutex > lock(_logger_lock);
+	
+	if (_log_level != log_level)
+	{
+		_log_level = log_level;
+
+		if (nullptr != _logger)
+		{
+			_logger->set_log_env(log_level, _logger->log_to());
+		}
+	}
+}
+
+/// @briefg	_log_to 
+uint32_t get_log_to()
+{
+	return _log_to;
+}
+
+void set_log_to(_In_ uint32_t log_to)
+{
+	boost::lock_guard< boost::mutex > lock(_logger_lock);
+
+	if (_log_to != log_to)
+	{
+		_log_to = log_to;
+
+		if (nullptr != _logger)
+		{
+			_logger->set_log_env(_logger->log_level(), log_to);
+		}
+	}
+}
+
 
 /**
  * @brief	
@@ -155,22 +250,16 @@ set_log_mask(
 void
 log_write_fmt(
     _In_ uint32_t log_mask,
-    _In_ uint32_t log_level, 
-	_In_ uint32_t log_to,
+    _In_ uint32_t log_level, 	
 	_In_z_ const char* function,
     _In_z_ const char* fmt, 
     _In_ ...
     )
 {
-    // check log mask
+    // check log mask & level
     if (log_mask != (_log_mask & log_mask)) return;
+	if (_log_level > log_level) return;
 
-    // check base log level
-    {
-        boost::lock_guard< boost::mutex > lock(_logger_lock);
-        if (NULL != _logger && _logger->slog_get_base_log_level() > log_level) return;
-    }
-    
     if (NULL == fmt) return;
 
 	char log_buffer[2048];
@@ -259,27 +348,27 @@ log_write_fmt(
 
         if (NULL != _logger)
         {
-            _logger->slog_write(log_level, log_to, log_buffer);
+            _logger->slog_write(log_level, _log_to, log_buffer);
         }
         else
-        {
-            if (log_to & log_to_con)
+        {			
+            if (FlagOn(_log_to, log_to_con))
             {
                 switch (log_level)
                 {
                 case log_level_error: // same as log_level_critical
-                    write_to_console(wtc_red, log_buffer);
+                    write_to_console(fc_red, log_buffer);
                     break;
                 case log_level_info:
                 case log_level_warn:
-                    write_to_console(wtc_green, log_buffer);
+                    write_to_console(fc_green, log_buffer);
                     break;
                 default:
-                    write_to_console(wtc_none, log_buffer);
+                    write_to_console(fc_none, log_buffer);
                 }
             }
 
-            if (log_to & log_to_ods)
+			if (FlagOn(_log_to, log_to_ods))
             {
                 OutputDebugStringA(log_buffer);
             }
@@ -296,19 +385,13 @@ void
 log_write_fmt_without_deco(
     _In_ uint32_t log_mask,
     _In_ uint32_t log_level,
-    _In_ uint32_t log_to,
     _In_z_ const char* fmt,
     _In_ ...
     )
 {
-	// check log mask
+	// check log mask & level
 	if (log_mask != (_log_mask & log_mask)) return;
-
-    // check base log level
-    {
-        boost::lock_guard< boost::mutex > lock(_logger_lock);
-        if (NULL != _logger && _logger->slog_get_base_log_level() > log_level) return;
-    }
+	if (_log_level > log_level) return;
 
     if (NULL == fmt) return;
 
@@ -349,27 +432,27 @@ log_write_fmt_without_deco(
 
         if (NULL != _logger)
         {
-            _logger->slog_write(log_level, log_to, log_buffer);
+            _logger->slog_write(log_level, _log_to, log_buffer);
         }
         else
         {
-            if (log_to & log_to_con)
+            if (FlagOn(_log_to, log_to_con))
             {
                 switch (log_level)
                 {
                 case log_level_error: // same as log_level_critical
-                    write_to_console(wtc_red, log_buffer);
+                    write_to_console(fc_red, log_buffer);
                     break;
                 case log_level_info:
                 case log_level_warn:
-                    write_to_console(wtc_green, log_buffer);
+                    write_to_console(fc_green, log_buffer);
                     break;
                 default:
-                    write_to_console(wtc_none, log_buffer);
+                    write_to_console(fc_none, log_buffer);
                 }
             }
 
-            if (log_to & log_to_ods)
+			if (FlagOn(_log_to, log_to_ods))
             {
                 OutputDebugStringA(log_buffer);
             }
@@ -385,10 +468,12 @@ log_write_fmt_without_deco(
 /**
  * @brief	constructor
  */
-slogger::slogger() 
-    : _stop_logger(true), 
-      _logger_thread(NULL), 
-      _log_file_handle(INVALID_HANDLE_VALUE)
+slogger::slogger(_In_ uint32_t log_level, _In_ uint32_t log_to): 
+	_stop_logger(true), 
+	_log_level(log_level),
+	_log_to(log_to),
+	_logger_thread(NULL), 
+	_log_file_handle(INVALID_HANDLE_VALUE)
 {
 }
 
@@ -405,7 +490,6 @@ slogger::~slogger()
  */
 bool 
 slogger::slog_start(
-	_In_ uint32_t base_log_level, 	
 	_In_opt_z_ const wchar_t *log_file_path
 	)
 {
@@ -427,8 +511,6 @@ slogger::slog_start(
 			return false;
 		}
 	}
-
-    slog_set_base_log_level(base_log_level);
 
     _stop_logger = false;
     _logger_thread = new boost::thread( boost::bind(&slogger::slog_thread, this) );
@@ -477,7 +559,7 @@ slogger::slog_write(
 	if (NULL == log_message) return;
 
 	// check log level
-	if (slog_get_base_log_level() > level) return;
+	if (log_level() > level) return;
 
 	// enqueue log
 	plog_entry le = new log_entry(level, log_to, log_message);
@@ -512,14 +594,14 @@ void slogger::slog_thread()
             switch (log->_log_level)
             {
             case log_level_error: // same as log_level_critical
-                write_to_console(wtc_red, log->_msg.c_str());
+                write_to_console(fc_red, log->_msg.c_str());
                 break;
             case log_level_info:
             case log_level_warn: 
-                write_to_console(wtc_green, log->_msg.c_str());
+                write_to_console(fc_green, log->_msg.c_str());
                 break;
             default:
-                write_to_console(wtc_none, log->_msg.c_str());
+                write_to_console(fc_none, log->_msg.c_str());
             }
 		}
 
@@ -560,14 +642,14 @@ void slogger::slog_thread()
 				switch (log->_log_level)
 				{
 				case log_level_error: // same as log_level_critical
-					write_to_console(wtc_red, log->_msg.c_str());
+					write_to_console(fc_red, log->_msg.c_str());
 					break;
 				case log_level_info:
 				case log_level_warn:
-					write_to_console(wtc_green, log->_msg.c_str());
+					write_to_console(fc_green, log->_msg.c_str());
 					break;
 				default:
-					write_to_console(wtc_none, log->_msg.c_str());
+					write_to_console(fc_none, log->_msg.c_str());
 				}
 			}
 

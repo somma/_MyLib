@@ -46,11 +46,11 @@ void asio_on_timer( const boost::system::error_code& error )
 {
 	if (!error)		// true if no error
 	{
-		con_info "1st timer called." con_end
+		log_info "1st timer called." log_end
 	}
 	else
 	{
-		con_err "error code = %d, msg = %s", error.value(), error.message().c_str() con_end
+		log_err "error code = %d, msg = %s", error.value(), error.message().c_str() log_end
 	}
 }
 
@@ -84,11 +84,11 @@ bool test_boost_asio_timer_2()
 				{	
 					if (!error)		// true if no error
 					{
-						con_info "%s, timer expired. ", time(NULL) con_end
+						log_info "%s, timer expired. ", time(NULL) log_end
 					}
 					else
 					{
-						con_err "error code = %d, msg = %s", error.value(), error.message().c_str() con_end
+						log_err "error code = %d, msg = %s", error.value(), error.message().c_str() log_end
 					}
 				});
 	io_service.run();

@@ -635,10 +635,15 @@ bool get_process_creation_time(_In_ HANDLE process_handle, _Out_ PFILETIME const
 void SetConsoleCoords(COORD xy);
 COORD GetCurCoords(void);
 
-#define wtc_none    0
-#define wtc_red     1
-#define wtc_green   2
-void write_to_console(_In_ uint32_t color, _In_z_ const char* log_message);
+enum console_font_color
+{
+	fc_none,
+	fc_red,
+	fc_green
+};
+
+bool create_console();
+void write_to_console(_In_ console_font_color color, _In_z_ const char* log_message);
 void clear_console();
 
 

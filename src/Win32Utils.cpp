@@ -3657,8 +3657,10 @@ split_stringa(
 
     tokens.clear();
 
-    // strtok_s() modifies the `str` buffer.
-    // so we should make copy.
+	//
+    //	strtok_s() modifies the `str` buffer.
+    //	So we have to use copy `str` for out use only.
+	// 
     size_t buf_len = (strlen(str) * sizeof(char)) + sizeof(char);
     if (max_str_len < buf_len)
     {
@@ -3678,7 +3680,10 @@ split_stringa(
 	}
 
 	StringCbPrintfA(buf.get(), buf_len, "%s", str);
-
+	
+	//	
+	//	wcstok_s() 함수에서 separator 문자열이 연속되는 경우 알아서 건너뛴다.
+	//
     char* next_token = NULL;
     char* token = strtok_s(buf.get(), seps, &next_token);
     while (NULL != token)
@@ -3704,8 +3709,10 @@ split_stringw(
 
     tokens.clear();
 
-    // strtok_s() modifies the `str` buffer.
-    // so we should make copy.
+	//
+    //	strtok_s() modifies the `str` buffer.
+    //	so we should make copy.
+	//
     size_t buf_len = (wcslen(str) * sizeof(wchar_t)) + sizeof(wchar_t);
     if (max_str_len < buf_len)
     {
@@ -5894,28 +5901,72 @@ COORD GetCurCoords(void)
     return csbi.dwCursorPosition;
 }
 
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-void write_to_console(_In_ uint32_t color, _In_z_ const char* log_message)
+/// @brief	 현재 프로세스에 콘솔이 없다면 새롭게 생성한다. 
+bool create_console()
+{
+	HANDLE h_console = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (NULL == h_console)
+	{
+		//
+		//	Console 이 없는, service 또는 gui 인 경우 NULL 을 리턴
+		//	
+
+		if (!AllocConsole())
+		{
+			log_err "AllocConsole() failed. gle=%u",
+				GetLastError()
+				log_end;
+			return false;
+		}
+
+		h_console = GetStdHandle(STD_OUTPUT_HANDLE);
+		if (NULL == h_console)
+		{
+			log_err "Can not get STD_OUTPUT_HANDLE (No console allocated)." 
+				log_end;
+			return false;
+		}
+		else if (INVALID_HANDLE_VALUE == h_console)
+		{
+			log_err "GetStdHandle() failed. gle=%u", 
+				GetLastError()
+				log_end;
+			return false;
+		}
+	}
+	else if (INVALID_HANDLE_VALUE == h_console)
+	{
+		log_err "GetStdHandle() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	
+	return true;
+}
+
+void write_to_console(_In_ console_font_color color, _In_z_ const char* log_message)
 {
 	_ASSERTE(NULL != log_message);
 	if (NULL == log_message) return;
 
-	static HANDLE	con_stdout_handle = INVALID_HANDLE_VALUE;
+	static HANDLE	con_stdout_handle = NULL;
 	static WORD		con_old_color = 0;
 
-	if (INVALID_HANDLE_VALUE == con_stdout_handle)
+	if (NULL == con_stdout_handle)
 	{
 		CONSOLE_SCREEN_BUFFER_INFO csbi;
 
 		con_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+		if (NULL == con_stdout_handle || INVALID_HANDLE_VALUE == con_stdout_handle) 
+		{ 
+			//
+			//	NULL : console handle 이 없는 프로세스 
+			//	INVALID_HANDLE_VALUE : GetStdHandle() 에러 
+			// 
+			return; 
+		}
+
 		GetConsoleScreenBufferInfo(con_stdout_handle, &csbi);
 		con_old_color = csbi.wAttributes;
 	}
@@ -5923,17 +5974,17 @@ void write_to_console(_In_ uint32_t color, _In_z_ const char* log_message)
 	DWORD len;
     switch (color)
     {
-    case wtc_red:
+    case fc_red:
         SetConsoleTextAttribute(con_stdout_handle, FOREGROUND_RED | FOREGROUND_INTENSITY);
         WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
         SetConsoleTextAttribute(con_stdout_handle, con_old_color);
         break;
-    case wtc_green:
+    case fc_green:
         SetConsoleTextAttribute(con_stdout_handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
         WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
         SetConsoleTextAttribute(con_stdout_handle, con_old_color);
         break;
-    case wtc_none:
+    case fc_none:
     default:
         WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
     }
