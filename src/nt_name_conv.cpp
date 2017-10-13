@@ -311,6 +311,30 @@ NameConverter::is_natwork_path(
 	return false;
 }
 
+/// @brief	DosDevice 를 iterate 한다.
+///			callback 함수가 false 를 리턴하면 iterate 를 중지하고
+///			리턴한다. 
+bool 
+NameConverter::iterate_dos_devices(
+	_In_ iterate_dos_device_callback callback,
+	_In_ ULONG_PTR tag
+	)
+{
+	_ASSERTE(nullptr != callback);
+	if (nullptr == callback) return false;
+
+	boost::lock_guard<boost::mutex> lock(_lock);
+	for (auto ddi : _dos_devices)
+	{
+		if (!callback(&ddi, tag))
+		{
+			log_dbg "Iterate canceled." log_end;
+			return true;
+		}
+	}
+	return true;
+}
+
 /// @brief	c:\windows\system32\test.txt -> \Device\HarddiskVolume1\windows\test.txt 로 변환
 ///
 ///			[warning]
@@ -685,9 +709,18 @@ NameConverter::resolve_device_prefix(
 /// @brief  
 bool NameConverter::update_dos_device_prefixes()
 {
-    this->_dos_devices.clear();
+	this->_dos_devices.clear();
 
-    // 시스템에 매핑되어 있는 드라이브 목록을 구한다. (c:\, d:\, ...)    
+	// 시스템에 매핑되어있는 드라이브 목록을 구한다. 
+	// 
+	// 0               4               8               12
+	// +---+---+---+---+---+---+---+---+---+---+---+---+
+	// | A | : | \ |NUL| C | : | \ |NUL| D | : | \ |NUL|
+	//  "A:\"           "C:\"           "D:\"
+	// 
+	// 매핑된 드라이브를 나타내는 문자열 버퍼는 
+	// 26 (알파벳) * 4 (드라이브 명) = 104 바이트면 충분함
+	// 유니코드인 경우 208바이트 	
     wchar_t drive_string[128 + 1] = { 0 };
     DWORD length = GetLogicalDriveStringsW(128, drive_string);
     if (0 == length)
@@ -696,15 +729,18 @@ bool NameConverter::update_dos_device_prefixes()
         return false;
     }
 
+	//
     // 매핑된 각 드라이브의 device name 을 구한다. 
+	// 
     for (DWORD i = 0; i < length / 4; ++i)
     {
         wchar_t* dos_device_name = &(drive_string[i * 4]);
-        dos_device_name[2] = 0x0000;        // `c:` 형태로 만듬
-                                            // floppy 는 무시한다. 안그러면 메세지 박스 떠서 뭐 준비가 안되었느니 어쩌느니 함.
+        dos_device_name[2] = 0x0000;	// `c:` 형태로 만듬
+                                        // floppy 는 무시한다. 안그러면 메세지 박스 떠서 
+										// 뭐 준비가 안되었느니 어쩌느니 함.
         if (dos_device_name[0] == 'A' || dos_device_name[0] == 'a') { continue; }
 
-        std::wstring nt_device;
+		std::wstring nt_device;
         if (true != query_dos_device(dos_device_name, nt_device))
         {
             log_err

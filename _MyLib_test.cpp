@@ -47,8 +47,11 @@ extern bool test_scm_context();
 
 bool test_alignment_error_test();
 bool test_crc64();
+
+bool test_NameConverter_iterate();
 bool test_NameConverter_get_canon_name();
 bool test_NameConverter_dosname_to_devicename();
+
 extern bool test_NtCreateFile();
 extern bool test_wmi_client();
 bool test_ping();
@@ -201,17 +204,17 @@ void run_test()
 
 	{
 		boost::wformat f = boost::wformat(L"%s\\%s") % get_current_module_dirEx().c_str() % L"_MyLib_tst.log";
-		if (true != initialize_log(log_mask_all, 
-								   log_level_debug, 
-								   log_to_all, 
+		if (true != initialize_log(log_mask_all,
+								   log_level_debug,
+								   log_to_all,
 								   f.str().c_str())) return;
 		set_log_format(false, false, false);
 	}
-    
+
 	//
 	//	std::string 관련 
 	// 
-	std::wstring wstr = L"12345";	
+	std::wstring wstr = L"12345";
 	log_info "wstr.size() = %u, wcslen(wstr.c_str()) = %u  (same size)",
 		wstr.size(), wcslen(wstr.c_str())
 		log_end;
@@ -219,7 +222,7 @@ void run_test()
 
 	std::wstring s = L"";
 	_ASSERTE(true == s.empty());
-	
+
 	std::wstring ss = L" ";
 	_ASSERTE(true != ss.empty());
 
@@ -230,11 +233,11 @@ void run_test()
 	// 
 	uint64_t t = 0xffffffff00112233;
 	log_info "0x%llx, 0x%016llx", t, t log_end;
-	
+
 	uint64_t y = 0x00112233;
 	log_info "0x%llx, 0x%016llx", y, y log_end;
 
-	
+
 
 	// 
 	//	생성자/소멸자 호출
@@ -246,7 +249,7 @@ void run_test()
 	bool ret = false;
 	
 	
-	assert_bool(true, test_log_xxx);
+	//assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);
 	//assert_bool(true, test_GeneralHashFunctions);
 	//assert_bool(true, test_GeneralHashFunctions2);
@@ -268,6 +271,7 @@ void run_test()
 	//assert_bool(true, test_crc64);
 
 
+	assert_bool(true, test_NameConverter_iterate);
 	//assert_bool(true, test_NameConverter_get_canon_name);
 	//assert_bool(true, test_NameConverter_dosname_to_devicename);
 
@@ -2051,6 +2055,46 @@ bool test_ping()
     return true;
 }
 
+bool test_NameConverter_iterate()
+{
+	NameConverter nc;
+	_ASSERTE(true == nc.reload());
+
+	uint32_t count = 0;
+	_ASSERTE(true == nc.iterate_dos_devices(
+		[](_In_ const DosDeviceInfo* ddi, _In_ ULONG_PTR tag)
+		{
+			if (nullptr == ddi) { return false; }
+
+			uint32_t* count = (uint32_t*)tag;
+			++(*count);
+
+			log_info "dos device, %ws (%ws)",
+				ddi->_logical_drive.c_str(),
+				ddi->_device_name.c_str()
+				log_end;
+			return true;
+		},
+		(ULONG_PTR)&count));
+	_ASSERTE(count > 0);	// logical driver 가 1개 이상은 반드시 있으므로 
+
+	// callback 이 false 를 리턴하면 iterate 를 중지하고, true 를 리턴한다.
+	count = 0;
+	_ASSERTE(true == nc.iterate_dos_devices(
+		[](_In_ const DosDeviceInfo* ddi, _In_ ULONG_PTR tag) 
+		{
+			UNREFERENCED_PARAMETER(ddi);
+			UNREFERENCED_PARAMETER(tag);
+			return false;
+		},
+		(ULONG_PTR)&count));
+	_ASSERTE(count == 0);
+
+	//_ASSERTE(false == nc.iterate_dos_devices(nullptr, 0));
+
+	return true;
+}
+
 bool test_NameConverter_get_canon_name()
 {
     //[INFO] \ ? ? \c : \windows\system32\abc.exe->c:\windows\system32\abc.exe
@@ -2102,7 +2146,7 @@ bool test_NameConverter_get_canon_name()
     };
 
     NameConverter nc;
-    if (true != nc.reload()) return false;
+	_ASSERTE(true == nc.reload());
 
 	for (int i = 0; i < sizeof(file_names) / sizeof(wchar_t*); ++i)
 	{

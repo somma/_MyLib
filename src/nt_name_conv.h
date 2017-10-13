@@ -49,6 +49,9 @@ public:
 
 };
 
+/// @brief	iterate callback, callback 함수가 false 를 리턴하면 iterate 를 중지한다. 
+typedef bool(*iterate_dos_device_callback)(_In_ const DosDeviceInfo* ddi, _In_ ULONG_PTR tag);
+
 /// @brief  
 typedef class NameConverter
 {
@@ -65,6 +68,8 @@ public:
 	
 	bool is_removable_drive(_In_ const wchar_t* nt_name);
 	bool is_natwork_path(_In_ const wchar_t* nt_name);
+
+	bool iterate_dos_devices(_In_ iterate_dos_device_callback callback, _In_ ULONG_PTR tag);
     
 private:
     boost::mutex                _lock;
