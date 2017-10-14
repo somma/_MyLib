@@ -237,7 +237,15 @@ void run_test()
 	uint64_t y = 0x00112233;
 	log_info "0x%llx, 0x%016llx", y, y log_end;
 
-
+	//	list 순서
+	std::list<int> li;
+	li.push_back(1);
+	li.push_back(2);
+	li.push_back(3);
+	for (auto v : li)
+	{
+		log_info "%d", v log_end;
+	}
 
 	// 
 	//	생성자/소멸자 호출
@@ -248,6 +256,7 @@ void run_test()
 
 	bool ret = false;
 	
+
 	
 	//assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);
