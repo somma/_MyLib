@@ -2126,6 +2126,8 @@ bool WUDeleteDirectoryW(_In_ const wchar_t* DirctoryPathToDelete)
 {
 	_ASSERTE(NULL != DirctoryPathToDelete);
 	if (NULL == DirctoryPathToDelete) return false;
+	if (!is_file_existsW(DirctoryPathToDelete)) return true;
+
 
 	SHFILEOPSTRUCTW FileOp={0};
 	

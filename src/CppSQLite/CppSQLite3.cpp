@@ -1413,7 +1413,7 @@ sqlite3_stmt* CppSQLite3DB::compile(const char* szSQL)
     const char* szTail=0;
     sqlite3_stmt* pVM;
 
-    int nRet = sqlite3_prepare(mpDB, szSQL, -1, &pVM, &szTail);
+    int nRet = sqlite3_prepare_v2(mpDB, szSQL, -1, &pVM, &szTail);
 
     if (nRet != SQLITE_OK)
     {

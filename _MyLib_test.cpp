@@ -280,7 +280,7 @@ void run_test()
 	//assert_bool(true, test_crc64);
 
 
-	assert_bool(true, test_NameConverter_iterate);
+	//assert_bool(true, test_NameConverter_iterate);
 	//assert_bool(true, test_NameConverter_get_canon_name);
 	//assert_bool(true, test_NameConverter_dosname_to_devicename);
 
@@ -295,7 +295,7 @@ void run_test()
 	//assert_bool(true, test_boost_thread);
 	//assert_bool(true, test_thread_pool);
  //   
-	//assert_bool(true, test_boost_asio_timer);
+	assert_bool(true, test_boost_asio_timer);
 	//assert_bool(true, test_for_each);
 	//assert_bool(true, test_enum_physical_drive);
 	//assert_bool(true, test_get_disk_volume_info);
