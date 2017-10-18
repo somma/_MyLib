@@ -238,6 +238,38 @@ void set_log_to(_In_ uint32_t log_to)
 }
 
 
+const char* log_level_to_str(_In_ uint32_t log_level)
+{
+	switch (log_level)
+	{
+	case log_level_debug: return "debug";
+	case log_level_info: return "info";
+	case log_level_warn: return "warn";
+	case log_level_error: return "error";
+	}
+	return "unknown";
+}
+
+const char* log_to_to_str(_In_ uint32_t log_to)
+{
+	bool append = false;
+	std::stringstream str;
+
+	switch (log_to)
+	{
+	case log_to_none: return "none";
+	case log_to_file: return"file";
+	case log_to_ods: return "ods";
+	case log_to_con: return "con";
+	case (log_to_file | log_to_ods): return "file|ods";
+	case (log_to_file | log_to_con): return "file|con";
+	case (log_to_ods | log_to_con): return "ods|con";
+	case log_to_all: return "file|ods|con";
+	}
+	return "unknown";	
+}
+
+
 /**
  * @brief	
  * @param	
@@ -260,7 +292,7 @@ log_write_fmt(
 {
     // check log mask & level
     if (log_mask != (_log_mask & log_mask)) return;
-	if (_log_level > log_level) return;
+	if (log_level > _log_level) return;
 
     if (NULL == fmt) return;
 
@@ -393,7 +425,7 @@ log_write_fmt_without_deco(
 {
 	// check log mask & level
 	if (log_mask != (_log_mask & log_mask)) return;
-	if (_log_level > log_level) return;
+	if (log_level > _log_level) return;
 
     if (NULL == fmt) return;
 
@@ -561,7 +593,7 @@ slogger::slog_write(
 	if (NULL == log_message) return;
 
 	// check log level
-	if (log_level() > level) return;
+	if (level > log_level()) return;
 
 	// enqueue log
 	plog_entry le = new log_entry(level, log_to, log_message);

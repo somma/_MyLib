@@ -31,10 +31,10 @@
 #include "Queue.h"
 
 /// @brief log level
-#define log_level_debug         0
-#define log_level_info          1
-#define log_level_warn          2
-#define log_level_critical      3
+#define log_level_debug         3
+#define log_level_info          2
+#define log_level_warn          1
+#define log_level_critical      0
 #define log_level_error         log_level_critical
 
 /// @brief log to 
@@ -88,6 +88,9 @@ uint32_t get_log_to();
 void set_log_to(_In_ uint32_t log_to);
 
 
+
+const char* log_level_to_str(_In_ uint32_t log_level);
+const char* log_to_to_str(_In_ uint32_t log_to);
 
 
 #ifdef _NO_LOG_

@@ -258,7 +258,7 @@ void run_test()
 	
 
 	
-	//assert_bool(true, test_log_xxx);
+	assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);
 	//assert_bool(true, test_GeneralHashFunctions);
 	//assert_bool(true, test_GeneralHashFunctions2);
@@ -295,7 +295,7 @@ void run_test()
 	//assert_bool(true, test_boost_thread);
 	//assert_bool(true, test_thread_pool);
  //   
-	assert_bool(true, test_boost_asio_timer);
+	//assert_bool(true, test_boost_asio_timer);
 	//assert_bool(true, test_for_each);
 	//assert_bool(true, test_enum_physical_drive);
 	//assert_bool(true, test_get_disk_volume_info);
