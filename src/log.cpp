@@ -252,9 +252,6 @@ const char* log_level_to_str(_In_ uint32_t log_level)
 
 const char* log_to_to_str(_In_ uint32_t log_to)
 {
-	bool append = false;
-	std::stringstream str;
-
 	switch (log_to)
 	{
 	case log_to_none: return "none";
