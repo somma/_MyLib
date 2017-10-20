@@ -504,6 +504,7 @@ slogger::slogger(_In_ uint32_t log_level, _In_ uint32_t log_to):
 	_log_level(log_level),
 	_log_to(log_to),
 	_logger_thread(NULL), 
+	_log_count(0),
 	_log_file_handle(INVALID_HANDLE_VALUE)
 {
 }
@@ -520,27 +521,24 @@ slogger::~slogger()
  * @brief	start logger
  */
 bool 
-slogger::slog_start(
+slogger::slog_start(	
 	_In_opt_z_ const wchar_t *log_file_path
 	)
 {
 	_ASSERTE(NULL == _logger_thread);
     if (NULL != _logger_thread) { return false; }
     
-	// if log file specified, create log file.
+	//
+	//	if log file specified, backup existing log file and create new one
+	//
 	if (NULL != log_file_path)
 	{
-		_log_file_handle = CreateFileW(log_file_path,
-									   GENERIC_WRITE,
-									   FILE_SHARE_WRITE | FILE_SHARE_READ,
-									   NULL,
-									   OPEN_ALWAYS,
-									   FILE_ATTRIBUTE_NORMAL,
-									   NULL);
-		if (INVALID_HANDLE_VALUE == _log_file_handle)
+		_log_file_path = log_file_path;
+		if (true != rotate_log_file(log_file_path))
 		{
 			return false;
 		}
+		_ASSERTE(INVALID_HANDLE_VALUE != _log_file_handle);
 	}
 
     _stop_logger = false;
@@ -598,14 +596,73 @@ slogger::slog_write(
 	boost::lock_guard< boost::mutex > lock(_lock);
     _log_queue.push(le);
 }
- 
-/**
- * @brief	logger worker thread, pops log entry from log queue and writes log to output.
-*/
+
+/// @brief	
+bool slogger::rotate_log_file(_In_ const wchar_t* log_file_path)
+{
+	if (true == is_file_existsW(log_file_path))
+	{
+		wchar_t buf[64];
+		SYSTEMTIME time; GetLocalTime(&time);
+		if (!SUCCEEDED(StringCbPrintfW(buf,
+									   sizeof(buf),
+									   L"%04u-%02u-%02u_%02u-%02u-%02u.%05u.log",
+									   time.wYear,
+									   time.wMonth,
+									   time.wDay,
+									   time.wHour,
+									   time.wMinute,
+									   time.wSecond,
+									   time.wMilliseconds)))
+		{
+			return false;
+		}
+
+		if (INVALID_HANDLE_VALUE != _log_file_handle)
+		{
+			write_to_filea(_log_file_handle,
+						   "> log ratating. %s",
+						   WcsToMbsEx(buf).c_str());
+						   
+			CloseHandle(_log_file_handle);
+			_log_file_handle = INVALID_HANDLE_VALUE;			
+		}
+
+		std::wstringstream path;
+		path << directory_from_file_pathw(log_file_path) << L"\\" << buf;
+		if (!MoveFileW(log_file_path, path.str().c_str()))
+		{
+			return false;
+		}
+	}
+	
+	if (true == is_file_existsW(log_file_path))
+	{
+		_ASSERTE(!"oops");
+		return false;
+	}
+
+	_ASSERTE(INVALID_HANDLE_VALUE == _log_file_handle);	
+	_log_file_handle = CreateFileW(log_file_path,
+								   GENERIC_ALL,
+								   FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
+								   NULL,
+								   CREATE_NEW,
+								   FILE_ATTRIBUTE_NORMAL,
+								   NULL);
+	if (INVALID_HANDLE_VALUE == _log_file_handle)
+	{
+		return false;
+	}
+
+	_log_count = 0;	///<!
+	return true;
+}
+
+///	@brief	logger worker thread
+///			pops log entry from log queue and writes log to output
 void slogger::slog_thread()
 {
-    //std::cout << boost::format("tid=0x%08x, %s logger thread started \n") % GetCurrentThreadId() % __FUNCTION__;
-
     while (true != _stop_logger)
     {
         if (true == _log_queue.empty()) 
@@ -619,7 +676,8 @@ void slogger::slog_thread()
 			boost::lock_guard< boost::mutex > lock(_lock);
 			log = _log_queue.pop();
 		}
-		     
+
+
 		if (log->_log_to & log_to_con)
 		{
             switch (log->_log_level)
@@ -636,17 +694,38 @@ void slogger::slog_thread()
             }
 		}
 
-		if (log->_log_to & log_to_file)
-		{
-			if (INVALID_HANDLE_VALUE != _log_file_handle)
-			{
-				write_to_filea(_log_file_handle, "%s", log->_msg.c_str());
-			}
-		}
-
+		
 		if (log->_log_to & log_to_ods)
 		{			
 			OutputDebugStringA(log->_msg.c_str());
+		}
+
+		
+		if (log->_log_to & log_to_file)
+		{
+			if (_log_count >= _max_log_count)
+			{
+				//
+				//	rotate_log_file() 가 실패하면 _log_count 는 초기화되지 않는다. 
+				//	어떤 이유로든 rotate_log_file() 실패한 경우 _log_count 가 
+				//	초기화 되지 않았기 때문에 계속 재 시도하게 된다. 
+				// 
+				//	rotate_log_file() 가 실패할때 마다 file log 한개씩 유실되지만
+				//	그정도는 그냥 포기한다.
+				// 
+
+				if (true != rotate_log_file(_log_file_path.c_str()))
+				{
+					write_to_console(fc_red, "rotate_log_file() failed.");
+					OutputDebugStringA("rotate_log_file() failed.");
+				}
+			}
+
+			if (INVALID_HANDLE_VALUE != _log_file_handle)
+			{
+				_log_count++;
+				write_to_filea(_log_file_handle, "%s", log->_msg.c_str());
+			}
 		}
 
 		delete log;
@@ -688,7 +767,7 @@ void slogger::slog_thread()
 			{
 				OutputDebugStringA(log->_msg.c_str());
 			}
-
+			
 			delete log;
 		}
 		//write_to_console(wtc_green, "done.\n");

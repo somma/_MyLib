@@ -255,8 +255,13 @@ void run_test()
 
 
 	bool ret = false;
-	
 
+	// log :: rotate_log_file() 함수 테스트 
+	//for (int i=0; ; ++i)
+	//{
+	//	log_info "%d", i log_end;
+	//	Sleep(500);
+	//}
 	
 	assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);

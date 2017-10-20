@@ -48,6 +48,10 @@
 #define log_mask_all    0xffffffff		// 모든 로그를 활성화
 #define log_mask_sys    0x00000001      // for log_info, log_err, xxx
 
+/// @brief	 Maximum log count on single log file.
+#define	_max_log_count 20000
+
+
 //
 // C like APIs
 //
@@ -181,8 +185,13 @@ private:
 
     Queue<plog_entry>	_log_queue;
     boost::thread*		_logger_thread;
-    HANDLE				_log_file_handle;
+		
+	int64_t _log_count;
+	std::wstring _log_file_path;
+	HANDLE _log_file_handle;
 
+private:
+	bool rotate_log_file(_In_ const wchar_t* log_file_path);
     void slog_thread();
 } *pslogger;
 
