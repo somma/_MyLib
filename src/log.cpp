@@ -28,7 +28,7 @@ static bool			    _show_function_name = true;
 
 static uint32_t         _log_mask = log_mask_all; 
 static uint32_t			_log_level = log_level_debug;
-static uint32_t			_log_to = log_to_all;
+static uint32_t			_log_to = log_to_ods;
 
 /**
  * @brief	log 모듈을 초기화한다. 
@@ -86,19 +86,19 @@ initialize_log(
 	//
 	//	파일 로그가 활성화된 경우 로그파일에 로그 헤더를 기록한다.
 	// 	
-	if (nullptr != log_file_path && FlagOn(log_to, log_to_file))
-	{
-		std::string now; GetTimeStringA(now);		
+	//if (nullptr != log_file_path && FlagOn(log_to, log_to_file))
+	//{
+	//	std::string now; GetTimeStringA(now);		
 
-		uint32_t prev_log_to = get_log_to();
-		set_log_to(log_to_file);
-		log_write_fmt(log_mask_sys, 
-					  log_level,
-					  __FUNCTION__, 
-					  "== %s, log start.==", 
-					  now.c_str());
-		set_log_to(prev_log_to);
-	}	
+	//	uint32_t prev_log_to = get_log_to();
+	//	set_log_to(log_to_file);
+	//	log_write_fmt(log_mask_sys, 
+	//				  log_level,
+	//				  __FUNCTION__, 
+	//				  "== %s, log start.==", 
+	//				  now.c_str());
+	//	set_log_to(prev_log_to);
+	//}	
 
 	return true;
 }
