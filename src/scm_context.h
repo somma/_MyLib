@@ -39,8 +39,8 @@ public:
 	bool start_service();
 	bool start_service(_In_ SC_HANDLE service_handle);
 
-	bool stop_service();
-	bool stop_service(_In_ SC_HANDLE service_handle);
+	bool stop_service(_In_ uint32_t wait_for_n_secs = 10);
+	bool stop_service(_In_ SC_HANDLE service_handle, _In_ uint32_t wait_for_n_secs=10);
 
 	bool service_installed(_Out_ bool& installed);
 	bool service_installed(_In_ SC_HANDLE scm_handle, _Out_ bool& installed);
@@ -74,5 +74,7 @@ private:
 
 	HANDLE			open_driver();
 
+private:
+	static const char* service_status_to_str(_In_ uint32_t service_status);
 } *pscm_context;
 

@@ -560,7 +560,7 @@ scm_context::start_service(
 * @endcode	
 * @return	
 */
-bool scm_context::stop_service()
+bool scm_context::stop_service(_In_ uint32_t wait_for_n_secs)
 {
 	SC_HANDLE scm_handle = OpenSCManagerW(NULL, 
 										  NULL, 
@@ -631,7 +631,7 @@ bool scm_context::stop_service()
 	//
 	//	서비스를 중지한다. 
 	// 
-	if (true != stop_service(service_handle))
+	if (true != stop_service(service_handle, wait_for_n_secs))
 	{
 		log_err "stop_service() failed. " log_end;
 		return false;
@@ -642,7 +642,8 @@ bool scm_context::stop_service()
 
 bool 
 scm_context::stop_service(
-	_In_ SC_HANDLE service_handle
+	_In_ SC_HANDLE service_handle, 
+	_In_ uint32_t wait_for_n_secs
 	)
 {
 	_ASSERTE(NULL != service_handle);
@@ -671,11 +672,16 @@ scm_context::stop_service(
 	//	서비스가 종료될 때까지 기다린다. 
 	// 
 	SERVICE_STATUS svc_status = { 0 };
+	uint32_t wait_for_secs = 0;
 	while (QueryServiceStatus(service_handle, &svc_status))
 	{
 		if (svc_status.dwCurrentState == SERVICE_STOP_PENDING)
 		{
-			Sleep(1000);
+			if (wait_for_secs < wait_for_n_secs)
+			{
+				Sleep(1000);
+				wait_for_secs++;
+			}
 		}
 		else
 		{
@@ -691,8 +697,9 @@ scm_context::stop_service(
 	}
 	else
 	{
-		log_info "service stop failed. svc=%ws",
-			_service_name.c_str()
+		log_info "service stop failed. svc=%ws, status=%s",
+			_service_name.c_str(),
+			scm_context::service_status_to_str(svc_status.dwCurrentState)
 			log_end;
 
 		//
@@ -908,4 +915,24 @@ HANDLE scm_context::open_driver()
 	}
 
 	return driver_handle;
+}
+
+/// @brief 
+const char* 
+scm_context::service_status_to_str(
+	_In_ uint32_t service_status
+	)
+{
+	switch (service_status)
+	{
+	case SERVICE_STOPPED: return "SERVICE_STOPPED";
+	case SERVICE_START_PENDING: return "SERVICE_START_PENDING";
+	case SERVICE_STOP_PENDING: return "SERVICE_STOP_PENDING";
+	case SERVICE_RUNNING: return "SERVICE_RUNNING";
+	case SERVICE_CONTINUE_PENDING: return "SERVICE_CONTINUE_PENDING";
+	case SERVICE_PAUSE_PENDING: return "SERVICE_PAUSE_PENDING";
+	case SERVICE_PAUSED: return "SERVICE_PAUSED";
+	default: 
+		return "UNKNOWN";
+	}
 }
