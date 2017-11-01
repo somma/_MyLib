@@ -25,6 +25,7 @@
 #include <list>
 #include <string>
 #include <set>
+#include <iostream>
 
 #include <stdio.h>
 #include <tchar.h>

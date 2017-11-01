@@ -248,6 +248,9 @@
     <ClCompile Include="src\curl_client.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="_test_std_move.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">

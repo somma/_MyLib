@@ -23,6 +23,12 @@
 #include "StopWatch.h"
 #include "GeneralHashFunctions.h"
 #include <unordered_map>
+#include "Singleton.h"
+
+bool test_singleton();
+
+// _test_std_move.cpp
+bool test_std_move();
 
 bool test_log_xxx();
 bool test_set_security_attributes();
@@ -202,14 +208,14 @@ void run_test()
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
 
-	{
-		boost::wformat f = boost::wformat(L"%s\\%s") % get_current_module_dirEx().c_str() % L"_MyLib_tst.log";
-		if (true != initialize_log(log_mask_all,
-								   log_level_debug,
-								   log_to_all,
-								   f.str().c_str())) return;
-		set_log_format(false, false, false);
-	}
+	//{
+	//	boost::wformat f = boost::wformat(L"%s\\%s") % get_current_module_dirEx().c_str() % L"_MyLib_tst.log";
+	//	if (true != initialize_log(log_mask_all,
+	//							   log_level_debug,
+	//							   log_to_all,
+	//							   f.str().c_str())) return;
+	//	set_log_format(false, false, true);
+	//}
 
 	//
 	//	std::string 관련 
@@ -262,8 +268,12 @@ void run_test()
 	//	log_info "%d", i log_end;
 	//	Sleep(500);
 	//}
+
+	assert_bool(true, test_singleton);
+
+	//assert_bool(true, test_std_move);
 	
-	assert_bool(true, test_log_xxx);
+	//assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);
 	//assert_bool(true, test_GeneralHashFunctions);
 	//assert_bool(true, test_GeneralHashFunctions2);
@@ -389,7 +399,7 @@ void run_test()
 		_fail_count
 	log_end
 
-	finalize_log();
+	//finalize_log();
 }
 
 /// @brief
@@ -1526,39 +1536,72 @@ bool test_md5_sha2()
 
 void work() 
 {
-    fprintf(stdout, "tid = %u, running\n", GetCurrentThreadId());
+	log_info "tid = %u, running", GetCurrentThreadId() log_end;
 };
 
 struct worker
 {
     void operator()() 
     {
-        fprintf(stdout, "tid = %u, running\n", GetCurrentThreadId() );
+		log_info "tid = %u, running", GetCurrentThreadId() log_end;
     };
 };
 
 void more_work( int v) 
 {
-    fprintf(stdout, "tid = %u, running = %d\n", GetCurrentThreadId(), v);
+	log_info "tid = %u, running = %d", GetCurrentThreadId(), v log_end;
     //getchar();
+};
+
+class RunClass
+{
+public:
+	bool CalledByThread(_In_ const char* msg)
+	{
+		log_info "tid=%u, msg=%s",
+			GetCurrentThreadId(),
+			msg
+			log_end;
+		return true;
+	}
 };
 
 
 bool test_thread_pool()
 {
-    thread_pool pool(4);
+    thread_pool pool(8);
     pool.run_task( work );                        // Function pointer.
     pool.run_task( worker() );                    // Callable object.
     pool.run_task( boost::bind( more_work, 5 ) ); // Callable object.
     pool.run_task( worker() );                    // Callable object.
+		
+	pool.run_task([]()								// lambda
+	{
+		log_info "tid=%u",GetCurrentThreadId() log_end;		
+	});
        
+
+	RunClass rc;
+	pool.run_task([&]() 
+	{
+		if (true != rc.CalledByThread("test msg"))
+		{
+			log_err "rc.CalledByThread() failed." log_end;
+		}
+		else
+		{
+			log_info "rc.CalledByThread() succeeded." log_end;
+		}
+	});
+
+
     // Wait until all tasks are done.
     while (0 < pool.get_task_count())
     {
         boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
     }
 
-    return true;
+	return true;
 }
 
 #include <winioctl.h>
@@ -2072,7 +2115,7 @@ bool test_ping()
 bool test_NameConverter_iterate()
 {
 	NameConverter nc;
-	_ASSERTE(true == nc.reload());
+	_ASSERTE(true == nc.load(false));
 
 	uint32_t count = 0;
 	_ASSERTE(true == nc.iterate_dos_devices(
@@ -2160,13 +2203,13 @@ bool test_NameConverter_get_canon_name()
     };
 
     NameConverter nc;
-	_ASSERTE(true == nc.reload());
+	_ASSERTE(true == nc.load(false));
 
 	for (int i = 0; i < sizeof(file_names) / sizeof(wchar_t*); ++i)
 	{
 		std::wstring name;
 		bool ret = nc.get_canon_name(file_names[i], name);
-		bool is_natwork = nc.is_natwork_path(file_names[i]);
+		bool is_natwork = nc.is_network_path(file_names[i]);
 		bool is_removable = nc.is_removable_drive(file_names[i]);
 		log_info "[ret=%d][net=%d][removable=%d] %ws -> %ws",
 			ret,
@@ -2204,7 +2247,7 @@ bool test_NameConverter_dosname_to_devicename()
 		};
 
 		NameConverter nc;
-		_ASSERTE(true == nc.reload());
+		_ASSERTE(true == nc.load(false));
 		for (int i = 0; i < sizeof(in_out_pair) / sizeof(in_out_str); ++i)
 		{
 			std::wstring nt_path;
@@ -2223,7 +2266,7 @@ bool test_NameConverter_dosname_to_devicename()
 		//	get_device_name_by_drive_letter test
 		// 
 		NameConverter nc;
-		_ASSERTE(true == nc.reload());
+		_ASSERTE(true == nc.load(false));
 		
 		std::wstring device_name_str;
 		_ASSERTE(true == nc.get_device_name_by_drive_letter(L"c:", device_name_str));
@@ -2240,7 +2283,7 @@ bool test_NameConverter_dosname_to_devicename()
 		//	get_drive_letter_by_device_name test
 		// 
 		NameConverter nc;
-		_ASSERTE(true == nc.reload());
+		_ASSERTE(true == nc.load(false));
 
 		// \Device\HarddiskVolume1 포맷 입력
 		std::wstring drive_letter;
@@ -2348,6 +2391,41 @@ bool test_crc64()
         log_end;
     return true;
 }
+
+class TestClass
+{
+public:
+	TestClass() {}
+	uintptr_t addr() { return (uintptr_t)this; }
+private:
+	int _v1;
+	int _v2;
+};
+
+TestClass* test_singleton_subcall()
+{
+	return Singleton<TestClass>::GetInstancePointer();
+}
+
+bool test_singleton()
+{
+	TestClass* o = Singleton<TestClass>::GetInstancePointer();
+	TestClass* o2 = Singleton<TestClass>::GetInstancePointer();
+	TestClass* o3 = test_singleton_subcall();
+	_ASSERTE(o == o2);
+	_ASSERTE(o == o3);
+	log_info "o=0x%p, o2=0x%p, o3=0x%p", 
+		o->addr(), 
+		o2->addr(), 
+		o3->addr()
+		log_end;	
+
+	Singleton<TestClass>::ReleaseInstance();
+	Singleton<TestClass>::ReleaseInstance();
+	Singleton<TestClass>::ReleaseInstance();
+	return true;
+}
+
 
 bool test_log_xxx()
 {

@@ -3972,7 +3972,7 @@ bool get_temp_dirA(_Out_ std::string& temp_dir)
 }
 
 /**
- * @brief	현재 모듈의 full path 를 구한다. 
+ * @brief	모듈의 full path 를 구한다. 
  * @param	
  * @see		
  * @remarks	
@@ -4231,7 +4231,7 @@ std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name)
     }
 }
 
-/// @brief	full path 경로명에서 `파일명.확장자` 부분만 떼어낸다. 
+/// @brief	full path 경로명에서 `파일명.확장자:ADS` 부분만 떼어낸다. 
 std::wstring file_name_from_file_pathw(_In_ const wchar_t* file_path)
 {
 	_ASSERTE(nullptr != file_path);

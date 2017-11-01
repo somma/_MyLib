@@ -214,10 +214,19 @@ public:
 	{
         std::cout << s << std::endl;
     }
+
+	bool complx_callback(int a, int b, char* c)
+	{
+		log_info "complx_callback, a=%d, b=%d, c=%s",
+			a, b, c
+			log_end;
+		return true;
+	}
 };
 
 
 typedef boost::function<void()> callback;
+typedef boost::function <bool(int, int, char*)> complx_callback;
 
 class B5
 {
@@ -227,14 +236,26 @@ public:
         m_cb = cb;
     }
 
+	void set_complx_callback(complx_callback cb)
+	{
+		m_ccb = cb;
+	}
+
     void do_callback() 
 	{
         m_cb();
     }
 
+	void do_complx_callback()
+	{
+		m_ccb(1, 2, "complx_callback");
+	}
+
 private:
     callback m_cb;
+	complx_callback m_ccb;
 };
+
 
 void regular_function() 
 {
@@ -249,7 +270,13 @@ bool boost_bind5()
 
     // you forget the "&" here before A::print!
     b.set_callback(boost::bind(&A5::print, &a, s));
+	b.set_complx_callback(boost::bind(&A5::complx_callback, 
+									  &a, 
+									  _1, 
+									  _2,
+									  _3));
     b.do_callback();
+	b.do_complx_callback();
 
     // this will work for regular function pointers too, yay!
     b.set_callback(regular_function);

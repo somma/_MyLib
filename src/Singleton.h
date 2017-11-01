@@ -68,18 +68,12 @@ public:
         Singleton::IncrementReferenceCount();
         return mInstance;
     }
-
-    static void ReleaseInstance()
+	
+	static void ReleaseInstance()
     {
         Singleton::DecrementReferenceCount();
     }
-
-#ifdef ALTONG_TEST_EXPORTS
-    // debug / test 용 메소드
-    static MyRefCount GetRefCount(){return mRefCount;}
-    static T* GetInstanceForTest(){return mInstance;}
-#endif//ALTONG_TEST_EXPORTS
 };
 
-template <typename T> T* Singleton<T>::mInstance = NULL;
+template <typename T> T* Singleton<T>::mInstance = nullptr;
 template <typename T> MyRefCount Singleton<T>::mRefCount = 0;

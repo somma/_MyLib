@@ -272,6 +272,7 @@
     <ClCompile Include="_test_registry_util.cpp" />
     <ClCompile Include="_test_scm.cpp" />
     <ClCompile Include="_test_std_map.cpp" />
+    <ClCompile Include="_test_std_move.cpp" />
     <ClCompile Include="_test_wmi_client.cpp" />
     <ClCompile Include="_test_x64.cpp" />
   </ItemGroup>

@@ -11,6 +11,37 @@
 #include "curl_client.h"
 #include "log.h"
 
+///	@brief	libcUrl 에서 데이터 수신시 호출되는 콜백 함수
+///	@param	ptr         수신한 데이터
+///	@param	size        nmemb(메모리 블럭) 의 사이즈 / 엘리먼트 사이즈
+///	@param	nmemb       메모리 블럭의 갯수 / 엘리먼크 갯수
+///	@param	userdata    CURLOPT_WRITEDATA 옵션 설정 시 설정한 데이터 포인터
+///	@remarks	fread (void * DstBuf, size_t ElementSize, size_t Count, FILE * FileStream) 함수 처럼
+///			구조화된 IO 를 위해 size, nmemb 를 사용함
+///	@return	처리된 byte 수. ( size * nmemb ) 값과 다른 값이 리턴되면 curl 이 세션을 중지함
+size_t
+http_get_write_callback(
+	_In_ void* ptr,
+	_In_ size_t size,
+	_In_ size_t nmemb,
+	_In_ void* userdata
+	)
+{
+	_ASSERTE(NULL != ptr);
+	_ASSERTE(NULL != userdata);
+	if (NULL == ptr || NULL == userdata) return 0;
+
+	UINT32 DataSizeToWrite = (UINT32)(size * nmemb);
+	CStream* stream = (CStream*)userdata;
+
+	if (-1 == stream->WriteToStream(ptr, DataSizeToWrite))
+	{
+		log_err "Can not write to memory stream" log_end;
+		return 0;
+	}
+	return (size * nmemb);
+}
+
 /// @brief
 bool curl_client::initialize()
 {
@@ -116,36 +147,7 @@ curl_client::http_post(
 	return true;
 }
 
-///	@brief	libcUrl 에서 데이터 수신시 호출되는 콜백 함수
-///	@param	ptr         수신한 데이터
-///	@param	size        nmemb(메모리 블럭) 의 사이즈 / 엘리먼트 사이즈
-///	@param	nmemb       메모리 블럭의 갯수 / 엘리먼크 갯수
-///	@param	userdata    CURLOPT_WRITEDATA 옵션 설정 시 설정한 데이터 포인터
-///	@remarks	fread (void * DstBuf, size_t ElementSize, size_t Count, FILE * FileStream) 함수 처럼
-///			구조화된 IO 를 위해 size, nmemb 를 사용함
-///	@return	처리된 byte 수. ( size * nmemb ) 값과 다른 값이 리턴되면 curl 이 세션을 중지함
-size_t
-curl_client::http_get_write_callback(
-	_In_ void* ptr,
-	_In_ size_t size,
-	_In_ size_t nmemb,
-	_In_ void* userdata
-	)
-{
-	_ASSERTE(NULL != ptr);
-	_ASSERTE(NULL != userdata);
-	if (NULL == ptr || NULL == userdata) return 0;
 
-	UINT32 DataSizeToWrite = (UINT32)(size * nmemb);
-	CStream* stream = (CStream*)userdata;
-
-	if (-1 == stream->WriteToStream(ptr, DataSizeToWrite))
-	{
-		log_err "Can not write to memory stream" log_end;
-		return 0;
-	}
-	return (size * nmemb);
-}
 
 /// @brief	전송을 하기위한 기본 options을 설정한다.
 bool

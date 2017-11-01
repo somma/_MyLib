@@ -270,6 +270,26 @@ public:
 };
 
 
+
+
+void test_func(int timeout)
+{
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(timeout));
+}
+
+bool boost_try_join_for()
+{
+	boost::thread t(test_func, 1000);
+	_ASSERTE(!t.try_join_for(boost::chrono::milliseconds(50)));
+
+
+	boost::thread tt(test_func, 3000);
+	_ASSERTE(t.try_join_for(boost::chrono::milliseconds(4000)));
+
+	return true;
+}
+
+
 /// @brief boost thread test 
 bool test_boost_thread()
 {
@@ -299,11 +319,17 @@ bool test_boost_thread()
     //t13.join();
     //t23.join();
 
+	//ConditionNotifyBeforeWait cnbw;
+	//cnbw.ConditionNotifyWaitTest();
+	//cnbw.EventSetAfterWait();
+	//cnbw.EventWaitAfterSet();
 
-	ConditionNotifyBeforeWait cnbw;
-	cnbw.ConditionNotifyWaitTest();
-	cnbw.EventSetAfterWait();
-	cnbw.EventWaitAfterSet();
+	boost_try_join_for();
 
     return true;
 }
+
+
+
+
+
