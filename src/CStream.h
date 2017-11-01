@@ -14,9 +14,6 @@
 #ifndef _INCLUDE_C_STREAM_H_
 #define _INCLUDE_C_STREAM_H_
 
-#include <windows.h>
-#include <crtdbg.h>
-
 //
 // 최상위 스트림 인터페이스 
 // 

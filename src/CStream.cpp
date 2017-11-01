@@ -14,11 +14,6 @@
 #include "stdafx.h"
 #include "CStream.h"
 
-#include <windows.h>
-#include <crtdbg.h>
-#include <stdlib.h>
-#include <strsafe.h>
-
 
 /**	-----------------------------------------------------------------------
 	\brief	

@@ -34,9 +34,12 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <VersionHelpers.h>
-#include <crtdbg.h>
-#include <strsafe.h>
 
+#define _CRTDBG_MAP_ALLOC  
+#include <stdlib.h>  
+#include <crtdbg.h>
+
+#include <strsafe.h>
 #include "Win32Utils.h"
 #include "mini_test.h"
 

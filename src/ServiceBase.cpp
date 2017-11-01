@@ -16,16 +16,10 @@
 * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
 \***************************************************************************/
 
-#pragma region Includes
 #include "stdafx.h"
-#include <crtdbg.h>
-#include <assert.h>
-#include <strsafe.h>
 #include <Dbt.h>
 #include "ServiceBase.h"
 #include "log.h"
-
-#pragma endregion
 
 
 #pragma region Static Members
