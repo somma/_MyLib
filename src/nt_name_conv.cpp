@@ -11,24 +11,26 @@
 **/
 #include "stdafx.h"
 #include "nt_name_conv.h"
+#include "Singleton.h"
 
 
 /// @brief  
-bool NameConverter::reload()
+bool NameConverter::load(_In_ bool force_reload)
 {
-    boost::lock_guard<boost::mutex> lock(_lock);
-    if (true != update_dos_device_prefixes())
-    {
-        log_err "update_dos_device_prefixes() failed." log_end;
-        return false;
-    }
+	boost::lock_guard<boost::mutex> lock(_lock);
+	if (true == _loaded && true != force_reload) return true;
+		
+	if (true != update_dos_device_prefixes())
+	{
+		log_err "update_dos_device_prefixes() failed." log_end;
+		return false;
+	}
 
-    if (true != update_mup_device_prefixes())
-    {
-        log_err "update_mup_device_prefixes() failed." log_end;
-        return false;
-    }
-
+	if (true != update_mup_device_prefixes())
+	{
+		log_err "update_mup_device_prefixes() failed." log_end;
+		return false;
+	}
     return true;
 }
 
@@ -288,7 +290,7 @@ NameConverter::is_removable_drive(
 ///         이 network 이면 true 를 리턴한다.
 ///			만일 nt_name 이 알수 없는 이름이라면  false 를 리턴한다. 
 bool
-NameConverter::is_natwork_path(
+NameConverter::is_network_path(
 	_In_ const wchar_t* nt_name
 )
 {
@@ -860,4 +862,137 @@ bool NameConverter::update_mup_device_prefixes()
     }
 	
     return true;
+}
+
+/// @brief	NameConverter 인스턴스의 ref count 를 증가시킨다.
+bool nc_initialize()
+{
+	NameConverter* nc = Singleton<NameConverter>::GetInstancePointer();
+	if (true != nc->load(false))
+	{
+		return false;
+	}
+	return true;
+}
+
+/// @brief	NameConverter 인스턴스의 ref count 를 감소시킨다.
+void nc_finalize()
+{
+	Singleton<NameConverter>::ReleaseInstance();
+}
+
+/// @brief	NameConver wrappera api
+bool nc_reload()
+{
+	std::unique_ptr<NameConverter, void(*)(_In_ NameConverter*)> nc(
+		Singleton<NameConverter>::GetInstancePointer(),
+		[](_In_ NameConverter*) 
+	{
+		Singleton<NameConverter>::ReleaseInstance();
+	});
+	return nc.get()->load(true);
+}
+
+/// @brief	NameConver wrappera api
+bool 
+nc_get_canon_name(
+	_In_ const wchar_t* file_name, 
+	_Out_ std::wstring& canonical_file_name
+	)
+{
+	std::unique_ptr<NameConverter, void(*)(_In_ NameConverter*)> nc(
+		Singleton<NameConverter>::GetInstancePointer(),
+		[](_In_ NameConverter*)
+	{
+		Singleton<NameConverter>::ReleaseInstance();
+	}); 
+	return nc.get()->get_canon_name(file_name, canonical_file_name);
+}
+
+/// @brief	NameConver wrappera api
+bool 
+nc_get_nt_path_by_dos_path(
+	_In_ const wchar_t* dos_path,
+	_Out_ std::wstring& nt_device_path
+	)
+{
+	std::unique_ptr<NameConverter, void(*)(_In_ NameConverter*)> nc(
+		Singleton<NameConverter>::GetInstancePointer(),
+		[](_In_ NameConverter*)
+	{
+		Singleton<NameConverter>::ReleaseInstance();
+	});
+	return nc.get()->get_nt_path_by_dos_path(dos_path, nt_device_path);
+}
+
+/// @brief	NameConver wrappera api
+bool 
+nc_get_device_name_by_drive_letter(
+	_In_ const wchar_t* drive_letter,
+	_Out_ std::wstring& device_name
+	)
+{
+	std::unique_ptr<NameConverter, void(*)(_In_ NameConverter*)> nc(
+		Singleton<NameConverter>::GetInstancePointer(),
+		[](_In_ NameConverter*)
+	{
+		Singleton<NameConverter>::ReleaseInstance();
+	});
+	return nc.get()->get_device_name_by_drive_letter(drive_letter, device_name);
+}
+
+/// @brief	NameConver wrappera api
+bool 
+nc_get_drive_letter_by_device_name(
+	_In_ const wchar_t* device_name,
+	_Out_ std::wstring& drive_letter
+	)
+{
+	std::unique_ptr<NameConverter, void(*)(_In_ NameConverter*)> nc(
+		Singleton<NameConverter>::GetInstancePointer(),
+		[](_In_ NameConverter*)
+	{
+		Singleton<NameConverter>::ReleaseInstance();
+	});
+	return nc.get()->get_drive_letter_by_device_name(device_name, drive_letter);
+}
+
+/// @brief	NameConver wrappera api
+bool nc_is_removable_drive(_In_ const wchar_t* nt_name)
+{
+	std::unique_ptr<NameConverter, void(*)(_In_ NameConverter*)> nc(
+		Singleton<NameConverter>::GetInstancePointer(),
+		[](_In_ NameConverter*)
+	{
+		Singleton<NameConverter>::ReleaseInstance();
+	});
+	return nc.get()->is_removable_drive(nt_name);
+}
+
+/// @brief	NameConver wrappera api
+bool nc_is_network_path(_In_ const wchar_t* nt_name)
+{
+	std::unique_ptr<NameConverter, void(*)(_In_ NameConverter*)> nc(
+		Singleton<NameConverter>::GetInstancePointer(),
+		[](_In_ NameConverter*)
+	{
+		Singleton<NameConverter>::ReleaseInstance();
+	});
+	return nc.get()->is_network_path(nt_name);
+}
+
+/// @brief	NameConver wrappera api
+bool 
+nc_iterate_dos_devices(
+	_In_ iterate_dos_device_callback callback,
+	_In_ ULONG_PTR tag
+	)
+{
+	std::unique_ptr<NameConverter, void(*)(_In_ NameConverter*)> nc(
+		Singleton<NameConverter>::GetInstancePointer(),
+		[](_In_ NameConverter*)
+	{
+		Singleton<NameConverter>::ReleaseInstance();
+	});
+	return nc.get()->iterate_dos_devices(callback, tag);
 }

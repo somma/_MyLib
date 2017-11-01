@@ -18,6 +18,7 @@
 #define _mup_path		L"\\Device\\Mup"
 #define _device_path	L"\\Device\\"
 
+
 class DosDeviceInfo
 {
 public:
@@ -56,10 +57,11 @@ typedef bool(*iterate_dos_device_callback)(_In_ const DosDeviceInfo* ddi, _In_ U
 typedef class NameConverter
 {
 public:
-    NameConverter() {}
+#pragma todo("NameConverter 클래스에 캐시 기능을 추가")
+	NameConverter():_loaded(false) {}
     ~NameConverter() {}
 
-	bool reload();
+	bool load(_In_ bool force_reload);
 
     bool get_canon_name(_In_ const wchar_t* file_name, _Out_ std::wstring& canonical_file_name);
 	bool get_nt_path_by_dos_path(_In_ const wchar_t* dos_path, _Out_ std::wstring& nt_device_path);
@@ -67,11 +69,12 @@ public:
 	bool get_drive_letter_by_device_name(_In_ const wchar_t* device_name, _Out_ std::wstring& drive_letter);
 	
 	bool is_removable_drive(_In_ const wchar_t* nt_name);
-	bool is_natwork_path(_In_ const wchar_t* nt_name);
+	bool is_network_path(_In_ const wchar_t* nt_name);
 
 	bool iterate_dos_devices(_In_ iterate_dos_device_callback callback, _In_ ULONG_PTR tag);
     
 private:
+	bool _loaded;
     boost::mutex                _lock;
     std::list<DosDeviceInfo>    _dos_devices;
     std::list<std::wstring>     _mup_devices;
@@ -80,3 +83,29 @@ private:
     bool update_dos_device_prefixes();
     bool update_mup_device_prefixes();
 } *PNameConverter;
+
+
+//
+//	Singleton 객체를 이용한 C api 
+// 
+//	nc_xxxx() API 를 사용하기 전에 반드시 nc_initialize() 를 호출하고, 
+//	API 를 더이상 사용하지 않을 경우 nc_finalize() 를 호출해 주어야 한다.
+// 
+
+bool nc_initialize();
+void nc_finalize();
+
+bool nc_reload();
+bool nc_get_canon_name(_In_ const wchar_t* file_name, _Out_ std::wstring& canonical_file_name);
+bool nc_get_nt_path_by_dos_path(_In_ const wchar_t* dos_path, _Out_ std::wstring& nt_device_path);
+bool nc_get_device_name_by_drive_letter(_In_ const wchar_t* drive_letter, _Out_ std::wstring& device_name);
+bool nc_get_drive_letter_by_device_name(_In_ const wchar_t* device_name, _Out_ std::wstring& drive_letter);
+
+bool nc_is_removable_drive(_In_ const wchar_t* nt_name);
+bool nc_is_network_path(_In_ const wchar_t* nt_name);
+
+bool nc_iterate_dos_devices(_In_ iterate_dos_device_callback callback, _In_ ULONG_PTR tag);
+
+
+
+
