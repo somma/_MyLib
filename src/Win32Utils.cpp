@@ -16,6 +16,7 @@
 #include <random>
 
 #include "Win32Utils.h"
+#include "RegistryUtil.h"
 
 #include <set>
 #include <errno.h>
@@ -5881,6 +5882,91 @@ get_process_creation_time(
 	return true;
 }
 
+/// @brief	 Windows Error Reporting 환경 설정
+bool setup_wer(_In_ const wchar_t* dump_dir)
+{
+	_ASSERTE(nullptr != dump_dir);
+	if (nullptr == dump_dir)
+	{
+		return false;
+	}
+
+	//
+	//	Setup WER(Windows Error Reporting)
+	//	"/wer c:\dump"
+	//
+	//	option::DumpType(2:FullDump)로 설정
+	//		0 : CustomDump
+	//		1 : MiniDump (default)
+	//		2 : FullDump
+	//
+	//	option::DumpFolder
+	//		덤프 파일 경로(입력된 경로로 설정)
+	// 
+	std::wstring key_path;
+	key_path = L"Software\\Microsoft\\Windows\\Windows Error Reporting\\LocalDumps";
+	RegHandle KeyHandle(RUCreateKey(HKEY_LOCAL_MACHINE,
+									key_path.c_str(),
+									false));
+	if (NULL == KeyHandle.get())
+	{
+		log_err "RUCreateKey() failed. key=%ws",
+			key_path.c_str()
+			log_end;
+		return false;
+	}
+
+	//	set option - DumpType
+	if (true != RUWriteDword(KeyHandle.get(),
+							 L"DumpType",
+							 2))
+	{
+		log_err "RUWriteDword(HKLM, %ws, %ws) failed.",
+			key_path.c_str(),
+			L"DumpType"
+			log_end;
+		return false;
+	}
+
+	//	set option - CustomDumpFlags
+	if (true != RUWriteDword(KeyHandle.get(),
+							 L"CustomDumpFlags",
+							 0))
+	{
+		log_err "RUWriteDword(HKLM, %ws, %ws) failed.",
+			key_path.c_str(),
+			L"CustomDumpFlags"
+			log_end;
+		return false;
+	}
+
+	//	폴더가 없으면 생성한다. 
+	if (!WUCreateDirectory(dump_dir))
+	{
+		log_err "WUCreateDirectory() failed. dir=%ws",
+			dump_dir
+			log_end;
+		return false;
+	}
+
+	DWORD out_file_size = (DWORD)((wcslen(dump_dir) + 1) * sizeof(wchar_t));
+	if (true != RUSetExpandString(KeyHandle.get(),
+								  L"DumpFolder",
+								  dump_dir,
+								  out_file_size))
+	{
+		log_err "RUSetExpandString(HKLM, %ws, %ws, %ws) failed.",
+			key_path.c_str(),
+			L"DumpFolder",
+			dump_dir
+			log_end;
+		return false;
+	}
+
+	log_info "Reboot system to apply WER configuration." log_end;
+	return true;
+}
+
 /// @brief 
 void SetConsoleCoords(COORD xy)
 {
@@ -6079,17 +6165,13 @@ bool is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type)
     HANDLE hImageMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
     if (NULL == hImageMap){return false;}
     SmrtHandle sfMap(hImageMap);
-
-    PBYTE ImageView = (LPBYTE) MapViewOfFile(
-                            hImageMap, 
-                            FILE_MAP_READ, 
-                            0, 
-                            0, 
-                            0
-                            );
+    PBYTE ImageView = (LPBYTE) MapViewOfFile(hImageMap, 
+											 FILE_MAP_READ, 
+											 0, 
+											 0, 
+											 0);
     if(ImageView == NULL){return false;}
     SmrtView sfView(ImageView);
-
 
 	//
 	// PE 내 offset 값들을 신뢰할 수 없기 때문에 SEH 를 이용한다. 
@@ -6105,11 +6187,20 @@ bool is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type)
 		DWORD dosSize = (idh->e_cp * 512);
 		if (dosSize > fileSize.QuadPart)
 		{
-			log_err "%ws, invalid file size, size=%lu", path, fileSize.QuadPart log_end;
+			log_err "%ws, invalid file size, size=%llu", path, fileSize.QuadPart log_end;
 			return false;
 		}
 
 		PIMAGE_NT_HEADERS inh = (PIMAGE_NT_HEADERS)((DWORD_PTR)idh + idh->e_lfanew);
+		if ((uintptr_t)inh >= (((uintptr_t)idh) + fileSize.QuadPart))
+		{
+			log_err "%ws, invalid file size (e_lfanew). file_size=%llu, inh addr=%llu",
+				path,
+				fileSize.QuadPart,
+				(uintptr_t)inh
+				log_end;
+			return false;
+		}
 		if (IMAGE_NT_SIGNATURE != inh->Signature) return false;
 
 		WORD subsys = inh->OptionalHeader.Subsystem;

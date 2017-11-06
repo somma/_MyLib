@@ -4,7 +4,7 @@
  *
  * @author  Jungil, Yang (chaserhunter@somma.kr)
  * @date    2017/09/07 16:30 created.
- * @copyright (C)SOMMA, INC. All rights reserved.
+ * @copyright (C)Somma, Inc. All rights reserved.
 **/
 
 #pragma once
