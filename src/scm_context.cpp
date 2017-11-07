@@ -34,7 +34,7 @@ scm_context::scm_context(
 	_In_ bool uninstall_service_on_free)
 :	_uninstall_service_on_free(uninstall_service_on_free),
 	_driver_handle(INVALID_HANDLE_VALUE), 
-	_bin_path(bin_path),
+	_bin_path(nullptr == bin_path ? L"" : bin_path),
 	_service_name(service_name),
 	_service_display_name(service_display_name),
 	_service_type((true == win32_service ? SERVICE_WIN32_OWN_PROCESS : SERVICE_KERNEL_DRIVER)),
@@ -55,7 +55,7 @@ scm_context::scm_context(
 	_In_ bool uninstall_service_on_free)
 :	_uninstall_service_on_free(uninstall_service_on_free),
 	_driver_handle(INVALID_HANDLE_VALUE),
-	_bin_path(bin_path),
+	_bin_path(nullptr == bin_path ? L"" : bin_path),
 	_service_name(service_name),
 	_service_display_name(service_display_name),
 	_service_type(SERVICE_KERNEL_DRIVER),

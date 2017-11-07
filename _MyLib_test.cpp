@@ -25,6 +25,8 @@
 #include <unordered_map>
 #include "Singleton.h"
 
+
+bool test_is_executable_file_w();
 bool test_singleton();
 
 // _test_std_move.cpp
@@ -269,10 +271,9 @@ void run_test()
 	//	Sleep(500);
 	//}
 
-	assert_bool(true, test_singleton);
-
-	//assert_bool(true, test_std_move);
-	
+	assert_bool(true, test_is_executable_file_w);
+	//assert_bool(true, test_singleton);
+	//assert_bool(true, test_std_move);	
 	//assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);
 	//assert_bool(true, test_GeneralHashFunctions);
@@ -2401,6 +2402,14 @@ private:
 	int _v1;
 	int _v2;
 };
+
+bool test_is_executable_file_w()
+{
+	IMAGE_TYPE type;
+	_ASSERTE(false == is_executable_file_w(L"c:\\work.mylib\\test_upx_invalid_lfanew.exe", type));
+	_ASSERTE(true == is_executable_file_w(L"c:\\windows\\system32\\notepad.exe", type));
+	return true;
+}
 
 TestClass* test_singleton_subcall()
 {
