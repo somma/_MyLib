@@ -268,6 +268,7 @@
     <ClCompile Include="_test_file_io_helper.cpp" />
     <ClCompile Include="_test_NtApi.cpp" />
     <ClCompile Include="_test_ppl.cpp" />
+    <ClCompile Include="_test_process_token.cpp" />
     <ClCompile Include="_test_process_tree.cpp" />
     <ClCompile Include="_test_registry_util.cpp" />
     <ClCompile Include="_test_scm.cpp" />

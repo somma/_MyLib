@@ -251,6 +251,9 @@
     <ClCompile Include="_test_std_move.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="_test_process_token.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">

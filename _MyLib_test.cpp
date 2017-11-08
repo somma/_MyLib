@@ -25,6 +25,8 @@
 #include <unordered_map>
 #include "Singleton.h"
 
+// _test_process_token.cpp
+extern bool test_process_token();
 
 bool test_is_executable_file_w();
 bool test_singleton();
@@ -271,7 +273,8 @@ void run_test()
 	//	Sleep(500);
 	//}
 
-	assert_bool(true, test_is_executable_file_w);
+	assert_bool(true, test_process_token);
+	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
 	//assert_bool(true, test_std_move);	
 	//assert_bool(true, test_log_xxx);
