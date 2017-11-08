@@ -69,8 +69,6 @@ bool process::kill(_In_ DWORD exit_code)
 		CloseHandle(h); // TerminateProcess() is asynchronous, so must call CloseHandle()
 	}
 
-	set_privilege(SE_DEBUG_NAME, false);
-
 	return (true == _killed) ? true : false;
 }
 
@@ -96,12 +94,6 @@ cprocess_tree::build_process_tree()
 		return false;
 	}
 
-	if (true != set_privilege(SE_DEBUG_NAME, TRUE))
-	{
-		log_info "set_privilege(SE_DEBUG_NAME) failed." log_end;
-		// just info
-	}
-
 #pragma warning(disable: 4127)
     do
 	{
@@ -116,11 +108,9 @@ cprocess_tree::build_process_tree()
 		{
 			FILETIME create_time={0};
             std::wstring full_path;
-			HANDLE process_handle = OpenProcess(
-										PROCESS_QUERY_INFORMATION, 
-										FALSE, 
-										proc_entry.th32ProcessID
-										);
+			HANDLE process_handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
+												FALSE, 
+												proc_entry.th32ProcessID);
 			if(NULL == process_handle)
 			{
 				// too much logs.
@@ -135,8 +125,13 @@ cprocess_tree::build_process_tree()
 			}
 			else
 			{
-                if (!get_process_image_full_path(process_handle, full_path))
+				if (!get_process_image_full_path(process_handle, full_path))
                 {
+					log_err "get_process_image_full_path() failed. pid=%u, image=%ws",
+						proc_entry.th32ProcessID,
+						proc_entry.szExeFile
+						log_end;
+
                     full_path = _null_stringw;
                 }
 
@@ -165,8 +160,6 @@ cprocess_tree::build_process_tree()
 #pragma warning(default: 4127)
 
 	CloseHandle(snap);
-	set_privilege(SE_DEBUG_NAME, FALSE);
-
 	return true;
 }
 

@@ -609,6 +609,21 @@ bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code);
 bool get_process_creation_time(_In_ DWORD pid, _Out_ PFILETIME const creation_time);
 bool get_process_creation_time(_In_ HANDLE process_handle, _Out_ PFILETIME const creation_time);
 
+bool get_process_sid_and_user(_In_ DWORD pid, 
+							  _Out_ std::wstring& sid,
+							  _Out_ std::wstring& domain,
+							  _Out_ std::wstring& user_name,
+							  _Out_ SID_NAME_USE& sid_name_use);
+
+bool get_process_sid_and_user(_In_ HANDLE process_handle,
+							  _Out_ std::wstring& sid,
+							  _Out_ std::wstring& domain,
+							  _Out_ std::wstring& user_name,
+							  _Out_ SID_NAME_USE& sid_name_use);
+
+
+
+
 bool setup_wer(_In_ const wchar_t* dump_dir);
 
 

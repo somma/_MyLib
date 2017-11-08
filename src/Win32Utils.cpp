@@ -2364,8 +2364,6 @@ image_path_by_pid(
 		phandle = OpenProcess(PROCESS_QUERY_INFORMATION,
 							  FALSE,
 							  process_id);
-		set_privilege(SE_DEBUG_NAME, false);
-
 	} while (false);
 
 	if (NULL == phandle)
@@ -5116,7 +5114,7 @@ bool get_local_mac_by_ipv4(_In_ const wchar_t* ip_str, _Out_ std::wstring& mac_s
 
 /**
 * @brief	http://support.microsoft.com/kb/131065/EN-US/
-* @param	
+* @param	privilege	e.g. SE_DEBUG_NAME
 * @see		
 * @remarks	
 * @code		
@@ -5125,64 +5123,128 @@ bool get_local_mac_by_ipv4(_In_ const wchar_t* ip_str, _Out_ std::wstring& mac_s
 */
 bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 {
-    if (IsWindowsXPOrGreater())
+	//
+	//	set_privilege(SE_DEBUG_NAME, true) 호출 후 set_privilege(SE_DEBUG_NAME, false) 를 
+	//	호출하면 set_privilege(SE_DEBUG_NAME, false) 호출 이후의 OpenProcess() 가 종종
+	//	권한이 있음에도 불구하고, 실패하는 경우가 발생한다. 
+	//	정확한 원인 분석은 해보지 않아서 잘 모르겠음. 나중에 시간나면 한번...
+	//	일단 set_privilege(SE_DEBUG_NAME, false) 를 호출하지 않도록 하게 하기 위해
+	//	예외코드만 추가해 둠
+	//
+	_ASSERTE(true == enable);
+	if (true != enable) return false;
+
+	if (IsWindowsXPOrGreater())
 	{
 		HANDLE hToken;
-		if ( TRUE != OpenThreadToken(GetCurrentThread(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, FALSE, &hToken) )
+		if (TRUE != OpenThreadToken(GetCurrentThread(),
+									TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, FALSE,
+									&hToken))
 		{
 			if (GetLastError() == ERROR_NO_TOKEN)
 			{
-				if (ImpersonateSelf(SecurityImpersonation)	!= TRUE ) 
+				if (ImpersonateSelf(SecurityImpersonation) != TRUE)
 				{
-					log_err "ImpersonateSelf( ) failed. gle=%u", GetLastError() log_end
-					return false;
+					log_err "ImpersonateSelf( ) failed. gle=%u",
+						GetLastError()
+						log_end
+						return false;
 				}
 
-				if (TRUE != OpenThreadToken(GetCurrentThread(),TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,FALSE,&hToken))
+				if (TRUE != OpenThreadToken(GetCurrentThread(),
+											TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
+											FALSE,
+											&hToken))
 				{
-					log_err "OpenThreadToken() failed. gle=%u", GetLastError() log_end
-					return false;
+					log_err "OpenThreadToken() failed. gle=%u",
+						GetLastError()
+						log_end
+						return false;
 				}
 			}
 			else
 			{
-				log_err "OpenThread() failed. gle=%u", GetLastError() log_end
-				return false;
+				log_err "OpenThread() failed. gle=%u",
+					GetLastError()
+					log_end
+					return false;
 			}
-		}  
+		}		
+		handle_ptr token_ptr(hToken, [](_In_ HANDLE h) {CloseHandle(h); });
 
-		TOKEN_PRIVILEGES tp = { 0 };		
-		LUID luid = {0};
+
+		TOKEN_PRIVILEGES tp = { 0 };
+		TOKEN_PRIVILEGES tpPrevious = { 0 };
+		LUID luid = { 0 };
 		DWORD cb = sizeof(TOKEN_PRIVILEGES);
-		if(!LookupPrivilegeValue( NULL, privilege, &luid ))
-		{		
-			log_err "LookupPrivilegeValue() failed. gle=%u", GetLastError() log_end
-			CloseHandle(hToken);
+		if (!LookupPrivilegeValue(NULL,
+								  privilege,
+								  &luid))
+		{
+			log_err "LookupPrivilegeValue() failed. priv=%ws, gle=%u",
+				privilege,
+				GetLastError()
+				log_end				
 			return false;
 		}
+
+		// 
+		// first pass.  get current privilege setting
+		// 
 		tp.PrivilegeCount = 1;
 		tp.Privileges[0].Luid = luid;
-		if(enable) 
+		tp.Privileges[0].Attributes = 0;
+		if (!AdjustTokenPrivileges(hToken,
+								   FALSE,
+								   &tp,
+								   sizeof(TOKEN_PRIVILEGES),
+								   &tpPrevious,
+								   &cb))
 		{
-			tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-		} 
-		else 
-		{
-			tp.Privileges[0].Attributes = 0;
+			log_err "AdjustTokenPrivileges() failed. priv=%ws, gle=%u",
+				privilege,
+				GetLastError()
+				log_end;
+			return false;
 		}
-		
-        if (FALSE == AdjustTokenPrivileges( hToken, FALSE, &tp, cb, NULL, NULL ))
-        {
-            DWORD gle=GetLastError();
-		    if (gle != ERROR_SUCCESS)
-		    {		
-				log_err "AdjustTokenPrivileges() failed. gle=%u", GetLastError() log_end
-				CloseHandle(hToken);				
-			    return false;
-		    }		
-        }        
 
-		CloseHandle(hToken);
+		// 
+		// second pass.  set privilege based on previous setting
+		// 
+		tp.PrivilegeCount = 1;
+		tp.Privileges[0].Luid = luid;
+		if (enable)
+		{
+			tpPrevious.Privileges[0].Attributes |= (SE_PRIVILEGE_ENABLED);
+		}
+		else
+		{
+			tpPrevious.Privileges[0].Attributes ^= (SE_PRIVILEGE_ENABLED &
+													tpPrevious.Privileges[0].Attributes);
+		}
+
+		BOOL ret = AdjustTokenPrivileges(hToken,
+										 FALSE,
+										 &tpPrevious,
+										 cb,
+										 NULL,
+										 NULL);
+		if (!ret)
+		{
+			log_err "AdjustTokenPrivileges() failed. priv=%ws, gle=%u",
+				privilege,
+				GetLastError()
+				log_end;
+			return false;
+		}
+
+		if (ret != ERROR_NOT_ALL_ASSIGNED)
+		{
+			log_err "Token does not have specified privilege. priv=%ws",
+				privilege
+				log_end;
+			return false;
+		}
 	}
 
 	return true;
@@ -5634,8 +5696,6 @@ bool suspend_process_by_pid(_In_ DWORD pid)
 		proc_handle = OpenProcess(PROCESS_SUSPEND_RESUME,
 								  FALSE,
 								  pid);
-		set_privilege(SE_DEBUG_NAME, false);
-
 	} while (false);
 	
 	if (NULL == proc_handle)
@@ -5720,8 +5780,6 @@ bool terminate_process_by_pid(_In_ DWORD pid, _In_ DWORD exit_code)
 		proc_handle = OpenProcess(PROCESS_TERMINATE,
 								  FALSE,
 								  pid);
-		set_privilege(SE_DEBUG_NAME, false);
-
 	} while (false);
 
 	if (NULL == proc_handle)
@@ -5811,9 +5869,7 @@ get_process_creation_time(
 	_ASSERTE(nullptr != creation_time);
 	if (0 == pid || 4 == pid || nullptr == creation_time) return false;
 
-	bool got_privilege = false;
-	HANDLE process_handle = NULL;
-	
+	HANDLE process_handle = NULL;	
 	do
 	{
 		process_handle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
@@ -5821,22 +5877,10 @@ get_process_creation_time(
 		{
 			break;
 		}
-
-		if (!set_privilege(SE_DEBUG_NAME, true))
-		{
-			break;
-		}
-		got_privilege = true;
-
+		if (!set_privilege(SE_DEBUG_NAME, true)){break;}
 		process_handle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
-
 	} while (false);
 
-
-	if (true == got_privilege)
-	{
-		set_privilege(SE_DEBUG_NAME, false);
-	}
 
 	if (NULL == process_handle)
 	{
@@ -5881,6 +5925,200 @@ get_process_creation_time(
 	creation_time->dwHighDateTime = CreationTime.dwHighDateTime;
 	return true;
 }
+
+/// @brief	pid 프로세스의 사용자 정보를 구한다. 
+///			sid_string	S-1-5-18, S-1-5-21-2224222141-402476733-2427282895-1001 등
+///			domain		NT AUTHORITY, DESKTOP-27HJ3RS 등
+///			user_name	somma, guest 등
+bool 
+get_process_sid_and_user(
+	_In_ DWORD pid,
+	_Out_ std::wstring& sid,
+	_Out_ std::wstring& domain,
+	_Out_ std::wstring& user_name,
+	_Out_ SID_NAME_USE& sid_name_use
+	)
+{
+	//
+	//	Open process handle with READ token access
+	//
+	handle_ptr proc_handle(
+		OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
+					FALSE,
+					pid),
+		[](_In_ HANDLE handle)
+	{
+		if (NULL != handle) { CloseHandle(handle); }
+	});
+	if (NULL == proc_handle.get())
+	{
+		log_err "OpenProcess() failed. pid=%u, gle=%u",
+			pid,			
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	return get_process_sid_and_user(proc_handle.get(),
+									sid,
+									domain,
+									user_name,
+									sid_name_use);
+}
+
+/// @brief	
+bool get_process_sid_and_user(
+	_In_ HANDLE process_handle,
+	_Out_ std::wstring& sid,
+	_Out_ std::wstring& domain,
+	_Out_ std::wstring& user_name,
+	_Out_ SID_NAME_USE& sid_name_use
+	)
+{
+	_ASSERTE(NULL != process_handle);
+	if (NULL == process_handle) return false;
+
+	//
+	//	Open token handle
+	//
+	HANDLE th;
+	if (TRUE != OpenProcessToken(process_handle, TOKEN_QUERY, &th))
+	{
+		log_err "OpenProcessToken() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	handle_ptr token_handle(th, [](_In_ HANDLE th) {CloseHandle(th); });
+
+	//
+	//	Get token information
+	//
+	DWORD return_length;
+	GetTokenInformation(token_handle.get(),
+						TokenUser,
+						nullptr,
+						0,
+						&return_length);
+	DWORD gle = GetLastError();
+	if (gle != ERROR_INSUFFICIENT_BUFFER)
+	{
+		log_err "GetTokenInformation() failed. gle=%u",
+			gle
+			log_end;
+		return false;
+	}
+
+	char_ptr ptr(
+		(char*)malloc(return_length),
+		[](_In_ char* ptr) 
+	{
+		if (nullptr != ptr) free(ptr); 
+	});
+	if (nullptr == ptr.get())
+	{
+		log_err "Not enough memory. malloc size=%u", 
+			return_length
+			log_end;
+		return false;
+	}
+	
+	if (TRUE != GetTokenInformation(token_handle.get(),
+									TokenUser,
+									(PTOKEN_USER)ptr.get(),
+									return_length, 
+									&return_length))
+	{
+		log_err "GetTokenInformation() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	PTOKEN_USER token_user = (PTOKEN_USER)ptr.get();
+
+	//
+	//	SID  
+	// 
+	wchar_t* sid_str = nullptr;
+	if (TRUE != ConvertSidToStringSidW(token_user->User.Sid, &sid_str))
+	{
+		gle = GetLastError();
+		const char* gles = nullptr;
+		switch (gle)
+		{
+		case ERROR_NOT_ENOUGH_MEMORY: gles = "ERROR_NOT_ENOUGH_MEMORY"; break;
+		case ERROR_INVALID_SID: gles = "ERROR_INVALID_SID"; break;
+		case ERROR_INVALID_PARAMETER: gles = "ERROR_INVALID_PARAMETER"; break;
+		}
+
+		if (nullptr != gles)
+		{
+			log_err "ConvertSidToStringSidW() failed. gle=%s",
+				gles
+				log_end;
+		}
+		else
+		{
+			log_err "ConvertSidToStringSidW() failed. gle=%u",
+				gle
+				log_end;
+		}
+		return false;
+	}
+	sid = sid_str;
+
+	//
+	//	sid_string 버퍼는 반드시 LocalFree() 로 
+	//	소멸해야 한다. 
+	//
+	LocalFree(sid_str);
+	sid_str = nullptr;
+	
+	//
+	//	 User name
+	//
+	DWORD cch_name = 0;
+	DWORD cch_domain = 0;
+	LookupAccountSid(nullptr,
+					 token_user->User.Sid,
+					 nullptr,
+					 &cch_name,
+					 nullptr,
+					 &cch_domain,
+					 &sid_name_use);
+	wchar_ptr name((wchar_t*)malloc((cch_name + 1) * sizeof(wchar_t)),
+					[](_In_ wchar_t* ptr) 
+	{
+		if (nullptr != ptr){free(ptr);}
+	});
+	wchar_ptr domain_ptr((wchar_t*)malloc((cch_domain + 1) * sizeof(wchar_t)),
+						 [](_In_ wchar_t* ptr)
+	{
+		if (nullptr != ptr){free(ptr);}
+	});
+	if (nullptr == name.get() || nullptr == domain_ptr.get())
+	{
+		log_err "Not enough memory. " log_end;
+		return false;
+	}
+
+	if (TRUE != LookupAccountSid(nullptr,
+								 token_user->User.Sid,
+								 name.get(),
+								 &cch_name,
+								 domain_ptr.get(),
+								 &cch_domain,
+								 &sid_name_use))
+	{
+		log_err "LookupAccountSid() failed. " log_end;
+		return false;
+	}
+
+	domain = domain_ptr.get();
+	return true;
+}
+
 
 /// @brief	 Windows Error Reporting 환경 설정
 bool setup_wer(_In_ const wchar_t* dump_dir)

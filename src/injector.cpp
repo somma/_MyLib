@@ -80,8 +80,6 @@ bool inject_dll(_In_ DWORD pid, _In_z_ const char* dll_path)
 		process_handle = OpenProcess(rights,
 									 FALSE,
 									 pid);
-		set_privilege(SE_DEBUG_NAME, false);
-
 	} while (false);
 
 	if (NULL == process_handle)
