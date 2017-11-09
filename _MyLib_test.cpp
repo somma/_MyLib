@@ -220,6 +220,7 @@ void run_test()
 	//							   f.str().c_str())) return;
 	//	set_log_format(false, false, true);
 	//}
+	set_log_format(false, false, false);
 
 	//
 	//	std::string ฐüทร 

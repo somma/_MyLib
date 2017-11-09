@@ -609,17 +609,117 @@ bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code);
 bool get_process_creation_time(_In_ DWORD pid, _Out_ PFILETIME const creation_time);
 bool get_process_creation_time(_In_ HANDLE process_handle, _Out_ PFILETIME const creation_time);
 
-bool get_process_sid_and_user(_In_ DWORD pid, 
-							  _Out_ std::wstring& sid,
-							  _Out_ std::wstring& domain,
-							  _Out_ std::wstring& user_name,
-							  _Out_ SID_NAME_USE& sid_name_use);
 
-bool get_process_sid_and_user(_In_ HANDLE process_handle,
-							  _Out_ std::wstring& sid,
-							  _Out_ std::wstring& domain,
-							  _Out_ std::wstring& user_name,
-							  _Out_ SID_NAME_USE& sid_name_use);
+
+
+/// @brief	user/group 정보
+///			sid		S-1-5-18, S-1-5-21-2224222141-402476733-2427282895-1001 등
+///			domain	NT AUTHORITY, DESKTOP-27HJ3RS 등
+///			user_name	somma, guest 등
+typedef class sid_info
+{
+public: 
+	sid_info(_In_ const wchar_t* sid,
+			 _In_ const wchar_t* domain,
+			 _In_ const wchar_t* name,
+			 _In_ SID_NAME_USE sid_name_use) :
+		_sid(sid),
+		_domain(nullptr == domain ? L"" : domain),
+		_name(nullptr == name ? L"" : name),
+		_sid_name_use(sid_name_use)
+	{}
+
+	/// 항상 유효한 문자열
+	std::wstring _sid;
+
+	/// _domain, _name 은 없을 수도 있음
+	std::wstring _domain;
+	std::wstring _name;
+
+	/// GROUP SID 인 경우 _sid_name_use 는 사용 안함
+	SID_NAME_USE _sid_name_use;
+
+} *psid_info;
+
+psid_info get_sid_info(_In_ PSID sid);
+
+psid_info get_process_user(_In_ DWORD pid);
+psid_info get_process_user(_In_ HANDLE process_query_token);
+
+/// @brief	GROUP 의 sid 정보와 attribute 를 저장 ( TOKEN_GROUPS )
+///			TOKEN_GROUPS::_sid_info::_sid_name_use 은 무시
+typedef class group_sid_info
+{
+public:
+	group_sid_info(_In_ psid_info sid_info,_In_ DWORD attribute) :
+		_sid_info(sid_info),
+		_attribute(attribute)
+	{}
+	~group_sid_info() { if (nullptr != _sid_info) delete _sid_info;	}
+
+public:
+	psid_info _sid_info;
+	DWORD _attribute;
+
+	std::wstring attribute()
+	{
+		bool addlf = false;
+		std::wstringstream flag;
+
+		if (FlagOn(_attribute, SE_GROUP_MANDATORY))
+		{
+			flag << SE_GROUP_MANDATORY; addlf = true;
+		}
+
+		if (FlagOn(_attribute, SE_GROUP_ENABLED_BY_DEFAULT))
+		{
+			if (true == addlf){flag << L", ";} else {addlf = true;}
+			flag << L"SE_GROUP_ENABLED_BY_DEFAULT";
+		}
+		if (FlagOn(_attribute, SE_GROUP_ENABLED))
+		{
+			if (true == addlf) { flag << L", "; } else { addlf = true; }
+			flag << L"SE_GROUP_ENABLED";
+		}
+		if (FlagOn(_attribute, SE_GROUP_OWNER))
+		{
+			if (true == addlf) { flag << L", "; } else { addlf = true; }
+			flag << L"SE_GROUP_OWNER";
+		}
+		if (FlagOn(_attribute, SE_GROUP_USE_FOR_DENY_ONLY))
+		{
+			if (true == addlf) { flag << L", "; } else { addlf = true; }
+			flag << L"SE_GROUP_USE_FOR_DENY_ONLY";
+		}
+		if (FlagOn(_attribute, SE_GROUP_INTEGRITY))
+		{
+			if (true == addlf) { flag << L", "; } else { addlf = true; }
+			flag << L"SE_GROUP_INTEGRITY";
+		}
+		if (FlagOn(_attribute, SE_GROUP_INTEGRITY_ENABLED))
+		{
+			if (true == addlf) { flag << L", "; } else { addlf = true; }
+			flag << L"SE_GROUP_INTEGRITY_ENABLED";
+		}
+		if (FlagOn(_attribute, SE_GROUP_LOGON_ID))
+		{
+			if (true == addlf) { flag << L", "; } else { addlf = true; }
+			flag << L"SE_GROUP_LOGON_ID";
+		}
+		if (FlagOn(_attribute, SE_GROUP_RESOURCE))
+		{
+			if (true == addlf) { flag << L", "; } else { addlf = true; }
+			flag << L"SE_GROUP_RESOURCE";
+		}
+
+		return flag.str();
+	}
+
+}*pgroup_sid_info;
+
+bool get_process_group(_In_ DWORD pid, _Out_ std::list<pgroup_sid_info>& group);
+bool get_process_group(_In_ HANDLE process_query_token, _Out_ std::list<pgroup_sid_info>& group);
+
 
 
 

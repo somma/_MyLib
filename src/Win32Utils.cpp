@@ -5926,17 +5926,114 @@ get_process_creation_time(
 	return true;
 }
 
+/// @brief	
+psid_info get_sid_info(_In_ PSID sid)
+{
+	_ASSERTE(nullptr != sid);
+	if (nullptr == sid) return nullptr;
+
+	//
+	//	SID  
+	// 
+	wchar_t* sid_str = nullptr;
+	if (TRUE != ConvertSidToStringSidW(sid, &sid_str))
+	{
+		DWORD gle = GetLastError();
+		const char* gles = nullptr;
+		switch (gle)
+		{
+		case ERROR_NOT_ENOUGH_MEMORY: gles = "ERROR_NOT_ENOUGH_MEMORY"; break;
+		case ERROR_INVALID_SID: gles = "ERROR_INVALID_SID"; break;
+		case ERROR_INVALID_PARAMETER: gles = "ERROR_INVALID_PARAMETER"; break;
+		}
+
+		if (nullptr != gles)
+		{
+			log_err "ConvertSidToStringSidW() failed. gle=%s",
+				gles
+				log_end;
+		}
+		else
+		{
+			log_err "ConvertSidToStringSidW() failed. gle=%u",
+				gle
+				log_end;
+		}
+		return nullptr;
+	}
+	
+	//
+	//	sid_string 버퍼는 반드시 LocalFree() 로 소멸해야 한다. 
+	//	
+	wchar_ptr sid_ptr(sid_str, [](wchar_t* p) {LocalFree(p); });
+	
+	//
+	//	 User/Group, Reference domain name mapped with this SID
+	//
+	DWORD cch_name = 0;
+	wchar_t* name = nullptr;
+	DWORD cch_domain = 0;
+	wchar_t* domain = nullptr;
+	SID_NAME_USE sid_name_use = SidTypeUnknown;
+	LookupAccountSid(nullptr,
+					 sid, 
+					 nullptr,
+					 &cch_name,
+					 nullptr,
+					 &cch_domain,
+					 &sid_name_use);
+	if (cch_name > 0)
+	{
+		name = (wchar_t*)malloc((cch_name + 1) * sizeof(wchar_t));
+		if (nullptr == name)
+		{
+			log_err "Not enough memory. " log_end;
+			return nullptr;
+		}
+	}
+
+	if (cch_domain > 0)
+	{
+		domain = (wchar_t*)malloc((cch_domain + 1) * sizeof(wchar_t));
+		if (nullptr == name)
+		{
+			log_err "Not enough memory. " log_end;
+			return nullptr;
+		}
+	}
+	wchar_ptr name_ptr(name, [](_In_ wchar_t* ptr){if (nullptr != ptr) { free(ptr); }});
+	wchar_ptr domain_ptr(domain, [](_In_ wchar_t* ptr){if (nullptr != ptr){free(ptr);}});
+		
+	if (TRUE != LookupAccountSid(nullptr,
+								 sid,
+								 name_ptr.get(),
+								 &cch_name,
+								 domain_ptr.get(),
+								 &cch_domain,
+								 &sid_name_use))
+	{
+		// 
+		//	로그인 어카운트와 매핑되지 않은 SID(e.g. logon SID)인 경우 또는 
+		//	로그인 이름을 찾다가 네트워크 타임아웃이 발생한 경우 또는 매핑된 로그인 계정이
+		//	없는경우(로그인 계정이 없는 Group SID 인 경우) 등에 ERROR_NONE_MAPPED 를 
+		//	리턴할 수 있다. 
+		//
+		//log_err "LookupAccountSid() failed. gle=%u",
+		//	GetLastError()
+		//	log_end;
+		//
+	}
+
+	return new sid_info(sid_ptr.get(),
+						domain_ptr.get(),
+						name_ptr.get(),
+						sid_name_use);
+}
+
 /// @brief	pid 프로세스의 사용자 정보를 구한다. 
-///			sid_string	S-1-5-18, S-1-5-21-2224222141-402476733-2427282895-1001 등
-///			domain		NT AUTHORITY, DESKTOP-27HJ3RS 등
-///			user_name	somma, guest 등
-bool 
-get_process_sid_and_user(
-	_In_ DWORD pid,
-	_Out_ std::wstring& sid,
-	_Out_ std::wstring& domain,
-	_Out_ std::wstring& user_name,
-	_Out_ SID_NAME_USE& sid_name_use
+psid_info
+get_process_user(
+	_In_ DWORD pid
 	)
 {
 	//
@@ -5953,36 +6050,117 @@ get_process_sid_and_user(
 	if (NULL == proc_handle.get())
 	{
 		log_err "OpenProcess() failed. pid=%u, gle=%u",
-			pid,			
+			pid,
 			GetLastError()
 			log_end;
 		return false;
 	}
 
-	return get_process_sid_and_user(proc_handle.get(),
-									sid,
-									domain,
-									user_name,
-									sid_name_use);
+	//
+	//	Open token handle
+	//
+	HANDLE th;
+	if (TRUE != OpenProcessToken(proc_handle.get(),
+								 TOKEN_QUERY,
+								 &th))
+	{
+		log_err "OpenProcessToken() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	handle_ptr token_handle(th, [](_In_ HANDLE th) {CloseHandle(th); });
+	return get_process_user(token_handle.get());
 }
 
 /// @brief	
-bool get_process_sid_and_user(
-	_In_ HANDLE process_handle,
-	_Out_ std::wstring& sid,
-	_Out_ std::wstring& domain,
-	_Out_ std::wstring& user_name,
-	_Out_ SID_NAME_USE& sid_name_use
+psid_info 
+get_process_user(
+	_In_ HANDLE process_query_token
 	)
 {
-	_ASSERTE(NULL != process_handle);
-	if (NULL == process_handle) return false;
+	_ASSERTE(NULL != process_query_token);
+	if (NULL == process_query_token) return nullptr;
+
+	//
+	//	Get token information
+	//
+	DWORD return_length;
+	GetTokenInformation(process_query_token,
+						TokenUser,
+						nullptr,
+						0,
+						&return_length);
+	DWORD gle = GetLastError();
+	if (gle != ERROR_INSUFFICIENT_BUFFER)
+	{
+		log_err "GetTokenInformation() failed. gle=%u",
+			gle
+			log_end;
+		return nullptr;
+	}
+
+	char_ptr ptr(
+		(char*)malloc(return_length),
+		[](_In_ char* ptr) 
+	{
+		if (nullptr != ptr) free(ptr); 
+	});
+	if (nullptr == ptr.get())
+	{
+		log_err "Not enough memory. malloc size=%u", 
+			return_length
+			log_end;
+		return nullptr;
+	}
+	
+	if (TRUE != GetTokenInformation(process_query_token,
+									TokenUser,
+									(PTOKEN_USER)ptr.get(),
+									return_length, 
+									&return_length))
+	{
+		log_err "GetTokenInformation() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return nullptr;
+	}
+
+	return get_sid_info(((PTOKEN_USER)ptr.get())->User.Sid);
+}
+
+/// @brief	
+bool 
+get_process_group(
+	_In_ DWORD pid,
+	_Out_ std::list<pgroup_sid_info>& group
+	)
+{
+	//
+	//	Open process handle with READ token access
+	//
+	handle_ptr proc_handle(
+		OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,FALSE,pid),
+		[](_In_ HANDLE handle)
+	{
+		if (NULL != handle) { CloseHandle(handle); }
+	});
+	if (NULL == proc_handle.get())
+	{
+		log_err "OpenProcess() failed. pid=%u, gle=%u",
+			pid,
+			GetLastError()
+			log_end;
+		return false;
+	}
 
 	//
 	//	Open token handle
 	//
 	HANDLE th;
-	if (TRUE != OpenProcessToken(process_handle, TOKEN_QUERY, &th))
+	if (TRUE != OpenProcessToken(proc_handle.get(),
+								 TOKEN_QUERY,
+								 &th))
 	{
 		log_err "OpenProcessToken() failed. gle=%u",
 			GetLastError()
@@ -5991,12 +6169,24 @@ bool get_process_sid_and_user(
 	}
 	handle_ptr token_handle(th, [](_In_ HANDLE th) {CloseHandle(th); });
 
+	return get_process_group(token_handle.get(), group);
+}
+
+bool
+get_process_group(
+	_In_ HANDLE process_query_token,
+	_Out_ std::list<pgroup_sid_info>& group
+	)
+{
+	_ASSERTE(NULL != process_query_token);
+	if (NULL == process_query_token) return false;
+
 	//
 	//	Get token information
 	//
 	DWORD return_length;
-	GetTokenInformation(token_handle.get(),
-						TokenUser,
+	GetTokenInformation(process_query_token,
+						TokenGroups,
 						nullptr,
 						0,
 						&return_length);
@@ -6023,9 +6213,9 @@ bool get_process_sid_and_user(
 		return false;
 	}
 	
-	if (TRUE != GetTokenInformation(token_handle.get(),
-									TokenUser,
-									(PTOKEN_USER)ptr.get(),
+	if (TRUE != GetTokenInformation(process_query_token,
+									TokenGroups,
+									(PTOKEN_GROUPS)ptr.get(),
 									return_length, 
 									&return_length))
 	{
@@ -6035,87 +6225,25 @@ bool get_process_sid_and_user(
 		return false;
 	}
 
-	PTOKEN_USER token_user = (PTOKEN_USER)ptr.get();
-
-	//
-	//	SID  
-	// 
-	wchar_t* sid_str = nullptr;
-	if (TRUE != ConvertSidToStringSidW(token_user->User.Sid, &sid_str))
+	PTOKEN_GROUPS token_groups = (PTOKEN_GROUPS)ptr.get();
+	for (uint32_t i = 0; i < token_groups->GroupCount; ++i)
 	{
-		gle = GetLastError();
-		const char* gles = nullptr;
-		switch (gle)
+		psid_info group_sid = get_sid_info(token_groups->Groups[i].Sid);
+		if (nullptr != group_sid)
 		{
-		case ERROR_NOT_ENOUGH_MEMORY: gles = "ERROR_NOT_ENOUGH_MEMORY"; break;
-		case ERROR_INVALID_SID: gles = "ERROR_INVALID_SID"; break;
-		case ERROR_INVALID_PARAMETER: gles = "ERROR_INVALID_PARAMETER"; break;
-		}
-
-		if (nullptr != gles)
-		{
-			log_err "ConvertSidToStringSidW() failed. gle=%s",
-				gles
-				log_end;
-		}
-		else
-		{
-			log_err "ConvertSidToStringSidW() failed. gle=%u",
-				gle
-				log_end;
-		}
-		return false;
-	}
-	sid = sid_str;
-
-	//
-	//	sid_string 버퍼는 반드시 LocalFree() 로 
-	//	소멸해야 한다. 
-	//
-	LocalFree(sid_str);
-	sid_str = nullptr;
-	
-	//
-	//	 User name
-	//
-	DWORD cch_name = 0;
-	DWORD cch_domain = 0;
-	LookupAccountSid(nullptr,
-					 token_user->User.Sid,
-					 nullptr,
-					 &cch_name,
-					 nullptr,
-					 &cch_domain,
-					 &sid_name_use);
-	wchar_ptr name((wchar_t*)malloc((cch_name + 1) * sizeof(wchar_t)),
-					[](_In_ wchar_t* ptr) 
-	{
-		if (nullptr != ptr){free(ptr);}
-	});
-	wchar_ptr domain_ptr((wchar_t*)malloc((cch_domain + 1) * sizeof(wchar_t)),
-						 [](_In_ wchar_t* ptr)
-	{
-		if (nullptr != ptr){free(ptr);}
-	});
-	if (nullptr == name.get() || nullptr == domain_ptr.get())
-	{
-		log_err "Not enough memory. " log_end;
-		return false;
+			pgroup_sid_info g = new group_sid_info(group_sid,
+												   token_groups->Groups[i].Attributes);
+			if (nullptr == g)
+			{
+				delete group_sid; group_sid = nullptr;
+			}
+			else
+			{
+				group.push_back(g);
+			}
+		}		
 	}
 
-	if (TRUE != LookupAccountSid(nullptr,
-								 token_user->User.Sid,
-								 name.get(),
-								 &cch_name,
-								 domain_ptr.get(),
-								 &cch_domain,
-								 &sid_name_use))
-	{
-		log_err "LookupAccountSid() failed. " log_end;
-		return false;
-	}
-
-	domain = domain_ptr.get();
 	return true;
 }
 
