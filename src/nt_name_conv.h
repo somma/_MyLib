@@ -75,11 +75,27 @@ public:
     
 private:
 	bool _loaded;
-    boost::mutex                _lock;
-    std::list<DosDeviceInfo>    _dos_devices;
-    std::list<std::wstring>     _mup_devices;
+    boost::mutex _lock;
+
+	//	%SystemDrive% (e.g. c: )
+	//
+	//	`/Program Files`, `/Windows` 형태로 drive 를 제외하고, 상대 root 경로로
+	//	접근하는 경우 (예. cd \dbg 같은 경우), current drive 의 root 경로에 대한 
+	//	접근이다. 그러나 current drive 를 알 수 없는 경우가 대부분이기 때문에, 
+	//	정확한 변환은 어렵다. 이런 경우 그나마 가장 확률이 높은 %SystemDrive% 를 붙여준다. 
+	//	_system_drive 는 항상 소문자를 사용 함
+	std::wstring _system_drive;
+
+	// %SystemRoot% (e.g. c:\windows )	
+	std::wstring _system_root;
+
+	/// 
+
+    std::list<DosDeviceInfo> _dos_devices;
+    std::list<std::wstring> _mup_devices;
 
     bool resolve_device_prefix(_In_ const wchar_t* file_name, _Out_ std::wstring& resolved_file_name);
+	bool load_env_values();
     bool update_dos_device_prefixes();
     bool update_mup_device_prefixes();
 } *PNameConverter;

@@ -20,6 +20,12 @@ bool NameConverter::load(_In_ bool force_reload)
 	boost::lock_guard<boost::mutex> lock(_lock);
 	if (true == _loaded && true != force_reload) return true;
 		
+	if (true != load_env_values())
+	{
+		log_err "load_env_values() failed. " log_end;
+		return false;
+	}
+
 	if (true != update_dos_device_prefixes())
 	{
 		log_err "update_dos_device_prefixes() failed." log_end;
@@ -35,16 +41,19 @@ bool NameConverter::load(_In_ bool force_reload)
 }
 
 /// @brief  nt path name 을 dos path name 으로 변환한다. 
+///
 ///			\??\c:\windows\system32\abc.exe->c:\windows\system32\abc.exe
 ///			\Systemroot\abc.exe->C:\WINDOWS\abc.exe
 ///			system32\abc.exe->C:\WINDOWS\system32\abc.exe
 ///			\windows\system32\abc.exe->C:\WINDOWS\system32\abc.exe
+///			x:\->x:\		(network mapped drive)
+///			\Program Files\ -> c:\ProgramFiles
+///			\Program Files (x86) -> c:\Program Files (x86)
+///
 ///			\Device\Mup\1.1.1.1\abc.exe -> \\1.1.1.1\abc.exe
 ///			\Device\Unknown\aaaa.exe -> \Device\Unknown\aaaa.exe
 ///			\device\lanmanredirector\;x:000000000008112d\192.168.153.144\sfr022\ -> \\192.168.153.144\sfr022\
-///			x:\->x:\
 ///			\Device\Mup\192.168.153.144\sfr022\ -> \\192.168.153.144\sfr022\
-///
 ///			\Device\WebDavRedirector\192.168.0.1\DavWWWRoot\ -> \\192.168.0.1\davwwwroot\
 ///			\Device\Mup\192.168.0.1\ -> \\192.168.0.1\
 ///			\Device\Mup\192.168.0.1\temp.*\ -> \\192.168.0.1\temp.*\
@@ -69,12 +78,19 @@ NameConverter::get_canon_name(
     uint32_t cch_canon_file = 0;
     
 	//
+	//	\Device\HardDiskVolume1\... -> c:\...
+	//
+	if (true == lstrnicmp(file_name, L"\\device"))
+	{
+		return resolve_device_prefix(file_name, canonical_file_name);
+	}
+
+	//
     //	"\??\" refers to \GLOBAL??\. Just remove it.
 	//
-    if (true == lstrnicmp(file_name, L"\\??\\"))
+    else if (true == lstrnicmp(file_name, L"\\??\\"))
     {
         cch_canon_file = cch_file_name - 4;
-
 		wchar_ptr canon_file(
 			(wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t)), 
 			[](wchar_t* p) {
@@ -83,7 +99,6 @@ NameConverter::get_canon_name(
 					free(p);
 				}
 		});
-
         if (nullptr == canon_file.get())
 		{
 			log_err "Not enough memory. size=%u", 
@@ -103,24 +118,16 @@ NameConverter::get_canon_name(
 	//
     else if (true == lstrnicmp(file_name, L"\\SystemRoot"))
     {
-        std::wstring windows_dir;                    // c:\windows
-        if (true != get_windows_dir(windows_dir))
-        {
-            log_err "get_windows_dir() failed." log_end;
-			return false;
-        }
-
-        cch_canon_file = (cch_file_name - 11) + (uint32_t)windows_dir.size();
-        
+        cch_canon_file = (cch_file_name - 11) + (uint32_t)_system_root.size();        
 		wchar_ptr canon_file(
 			(wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t)),
-			[](wchar_t* p) {		
-				if (nullptr != p)
-				{
-					free(p);
-				}
+			[](wchar_t* p) 
+		{		
+			if (nullptr != p)
+			{
+				free(p);
+			}
 		});
-
 		if (nullptr == canon_file.get())
 		{
 			log_err "Not enough memory. size=%u",
@@ -129,8 +136,8 @@ NameConverter::get_canon_name(
 			return false;
 		}
 
-        RtlCopyMemory(canon_file.get(), windows_dir.c_str(), (windows_dir.size() * sizeof(wchar_t)));
-        RtlCopyMemory(&canon_file.get()[windows_dir.size()], &file_name[11], (cch_file_name - 11) * sizeof(wchar_t));
+        RtlCopyMemory(canon_file.get(), _system_root.c_str(), (_system_root.size() * sizeof(wchar_t)));
+        RtlCopyMemory(&canon_file.get()[_system_root.size()], &file_name[11], (cch_file_name - 11) * sizeof(wchar_t));
         canon_file.get()[cch_canon_file] = 0x0000;
 		canonical_file_name = canon_file.get();
 		return true;
@@ -141,100 +148,37 @@ NameConverter::get_canon_name(
 	//
     else if (true == lstrnicmp(file_name, L"system32\\"))
     {
-        std::wstring windows_dir;                    // c:\windows
-        if (true != get_windows_dir(windows_dir))
-        {
-            log_err "get_windows_dir() failed." log_end;
-			return false;
-        }
-        windows_dir += L"\\";   // `c:\windows` => `c:\windows\\`
-
-        cch_canon_file = cch_file_name + (uint32_t)windows_dir.size();
-        
-		wchar_ptr canon_file(
-			(wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t)),
-			[](wchar_t* p) {
-				if (nullptr != p)
-				{
-					free(p);
-				}
-		});
-		if (nullptr == canon_file.get())
-		{
-			log_err "Not enough memory. size=%u",
-				(cch_canon_file + 1) * sizeof(wchar_t)
-				log_end;
-			return false;
-		}
-
-        RtlCopyMemory(canon_file.get(), windows_dir.c_str(), (windows_dir.size() * sizeof(wchar_t)));
-        RtlCopyMemory(&canon_file.get()[windows_dir.size()], file_name, cch_file_name * sizeof(wchar_t));
-        canon_file.get()[cch_canon_file] = 0x0000;
-		canonical_file_name = canon_file.get();
+		std::wstringstream strm;
+		strm << _system_root << L"\\" << file_name;
+		canonical_file_name = strm.str();
 		return true;
     }
-    else if (file_name[0] == L'\\')
-    {
-        if (true == resolve_device_prefix(file_name, canonical_file_name))
-        {
-			//
-			//	resolve_device_prefix() 가 성공하면 성공
-			//
-			return true;
-        }
-        else
-        {
-			// 
-			//	resolve_device_prefix() 가 실패하면 다시 시도해본다. 
-            // 
-            //	If the file name starts with "\Windows", prepend the system drive.
-			// 
-            if (true == lstrnicmp(file_name, L"\\windows"))
-            {
-                std::wstring windows_dir;                    // c:\windows
-                if (true != get_windows_dir(windows_dir))
-                {
-                    log_err "get_windows_dir() failed." log_end;
-					return false;
-                }
 
-                cch_canon_file = (cch_file_name - 8) + (uint32_t)windows_dir.size();
-                
-				wchar_ptr canon_file(
-					(wchar_t*)malloc((cch_canon_file + 1) * sizeof(wchar_t)),
-					[](wchar_t* p) {
-						if (nullptr != p)
-						{
-							free(p);
-						}
-				});
-				if (nullptr == canon_file.get())
-				{
-					log_err "Not enough memory. size=%u",
-						(cch_canon_file + 1) * sizeof(wchar_t)
-						log_end;
-					return false;
-				}
-
-                RtlCopyMemory(canon_file.get(), windows_dir.c_str(), (windows_dir.size() * sizeof(wchar_t)));
-                RtlCopyMemory(&canon_file.get()[windows_dir.size()], &file_name[8], (cch_file_name - 8) * sizeof(wchar_t));
-                canon_file.get()[cch_canon_file] = 0x0000;
-				canonical_file_name = canon_file.get();
-				return true;
-            }
-            else
-            {
-                // unknown
-				return false;
-            }
-        }    
+	//
+	//	\\windows -> c:\windows
+	//	
+	else if (true == lstrnicmp(file_name, L"\\windows"))
+	{
+		std::wstringstream strm;
+		strm << _system_drive << file_name;
+		canonical_file_name = strm.str();
+		return true;
 	}
-    else
+	//
+	//	\\Program Files, \\Program Files (x86)
+	//		=> c:\Program Files...
+	else if (true == lstrnicmp(file_name, L"\\program files"))
+	{
+		std::wstringstream strm;
+		strm << _system_drive << file_name;
+		canonical_file_name = strm.str();
+		return true;
+	}
+	else
     {
         // unknown
 		return false;
     }
-
 }
 
 /// @brief  nt_name( ex. \Device\HarddiskVolume4\Windows\...\MicrosoftEdge.exe ) 
@@ -699,14 +643,41 @@ NameConverter::resolve_device_prefix(
 			}
 		}
 
-		resolved_file_name += mup_path.substr(pos,
-											  mup_path.size());
+		resolved_file_name += mup_path.substr(pos, mup_path.size());
 		return true;
 	}
 
     // #3, no match    
     return false;
 }
+
+/// @brief 
+bool NameConverter::load_env_values()
+{
+	std::wstring value;
+
+	//
+	//	%SystemDrive% 환경변수 읽기
+	// 
+	if (get_environment_value(L"%SystemDrive%", value))
+	{
+		to_lower_string(value);
+		_system_drive = value;
+	}
+
+	//
+	//	%SystemRoot%
+	//
+	if (get_environment_value(L"%SystemRoot%", value))
+	{
+		to_lower_string(value);
+		_system_root = value;
+	}
+
+
+	return true;
+}
+
 
 /// @brief  
 bool NameConverter::update_dos_device_prefixes()

@@ -24,6 +24,9 @@
 #include "GeneralHashFunctions.h"
 #include <unordered_map>
 #include "Singleton.h"
+#include "FileInfoCache.h"
+
+bool test_file_info_cache();
 
 // _test_process_token.cpp
 extern bool test_process_token();
@@ -274,7 +277,10 @@ void run_test()
 	//	Sleep(500);
 	//}
 
-	assert_bool(true, test_process_token);
+	
+	assert_bool(true, test_file_info_cache);
+	
+	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
 	//assert_bool(true, test_std_move);	
@@ -2188,11 +2194,14 @@ bool test_NameConverter_get_canon_name()
         L"\\Device\\Mup\\1.1.1.1\\abc.exe",
         L"\\Device\\Unknown\\aaaa.exe",
 
-        // net use x: \\192.168.153.144\\sfr022\\ /user:vmuser * 명령으로 x 드라이브 매핑해둠
+        // net use x: \\10.10.10.10\\dbg\\ /user:vmuser * 명령으로 x 드라이브 매핑해둠
         // 
-		L"\\Device\\Mup\\; lanmanredirector\\; x:000000000008112d\\192.168.153.144\\sfr022\\",
+		L"\\Device\\Mup\\; lanmanredirector\\; x:000000000008112d\\10.10.10.10\\dbg\\",
         L"x:\\",
-        L"\\Device\\Mup\\192.168.153.144\\sfr022\\",
+        L"\\Device\\Mup\\10.10.10.10\\dbg\\",
+
+		L"\\Program Files\\",
+		L"\\Program Files (x86)",
 
 		L"\\Device\\WebDavRedirector\\192.168.0.1\\DavWWWRoot\\",
 		L"\\Device\\Mup\\192.168.0.1\\",
@@ -2406,6 +2415,41 @@ private:
 	int _v1;
 	int _v2;
 };
+
+bool test_file_info_cache()
+{
+	const wchar_t* test_file_1 = L"c:\\windows\\system32\\notepad.exe";
+	std::wstringstream db;
+	db << get_current_module_dirEx() << L"\\file_info_cache.db";
+	{
+		FileInfoCache cache;		
+		_ASSERTE(true == cache.initialize(db.str().c_str(), true));
+
+		//
+		//	FileInfoCache 클래스 이용	
+		//
+		FileInformation fi1;
+		FileInformation fi2;
+		_ASSERTE(true == cache.get_file_information(test_file_1, fi1));
+		_ASSERTE(true == cache.get_file_information(test_file_1, fi2));
+		_ASSERTE(1 == cache.size());
+		_ASSERTE(1 == cache.hit_count());
+		_ASSERTE(0 == fi1.sha2.compare(fi2.sha2));
+	}
+	DeleteFileW(db.str().c_str());
+
+	//
+	//	FileInfoCache C api 이용	
+	//
+	_ASSERTE(true == fi_initialize());
+	FileInformation fic1;
+	_ASSERTE(true == fi_get_file_information(test_file_1, fic1));
+	FileInformation fic2;
+	_ASSERTE(true == fi_get_file_information(test_file_1, fic2));
+	_ASSERTE(0 == fic1.sha2.compare(fic2.sha2));
+	fi_finalize();		///<!
+	return true;
+}
 
 bool test_is_executable_file_w()
 {
