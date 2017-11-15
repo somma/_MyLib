@@ -57,7 +57,6 @@ typedef bool(*iterate_dos_device_callback)(_In_ const DosDeviceInfo* ddi, _In_ U
 typedef class NameConverter
 {
 public:
-#pragma todo("NameConverter 클래스에 캐시 기능을 추가")
 	NameConverter():_loaded(false) {}
     ~NameConverter() {}
 
