@@ -2419,9 +2419,16 @@ private:
 bool test_file_info_cache()
 {
 	const wchar_t* test_file_1 = L"c:\\windows\\system32\\notepad.exe";
+	const wchar_t* test_file_2 = L"C:\\WINDOWS\\SYSTEM32\\CMD.EXE";
+	const wchar_t* test_file_3 = L"C:\\Windows\\System32\\eventvwr.exe";
 	std::wstringstream db;
 	db << get_current_module_dirEx() << L"\\file_info_cache.db";
+
+
 	{
+		//
+		// 파일 정보 캐시 테이블 등록 및 파일 정보 읽어오는 테스트 
+		//
 		FileInfoCache cache;		
 		_ASSERTE(true == cache.initialize(db.str().c_str(), true));
 
@@ -2430,24 +2437,62 @@ bool test_file_info_cache()
 		//
 		FileInformation fi1;
 		FileInformation fi2;
+		
 		_ASSERTE(true == cache.get_file_information(test_file_1, fi1));
 		_ASSERTE(true == cache.get_file_information(test_file_1, fi2));
 		_ASSERTE(1 == cache.size());
 		_ASSERTE(1 == cache.hit_count());
 		_ASSERTE(0 == fi1.sha2.compare(fi2.sha2));
+
+		FileInformation fi3;
+		_ASSERTE(true == cache.get_file_information(test_file_2, fi3));
+		_ASSERTE(2 == cache.size());
 	}
 	DeleteFileW(db.str().c_str());
 
+	{
+		//
+		// 파일 정보 캐시 삭제 쿼리문을 테스트 하기 위해서 캐시 사이즈를 1로 초기화 한다.
+		//
+		FileInfoCache cache;
+		_ASSERTE(true == cache.initialize(db.str().c_str(), 1, true));
+
+		FileInformation fi1;
+		FileInformation fi2;
+		FileInformation fi3;
+
+		_ASSERTE(true == cache.get_file_information(test_file_1, fi1));
+		_ASSERTE(true == cache.get_file_information(test_file_1, fi2));
+		_ASSERTE(true == cache.get_file_information(test_file_2, fi3));
+		
+		// 테스트 케이스에서 캐시 사이즈가 1로 초기화 되어있다. 캐시 사이즈가 1을 초과할 때, 삭제 조건("hit_count"가 
+		// 평균 보다 작은 경우)에 일치하는 캐시 정보가 삭제 된다. 제 하기 전 캐시 사이즈는 2이다.
+		_ASSERTE(2 == cache.size());
+
+		//
+		// 새로운 파일에 대한 캐시 정보가 저장이 될 것이고, 이때 "hit_count"가 평균 보다 작은 데이터
+		// 들은 삭제 된다. 현재 케이스에서는 평균이 1이므로 이전에 삽입된 데이터 2개가 삭제 되어 캐시
+		// 사이즈는 1이 된다.
+		//
+		FileInformation fi4;
+		_ASSERTE(true == cache.get_file_information(test_file_3, fi4));
+		_ASSERTE(1 == cache.size());
+	}
+	DeleteFileW(db.str().c_str());
 	//
 	//	FileInfoCache C api 이용	
 	//
+	
 	_ASSERTE(true == fi_initialize());
 	FileInformation fic1;
 	_ASSERTE(true == fi_get_file_information(test_file_1, fic1));
 	FileInformation fic2;
 	_ASSERTE(true == fi_get_file_information(test_file_1, fic2));
 	_ASSERTE(0 == fic1.sha2.compare(fic2.sha2));
+	FileInformation fi3;
+	_ASSERTE(true == fi_get_file_information(test_file_2, fi3));
 	fi_finalize();		///<!
+	
 	return true;
 }
 

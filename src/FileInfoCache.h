@@ -34,31 +34,22 @@ public:
 } *PFileInformation;
 
 
-
-#pragma todo("꼭 수정해야 할 내용 있음")
-//	- 캐시의 사이즈가 무한정 커질 수 있음
-//		hitcount 필드를 추가하고
-//		주기적으로? 캐시 사이즈가 특정 갯수에 도달하면?
-//		hitcount 가 작은 순서로 삭제 후 VACUUM 을 수행 (요건 그냥 내 생각)
-//
-//	- file path 를 utf8 로 저장해야 함
-//	- file path 가 현재 대소문자가 구분되는것 같은데, 대소문자 구분 없어야 함
-//
-
 typedef class FileInfoCache
 {
 public:
 	FileInfoCache();
 	virtual ~FileInfoCache();
 
-	bool initialize(_In_ const wchar_t* db_file_path, _In_ bool delete_if_exist = false);
+	bool initialize(_In_ const wchar_t* db_file_path, 
+					_In_ int64_t cache_size = 5000,
+					_In_ bool delete_if_exist = false);
 	void finalize();
 
-	bool get_file_information(_In_ const wchar_t* file_path, _Out_ FileInformation& file_information);
+	bool get_file_information(_In_ const wchar_t* file_path, 
+							  _Out_ FileInformation& file_information);
 
-	uint32_t size() {return _size; }
-	uint32_t hit_count() {return _hit_count;}
-
+	int64_t size() { return _size; }
+	int64_t hit_count() { return _hit_count; }
 private:
 	bool insert_file_info(_In_ const wchar_t* path,
 						  _In_ uint64_t create_time,
@@ -79,11 +70,16 @@ private:
 							_Out_ std::string& sha2);
 
 private:
-	bool            _initialized;
-	CppSQLite3DB	_db;
-	uint32_t        _size;
-	uint32_t        _hit_count;
+	bool         _initialized;
+	CppSQLite3DB _db;
+	int64_t		 _size;
+	int64_t		 _hit_count;
+	int64_t		 _cache_size;
 
+	PCppSQLite3Statement _select_cache_stmt;
+	PCppSQLite3Statement _insert_cache_stmt;
+	PCppSQLite3Statement _update_cache_stmt;
+	PCppSQLite3Statement _delete_cache_stmt;
 } *PFileInfoCache;
 
 
