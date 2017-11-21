@@ -6247,6 +6247,79 @@ get_process_group(
 	return true;
 }
 
+/// @brief	파일의 보안 정보를 구한다. 
+///			(반환 된 psid_info는 반드시 해지해야한다.)
+psid_info
+get_file_owner(
+	_In_ const wchar_t* file_name
+	)
+{
+	_ASSERTE(nullptr != file_name);
+	if (nullptr == file_name) return false;
+
+	//
+	//	Get the required size for the security descriptor.
+	//
+	DWORD return_length;
+	GetFileSecurity(file_name,
+					OWNER_SECURITY_INFORMATION,
+					nullptr,
+					0,
+					&return_length);
+	DWORD gle = GetLastError();
+	if (gle != ERROR_INSUFFICIENT_BUFFER)
+	{
+		log_err "GetFileSecurity() failed. gle=%u",
+			gle
+			log_end;
+		return nullptr;
+	}
+
+	char_ptr ptr((char*)malloc(return_length),
+				 [](_In_ char* ptr)
+	{
+		if (nullptr != ptr) free(ptr);
+	});
+	if (nullptr == ptr.get())
+	{
+		log_err "Not enough memory. malloc size=%u",
+			return_length
+			log_end;
+		return nullptr;
+	}
+
+	//
+	//	get information about the security of a file
+	//
+	if (TRUE != GetFileSecurity(file_name,
+								OWNER_SECURITY_INFORMATION,
+								(PSECURITY_DESCRIPTOR)ptr.get(),
+								return_length,
+								&return_length))
+	{
+		log_err "GetFileSecurity() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return nullptr;
+	}
+
+	//
+	//	Find the name of the owner and owning group.
+	//
+	BOOL owner_def;
+	PSID owner_sid;
+	if (TRUE != GetSecurityDescriptorOwner((PSECURITY_DESCRIPTOR)ptr.get(),
+										   &owner_sid,
+										   &owner_def))
+	{
+		log_err "GetSecurityDescriptorOwner() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return nullptr;
+	}
+
+	return get_sid_info(owner_sid);
+}
 
 /// @brief	 Windows Error Reporting 환경 설정
 bool setup_wer(_In_ const wchar_t* dump_dir)

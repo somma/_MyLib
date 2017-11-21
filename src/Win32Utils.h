@@ -646,6 +646,8 @@ psid_info get_sid_info(_In_ PSID sid);
 psid_info get_process_user(_In_ DWORD pid);
 psid_info get_process_user(_In_ HANDLE process_query_token);
 
+psid_info get_file_owner(_In_ const wchar_t* file_name);
+
 /// @brief	GROUP 의 sid 정보와 attribute 를 저장 ( TOKEN_GROUPS )
 ///			TOKEN_GROUPS::_sid_info::_sid_name_use 은 무시
 typedef class group_sid_info
