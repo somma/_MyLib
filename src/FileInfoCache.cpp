@@ -202,14 +202,6 @@ FileInfoCache::get_file_information(
 	_ASSERTE(nullptr != file_path);
 	if (nullptr == file_path) return false;
 
-	if (true != is_file_existsW(file_path))
-	{
-		//log_err "No file exists. file=%ws",
-		//	file_path
-		//	log_end;
-		return false;
-	}
-
 	//
 	//	캐시 조회를 위한 기본 정보를 구한다.
 	//
