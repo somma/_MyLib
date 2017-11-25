@@ -128,6 +128,7 @@ bool test_set_get_file_position();
 bool test_get_module_path();
 bool test_dump_memory();
 bool test_get_environment_value();
+bool test_get_account_infos();
 
 // rc4.cpp
 bool test_rc4_encrypt();
@@ -358,7 +359,7 @@ void run_test()
 	//assert_bool(true, test_get_module_path);
 	//assert_bool(true, test_dump_memory);
 	//assert_bool(true, test_get_environment_value);
-
+	assert_bool(true, test_get_account_infos);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
 
@@ -1436,6 +1437,36 @@ bool test_get_environment_value()
 		else
 			log_dbg "%ws = %ws", env_variables[i], env_value.c_str() log_end
 	}
+
+	return true;
+}
+/**
+ * @brief 시스템의 계정 정보를 읽어 오는 테스트
+**/
+bool test_get_account_infos()
+{
+	std::list<paccount> accounts;
+	_ASSERTE(true == get_account_infos(accounts));
+
+	_ASSERTE(1 < accounts.size());
+
+	for (auto account : accounts)
+	{
+		log_info
+			"name(%ws) : sid(%ws) priv(%ws) attrib(%ws) last_logon(%ws) log_on_count(%u) last_password_change(%u)",
+			account->name().c_str(),
+			account->sid().c_str(),
+			account->privilge().c_str(),
+			account->attributes().c_str(),
+			account->last_logon_kst().c_str(),
+			account->num_logons(),
+			account->password_age()
+			log_end;
+
+		delete account; account = nullptr;
+	}
+
+	accounts.clear();
 
 	return true;
 }
