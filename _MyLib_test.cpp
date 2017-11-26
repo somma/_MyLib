@@ -278,8 +278,8 @@ void run_test()
 	//}
 
 	
-	assert_bool(true, test_file_info_cache);
-	
+	//assert_bool(true, test_file_info_cache);
+	//
 	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
@@ -307,7 +307,7 @@ void run_test()
 
 
 	//assert_bool(true, test_NameConverter_iterate);
-	//assert_bool(true, test_NameConverter_get_canon_name);
+	assert_bool(true, test_NameConverter_get_canon_name);
 	//assert_bool(true, test_NameConverter_dosname_to_devicename);
 
 	//assert_bool(true, test_wmi_client);
@@ -2186,52 +2186,67 @@ bool test_NameConverter_get_canon_name()
 	//[INFO] \Device\Floppy0\temp\123.txt -> \Device\Floppy0\temp\123.txt
 	//[INFO] \Device\CdRom0\temp\123.txt -> \Device\CdRom0\temp\123.txt
 
-    wchar_t* file_names[] = {
-        L"\\??\\c:\\windows\\system32\\abc.exe",
-        L"\\Systemroot\\abc.exe",
-        L"system32\\abc.exe",
-        L"\\windows\\system32\\abc.exe",
-        L"\\Device\\Mup\\1.1.1.1\\abc.exe",
-        L"\\Device\\Unknown\\aaaa.exe",
+	struct path_in_out_pair
+	{ 
+		bool ret;
+		const wchar_t* in;
+		const wchar_t* out;
+	} 
+	file_names[] = 
+	{
+		{ true, L"\\??\\c:\\windows\\system32\\abc.exe", L"c:\\windows\\system32\\abc.exe"},
+		{ true, L"\\Systemroot\\abc.exe", L"c:\\Windows\\abc.exe"},
+		{ true, L"system32\\abc.exe", L"c:\\windows\\system32\\abc.exe"},
+		{ true, L"\\Device\\Mup\\1.1.1.1\\abc.exe", L"\\\\1.1.1.1\\abc.exe"},
+		{ false, L"\\Device\\Unknown\\aaaa.exe", nullptr },
 
-        // net use x: \\10.10.10.10\\dbg\\ /user:vmuser * 명령으로 x 드라이브 매핑해둠
+        // net use x: \\10.10.10.10\\dbg\\ /user:vmuser * 명령으로 x 드라이브 매핑해 두어야 정상적으로 테스트 가능
         // 
-		L"\\Device\\Mup\\; lanmanredirector\\; x:000000000008112d\\10.10.10.10\\dbg\\",
-        L"x:\\",
-        L"\\Device\\Mup\\10.10.10.10\\dbg\\",
+		{ true, L"\\Device\\Mup\\; lanmanredirector\\; x:000000000008112d\\10.10.10.10\\dbg\\", L"\\\\10.10.10.10\\dbg\\"},
+		{ false, L"x:\\", nullptr},
+		{ true, L"\\Device\\Mup\\10.10.10.10\\dbg\\", L"\\\\10.10.10.10\\dbg\\"},
+		{ true, L"\\Device\\WebDavRedirector\\192.168.0.1\\DavWWWRoot\\", L"\\\\192.168.0.1\\DavWWWRoot\\"},
+		{ true, L"\\Device\\Mup\\192.168.0.1\\", L"\\\\192.168.0.1\\"},
+		{ true, L"\\Device\\Mup\\192.168.0.1\\temp.*\\", L"\\\\192.168.0.1\\temp.*\\"},
+		{ true, L"\\Device\\Mup\\192.168.59.134\\ADMIN$\\PSEXESVC.EXE", L"\\\\192.168.59.134\\ADMIN$\\PSEXESVC.EXE"},		
+		{ true, L"\\Device\\Mup\\; Csc\\.\\.\\", L"\\Device\\Csc\\.\\.\\"},
+		{ true, L"\\Device\\Mup\\;          WebDavRedirector\\", L"\\Device\\WebDavRedirector\\"},
+		{ true, L"\\Device\\Mup\\; WebDavRedirector\\192.168.0.1\\DavWWWRoot\\", L"\\Device\\WebDavRedirector\\192.168.0.1\\DavWWWRoot\\"},
+		{ true, L"\\Device\\Mup\\; RdpDr\\; :1\\192.168.59.134\\IPC$\\", L"\\\\192.168.59.134\\IPC$\\"},
+		{ false, L"\\Device\\Floppy0\\temp\\123.txt", nullptr },// 시스템에 부탁되지 않은 디바이스
+		{ false, L"\\Device\\CdRom0\\temp\\123.txt", nullptr },// 시스템에 부탁되지 않은 디바이스
+		{ false, L"\\Device\\HarddiskVolume100\\boot", nullptr },// 시스템에 부탁되지 않은 디바이스
 
-		L"\\Program Files\\",
-		L"\\Program Files (x86)",
-
-		L"\\Device\\WebDavRedirector\\192.168.0.1\\DavWWWRoot\\",
-		L"\\Device\\Mup\\192.168.0.1\\",
-		L"\\Device\\Mup\\192.168.0.1\\temp.*\\",
-		L"\\Device\\Mup\\192.168.59.134\\ADMIN$\\PSEXESVC.EXE",	
-		L"\\Device\\Mup\\; Csc\\.\\.\\",
-		L"\\Device\\Mup\\;          WebDavRedirector\\",
-		L"\\Device\\Mup\\; WebDavRedirector\\192.168.0.1\\DavWWWRoot\\",
-		L"\\Device\\Mup\\; RdpDr\\; :1\\192.168.59.134\\IPC$\\",
-		L"\\Device\\Floppy0\\temp\\123.txt",
-		L"\\Device\\CdRom0\\temp\\123.txt",
-		L"\\Device\\HarddiskVolume10\\boot"
+		{ true, L"\\windows\\system32\\abc.exe", L"c:\\windows\\system32\\abc.exe"},
+		{ true, L"\\Program Files\\", L"c:\\Program Files\\"},
+		{ true, L"\\Program Files (x86)", L"c:\\Program Files (x86)"},
+		{ true, L"\\Users\\Unsor", L"c:\\Users\\Unsor"}
     };
 
     NameConverter nc;
 	_ASSERTE(true == nc.load(false));
 
-	for (int i = 0; i < sizeof(file_names) / sizeof(wchar_t*); ++i)
+	for (int i = 0; i < sizeof(file_names) / sizeof(path_in_out_pair); ++i)
 	{
 		std::wstring name;
-		bool ret = nc.get_canon_name(file_names[i], name);
-		bool is_natwork = nc.is_network_path(file_names[i]);
-		bool is_removable = nc.is_removable_drive(file_names[i]);
+		bool ret = nc.get_canon_name(file_names[i].in, name);
+		bool is_natwork = nc.is_network_path(file_names[i].in);
+		bool is_removable = nc.is_removable_drive(file_names[i].in);
 		log_info "[ret=%d][net=%d][removable=%d] %ws -> %ws",
 			ret,
 			is_natwork,
 			is_removable,
-			file_names[i],
+			file_names[i].in,
 			name.c_str()
 			log_end;
+
+		_ASSERTE(ret == file_names[i].ret);
+		if (file_names[i].ret == true)
+		{
+			_ASSERTE(0 == _wcsnicmp(file_names[i].out, 
+									name.c_str(), 
+									wcslen(file_names[i].out)));
+		}
 	}
 
     return true;

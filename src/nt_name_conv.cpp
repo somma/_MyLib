@@ -64,7 +64,14 @@ bool NameConverter::load(_In_ bool force_reload)
 ///			\Device\Mup\; RdpDr\; :1\192.168.59.134\IPC$\ -> \\192.168.59.134\ipc$\
 ///			\Device\Floppy0\temp\123.txt -> \Device\Floppy0\temp\123.txt
 ///			\Device\CdRom0\temp\123.txt -> \Device\CdRom0\temp\123.txt
-///
+///		
+///			볼륨 네임 또는 디바이스 네임이 없는 root 경로 접근인 경우 %SystemDrive% 를 붙여준다. 
+///			(알지 못하는 형태이고, `\` 로 시작하는 경로명의 경우)
+///				\Users\ -> c:\users
+///				\UnknownPath -> c:\UnknownPath
+///				\Program Files -> c:\Program Files
+///				\Program Files (x86) -> c:\Program Files (x86)
+///				\windows -> c:\windows
 bool
 NameConverter::get_canon_name(
 	_In_ const wchar_t* file_name, 
@@ -155,19 +162,15 @@ NameConverter::get_canon_name(
     }
 
 	//
-	//	\\windows -> c:\windows
-	//	
-	else if (true == lstrnicmp(file_name, L"\\windows"))
-	{
-		std::wstringstream strm;
-		strm << _system_drive << file_name;
-		canonical_file_name = strm.str();
-		return true;
-	}
+	//	볼륨네임 또는 디바이스 네임 없는 root 경로 접근은
+	//	%SystemDrive% 를 붙여준다. 
 	//
-	//	\\Program Files, \\Program Files (x86)
-	//		=> c:\Program Files...
-	else if (true == lstrnicmp(file_name, L"\\program files"))
+	//	\windows -> c:\windows
+	//	\Program Files, \Program Files (x86) -> c:\Program Files...
+	//	\Users -> c:\Users
+	//	...
+	//
+	else if (file_name[0] == L'\\')
 	{
 		std::wstringstream strm;
 		strm << _system_drive << file_name;

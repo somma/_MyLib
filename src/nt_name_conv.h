@@ -83,6 +83,9 @@ private:
 	//	접근이다. 그러나 current drive 를 알 수 없는 경우가 대부분이기 때문에, 
 	//	정확한 변환은 어렵다. 이런 경우 그나마 가장 확률이 높은 %SystemDrive% 를 붙여준다. 
 	//	_system_drive 는 항상 소문자를 사용 함
+	//
+	//	current path 정보는 프로세스의 PEB 를 읽으면 알아낼 수는 있으나 
+	//	그렇게까지 할 필요는 없어보여서, 이정도만...
 	std::wstring _system_drive;
 
 	// %SystemRoot% (e.g. c:\windows )	
