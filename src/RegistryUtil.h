@@ -101,27 +101,33 @@ RUIsKeyExists(
 	);
 
 typedef
-bool(*fn_key_callback)(
-    _In_ uint32_t index,
-    _In_ const wchar_t* sub_key_name,
-    _In_ const wchar_t* class_name
-    );
+bool(*fn_key_callback_tag)(
+	_In_ uint32_t index,
+	_In_ const wchar_t* base_name,
+	_In_ const wchar_t* sub_key_name,
+	_In_ const wchar_t* class_name,
+	_In_ DWORD_PTR tag
+	);
 
 typedef
-bool(*fn_value_callback)(
-    _In_ uint32_t index,
-    _In_ uint32_t value_type,
-    _In_ const wchar_t* value_name,
-    _In_ uint32_t value_data_size,
-    _In_ const uint8_t* value_data
-    );
+bool(*fn_key_value_callback_tag)(
+	_In_ uint32_t index,
+	_In_ uint32_t value_type,
+	_In_ const wchar_t* value_name,
+	_In_ uint32_t value_data_size,
+	_In_ const uint8_t* value_data,
+	_In_ DWORD_PTR tag
+	);
 
 bool
 reg_enum_key_values(
-    _In_ HKEY key,
-    _In_ fn_key_callback key_cb,
-    _In_ fn_value_callback value_cb
-    );
+	_In_ HKEY key,
+	_In_ const wchar_t* base_name,
+	_In_ fn_key_callback_tag key_cb,
+	_In_ DWORD_PTR key_cb_tag,
+	_In_ fn_key_value_callback_tag value_cb,
+	_In_ DWORD_PTR value_cb_tag
+	);
 
 class RegHandle
 {

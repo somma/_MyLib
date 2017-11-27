@@ -722,7 +722,8 @@ public:
 bool get_process_group(_In_ DWORD pid, _Out_ std::list<pgroup_sid_info>& group);
 bool get_process_group(_In_ HANDLE process_query_token, _Out_ std::list<pgroup_sid_info>& group);
 
-/// @brief windows account 정보
+/// @brief account 정보
+///
 typedef class account
 {
 public:
@@ -899,10 +900,55 @@ get_account_info_by_name(
 	);
 
 /// @brief  시스템의 모든 계정 정보를 읽어 온다. 
-bool
-get_account_infos(
-	_Out_ std::list<paccount>& accounts
+bool get_account_infos(_Out_ std::list<paccount>& accounts);
+
+/// @brief 프로그램 정보
+///
+typedef class program
+{
+public:
+	program(_In_ const wchar_t* product_id,
+			_In_ const wchar_t* product_name,
+			_In_ const wchar_t* product_vendor,
+			_In_ const wchar_t* product_version) :
+		_product_id(product_id),
+		_product_name(product_name),
+		_product_vendor(product_vendor),
+		_product_version(product_version)
+	{}
+public:
+	std::wstring id() { return _product_id; }
+	std::wstring name() { return _product_name; }
+	std::wstring vendor() { return _product_vendor; }
+	std::wstring version() { return _product_version; }
+private:
+	std::wstring _product_id;
+	std::wstring _product_name;
+	std::wstring _product_vendor;
+	std::wstring _product_version;
+
+} *pprogram;
+
+#define sub_key_uninstall L"Software\\Microsoft\\Windows\\CurrentVersion"\
+						  L"\\Uninstall\\"
+
+#define sub_key_uninstall_x64 L"Software\\WOW6432Node\\Microsoft\\Windows\\"\
+							  L"CurrentVersion\\Uninstall\\"
+
+/// @brief `sub_key_uninstall` or `sub_key_uninstall_x64`의 서브키의 `value`
+///        들을 읽는다. 이떄, 서브키는 프로그램명 혹은 product code이며 `value`
+///        는 프로그램 정보들이다.
+///
+pprogram
+get_installed_program_info(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key_name
 	);
+
+/// @brief 설치된 프로그램 정보를 읽어 온다.
+///
+///
+bool get_installed_programs(_Out_ std::list<pprogram>& installed_programs);
 
 bool setup_wer(_In_ const wchar_t* dump_dir);
 

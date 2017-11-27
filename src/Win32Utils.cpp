@@ -6441,6 +6441,211 @@ get_account_infos(
 
 	return true;
 }
+/// @brief 설치된 프로그램의 정보(프로그램명, 버전, 제조사) 읽어 온다.
+///
+#pragma todo("현재 사용자의 설치된 프로그램 정보를 읽어 오는 기능을 추가 해야한다.")
+pprogram
+get_installed_program_info(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key_name
+)
+{
+	DWORD is_system_component = RUReadDword(key_handle,
+											L"SystemComponent",
+											0);
+	// if system component flags
+	if (1 == is_system_component)
+	{
+		//
+		// SystemComponent flags가 설정된 경우 프로그램 추가/제거
+		// 혹은 App & features의 목록에서 보이지 않는다. 현재 프로그램
+		// 추가/제거 혹은 App & features 목록 기준으로 수집을 하기 때
+		// 문에 해당 플래그가 설정된 경우 수집 하지 않는다.
+		//
+		return nullptr;
+	}
+	else if (0 == is_system_component)
+	{
+		std::wstring name;
+		if (!RUReadString(key_handle,
+						  L"DisplayName",
+						  name))
+		{
+			log_err
+				"RUReadString failed(valu=`DisplayName`). key=%ws",
+				sub_key_name
+				log_end;
+		}
+
+		std::wstring version;
+		if (!RUReadString(key_handle,
+						  L"DisplayVersion",
+						  version))
+		{
+			log_err
+				"RUReadString failed(valu=`DisplayVersion`). key=%ws",
+				sub_key_name
+				log_end;
+		}
+
+		std::wstring publisher;
+		if (!RUReadString(key_handle,
+						  L"Publisher",
+						  publisher))
+		{
+			log_err
+				"RUReadString failed(valu=`DisplayVersion`). key=%ws",
+				sub_key_name
+				log_end;
+		}
+
+		if (0 == name.compare(L""))
+		{
+			//
+			// 프로그램명을 알 수 없는 경우에는 처리 하지 않는다.
+			//
+			return nullptr;
+		}
+		else
+		{
+			return new program(sub_key_name,
+								name.c_str(),
+								publisher.c_str(),
+								version.c_str());
+		}
+	}
+	_ASSERTE(!"oops nerver reach");
+	return nullptr;
+}
+
+/// @brief 설치된 프로그램의 정보를 읽어 오기 위한 `callback` 함수 이다.
+///
+bool
+sub_key_iterate_callback(
+	_In_ uint32_t index,
+	_In_ const wchar_t* base_name,
+	_In_ const wchar_t* sub_key_name,
+	_In_ const wchar_t* class_name,
+	_In_ DWORD_PTR tag
+)
+{
+	UNREFERENCED_PARAMETER(index);
+	UNREFERENCED_PARAMETER(class_name);
+
+	std::list<pprogram>* softwares = (std::list<pprogram>*)tag;
+
+	//
+	// sub key의 전체 경로를 만든다.
+	// eg. base name: HKLM\SoftwareL\Software\Microsoft
+	//                 \Windows\CurrentVersion\Uninstall\
+	//     sub_key_name: Everything
+	//     full path: HKLM\SoftwareL\Software\Microsoft\Windows\Current
+	//                Version\Uninstall\Everything
+	//
+	std::wstringstream strm;
+	strm << base_name << sub_key_name;
+	HKEY key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
+								strm.str().c_str(),
+								true);
+
+	if (nullptr == key_handle)
+	{
+		log_err "RUOpenKey() failed. key=%ws",
+			strm.str().c_str()
+			log_end;
+		return false;
+	}
+
+	pprogram sf = get_installed_program_info(key_handle,
+											   sub_key_name);
+	if (nullptr != sf)
+	{
+		softwares->push_back(sf);
+	}
+
+	RUCloseKey(key_handle);
+	return true;
+}
+
+
+/// @brief 설치된 프로그램 정보를 읽어 온다.
+///
+bool
+get_installed_programs(
+	_Out_ std::list<pprogram>& installed_programs
+	)
+{
+	//
+	// HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\
+	// 에 있는 프로그램 정보를 읽어 온다.
+	// 64bit 운영체제인 경우 해당 경로에 있는 어플리케이션 정보는 64비트
+	// 프로그램에 관한 정보 이다.
+	//
+	HKEY key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
+								sub_key_uninstall,
+								true);
+
+	if (nullptr == key_handle)
+	{
+		log_err "RUOpenKey() failed. key=%ws",
+			sub_key_uninstall
+			log_end;
+		return false;
+	}
+
+	//
+	// 설치된 프로그램를 받을 list와 base_key(`sub_key_uninstall`)
+	// 를 콜백 함수에 넘긴다.
+	//
+	reg_enum_key_values(key_handle,
+						sub_key_uninstall,
+						sub_key_iterate_callback,
+						(DWORD_PTR)&installed_programs,
+						NULL,
+						NULL);
+
+	RUCloseKey(key_handle);
+
+	//
+	// HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\
+	// 경로가 존재 하는 경우 해당 정보를 읽어 온다. `WOW6432Node`에 있는 어플리케이션
+	// 정보는 64비트 운영체제에서 32비트 프로그램 정보를 저장 하고 있는 경로이다.
+	// 64비트 운영체제인 경우 먼저 해당 경로 존재 유무를 체크 한 후 있으면 읽고 난 후
+	// 64비트 프로그램 정보를 읽어 온다.
+	//
+	if (true == RUIsKeyExists(HKEY_LOCAL_MACHINE,
+							  sub_key_uninstall_x64))
+	{
+		HKEY wow64_key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
+										  sub_key_uninstall_x64,
+										  true);
+
+		if (nullptr == wow64_key_handle)
+		{
+			log_err "RUOpenKey() failed. key=%ws",
+				sub_key_uninstall_x64
+				log_end;
+			return false;
+		}
+
+		//
+		// 설치된 프로그램를 받을 list와 base_key(`sub_key_uninstall_x64`)
+		// 를 콜백 함수에 넘긴다.
+		//
+		reg_enum_key_values(wow64_key_handle,
+							sub_key_uninstall_x64,
+							sub_key_iterate_callback,
+							(DWORD_PTR)&installed_programs,
+							NULL,
+							NULL);
+
+		RUCloseKey(wow64_key_handle);
+
+	}
+
+
+	return true;
+}
 
 /// @brief	파일의 보안 정보를 구한다. 
 ///			(반환 된 psid_info는 반드시 해지해야한다.)

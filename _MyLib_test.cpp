@@ -129,7 +129,7 @@ bool test_get_module_path();
 bool test_dump_memory();
 bool test_get_environment_value();
 bool test_get_account_infos();
-
+bool test_get_installed_programs();
 // rc4.cpp
 bool test_rc4_encrypt();
 
@@ -359,7 +359,8 @@ void run_test()
 	//assert_bool(true, test_get_module_path);
 	//assert_bool(true, test_dump_memory);
 	//assert_bool(true, test_get_environment_value);
-	assert_bool(true, test_get_account_infos);
+	//assert_bool(true, test_get_account_infos);
+	assert_bool(true, test_get_installed_programs);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
 
@@ -387,7 +388,7 @@ void run_test()
 
 
 	//assert_bool(true, test_registry_util);
-	//assert_bool(true, test_read_mouted_device);
+	assert_bool(true, test_read_mouted_device);
 	//assert_bool(true, test_set_binary_data);    
 	//assert_bool(true, test_aes256);
 
@@ -1467,6 +1468,29 @@ bool test_get_account_infos()
 	}
 
 	accounts.clear();
+
+	return true;
+}
+
+/**
+ * @brief
+**/
+bool test_get_installed_programs()
+{
+	std::list<pprogram> softwares;
+	_ASSERTE(true == get_installed_programs(softwares));
+
+	for (auto software : softwares)
+	{
+		log_info
+			"product code: %ws, name(%ws)-vender(%ws)-version(%ws)",
+			software->id().c_str(),
+			software->name().c_str(),
+			software->vendor().c_str(),
+			software->version().c_str()
+			log_end;
+		delete software;
+	}
 
 	return true;
 }
