@@ -28,13 +28,13 @@
 #include <Shlobj.h>
 #include <Psapi.h>
 #include <guiddef.h>
+#include <sddl.h>
 
 #include "ResourceHelper.h"
 #include "gpt_partition_guid.h"
 
-#include <sddl.h>
 #pragma comment(lib, "Advapi32.lib")
-
+#pragma comment(lib, "netapi32.lib")
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "IPHLPAPI.lib")
 #pragma comment(lib, "ws2_32.lib")
@@ -5926,6 +5926,398 @@ get_process_creation_time(
 	return true;
 }
 
+/// @brief 
+void dump_file_create_disposition(_In_ uint32_t NtCreateFile_CreateDisposition)
+{
+	char buf[256];
+	char* pos = buf;
+	size_t remain = sizeof(buf);
+	bool add_lf = false;
+
+#define FILE_SUPERSEDE                  0x00000000
+#define FILE_OPEN                       0x00000001
+#define FILE_CREATE                     0x00000002
+#define FILE_OPEN_IF                    0x00000003
+#define FILE_OVERWRITE                  0x00000004
+#define FILE_OVERWRITE_IF               0x00000005
+
+	if (NtCreateFile_CreateDisposition & FILE_SUPERSEDE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  "%s",
+						  "FILE_SUPERSEDE, ");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateDisposition & FILE_OPEN)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateDisposition & FILE_CREATE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_CREATE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateDisposition & FILE_OPEN_IF)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_IF");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateDisposition & FILE_OVERWRITE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OVERWRITE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateDisposition & FILE_OVERWRITE_IF)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OVERWRITE_IF");
+		add_lf = true;
+	}
+
+	if (add_lf == true)
+	{
+		log_info "disposition=%s", buf log_end;
+	}
+	else
+	{
+		log_info "disposition=None" log_end;
+	}
+}
+
+void dump_file_create_options(_In_ uint32_t NtCreateFile_CreateOptions)
+{
+#define FILE_DIRECTORY_FILE                     0x00000001
+#define FILE_WRITE_THROUGH                      0x00000002
+#define FILE_SEQUENTIAL_ONLY                    0x00000004
+#define FILE_NO_INTERMEDIATE_BUFFERING          0x00000008
+
+#define FILE_SYNCHRONOUS_IO_ALERT               0x00000010
+#define FILE_SYNCHRONOUS_IO_NONALERT            0x00000020
+#define FILE_NON_DIRECTORY_FILE                 0x00000040
+#define FILE_CREATE_TREE_CONNECTION             0x00000080
+
+#define FILE_COMPLETE_IF_OPLOCKED               0x00000100
+#define FILE_NO_EA_KNOWLEDGE                    0x00000200
+#define FILE_OPEN_REMOTE_INSTANCE               0x00000400
+#define FILE_RANDOM_ACCESS                      0x00000800
+
+#define FILE_DELETE_ON_CLOSE                    0x00001000
+#define FILE_OPEN_BY_FILE_ID                    0x00002000
+#define FILE_OPEN_FOR_BACKUP_INTENT             0x00004000
+#define FILE_NO_COMPRESSION                     0x00008000
+
+#define FILE_OPEN_REQUIRING_OPLOCK              0x00010000
+#define FILE_DISALLOW_EXCLUSIVE                 0x00020000
+#define FILE_SESSION_AWARE                      0x00040000
+
+#define FILE_RESERVE_OPFILTER                   0x00100000
+#define FILE_OPEN_REPARSE_POINT                 0x00200000
+#define FILE_OPEN_NO_RECALL                     0x00400000
+#define FILE_OPEN_FOR_FREE_SPACE_QUERY          0x00800000
+
+	char buf[256];
+	char* pos = buf;
+	size_t remain = sizeof(buf);
+	bool add_lf = false;
+
+	if (NtCreateFile_CreateOptions & FILE_DIRECTORY_FILE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  "%s",
+						  "FILE_DIRECTORY_FILE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_WRITE_THROUGH)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_WRITE_THROUGH");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_SEQUENTIAL_ONLY)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_SEQUENTIAL_ONLY");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_NO_INTERMEDIATE_BUFFERING)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_NO_INTERMEDIATE_BUFFERING");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_SYNCHRONOUS_IO_ALERT)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_SYNCHRONOUS_IO_ALERT");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_SYNCHRONOUS_IO_NONALERT)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_SYNCHRONOUS_IO_NONALERT");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_NON_DIRECTORY_FILE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_NON_DIRECTORY_FILE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_CREATE_TREE_CONNECTION)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_CREATE_TREE_CONNECTION");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_COMPLETE_IF_OPLOCKED)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_COMPLETE_IF_OPLOCKED");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_NO_EA_KNOWLEDGE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_NO_EA_KNOWLEDGE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_REMOTE_INSTANCE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_REMOTE_INSTANCE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_RANDOM_ACCESS)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_RANDOM_ACCESS");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_DELETE_ON_CLOSE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_DELETE_ON_CLOSE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_BY_FILE_ID)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_BY_FILE_ID");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_FOR_BACKUP_INTENT)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_FOR_BACKUP_INTENT");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_NO_COMPRESSION)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_NO_COMPRESSION");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_REQUIRING_OPLOCK)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_REQUIRING_OPLOCK");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_DISALLOW_EXCLUSIVE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_DISALLOW_EXCLUSIVE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_SESSION_AWARE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_SESSION_AWARE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_RESERVE_OPFILTER)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_RESERVE_OPFILTER");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_REPARSE_POINT)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_REPARSE_POINT");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_NO_RECALL)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_NO_RECALL");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_FOR_FREE_SPACE_QUERY)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_FOR_FREE_SPACE_QUERY");
+		add_lf = true;
+	}
+
+	if (add_lf == true)
+	{
+		log_info "options=%s", buf log_end;
+	}
+	else
+	{
+		log_info "options=None" log_end;
+	}
+}
+
 /// @brief	
 psid_info get_sid_info(_In_ PSID sid)
 {
@@ -6243,6 +6635,557 @@ get_process_group(
 			}
 		}		
 	}
+
+	return true;
+}
+
+pprivilege_info
+get_privilege_info(
+	_In_ LUID_AND_ATTRIBUTES privileges
+)
+{
+	DWORD cch_name = 0;
+	wchar_t* name = nullptr;
+	LookupPrivilegeNameW(nullptr,
+						 &privileges.Luid,
+						 nullptr,
+						 &cch_name);
+	if (0 < cch_name)
+	{
+		name = (wchar_t*)malloc((cch_name + 1) * sizeof(wchar_t));
+		if (nullptr == name)
+		{
+			log_err "Not enough memory. " log_end;
+			return nullptr;
+		}
+	}
+
+	wchar_ptr name_ptr(name, [](_In_ wchar_t* ptr) {if (nullptr != ptr) { free(ptr); }});
+
+	if (TRUE != LookupPrivilegeNameW(nullptr,
+									 &privileges.Luid,
+									 name_ptr.get(),
+									 &cch_name))
+	{
+		log_err
+			"LookupPrivilegeNameW failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+
+	return new privilege_info(name_ptr.get(),
+							  privileges.Attributes);
+}
+
+/// @brief 프로세스 권한을 획득
+bool
+get_process_privilege(
+	_In_ DWORD pid,
+	_Out_ std::list<pprivilege_info>& privileges
+)
+{
+	//
+	//	Open process handle with READ token access
+	//
+	handle_ptr proc_handle(
+		OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid),
+		[](_In_ HANDLE handle)
+	{
+		if (NULL != handle) { CloseHandle(handle); }
+	});
+	if (NULL == proc_handle.get())
+	{
+		log_err "OpenProcess() failed. pid=%u, gle=%u",
+			pid,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	//
+	//	Open token handle
+	//
+	HANDLE th;
+	if (TRUE != OpenProcessToken(proc_handle.get(),
+								 TOKEN_QUERY,
+								 &th))
+	{
+		log_err "OpenProcessToken() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	handle_ptr token_handle(th, [](_In_ HANDLE th) {CloseHandle(th); });
+
+	return get_process_privilege(token_handle.get(), privileges);
+}
+
+bool
+get_process_privilege(
+	_In_ HANDLE process_query_token,
+	_Out_ std::list<pprivilege_info>& privileges
+)
+{
+	_ASSERTE(NULL != process_query_token);
+	if (NULL == process_query_token) return false;
+
+	//
+	//	Get token information
+	//
+	DWORD return_length;
+	GetTokenInformation(process_query_token,
+						TokenPrivileges,
+						nullptr,
+						0,
+						&return_length);
+	DWORD gle = GetLastError();
+	if (gle != ERROR_INSUFFICIENT_BUFFER)
+	{
+		log_err "GetTokenInformation() failed. gle=%u",
+			gle
+			log_end;
+		return false;
+	}
+
+	char_ptr ptr(
+		(char*)malloc(return_length),
+		[](_In_ char* ptr)
+	{
+		if (nullptr != ptr) { free(ptr); }
+	});
+
+	if (nullptr == ptr.get())
+	{
+		log_err "Not enough memory. malloc size=%u",
+			return_length
+			log_end;
+		return false;
+	}
+
+	if (TRUE != GetTokenInformation(process_query_token,
+									TokenPrivileges,
+									(PTOKEN_PRIVILEGES)ptr.get(),
+									return_length,
+									&return_length))
+	{
+		log_err "GetTokenInformation() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	PTOKEN_PRIVILEGES token_privileges = (PTOKEN_PRIVILEGES)ptr.get();
+	for (uint32_t i = 0; i < token_privileges->PrivilegeCount; ++i)
+	{
+		pprivilege_info privilege_info = get_privilege_info(
+			token_privileges->Privileges[i]);
+		if (nullptr != privilege_info)
+		{
+			privileges.push_back(privilege_info);
+		}
+	}
+
+	return true;
+}
+
+/// @brief `PSID`를 문자열로 변환 한다. 반환된 문자열은 반드시 `LocalFree`로 해제 해야 한다.
+///
+bool
+psid_to_wstr_sid(
+	_In_ PSID sid,
+	_Out_ wchar_t** sid_str
+	)
+{
+	_ASSERTE(nullptr != sid);
+	if (nullptr == sid) return false;
+
+	if (TRUE != ConvertSidToStringSidW(sid,
+									   sid_str))
+	{
+		DWORD gle = GetLastError();
+		const char* gles = nullptr;
+		switch (gle)
+		{
+		case ERROR_NOT_ENOUGH_MEMORY: gles = "ERROR_NOT_ENOUGH_MEMORY"; break;
+		case ERROR_INVALID_SID:		  gles = "ERROR_INVALID_SID"; break;
+		case ERROR_INVALID_PARAMETER: gles = "ERROR_INVALID_PARAMETER"; break;
+		}
+
+		if (nullptr != gles)
+		{
+			log_err "ConvertSidToStringSidW() failed. gle=%s",
+				gles
+				log_end;
+			return false;
+		}
+		else
+		{
+			log_err "ConvertSidToStringSidW() failed. gle=%u",
+				gle
+				log_end;
+			return false;
+		}
+	}
+
+	return true;
+}
+/// @brief  계정 이름을 가지고 계정 정보를 조회해서 반환한다.
+///
+bool
+get_account_info_by_name(
+	_In_ wchar_t* user_name,
+	_Out_ LPUSER_INFO_4* user_info
+	)
+{
+	_ASSERTE(nullptr != user_name);
+	if (nullptr == user_name) return false;
+
+	//
+	// NetUserGetInfo 함수에서 `infomation level`에 따라 읽어 올 수 있는
+	// 사용자 정보가 다르다. 사용자의 상세 정보를 읽어 오는건 3 또는 4레벨 
+	// 이면 충분 하고, MSDN에 의하면 level 3보다는 4를 사용하는걸 권장 하고
+	// 있다.
+	// 참고 URL : https://msdn.microsoft.com/ko-kr/library/windows/desktop/aa370654(v=vs.85).aspx
+	//
+	DWORD status = NetUserGetInfo(NULL,
+								  user_name,
+								  4,
+								  (LPBYTE*)user_info);
+
+	if (NERR_Success != status)
+	{
+		const char* status_str = nullptr;
+		switch (status)
+		{
+		case ERROR_ACCESS_DENIED:  status_str = "ERROR_ACCESS_DENIED"; break;
+		case ERROR_BAD_NETPATH:    status_str = "ERROR_BAD_NETPATH"; break;
+		case ERROR_INVALID_LEVEL:  status_str = "ERROR_INVALID_LEVEL"; break;
+		case NERR_InvalidComputer: status_str = "NERR_InvalidComputer"; break;
+		case NERR_UserNotFound:    status_str = "NERR_UserNotFound"; break;
+		}
+
+		if (nullptr != status_str)
+		{
+			log_err
+				"GetLocalAccountInfos::NetUserGetInfo failed. status=%s",
+				status_str
+				log_end;
+		}
+		{
+			log_err
+				"GetLocalAccountInfos::NetUserGetInfo failed. status=%d",
+				status
+				log_end;
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
+/// @brief  시스템의 모든 계정 정보를 읽어 온다.
+///
+bool
+get_account_infos(
+	_Out_ std::list<paccount>& accounts
+	)
+{
+	uint8_t* buffer = nullptr;
+	DWORD entries_read, total_entries;
+	DWORD resume_handle = 0;
+	NET_API_STATUS ret;
+	do
+	{
+		//
+		// 시스템의 모든 계정 정보를 읽는다. 이때 계정 정보 관련 레벨은 `level` 
+		// 인자값으로 조절 가능하며 계정 정보를 iterate할 때 사용자 계정 타입별
+		// 필터를 줄 수 있다. 현재 필요한 사용자 목록은 윈도우 설치시 설정 되어 있는 계정 
+		// 과 사용자가 생성한 계정만 읽어 오도록(`FILTER_NORMAL_ACCOUNT`) 되어 있다.
+		// 참고 : `Active Directory`환경에서 프로그램이 동작 할 때 ACL에 의해서
+		//       `NetUserEnum`을 이용한 계정 조회가 허용 되거나 거부 될 수 있다.
+		//       ACL 기본 정책은 허용된 사용자 그리고 `Pre-Windows 2000 compat-
+		//       ible access` 그룹에 속한 계정으로 프로그램이 실행 된다면 계정 조
+		//       회에 문제가 없다.
+		// 참고 : https://msdn.microsoft.com/ko-kr/library/windows/desktop/aa370652(v=vs.85).aspx
+		//
+		ret = NetUserEnum(NULL,
+						  0,
+						  FILTER_NORMAL_ACCOUNT,
+						  &buffer,
+						  MAX_PREFERRED_LENGTH,
+						  &entries_read,
+						  &total_entries,
+						  &resume_handle);
+		if ((NERR_Success != ret) && (ERROR_MORE_DATA != ret))
+		{
+			log_err
+				"NetUserEnum Error. NetApiStatus=%u",
+				ret
+				log_end;
+			break;
+		}
+		else
+		{
+			USER_INFO_0* user_info_0 = (USER_INFO_0*)buffer;
+			//
+			// 시스템에 있는 계정을 iterate하면서 계정 정보를 가져온다.
+			//
+			for (DWORD count = 0; count < total_entries; count++)
+			{
+				//
+				// 계정명을 이용해서 계정에 대한 상세 정보를 획득한다.
+				//
+				LPUSER_INFO_4 user_info = NULL;
+				if (!get_account_info_by_name(user_info_0->usri0_name,
+											  &user_info))
+				{
+					log_err
+						"get_user_info_by_name failed. name(%ws)",
+						user_info_0->usri0_name
+						log_end;
+					user_info_0++;
+					continue;
+				}
+
+				wchar_t* sid_str = nullptr;
+
+				//
+				// psid를 문자열 sid로 변환을 한다.
+				// 
+				psid_to_wstr_sid(user_info->usri4_user_sid, &sid_str);
+
+				//
+				// sid_string 버퍼는 반드시 "LocalFree()"로 소멸 해야 한다.
+				//
+				wchar_ptr sid_ptr(sid_str, [](wchar_t* p) { LocalFree(p); });
+
+				paccount ac = new account(user_info->usri4_name,
+										  user_info->usri4_password_age,
+										  user_info->usri4_priv,
+										  user_info->usri4_flags,
+										  user_info->usri4_script_path,
+										  user_info->usri4_last_logon,
+										  user_info->usri4_num_logons,
+										  sid_ptr.get());
+				accounts.push_back(ac);
+
+				if (user_info) { NetApiBufferFree(user_info); user_info = nullptr; }
+
+				user_info_0++;
+			}
+		}
+		if (buffer) { NetApiBufferFree(buffer); buffer = nullptr; }
+	} while (ERROR_MORE_DATA == ret);
+
+	if (buffer) { NetApiBufferFree(buffer); buffer = nullptr; }
+
+	return true;
+}
+/// @brief 설치된 프로그램의 정보(프로그램명, 버전, 제조사) 읽어 온다.
+///
+#pragma todo("현재 사용자의 설치된 프로그램 정보를 읽어 오는 기능을 추가 해야한다.")
+pprogram
+get_installed_program_info(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key_name
+)
+{
+	DWORD is_system_component = RUReadDword(key_handle,
+											L"SystemComponent",
+											0);
+	// if system component flags
+	if (1 == is_system_component)
+	{
+		//
+		// SystemComponent flags가 설정된 경우 프로그램 추가/제거
+		// 혹은 App & features의 목록에서 보이지 않는다. 현재 프로그램
+		// 추가/제거 혹은 App & features 목록 기준으로 수집을 하기 때
+		// 문에 해당 플래그가 설정된 경우 수집 하지 않는다.
+		//
+		return nullptr;
+	}
+	else if (0 == is_system_component)
+	{
+		std::wstring name;
+		if (!RUReadString(key_handle,
+						  L"DisplayName",
+						  name))
+		{
+			log_err
+				"RUReadString failed(valu=`DisplayName`). key=%ws",
+				sub_key_name
+				log_end;
+		}
+
+		std::wstring version;
+		if (!RUReadString(key_handle,
+						  L"DisplayVersion",
+						  version))
+		{
+			log_err
+				"RUReadString failed(valu=`DisplayVersion`). key=%ws",
+				sub_key_name
+				log_end;
+		}
+
+		std::wstring publisher;
+		if (!RUReadString(key_handle,
+						  L"Publisher",
+						  publisher))
+		{
+			log_err
+				"RUReadString failed(valu=`DisplayVersion`). key=%ws",
+				sub_key_name
+				log_end;
+		}
+
+		if (0 == name.compare(L""))
+		{
+			//
+			// 프로그램명을 알 수 없는 경우에는 처리 하지 않는다.
+			//
+			return nullptr;
+		}
+		else
+		{
+			return new program(sub_key_name,
+								name.c_str(),
+								publisher.c_str(),
+								version.c_str());
+		}
+	}
+	_ASSERTE(!"oops nerver reach");
+	return nullptr;
+}
+
+/// @brief 설치된 프로그램의 정보를 읽어 오기 위한 `callback` 함수 이다.
+///
+bool
+sub_key_iterate_callback(
+	_In_ uint32_t index,
+	_In_ const wchar_t* base_name,
+	_In_ const wchar_t* sub_key_name,
+	_In_ const wchar_t* class_name,
+	_In_ DWORD_PTR tag
+)
+{
+	UNREFERENCED_PARAMETER(index);
+	UNREFERENCED_PARAMETER(class_name);
+
+	std::list<pprogram>* softwares = (std::list<pprogram>*)tag;
+
+	//
+	// sub key의 전체 경로를 만든다.
+	// eg. base name: HKLM\SoftwareL\Software\Microsoft
+	//                 \Windows\CurrentVersion\Uninstall\
+	//     sub_key_name: Everything
+	//     full path: HKLM\SoftwareL\Software\Microsoft\Windows\Current
+	//                Version\Uninstall\Everything
+	//
+	std::wstringstream strm;
+	strm << base_name << sub_key_name;
+	HKEY key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
+								strm.str().c_str(),
+								true);
+
+	if (nullptr == key_handle)
+	{
+		log_err "RUOpenKey() failed. key=%ws",
+			strm.str().c_str()
+			log_end;
+		return false;
+	}
+
+	pprogram sf = get_installed_program_info(key_handle,
+											   sub_key_name);
+	if (nullptr != sf)
+	{
+		softwares->push_back(sf);
+	}
+
+	RUCloseKey(key_handle);
+	return true;
+}
+
+
+/// @brief 설치된 프로그램 정보를 읽어 온다.
+///
+bool
+get_installed_programs(
+	_Out_ std::list<pprogram>& installed_programs
+	)
+{
+	//
+	// HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\
+	// 에 있는 프로그램 정보를 읽어 온다.
+	// 64bit 운영체제인 경우 해당 경로에 있는 어플리케이션 정보는 64비트
+	// 프로그램에 관한 정보 이다.
+	//
+	HKEY key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
+								sub_key_uninstall,
+								true);
+
+	if (nullptr == key_handle)
+	{
+		log_err "RUOpenKey() failed. key=%ws",
+			sub_key_uninstall
+			log_end;
+		return false;
+	}
+
+	//
+	// 설치된 프로그램를 받을 list와 base_key(`sub_key_uninstall`)
+	// 를 콜백 함수에 넘긴다.
+	//
+	reg_enum_key_values(key_handle,
+						sub_key_uninstall,
+						sub_key_iterate_callback,
+						(DWORD_PTR)&installed_programs,
+						NULL,
+						NULL);
+
+	RUCloseKey(key_handle);
+
+	//
+	// HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\
+	// 경로가 존재 하는 경우 해당 정보를 읽어 온다. `WOW6432Node`에 있는 어플리케이션
+	// 정보는 64비트 운영체제에서 32비트 프로그램 정보를 저장 하고 있는 경로이다.
+	// 64비트 운영체제인 경우 먼저 해당 경로 존재 유무를 체크 한 후 있으면 읽고 난 후
+	// 64비트 프로그램 정보를 읽어 온다.
+	//
+	if (true == RUIsKeyExists(HKEY_LOCAL_MACHINE,
+							  sub_key_uninstall_x64))
+	{
+		HKEY wow64_key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
+										  sub_key_uninstall_x64,
+										  true);
+
+		if (nullptr == wow64_key_handle)
+		{
+			log_err "RUOpenKey() failed. key=%ws",
+				sub_key_uninstall_x64
+				log_end;
+			return false;
+		}
+
+		//
+		// 설치된 프로그램를 받을 list와 base_key(`sub_key_uninstall_x64`)
+		// 를 콜백 함수에 넘긴다.
+		//
+		reg_enum_key_values(wow64_key_handle,
+							sub_key_uninstall_x64,
+							sub_key_iterate_callback,
+							(DWORD_PTR)&installed_programs,
+							NULL,
+							NULL);
+
+		RUCloseKey(wow64_key_handle);
+
+	}
+
 
 	return true;
 }

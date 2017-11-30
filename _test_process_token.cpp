@@ -69,6 +69,32 @@ bool test_process_token()
 				}
 				groups.clear();
 			}
+			//
+			// privilege
+			//
+			std::list<pprivilege_info> privileges;
+			if (true != get_process_privilege(proc.pid(), privileges))
+			{
+				log_err "get_process_privilege() failed. pid=%u, image=%ws",
+					proc.pid(),
+					proc.process_name()
+					log_end;
+			}
+			else
+			{
+				for (auto privilege : privileges)
+				{
+					std::wstringstream strm;
+					strm << L"privilege=" << privilege->_name;
+					if (0 != privilege->_attribute)
+					{
+						strm << L", attribute=" << privilege->attribute();
+					}
+					log_info "        %ws", strm.str().c_str() log_end;
+					delete privilege;
+				}
+				privileges.clear();
+			}
 		}
 		delete user_sid; user_sid = nullptr;
 		return true;		

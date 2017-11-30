@@ -22,7 +22,7 @@
                 "`size`	INTEGER NOT NULL, "\
                 "`md5`	TEXT NOT NULL, "\
                 "`sha2`	TEXT NOT NULL, "\
-				"`hit_count` TIMESTAMP DEFAULT 1"\
+				"`hit_count` INTEGER DEFAULT 1"\
                 ") "
 
 #define _select_file_cache \

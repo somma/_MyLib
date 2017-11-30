@@ -55,38 +55,47 @@ bool test_registry_util()
 	return true;
 }
 
-bool reg_key_callback(
-    _In_ uint32_t index,
-    _In_ const wchar_t* sub_key_name,
-    _In_ const wchar_t* class_name
-    )
+bool
+reg_key_callback(
+	_In_ uint32_t index,
+	_In_ const wchar_t* base_name,
+	_In_ const wchar_t* sub_key_name,
+	_In_ const wchar_t* class_name,
+	_In_ DWORD_PTR tag
+	)
 {
-    log_dbg
-        "index = %u, sub_key_name = %ws, class_name = %ws",
-        index, sub_key_name, class_name
-        log_end;
-    return true;
+	UNREFERENCED_PARAMETER(base_name);
+	UNREFERENCED_PARAMETER(tag);
+
+	log_dbg
+		"index = %u, sub_key_name = %ws, class_name = %ws",
+		index, sub_key_name, class_name
+		log_end;
+	return true;
 }
 
-bool reg_value_callback(
-    _In_ uint32_t index,
-    _In_ uint32_t value_type,
-    _In_ const wchar_t* value_name,
-    _In_ uint32_t value_data_size,
-    _In_ const uint8_t* value_data
-    )
+bool
+reg_value_callback(
+	_In_ uint32_t index,
+	_In_ uint32_t value_type,
+	_In_ const wchar_t* value_name,
+	_In_ uint32_t value_data_size,
+	_In_ const uint8_t* value_data,
+	_In_ DWORD_PTR tag
+	)
 {
 	UNREFERENCED_PARAMETER(index);
 	UNREFERENCED_PARAMETER(value_type);
 	UNREFERENCED_PARAMETER(value_data_size);
 	UNREFERENCED_PARAMETER(value_data);
+	UNREFERENCED_PARAMETER(tag);
 
 	log_dbg
-		"value name=%ws", 
+		"value name=%ws",
 		value_name
 		log_end;
 
-    return true;
+	return true;
 }
 
 bool test_read_mouted_device()
@@ -99,7 +108,12 @@ bool test_read_mouted_device()
         return false;
     }
     
-    reg_enum_key_values(key, reg_key_callback, reg_value_callback);
+    reg_enum_key_values(key,
+						nullptr,
+						reg_key_callback,
+						NULL,
+						reg_value_callback,
+						NULL);
     RegCloseKey(key);
     return true;
 }
