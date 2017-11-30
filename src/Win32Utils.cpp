@@ -5926,6 +5926,398 @@ get_process_creation_time(
 	return true;
 }
 
+/// @brief 
+void dump_file_create_disposition(_In_ uint32_t NtCreateFile_CreateDisposition)
+{
+	char buf[256];
+	char* pos = buf;
+	size_t remain = sizeof(buf);
+	bool add_lf = false;
+
+#define FILE_SUPERSEDE                  0x00000000
+#define FILE_OPEN                       0x00000001
+#define FILE_CREATE                     0x00000002
+#define FILE_OPEN_IF                    0x00000003
+#define FILE_OVERWRITE                  0x00000004
+#define FILE_OVERWRITE_IF               0x00000005
+
+	if (NtCreateFile_CreateDisposition & FILE_SUPERSEDE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  "%s",
+						  "FILE_SUPERSEDE, ");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateDisposition & FILE_OPEN)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateDisposition & FILE_CREATE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_CREATE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateDisposition & FILE_OPEN_IF)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_IF");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateDisposition & FILE_OVERWRITE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OVERWRITE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateDisposition & FILE_OVERWRITE_IF)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OVERWRITE_IF");
+		add_lf = true;
+	}
+
+	if (add_lf == true)
+	{
+		log_info "disposition=%s", buf log_end;
+	}
+	else
+	{
+		log_info "disposition=None" log_end;
+	}
+}
+
+void dump_file_create_options(_In_ uint32_t NtCreateFile_CreateOptions)
+{
+#define FILE_DIRECTORY_FILE                     0x00000001
+#define FILE_WRITE_THROUGH                      0x00000002
+#define FILE_SEQUENTIAL_ONLY                    0x00000004
+#define FILE_NO_INTERMEDIATE_BUFFERING          0x00000008
+
+#define FILE_SYNCHRONOUS_IO_ALERT               0x00000010
+#define FILE_SYNCHRONOUS_IO_NONALERT            0x00000020
+#define FILE_NON_DIRECTORY_FILE                 0x00000040
+#define FILE_CREATE_TREE_CONNECTION             0x00000080
+
+#define FILE_COMPLETE_IF_OPLOCKED               0x00000100
+#define FILE_NO_EA_KNOWLEDGE                    0x00000200
+#define FILE_OPEN_REMOTE_INSTANCE               0x00000400
+#define FILE_RANDOM_ACCESS                      0x00000800
+
+#define FILE_DELETE_ON_CLOSE                    0x00001000
+#define FILE_OPEN_BY_FILE_ID                    0x00002000
+#define FILE_OPEN_FOR_BACKUP_INTENT             0x00004000
+#define FILE_NO_COMPRESSION                     0x00008000
+
+#define FILE_OPEN_REQUIRING_OPLOCK              0x00010000
+#define FILE_DISALLOW_EXCLUSIVE                 0x00020000
+#define FILE_SESSION_AWARE                      0x00040000
+
+#define FILE_RESERVE_OPFILTER                   0x00100000
+#define FILE_OPEN_REPARSE_POINT                 0x00200000
+#define FILE_OPEN_NO_RECALL                     0x00400000
+#define FILE_OPEN_FOR_FREE_SPACE_QUERY          0x00800000
+
+	char buf[256];
+	char* pos = buf;
+	size_t remain = sizeof(buf);
+	bool add_lf = false;
+
+	if (NtCreateFile_CreateOptions & FILE_DIRECTORY_FILE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  "%s",
+						  "FILE_DIRECTORY_FILE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_WRITE_THROUGH)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_WRITE_THROUGH");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_SEQUENTIAL_ONLY)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_SEQUENTIAL_ONLY");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_NO_INTERMEDIATE_BUFFERING)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_NO_INTERMEDIATE_BUFFERING");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_SYNCHRONOUS_IO_ALERT)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_SYNCHRONOUS_IO_ALERT");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_SYNCHRONOUS_IO_NONALERT)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_SYNCHRONOUS_IO_NONALERT");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_NON_DIRECTORY_FILE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_NON_DIRECTORY_FILE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_CREATE_TREE_CONNECTION)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_CREATE_TREE_CONNECTION");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_COMPLETE_IF_OPLOCKED)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_COMPLETE_IF_OPLOCKED");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_NO_EA_KNOWLEDGE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_NO_EA_KNOWLEDGE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_REMOTE_INSTANCE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_REMOTE_INSTANCE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_RANDOM_ACCESS)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_RANDOM_ACCESS");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_DELETE_ON_CLOSE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_DELETE_ON_CLOSE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_BY_FILE_ID)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_BY_FILE_ID");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_FOR_BACKUP_INTENT)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_FOR_BACKUP_INTENT");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_NO_COMPRESSION)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_NO_COMPRESSION");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_REQUIRING_OPLOCK)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_REQUIRING_OPLOCK");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_DISALLOW_EXCLUSIVE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_DISALLOW_EXCLUSIVE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_SESSION_AWARE)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_SESSION_AWARE");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_RESERVE_OPFILTER)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_RESERVE_OPFILTER");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_REPARSE_POINT)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_REPARSE_POINT");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_NO_RECALL)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_NO_RECALL");
+		add_lf = true;
+	}
+	if (NtCreateFile_CreateOptions & FILE_OPEN_FOR_FREE_SPACE_QUERY)
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "FILE_OPEN_FOR_FREE_SPACE_QUERY");
+		add_lf = true;
+	}
+
+	if (add_lf == true)
+	{
+		log_info "options=%s", buf log_end;
+	}
+	else
+	{
+		log_info "options=None" log_end;
+	}
+}
+
 /// @brief	
 psid_info get_sid_info(_In_ PSID sid)
 {
@@ -6242,6 +6634,157 @@ get_process_group(
 				group.push_back(g);
 			}
 		}		
+	}
+
+	return true;
+}
+
+pprivilege_info
+get_privilege_info(
+	_In_ LUID_AND_ATTRIBUTES privileges
+)
+{
+	DWORD cch_name = 0;
+	wchar_t* name = nullptr;
+	LookupPrivilegeNameW(nullptr,
+						 &privileges.Luid,
+						 nullptr,
+						 &cch_name);
+	if (0 < cch_name)
+	{
+		name = (wchar_t*)malloc((cch_name + 1) * sizeof(wchar_t));
+		if (nullptr == name)
+		{
+			log_err "Not enough memory. " log_end;
+			return nullptr;
+		}
+	}
+
+	wchar_ptr name_ptr(name, [](_In_ wchar_t* ptr) {if (nullptr != ptr) { free(ptr); }});
+
+	if (TRUE != LookupPrivilegeNameW(nullptr,
+									 &privileges.Luid,
+									 name_ptr.get(),
+									 &cch_name))
+	{
+		log_err
+			"LookupPrivilegeNameW failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+
+	return new privilege_info(name_ptr.get(),
+							  privileges.Attributes);
+}
+
+/// @brief ÇÁ·Î¼¼½º ±ÇÇÑÀ» È¹µæ
+bool
+get_process_privilege(
+	_In_ DWORD pid,
+	_Out_ std::list<pprivilege_info>& privileges
+)
+{
+	//
+	//	Open process handle with READ token access
+	//
+	handle_ptr proc_handle(
+		OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid),
+		[](_In_ HANDLE handle)
+	{
+		if (NULL != handle) { CloseHandle(handle); }
+	});
+	if (NULL == proc_handle.get())
+	{
+		log_err "OpenProcess() failed. pid=%u, gle=%u",
+			pid,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	//
+	//	Open token handle
+	//
+	HANDLE th;
+	if (TRUE != OpenProcessToken(proc_handle.get(),
+								 TOKEN_QUERY,
+								 &th))
+	{
+		log_err "OpenProcessToken() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	handle_ptr token_handle(th, [](_In_ HANDLE th) {CloseHandle(th); });
+
+	return get_process_privilege(token_handle.get(), privileges);
+}
+
+bool
+get_process_privilege(
+	_In_ HANDLE process_query_token,
+	_Out_ std::list<pprivilege_info>& privileges
+)
+{
+	_ASSERTE(NULL != process_query_token);
+	if (NULL == process_query_token) return false;
+
+	//
+	//	Get token information
+	//
+	DWORD return_length;
+	GetTokenInformation(process_query_token,
+						TokenPrivileges,
+						nullptr,
+						0,
+						&return_length);
+	DWORD gle = GetLastError();
+	if (gle != ERROR_INSUFFICIENT_BUFFER)
+	{
+		log_err "GetTokenInformation() failed. gle=%u",
+			gle
+			log_end;
+		return false;
+	}
+
+	char_ptr ptr(
+		(char*)malloc(return_length),
+		[](_In_ char* ptr)
+	{
+		if (nullptr != ptr) { free(ptr); }
+	});
+
+	if (nullptr == ptr.get())
+	{
+		log_err "Not enough memory. malloc size=%u",
+			return_length
+			log_end;
+		return false;
+	}
+
+	if (TRUE != GetTokenInformation(process_query_token,
+									TokenPrivileges,
+									(PTOKEN_PRIVILEGES)ptr.get(),
+									return_length,
+									&return_length))
+	{
+		log_err "GetTokenInformation() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	PTOKEN_PRIVILEGES token_privileges = (PTOKEN_PRIVILEGES)ptr.get();
+	for (uint32_t i = 0; i < token_privileges->PrivilegeCount; ++i)
+	{
+		pprivilege_info privilege_info = get_privilege_info(
+			token_privileges->Privileges[i]);
+		if (nullptr != privilege_info)
+		{
+			privileges.push_back(privilege_info);
+		}
 	}
 
 	return true;

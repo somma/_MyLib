@@ -609,7 +609,10 @@ bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code);
 bool get_process_creation_time(_In_ DWORD pid, _Out_ PFILETIME const creation_time);
 bool get_process_creation_time(_In_ HANDLE process_handle, _Out_ PFILETIME const creation_time);
 
-
+/// @brief NtCreateFile `CreationDisposition`문자열로 덤프한다.
+void dump_file_create_disposition(_In_ uint32_t NtCreateFile_CreateDisposition);
+/// @brief NtCreateFile `CreateOptions`을 문자열로 덤프한다.
+void dump_file_create_options(_In_ uint32_t NtCreateFile_CreateOptions);
 
 
 /// @brief	user/group 정보
@@ -721,6 +724,63 @@ public:
 
 bool get_process_group(_In_ DWORD pid, _Out_ std::list<pgroup_sid_info>& group);
 bool get_process_group(_In_ HANDLE process_query_token, _Out_ std::list<pgroup_sid_info>& group);
+
+typedef class privilege_info
+{
+public:
+	privilege_info(_In_ const wchar_t* privilege_name, _In_ DWORD attribute) :
+		_name(privilege_name),
+		_attribute(attribute)
+	{}
+
+public:
+	std::wstring _name;
+	DWORD _attribute;
+
+	std::wstring attribute()
+	{
+		bool addlf = false;
+		std::wstringstream flag;
+
+		if (FlagOn(_attribute, SE_PRIVILEGE_ENABLED))
+		{
+			flag << SE_PRIVILEGE_ENABLED; addlf = true;
+		}
+
+		if (FlagOn(_attribute, SE_PRIVILEGE_ENABLED_BY_DEFAULT))
+		{
+			if (true == addlf) { flag << L", "; }
+			else { addlf = true; }
+			flag << L"SE_PRIVILEGE_ENABLED_BY_DEFAULT";
+		}
+		if (FlagOn(_attribute, SE_PRIVILEGE_REMOVED))
+		{
+			if (true == addlf) { flag << L", "; }
+			else { addlf = true; }
+			flag << L"SE_PRIVILEGE_REMOVED";
+		}
+		if (FlagOn(_attribute, SE_PRIVILEGE_USED_FOR_ACCESS))
+		{
+			if (true == addlf) { flag << L", "; }
+			else { addlf = true; }
+			flag << L"SE_PRIVILEGE_USED_FOR_ACCESS";
+		}
+		return flag.str();
+	}
+
+} *pprivilege_info;
+
+pprivilege_info get_privilege_info(_In_ LUID_AND_ATTRIBUTES privileges);
+
+bool
+get_process_privilege(
+	_In_ DWORD pid,
+	_Out_ std::list<pprivilege_info>& privileges
+);
+bool
+get_process_privilege(
+	_In_ HANDLE process_query_token,
+	_Out_ std::list<pprivilege_info>& privileges);
 
 /// @brief account 정보
 ///
