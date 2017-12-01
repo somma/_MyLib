@@ -39,7 +39,7 @@
 #pragma comment(lib, "IPHLPAPI.lib")
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "psapi.lib")
-
+#pragma comment(lib, "version.lib")
 
 //
 //	create_process_as_login_user()
@@ -1520,22 +1520,102 @@ HANDLE open_file_to_read(LPCWCH file_path)
  * @endcode	
  * @return	
 **/
-bool get_file_size(_In_ HANDLE file_handle, _Out_ int64_t& size)
+bool 
+get_file_size(
+	_In_ HANDLE file_handle, 
+	_Out_ int64_t& size
+	)
 {
 	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
 	if (INVALID_HANDLE_VALUE == file_handle) return false;
 
 	LARGE_INTEGER size_tmp = {0};
 	
-	if (TRUE != GetFileSizeEx(file_handle, &size_tmp))
+	if (TRUE != GetFileSizeEx(file_handle, 
+							  &size_tmp))
 	{
-		log_err 
-			"GetFileSizeEx( file = 0x%p ), gle = %u", file_handle, GetLastError() 
-		log_end
+		log_err "GetFileSizeEx( file = 0x%p ), gle = %u",
+			file_handle,
+			GetLastError()
+			log_end;
 		return false;
 	}
 
 	size = size_tmp.QuadPart;
+	return true;
+}
+
+///	@brief	지정된 파일의 버전 정보를 수집하는 함수
+///			(파일에 리소스 섹션이 없는경우 실패한다.)
+bool
+get_file_version(
+	_In_ const wchar_t* file_path,
+	_Out_ std::wstring& file_version
+	)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path)
+	{
+		return false;
+	}
+
+	DWORD size = GetFileVersionInfoSize(file_path,
+										0);
+	if (0 == size)
+	{
+		log_err "GetFileVersionInfoSize() failed, file=%ws, gle=%u",
+			file_path,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	wchar_ptr buffer((wchar_t*)malloc(size),
+					[](_In_ wchar_t* ptr)
+					{
+						if (nullptr != ptr) free(ptr);
+					});
+	if (nullptr == buffer.get())
+	{
+		log_err "Not enough memory. malloc size=%u",
+			size
+			log_end;
+		return false;
+	}
+
+	if (TRUE != GetFileVersionInfo(file_path,
+								   0,
+								   size,
+								   buffer.get()))
+	{
+		log_err "GetFileVersionInfo() failed, file=%ws, gle=%u",
+			file_path,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	UINT len;
+	VS_FIXEDFILEINFO *vs_ffi;
+	if (TRUE != VerQueryValue(buffer.get(),
+							  L"\\",
+							  (LPVOID*)&vs_ffi,
+							  &len))
+	{
+		log_err "VerQueryValue() failed, file=%ws, gle=%u",
+			file_path,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	std::wstringstream strm;
+	strm << HIWORD(vs_ffi->dwFileVersionMS) << L".";
+	strm << LOWORD(vs_ffi->dwFileVersionMS) << L".";
+	strm << HIWORD(vs_ffi->dwFileVersionLS) << L".";
+	strm << LOWORD(vs_ffi->dwFileVersionLS);
+	file_version = strm.str();
+
 	return true;
 }
 
