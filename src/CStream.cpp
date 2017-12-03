@@ -118,13 +118,8 @@ unsigned long CMemoryStream::SetSize(unsigned long newSize)
 -------------------------------------------------------------------------*/
 unsigned long CMemoryStream::ReadFromStream(void *Buffer, unsigned long Count)
 {
-	_ASSERTE( TRUE != IsBadWritePtr(Buffer, Count) );
-	if ( TRUE == IsBadWritePtr(Buffer, Count) )
-	{
-		_ASSERTE(!"Invalid Parameter");
-		return MAX_UNSIGNED_LONG;
-	}
-
+	_ASSERTE(nullptr != Buffer);
+	if (nullptr == Buffer) return 0;
 
 	if ( (m_pos >= 0) && (Count >= 0) )	
 	{
