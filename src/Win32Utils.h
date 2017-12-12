@@ -7,6 +7,7 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 
+
 #ifndef _win32_utils_
 #define _win32_utils_
 

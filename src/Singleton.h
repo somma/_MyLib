@@ -53,8 +53,9 @@ private:
 
     static void DecrementReferenceCount()
     {
-        _ASSERTE(0 != mRefCount); if (0 == mRefCount) return;
+        if (0 == mRefCount) return;
 
+		_ASSERTE(nullptr != mInstance);
         MyInterlockedDecrement(&mRefCount);
         if (0 == MyInterlockedCompareExchange(&mRefCount, 0, 0))
         {

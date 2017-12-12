@@ -3067,8 +3067,7 @@ wchar_t* Utf8MbsToWcs(_In_ const char* utf8)
 */
 std::wstring MbsToWcsEx(_In_ const char *mbs)
 {
-	_ASSERTE(nullptr != mbs);
-	_ASSERTE(0x00 != mbs[0]);
+	_ASSERTE(nullptr != mbs);	
 	if (nullptr == mbs) return _null_stringw;
 	if (0x00 == mbs[0]) return _null_stringw;
 
@@ -3101,7 +3100,6 @@ std::wstring MbsToWcsEx(_In_ const char *mbs)
 std::string WcsToMbsEx(_In_ const wchar_t *wcs)
 {
 	_ASSERTE(nullptr != wcs);
-	_ASSERTE(0x00 != wcs[0]);
 	if (nullptr == wcs) return _null_stringa;
 	if (0x00 == wcs[0]) return _null_stringa;
 
@@ -3134,7 +3132,6 @@ std::string WcsToMbsEx(_In_ const wchar_t *wcs)
 std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs)
 {
 	_ASSERTE(nullptr != wcs);
-	_ASSERTE(0x00 != wcs[0]);
 	if (nullptr == wcs) return _null_stringa;
 	if (0x00 == wcs[0]) return _null_stringa;
 
@@ -3167,7 +3164,6 @@ std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs)
 std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 {
 	_ASSERTE(nullptr != utf8);
-	_ASSERTE(0x00 != utf8[0]);
 	if (nullptr == utf8) return _null_stringw;
 	if (0x00 == utf8[0]) return _null_stringw;
 
