@@ -135,6 +135,9 @@
     <ClInclude Include="src\CppSQLite\CppSQLite3.h">
       <Filter>src\CppSQLite</Filter>
     </ClInclude>
+    <ClInclude Include="src\account_info.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -268,6 +271,9 @@
     </ClCompile>
     <ClCompile Include="src\CppSQLite\CppSQLite3.cpp">
       <Filter>src\CppSQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="src\account_info.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

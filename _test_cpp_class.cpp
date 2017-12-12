@@ -9,28 +9,65 @@
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
 
-class base
+class test_base
 {
-public: 
-	base(int param1)
+public:
+	test_base(int p1, int p2): member1(p1), pmember1(p2)
 	{
-        UNREFERENCED_PARAMETER(param1);
 		log_dbg "" log_end
 	}
 
-	virtual ~base()
+	virtual ~test_base()
 	{
 		log_dbg "" log_end
+	}
+
+	/// @brief	Copy constructor
+	test_base(const test_base& cls) :
+		member1(cls.member1),
+		pmember1(cls.pmember1)
+	{
+		log_dbg "copy constructor using `test_base&`" log_end
+	}
+
+	test_base(const test_base* const cls) :
+		member1(cls->member1),
+		pmember1(cls->pmember1)
+	{
+		log_dbg "copy constructor using `test_base*`" log_end
+	}
+
+	/// @brief	Assign operator
+	test_base& operator = (const test_base& cls)
+	{
+		log_dbg "assign op using `test_base&`" log_end
+
+		member1 = cls.member1;
+		pmember1 = cls.pmember1;
+		return *this;
+	}
+
+	test_base& operator = (const test_base* cls)
+	{
+		log_dbg "assign op using `test_base*`" log_end
+
+		member1 = cls->member1;
+		pmember1 = cls->pmember1;
+		return *this;
+
 	}
 
 public:
 	int member1;
+
+private:
+	int pmember1;
 };
 
-class child : public base
+class child : public test_base
 {
 public:
-	child(int param1):base(param1)
+	child(int param1):test_base(param1, 100)
 	{
 		log_dbg "" log_end
 	}
@@ -41,12 +78,13 @@ public:
 };
 
 
-class child_has_diff_creator : public base
+class child_has_diff_creator : public test_base
 {
 public:
-	child_has_diff_creator(int param1, int param2): base(param1)
+	child_has_diff_creator(int param1, int param2, int param3): test_base(param1, param2)
 	{
         UNREFERENCED_PARAMETER(param2);
+		UNREFERENCED_PARAMETER(param3);
 		log_dbg "" log_end
 	}
 	virtual ~child_has_diff_creator()
@@ -64,35 +102,86 @@ public:
  * @endcode	
  * @return	
 **/
-bool test_cpp_class()
+bool test_call_order()
 {
 	/* expected output 
-		[INFO] base::base,
+		[INFO] test_base::test_base,
 		[INFO] child::child,
 		[INFO] child::~child,
-		[INFO] base::~base,
+		[INFO] test_base::~test_base,
 	*/
-	base* obj = new child(1);
+	test_base* obj = new child(1);
 	delete obj;
 
 	/*
-		base::base,
+		test_base::test_base,
 		child::child,
 		child::~child,
-		base::~base,
+		test_base::~test_base,
 	*/
 	child* obj2 = new child(1);
 	delete obj2;
 
 	/*
-		base::base,
+		test_base::test_base,
 		child_has_diff_creator::child_has_diff_creator,
 		child_has_diff_creator::~child_has_diff_creator,
-		base::~base,
+		test_base::~test_base,
 	*/
-	child_has_diff_creator* obj3 = new child_has_diff_creator(1,2);
+	child_has_diff_creator* obj3 = new child_has_diff_creator(1,2, 3);
 	obj3->member1 = 1;
 	delete obj3;
 
+	
+
 	return true;
 }
+
+//
+//	복사생성자/연산자 오버로딩
+//
+bool test_copy_assign()
+{
+	test_base* base = new test_base(1, 2);
+
+	// 
+	// copy constructor
+	//
+	test_base base_copy = *base;
+	test_base base_copy2(base);
+	test_base base_copy3 = *base;
+	test_base base_copy4 = base;
+
+	// 
+	// assignment
+	//
+	test_base* base_assign = new test_base(1, 2);
+	
+	//	둘다 포인터인 경우 대입연산자 호출이 아니라, raw 포인터 
+	//	assignment 가 되어버린다. 
+	base_assign = base;
+
+	
+	test_base base_assign2(1, 2);
+	test_base base_assign3(1, 3);
+	base_assign2 = base;	
+	base_assign2 = base_assign3;
+	return true;
+}
+
+
+
+bool test_cpp_class()
+{
+	bool b1, b2, b3;
+	get_log_format(b1, b2, b3);
+	set_log_format(false, false, true);
+
+	if (true != test_call_order()) return false;
+	if (true != test_copy_assign()) return false;
+	
+	set_log_format(b1, b2, b3);
+
+	return true;
+}
+

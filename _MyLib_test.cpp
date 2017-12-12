@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include "Singleton.h"
 #include "FileInfoCache.h"
+#include "account_info.h"
 
 bool test_file_info_cache();
 
@@ -238,10 +239,18 @@ void run_test()
 	std::wstring s = L"";
 	_ASSERTE(true == s.empty());
 
+	std::string sy = WcsToMbsEx(s.c_str());
+	sy = sy;
+
+
+	
+	// empty-string.c_str() 은 nullptr 이 아니다!
+	const wchar_t* p = nullptr;
+	p = s.c_str();
+	_ASSERTE(nullptr != p);
+
 	std::wstring ss = L" ";
 	_ASSERTE(true != ss.empty());
-
-
 
 	//
 	//	64비트 정수 출력
@@ -308,7 +317,7 @@ void run_test()
 
 
 	//assert_bool(true, test_NameConverter_iterate);
-	assert_bool(true, test_NameConverter_get_canon_name);
+	//assert_bool(true, test_NameConverter_get_canon_name);
 	//assert_bool(true, test_NameConverter_dosname_to_devicename);
 
 	//assert_bool(true, test_wmi_client);
@@ -388,7 +397,7 @@ void run_test()
 
 
 	//assert_bool(true, test_registry_util);
-	assert_bool(true, test_read_mouted_device);
+	//assert_bool(true, test_read_mouted_device);
 	//assert_bool(true, test_set_binary_data);    
 	//assert_bool(true, test_aes256);
 
@@ -403,7 +412,9 @@ void run_test()
 
 	log_info
 		"----------------------------------------------------"
-	log_end
+		log_end;
+
+	//_pause;
 
 	log_info
 		"total test = %u, pass = %u, fail = %u", 
@@ -1455,11 +1466,11 @@ bool test_get_account_infos()
 	{
 		log_info
 			"name(%ws) : sid(%ws) priv(%ws) attrib(%ws) last_logon(%ws) log_on_count(%u) last_password_change(%u)",
-			account->name().c_str(),
-			account->sid().c_str(),
-			account->privilge().c_str(),
-			account->attributes().c_str(),
-			account->last_logon_kst().c_str(),
+			account->name(),
+			account->sid(),
+			account->privilege(),
+			account->attribute_to_string().c_str(),
+			account->last_logon_kst(),
 			account->num_logons(),
 			account->password_age()
 			log_end;
@@ -1484,10 +1495,10 @@ bool test_get_installed_programs()
 	{
 		log_info
 			"product code: %ws, name(%ws)-vender(%ws)-version(%ws)",
-			software->id().c_str(),
-			software->name().c_str(),
-			software->vendor().c_str(),
-			software->version().c_str()
+			software->id(),
+			software->name(),
+			software->vendor(),
+			software->version()
 			log_end;
 		delete software;
 	}

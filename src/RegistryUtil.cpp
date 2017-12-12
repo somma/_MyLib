@@ -1,19 +1,24 @@
 /**
  * @file    Windows registry api wrapper
- * @brief   
- * @ref     
+ * @brief	
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2011/11/11 created.
  * @copyright All rights reserved by Yonghwan, Roh.
+ *
+ *			Registry I/O 의 경우 키 또는 Value 가 없는 경우가 많아 에러로그를 다 찍으면
+ *			너무 많은 불필요한 로그가 남는다. RegistryUtil 모듈 내에서는 에러로그를 남기지 않는다.
 **/
 
 #include "stdafx.h"
+#include <crtdbg.h>
+#include "log.h"
 #include "RegistryUtil.h"
 
 
 #define NO_SHLWAPI_STRFCNS
 #include "Shlwapi.h"
 #pragma comment(lib, "Shlwapi.lib")
+
 
 
 /// @brief	레지스트리 키를 오픈한다. 없으면 nullptr 을 리턴한다.
@@ -91,7 +96,10 @@ RUCreateKey(
     ret = RegCreateKeyExW(RootKey, SubKey, 0, NULL, 0, sam, NULL, &sub_key_handle, &disposition);
     if (ERROR_SUCCESS != ret)
     {
-        log_err "RegCreateKeyExW(%ws) failed, ret = %u", SubKey, ret log_end        
+		//log_err "RegCreateKeyExW(%ws) failed, ret = %u",
+		//	SubKey,
+		//	ret
+		//	log_end
         return NULL;
     }
     else
@@ -114,7 +122,7 @@ RUReadDword(
     DWORD value = DefaultValue;
     DWORD value_size = sizeof(value);
 
-    DWORD ret = RegQueryValueExW(key_handle, 
+	DWORD ret = RegQueryValueExW(key_handle, 
 								 value_name, 
 								 NULL, 
 								 NULL, 
@@ -122,10 +130,10 @@ RUReadDword(
 								 &value_size);
     if (ERROR_SUCCESS != ret)
     {
-		log_err "RegQueryValueExW(%ws) failed, ret = %u",
-			value_name,
-			ret
-			log_end;
+		//log_err "RegQueryValueExW(%ws) failed, ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
         return DefaultValue;
     }
 
@@ -151,10 +159,10 @@ RUWriteDword(
 							   sizeof(DWORD));
     if (ERROR_SUCCESS != ret)
     {
-		log_err "RegSetValueExW(%ws) failed, ret = %u",
-			value_name,
-			ret
-			log_end;
+		//log_err "RegSetValueExW(%ws) failed, ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
         return false;
     }
 
@@ -211,10 +219,10 @@ RUReadString(
 
     if (ERROR_SUCCESS != ret)
     {
-		log_err "RegQueryValueExW(%ws) failed, ret = %u",
-			value_name,
-			ret
-			log_end;
+		//log_err "RegQueryValueExW(%ws) failed, ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
         free(buffer); buffer=NULL;
         return false;    
     }
@@ -245,10 +253,10 @@ RUSetString(
 							   static_cast<uint32_t>(((wcslen(value) + 1) * sizeof(wchar_t))) );
     if (ERROR_SUCCESS != ret)
     {
-		log_err "RegSetValueExW(%ws) failed, ret = %u",
-			value_name,
-			ret
-			log_end;
+		//log_err "RegSetValueExW(%ws) failed, ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
 		return false;
     }
 
@@ -276,10 +284,10 @@ RUSetExpandString(
 							   cbValue);
     if (ERROR_SUCCESS != ret)
     {
-		log_err "RegSetValueExW(%ws) failed, ret = %u",
-			value_name,
-			ret 
-			log_end;
+		//log_err "RegSetValueExW(%ws) failed, ret = %u",
+		//	value_name,
+		//	ret 
+		//	log_end;
         return false;
     }
 
@@ -309,10 +317,10 @@ RUSetBinaryData(
 							   cbValue);
     if (ERROR_SUCCESS != ret)
     {
-		log_err "RegSetValueExW(%ws) failed, ret = %u",
-			value_name,
-			ret
-			log_end;
+		//log_err "RegSetValueExW(%ws) failed, ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
 		return false;
     }
 
@@ -375,10 +383,10 @@ RUReadBinaryData(
 
     if (ERROR_SUCCESS != ret)
     {
-		log_err "RegQueryValueExW(%ws) failed, ret = %u",
-			value_name,
-			ret
-			log_end;
+		//log_err "RegQueryValueExW(%ws) failed, ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
 		free(buffer); buffer= nullptr;
         return nullptr;    
     }
@@ -399,10 +407,10 @@ RUDeleteValue(
 	DWORD ret = RegDeleteValueW(key_handle, value_name);
 	if (ERROR_SUCCESS != ret)
 	{
-		log_err "RegDeleteValueW( %ws ) failed. ret = %u",
-			value_name,
-			ret
-			log_end;
+		//log_err "RegDeleteValueW( %ws ) failed. ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
 		return false;
 	}
 	return true;
@@ -433,10 +441,10 @@ RUDeleteKey(
 		DWORD ret = RegDeleteKeyW(key_handle, sub_key);
 		if (ERROR_SUCCESS != ret)
 		{
-			log_err "RegDeleteKeyW( sub = %ws ) failed. ret = %u",
-				sub_key,
-				ret
-				log_end;
+			//log_err "RegDeleteKeyW( sub = %ws ) failed. ret = %u",
+			//	sub_key,
+			//	ret
+			//	log_end;
 			return false;
 		}
 		return true;
@@ -450,10 +458,10 @@ RUDeleteKey(
 		LSTATUS ls = SHDeleteKeyW(key_handle, sub_key);
 		if (ERROR_SUCCESS != ls)
 		{
-			log_err "SHDeleteKeyW( sub = %ws ) failed. lstatus = %u",
-				sub_key,
-				ls
-				log_end;
+			//log_err "SHDeleteKeyW( sub = %ws ) failed. lstatus = %u",
+			//	sub_key,
+			//	ls
+			//	log_end;
 			return false;
 		}
 		return true;
@@ -528,7 +536,9 @@ reg_enum_key_values(
 								   &last_write_time);
 	if (ERROR_SUCCESS != ret)
 	{
-		log_err "RegQueryInfoKeyW() failed. ret = %u", ret log_end;
+		//log_err "RegQueryInfoKeyW() failed. ret = %u", 
+		//	ret 
+		//	log_end;
 		return false;
 	}
 
@@ -595,7 +605,9 @@ reg_enum_key_values(
 								   &last_write_time);
 				if (ERROR_SUCCESS != ret)
 				{
-					log_err "RegEnumKeyEx() failed. ret = %u", ret log_end;
+					log_err "RegEnumKeyEx() failed. ret = %u", 
+						ret 
+						log_end;
 				}
 				else
 				{

@@ -75,6 +75,13 @@ set_log_format(
 	_In_ bool show_function_name
 	);
 
+void 
+get_log_format(
+	_Out_ bool& show_process_name,
+	_Out_ bool& show_pid_tid,
+	_Out_ bool& show_function_name
+	);
+
 void
 set_log_env(
 	_In_ uint32_t mask,

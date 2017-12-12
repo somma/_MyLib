@@ -115,11 +115,12 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>echo "copy [$(TargetPath)] to debuggee..."
+copy $(TargetPath) x:\
+echo "done." </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -136,11 +137,12 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>echo "copy [$(TargetPath)] to debuggee..."
+copy $(TargetPath) x:\
+echo "done." </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -160,11 +162,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>echo "copy [$(TargetPath)] to debuggee..."
+copy $(TargetPath) x:\
+echo "done." </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -184,14 +187,16 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>echo "copy [$(TargetPath)] to debuggee..."
+copy $(TargetPath) x:\
+echo "done." </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\account_info.h" />
     <ClInclude Include="src\AirCrypto.h" />
     <ClInclude Include="src\AKSyncObjs.h" />
     <ClInclude Include="src\arch.h" />
@@ -231,6 +236,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\account_info.cpp" />
     <ClCompile Include="src\AirCrypto.cpp" />
     <ClCompile Include="src\AKSyncObjs.cpp" />
     <ClCompile Include="src\base64.cpp" />
