@@ -1509,9 +1509,13 @@ get_file_size(
 	return true;
 }
 
+///
 ///	@brief	지정된 파일의 버전 정보를 수집하는 함수
-///			(파일에 리소스 섹션이 없는경우 file_version을 "none"로
-///			true를 return한다.)
+/// @return 성공		true
+///					(파일에 리소스 섹션이 없는경우에도,
+///					 file_version을 ""로 true를 return 한다.)
+/// @return 실패		false
+///
 bool
 get_file_version(
 	_In_ const wchar_t* file_path,
@@ -1532,9 +1536,11 @@ get_file_version(
 		if (ERROR_RESOURCE_DATA_NOT_FOUND == err ||
 			ERROR_RESOURCE_TYPE_NOT_FOUND == err)
 		{
-			//	파일에 리소스 섹션이 없는경우 항상 실패를 하게 되므로, 
-			//	file_version을 "none"로 true를 return 한다.
-			file_version = L"none";
+			//
+			//	파일의 리소스 섹션이 없는경우 get_file_version()는 항상 실패하게 된다.
+			//	때문에, file_version을 ""로 설정하고 true를 return 한다.
+			//
+			file_version = L"";
 			return true;
 		}
 
