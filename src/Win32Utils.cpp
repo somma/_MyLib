@@ -7392,31 +7392,23 @@ void clear_console()
     SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
-/** ---------------------------------------------------------------------------
-    \brief  실행 가능한 파일인 경우 TRUE 리턴
-
-    \param  path            exe 파일의 full path    
-            type            file type
-    \return         
-            성공시 TRUE 리턴
-            실패시 FALSE 리턴, 
-                
-                
-    \code
-    \endcode        
------------------------------------------------------------------------------*/
+/// @brief 실행 가능한 파일인 경우 TRUE 리턴
+/// @param path	exe 파일의 full path    
+/// @param type	file type
+/// @return 성공시 true
 bool is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type)
 {
-	type = IT_NORMAL;
-
-    HANDLE hFile = CreateFileW(
-                    path, 
-                    GENERIC_READ, 
-                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    NULL, 
-                    OPEN_EXISTING, 
-                    FILE_ATTRIBUTE_NORMAL, 
-                    NULL);
+	_ASSERTE(nullptr != path);
+	if (nullptr == path) return false;
+	if (true != is_file_existsW(path)) return false;
+	
+    HANDLE hFile = CreateFileW(path, 
+							   GENERIC_READ,
+							   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+							   NULL,
+							   OPEN_EXISTING,
+							   FILE_ATTRIBUTE_NORMAL,
+							   NULL);
     if (INVALID_HANDLE_VALUE == hFile)
     {
         //log_err "access denied or invalid path, %ws, gle = %u", path, GetLastError() log_end
@@ -7424,18 +7416,27 @@ bool is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type)
     }
     SmrtHandle sfFile(hFile);
 
+	return is_executable_file_w(hFile, type);
+}
+
+bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
+{
     // check file size 
     // 
     LARGE_INTEGER fileSize;
-    if (TRUE != GetFileSizeEx(hFile, &fileSize))
+    if (TRUE != GetFileSizeEx(file_handle, &fileSize))
     {
-        log_err "%ws, can not get file size, errorcode=0x%08x", path, GetLastError() log_end
+        log_err "can not get file size, errorcode=0x%08x", GetLastError() log_end
         return false;
     }
     if (sizeof(IMAGE_DOS_HEADER) > fileSize.QuadPart) return false;
-
     
-    HANDLE hImageMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+    HANDLE hImageMap = CreateFileMapping(file_handle, 
+										 NULL, 
+										 PAGE_READONLY, 
+										 0, 
+										 0, 
+										 NULL);
     if (NULL == hImageMap){return false;}
     SmrtHandle sfMap(hImageMap);
     PBYTE ImageView = (LPBYTE) MapViewOfFile(hImageMap, 
@@ -7460,15 +7461,14 @@ bool is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type)
 		DWORD dosSize = (idh->e_cp * 512);
 		if (dosSize > fileSize.QuadPart)
 		{
-			log_err "%ws, invalid file size, size=%llu", path, fileSize.QuadPart log_end;
+			log_err "invalid file size, size=%llu", fileSize.QuadPart log_end;
 			return false;
 		}
 
 		PIMAGE_NT_HEADERS inh = (PIMAGE_NT_HEADERS)((DWORD_PTR)idh + idh->e_lfanew);
 		if ((uintptr_t)inh >= (((uintptr_t)idh) + fileSize.QuadPart))
 		{
-			log_err "%ws, invalid file size (e_lfanew). file_size=%llu, inh addr=%llu",
-				path,
+			log_err "invalid file size (e_lfanew). file_size=%llu, inh addr=%llu",
 				fileSize.QuadPart,
 				(uintptr_t)inh
 				log_end;
@@ -7510,6 +7510,12 @@ bool is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type)
 			type = IT_EXE_CUI;
 			return true;
 		}
+		if ((subsys & IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION) == IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION)
+		{
+			type = IT_EXE_BOOT;
+			return true;
+		}
+		
 	}
 	catch(std::exception& e)
 	{
@@ -7538,6 +7544,8 @@ LPCWSTR  FileTypeToString(IMAGE_TYPE type)
         return L"GUI APP";
     case IT_EXE_CUI:
         return L"CUI APP";
+	case IT_EXE_BOOT:
+		return L"BOOT APP";
     case IT_NATIVE_APP: 
         return L"NATIVE";    
     case IT_NORMAL:
