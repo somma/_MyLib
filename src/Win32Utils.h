@@ -923,11 +923,13 @@ typedef enum _IMAGE_TYPE
     IT_DLL,                     // dll, ocx file    
     IT_EXE_GUI,                 // gui app
     IT_EXE_CUI,                 // cui app
+	IT_EXE_BOOT,				// boot app
     IT_NATIVE_APP,              // ntoskrnl.exe, win32k.sys, csrss.exe
     IT_NORMAL                   // unknown or not executable or invalid image
 } IMAGE_TYPE;
 
 bool    is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type);
+bool	is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type);
 LPCWSTR  FileTypeToString(IMAGE_TYPE type);
 
 
