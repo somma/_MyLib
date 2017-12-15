@@ -7392,31 +7392,23 @@ void clear_console()
     SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
-/** ---------------------------------------------------------------------------
-    \brief  실행 가능한 파일인 경우 TRUE 리턴
-
-    \param  path            exe 파일의 full path    
-            type            file type
-    \return         
-            성공시 TRUE 리턴
-            실패시 FALSE 리턴, 
-                
-                
-    \code
-    \endcode        
------------------------------------------------------------------------------*/
+/// @brief 실행 가능한 파일인 경우 TRUE 리턴
+/// @param path	exe 파일의 full path    
+/// @param type	file type
+/// @return 성공시 true
 bool is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type)
 {
-	type = IT_NORMAL;
-
-    HANDLE hFile = CreateFileW(
-                    path, 
-                    GENERIC_READ, 
-                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                    NULL, 
-                    OPEN_EXISTING, 
-                    FILE_ATTRIBUTE_NORMAL, 
-                    NULL);
+	_ASSERTE(nullptr != path);
+	if (nullptr == path) return false;
+	if (true != is_file_existsW(path)) return false;
+	
+    HANDLE hFile = CreateFileW(path, 
+							   GENERIC_READ,
+							   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+							   NULL,
+							   OPEN_EXISTING,
+							   FILE_ATTRIBUTE_NORMAL,
+							   NULL);
     if (INVALID_HANDLE_VALUE == hFile)
     {
         //log_err "access denied or invalid path, %ws, gle = %u", path, GetLastError() log_end
@@ -7429,7 +7421,6 @@ bool is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type)
 
 bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 {
-
     // check file size 
     // 
     LARGE_INTEGER fileSize;
@@ -7439,9 +7430,13 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
         return false;
     }
     if (sizeof(IMAGE_DOS_HEADER) > fileSize.QuadPart) return false;
-
     
-    HANDLE hImageMap = CreateFileMapping(file_handle, NULL, PAGE_READONLY, 0, 0, NULL);
+    HANDLE hImageMap = CreateFileMapping(file_handle, 
+										 NULL, 
+										 PAGE_READONLY, 
+										 0, 
+										 0, 
+										 NULL);
     if (NULL == hImageMap){return false;}
     SmrtHandle sfMap(hImageMap);
     PBYTE ImageView = (LPBYTE) MapViewOfFile(hImageMap, 
