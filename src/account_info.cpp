@@ -134,33 +134,6 @@ std::wstring account::attribute_to_string()
 	return flag.str();
 }
 
-/// @brief	마지막 로그인 시간을 한국 시각(KST)로 변환한 문자열
-std::wstring account::last_logon_kst()
-{
-	if (0 == _last_logon) return L"";
-
-	//
-	// time_t to filetime
-	//
-	FILETIME ft;
-	LONGLONG ll = Int32x32To64(_last_logon, 10000000) + 116444736000000000;
-	ft.dwLowDateTime = (DWORD)ll;
-	ft.dwHighDateTime = ll >> 32;
-	
-	//
-	// filetime to str
-	//
-	return MbsToWcsEx(file_time_to_str(&ft, true, false).c_str());
-}
-
-
-
-
-
-
-
-
-
 /// @brief `PSID`를 문자열로 변환 한다. 
 bool
 psid_to_wstr_sid(

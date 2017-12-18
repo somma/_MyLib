@@ -368,8 +368,8 @@ void run_test()
 	//assert_bool(true, test_get_module_path);
 	//assert_bool(true, test_dump_memory);
 	//assert_bool(true, test_get_environment_value);
-	//assert_bool(true, test_get_account_infos);
-	assert_bool(true, test_get_installed_programs);
+	assert_bool(true, test_get_account_infos);
+	//assert_bool(true, test_get_installed_programs);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
 
@@ -1464,13 +1464,16 @@ bool test_get_account_infos()
 
 	for (auto account : accounts)
 	{
+		FILETIME logon_filetime;
+		unixtime_to_filetime(account->last_logon_timestamp(), &logon_filetime);
+		std::wstring last_logon_kst = MbsToWcsEx(file_time_to_str(&logon_filetime, true, false).c_str());
 		log_info
 			"name(%ws) : sid(%ws) priv(%ws) attrib(%ws) last_logon(%ws) log_on_count(%u) last_password_change(%u)",
-			account->name(),
-			account->sid(),
+			account->name().c_str(),
+			account->sid().c_str(),
 			account->privilege(),
 			account->attribute_to_string().c_str(),
-			account->last_logon_kst(),
+			last_logon_kst.c_str(),
 			account->num_logons(),
 			account->password_age()
 			log_end;

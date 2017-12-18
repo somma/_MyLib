@@ -116,6 +116,24 @@ int_to_file_time(
 	file_time->dwLowDateTime = ((PLARGE_INTEGER)&file_time_int)->LowPart;
 	file_time->dwHighDateTime = ((PLARGE_INTEGER)&file_time_int)->HighPart;
 }
+/// @brief	unixtime(DWORD) -> FILETIME
+///	@remark	Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64*
+///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
+void
+unixtime_to_filetime(
+	_In_ uint32_t unix_time, 
+	_Out_ PFILETIME const file_time)
+{
+	_ASSERTE(nullptr != file_time);
+	if (nullptr == file_time) return;
+
+	//
+	// time_t to filetime
+	//
+	LONGLONG ll = Int32x32To64(unix_time, 10000000) + 116444736000000000;
+	file_time->dwLowDateTime = (DWORD)ll;
+	file_time->dwHighDateTime = ll >> 32;
+}
 
 /// @brief  ftl, ftr 값의 차를 초단위로 리턴한다. 
 int64_t 
