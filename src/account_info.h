@@ -47,9 +47,6 @@ public:
 	// 마지막 로그인 시간
 	DWORD last_logon_timestamp() { return _last_logon; }
 
-	// 마지막 로그인 시간을 한국 시각(KST)로 변환한 문자열
-	std::wstring last_logon_kst();
-	
 	// 로그인 성공 횟수
 	DWORD num_logons() { return _num_logons; }
 

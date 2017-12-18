@@ -157,6 +157,8 @@ std::string FAT2Str(IN FATTIME& fat);
 uint64_t file_time_to_int(_In_ const PFILETIME file_time);
 void int_to_file_time(_In_ uint64_t file_time_int, _Out_ PFILETIME const file_time);
 
+void unixtime_to_filetime(_In_ uint32_t unix_time, _Out_ PFILETIME const file_time);
+
 int64_t file_time_delta_sec(_In_ const PFILETIME ftl, _In_ const PFILETIME ftr);
 int64_t file_time_delta_day(_In_ const PFILETIME ftl, _In_ const PFILETIME ftr);
 FILETIME add_sec_to_file_time(_In_ const PFILETIME file_time, _In_ int32_t secs);
