@@ -62,7 +62,7 @@ bool test_process_token()
 					}
 					
 					strm << L"sid=" << group_sid->_sid_info->_sid << L", ";
-					strm << L"attribute=" << group_sid->attribute();
+					strm << L"attribute=" << group_sid->_attribute;
 
 					log_info "    %ws", strm.str().c_str() log_end;
 					delete group_sid;
@@ -86,10 +86,7 @@ bool test_process_token()
 				{
 					std::wstringstream strm;
 					strm << L"privilege=" << privilege->_name;
-					if (0 != privilege->_attribute)
-					{
-						strm << L", attribute=" << privilege->attribute();
-					}
+					strm << L", attribute=" << privilege->_attribute;
 					log_info "        %ws", strm.str().c_str() log_end;
 					delete privilege;
 				}

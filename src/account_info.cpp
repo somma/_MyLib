@@ -45,93 +45,177 @@ const wchar_t* account::privilege() const
 }
 
 /// @brief	계정 속성
-std::wstring account::attribute_to_string()
+void account::dump_account_flags()
 {
-	bool addlf = false;
-	std::wstringstream flag;
+	char buf[256];
+	char* pos = buf;
+	size_t remain = sizeof(buf);
+	bool add_lf = false;
+
 	if (FlagOn(_flags, UF_SCRIPT))
 	{
-		flag << "UF_SCRIPT"; addlf = true;
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  "%s",
+						  "UF_SCRIPT");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_ACCOUNTDISABLE))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_ACCOUNTDISABLE";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_ACCOUNTDISABLE");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_HOMEDIR_REQUIRED))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_HOMEDIR_REQUIRED";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_HOMEDIR_REQUIRED");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_PASSWD_NOTREQD))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_PASSWD_NOTREQD";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_PASSWD_NOTREQD");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_PASSWD_CANT_CHANGE))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_PASSWD_CANT_CHANGE";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_PASSWD_CANT_CHANGE");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_DONT_EXPIRE_PASSWD))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_DONT_EXPIRE_PASSWD";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_DONT_EXPIRE_PASSWD");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_ENCRYPTED_TEXT_PASSWORD_ALLOWED))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_ENCRYPTED_TEXT_PASSWORD_ALLOWED";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_ENCRYPTED_TEXT_PASSWORD_ALLOWED");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_NOT_DELEGATED))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_NOT_DELEGATED";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_NOT_DELEGATED");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_SMARTCARD_REQUIRED))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_SMARTCARD_REQUIRED";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_SMARTCARD_REQUIRED");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_USE_DES_KEY_ONLY))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_USE_DES_KEY_ONLY";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_USE_DES_KEY_ONLY");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_DONT_REQUIRE_PREAUTH))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_DONT_REQUIRE_PREAUTH";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_DONT_REQUIRE_PREAUTH");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_TRUSTED_FOR_DELEGATION))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_TRUSTED_FOR_DELEGATION";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_TRUSTED_FOR_DELEGATION");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_PASSWORD_EXPIRED))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_PASSWORD_EXPIRED";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_PASSWORD_EXPIRED");
+		add_lf = true;
 	}
 	if (FlagOn(_flags, UF_TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION))
 	{
-		if (true == addlf) { flag << L", "; }
-		else { addlf = true; }
-		flag << L"UF_TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION";
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "UF_TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION");
+		add_lf = true;
 	}
-	return flag.str();
+
+
+	if (add_lf == true)
+	{
+		log_info "options=%s", buf log_end;
+	}
+	else
+	{
+		log_info "options=None" log_end;
+	}
 }
 
 /// @brief `PSID`를 문자열로 변환 한다. 

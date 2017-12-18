@@ -290,7 +290,7 @@ void run_test()
 	
 	//assert_bool(true, test_file_info_cache);
 	//
-	//assert_bool(true, test_process_token);
+	assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
 	//assert_bool(true, test_std_move);	
@@ -1468,11 +1468,11 @@ bool test_get_account_infos()
 		unixtime_to_filetime(account->last_logon_timestamp(), &logon_filetime);
 		std::wstring last_logon_kst = MbsToWcsEx(file_time_to_str(&logon_filetime, true, false).c_str());
 		log_info
-			"name(%ws) : sid(%ws) priv(%ws) attrib(%ws) last_logon(%ws) log_on_count(%u) last_password_change(%u)",
+			"name(%ws) : sid(%ws) priv(%ws) attrib(%d) last_logon(%ws) log_on_count(%u) last_password_change(%u)",
 			account->name().c_str(),
 			account->sid().c_str(),
 			account->privilege(),
-			account->attribute_to_string().c_str(),
+			account->flags(),
 			last_logon_kst.c_str(),
 			account->num_logons(),
 			account->password_age()
