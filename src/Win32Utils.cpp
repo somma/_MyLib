@@ -6423,6 +6423,188 @@ void dump_file_create_options(_In_ uint32_t NtCreateFile_CreateOptions)
 	}
 }
 
+void dump_group_attributes(_In_ uint32_t group_attributes)
+{
+	char buf[256];
+	char* pos = buf;
+	size_t remain = sizeof(buf);
+	bool add_lf = false;
+
+	if (FlagOn(group_attributes, SE_GROUP_MANDATORY))
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  "%s",
+						  "SE_GROUP_MANDATORY");
+		add_lf = true;
+	}
+
+	if (FlagOn(group_attributes, SE_GROUP_ENABLED_BY_DEFAULT))
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "SE_GROUP_ENABLED_BY_DEFAULT");
+		add_lf = true;
+	}
+	if (FlagOn(group_attributes, SE_GROUP_ENABLED))
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "SE_GROUP_ENABLED");
+		add_lf = true;
+	}
+	if (FlagOn(group_attributes, SE_GROUP_OWNER))
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "SE_GROUP_OWNER");
+		add_lf = true;
+	}
+	if (FlagOn(group_attributes, SE_GROUP_USE_FOR_DENY_ONLY))
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "SE_GROUP_USE_FOR_DENY_ONLY");
+		add_lf = true;
+	}
+	if (FlagOn(group_attributes, SE_GROUP_INTEGRITY))
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "SE_GROUP_INTEGRITY");
+		add_lf = true;
+	}
+	if (FlagOn(group_attributes, SE_GROUP_INTEGRITY_ENABLED))
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "SE_GROUP_INTEGRITY_ENABLED");
+		add_lf = true;
+	}
+	if (FlagOn(group_attributes, SE_GROUP_LOGON_ID))
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "SE_GROUP_LOGON_ID");
+		add_lf = true;
+	}
+	if (FlagOn(group_attributes, SE_GROUP_RESOURCE))
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "SE_GROUP_RESOURCE");
+		add_lf = true;
+	}
+
+	if (add_lf == true)
+	{
+		log_info "options=%s", buf log_end;
+	}
+	else
+	{
+		log_info "options=None" log_end;
+	}
+}
+
+void dump_privilege_attributes(_In_ uint32_t privilege_attributes)
+{
+	bool add_lf = false;
+	char buf[256];
+	char* pos = buf;
+	size_t remain = sizeof(buf);
+
+	if (FlagOn(privilege_attributes, SE_PRIVILEGE_ENABLED))
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  "%s",
+						  "SE_PRIVILEGE_ENABLED");
+		add_lf = true;
+	}
+
+	if (FlagOn(privilege_attributes, SE_PRIVILEGE_ENABLED_BY_DEFAULT))
+	{
+
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  (true == add_lf) ? ", %s" : "%s",
+						  "SE_PRIVILEGE_ENABLED_BY_DEFAULT");
+		add_lf = true;
+	}
+	if (FlagOn(privilege_attributes, SE_PRIVILEGE_REMOVED))
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  "%s",
+						  "SE_PRIVILEGE_REMOVED");
+		add_lf = true;
+	}
+	if (FlagOn(privilege_attributes, SE_PRIVILEGE_USED_FOR_ACCESS))
+	{
+		StringCbPrintfExA(pos,
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  "%s",
+						  "SE_PRIVILEGE_USED_FOR_ACCESS");
+		add_lf = true;
+	}
+	
+	if (add_lf == true)
+	{
+		log_info "options=%s", buf log_end;
+	}
+	else
+	{
+		log_info "options=None" log_end;
+	}
+}
+
 /// @brief	
 psid_info get_sid_info(_In_ PSID sid)
 {

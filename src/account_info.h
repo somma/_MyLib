@@ -39,7 +39,10 @@ public:
 	const wchar_t* privilege() const;
 
 	// 계정 속성
-	std::wstring attribute_to_string();
+	uint32_t flags() { return _flags; }
+
+	// 계정 속성 덤프
+	void dump_account_flags();
 
 	// 사용자 로그온시 동작하는 스크립트의 경로
 	std::wstring script_path() { return _script_path; };

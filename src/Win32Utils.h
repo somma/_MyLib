@@ -615,7 +615,10 @@ bool get_process_creation_time(_In_ HANDLE process_handle, _Out_ PFILETIME const
 void dump_file_create_disposition(_In_ uint32_t NtCreateFile_CreateDisposition);
 /// @brief NtCreateFile `CreateOptions`을 문자열로 덤프한다.
 void dump_file_create_options(_In_ uint32_t NtCreateFile_CreateOptions);
-
+/// @brief process group 정보 중 `attributes`을 문자열로 덤프한다.
+void dump_group_attributes(_In_ uint32_t group_attributes);
+/// @brief process privilege 정보 중 `attributes`을 문자열로 덤프한다.
+void dump_privilege_attributes(_In_ uint32_t privilege_attributes);
 
 #pragma todo("sid 관련코드-> windows_security.h 같은 거 하나 만들어서 이동시키자")
 
@@ -691,61 +694,6 @@ public:
 public:
 	psid_info _sid_info;
 	DWORD _attribute;
-
-	std::wstring attribute()
-	{
-		bool addlf = false;
-		std::wstringstream flag;
-
-		if (FlagOn(_attribute, SE_GROUP_MANDATORY))
-		{
-			flag << SE_GROUP_MANDATORY; addlf = true;
-		}
-
-		if (FlagOn(_attribute, SE_GROUP_ENABLED_BY_DEFAULT))
-		{
-			if (true == addlf){flag << L", ";} else {addlf = true;}
-			flag << L"SE_GROUP_ENABLED_BY_DEFAULT";
-		}
-		if (FlagOn(_attribute, SE_GROUP_ENABLED))
-		{
-			if (true == addlf) { flag << L", "; } else { addlf = true; }
-			flag << L"SE_GROUP_ENABLED";
-		}
-		if (FlagOn(_attribute, SE_GROUP_OWNER))
-		{
-			if (true == addlf) { flag << L", "; } else { addlf = true; }
-			flag << L"SE_GROUP_OWNER";
-		}
-		if (FlagOn(_attribute, SE_GROUP_USE_FOR_DENY_ONLY))
-		{
-			if (true == addlf) { flag << L", "; } else { addlf = true; }
-			flag << L"SE_GROUP_USE_FOR_DENY_ONLY";
-		}
-		if (FlagOn(_attribute, SE_GROUP_INTEGRITY))
-		{
-			if (true == addlf) { flag << L", "; } else { addlf = true; }
-			flag << L"SE_GROUP_INTEGRITY";
-		}
-		if (FlagOn(_attribute, SE_GROUP_INTEGRITY_ENABLED))
-		{
-			if (true == addlf) { flag << L", "; } else { addlf = true; }
-			flag << L"SE_GROUP_INTEGRITY_ENABLED";
-		}
-		if (FlagOn(_attribute, SE_GROUP_LOGON_ID))
-		{
-			if (true == addlf) { flag << L", "; } else { addlf = true; }
-			flag << L"SE_GROUP_LOGON_ID";
-		}
-		if (FlagOn(_attribute, SE_GROUP_RESOURCE))
-		{
-			if (true == addlf) { flag << L", "; } else { addlf = true; }
-			flag << L"SE_GROUP_RESOURCE";
-		}
-
-		return flag.str();
-	}
-
 }*pgroup_sid_info;
 
 bool get_process_group(_In_ DWORD pid, _Out_ std::list<pgroup_sid_info>& group);
@@ -767,38 +715,6 @@ public:
 public:
 	std::wstring _name;
 	DWORD _attribute;
-
-	std::wstring attribute()
-	{
-		bool addlf = false;
-		std::wstringstream flag;
-
-		if (FlagOn(_attribute, SE_PRIVILEGE_ENABLED))
-		{
-			flag << SE_PRIVILEGE_ENABLED; addlf = true;
-		}
-
-		if (FlagOn(_attribute, SE_PRIVILEGE_ENABLED_BY_DEFAULT))
-		{
-			if (true == addlf) { flag << L", "; }
-			else { addlf = true; }
-			flag << L"SE_PRIVILEGE_ENABLED_BY_DEFAULT";
-		}
-		if (FlagOn(_attribute, SE_PRIVILEGE_REMOVED))
-		{
-			if (true == addlf) { flag << L", "; }
-			else { addlf = true; }
-			flag << L"SE_PRIVILEGE_REMOVED";
-		}
-		if (FlagOn(_attribute, SE_PRIVILEGE_USED_FOR_ACCESS))
-		{
-			if (true == addlf) { flag << L", "; }
-			else { addlf = true; }
-			flag << L"SE_PRIVILEGE_USED_FOR_ACCESS";
-		}
-		return flag.str();
-	}
-
 } *pprivilege_info;
 
 pprivilege_info get_privilege_info(_In_ LUID_AND_ATTRIBUTES privileges);
