@@ -619,7 +619,7 @@ bool slogger::rotate_log_file(_In_ const wchar_t* log_file_path)
 		SYSTEMTIME time; GetLocalTime(&time);
 		if (!SUCCEEDED(StringCbPrintfW(buf,
 									   sizeof(buf),
-									   L"%04u-%02u-%02u_%02u-%02u-%02u",
+									   L"%04u-%02u-%02u_%02u-%02u-%02u.log",
 									   time.wYear,
 									   time.wMonth,
 									   time.wDay,
@@ -641,7 +641,7 @@ bool slogger::rotate_log_file(_In_ const wchar_t* log_file_path)
 		}
 
 		std::wstringstream path;
-		path << log_file_path << L"." << buf;
+		path << extract_last_tokenExW(log_file_path, L".", true) << L"." << buf;
 		if (!MoveFileW(log_file_path, path.str().c_str()))
 		{
 			return false;
