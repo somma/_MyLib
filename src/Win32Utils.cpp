@@ -7289,7 +7289,7 @@ get_file_owner(
 	)
 {
 	_ASSERTE(nullptr != file_name);
-	if (nullptr == file_name) return false;
+	if (nullptr == file_name) return nullptr;
 
 	//
 	//	Get the required size for the security descriptor.
