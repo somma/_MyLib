@@ -165,6 +165,7 @@ extern bool test_map_plus_algorithm_4();
 extern bool test_std_unordered_map();
 extern bool test_std_unordered_map_object();
 extern bool test_unorded_map_test_move();
+extern bool test_map_insert_swap();
 
 
 // _test_regstry_util.cpp
@@ -290,7 +291,7 @@ void run_test()
 	
 	//assert_bool(true, test_file_info_cache);
 	//
-	assert_bool(true, test_process_token);
+	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
 	//assert_bool(true, test_std_move);	
@@ -368,7 +369,7 @@ void run_test()
 	//assert_bool(true, test_get_module_path);
 	//assert_bool(true, test_dump_memory);
 	//assert_bool(true, test_get_environment_value);
-	assert_bool(true, test_get_account_infos);
+	//assert_bool(true, test_get_account_infos);
 	//assert_bool(true, test_get_installed_programs);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
@@ -394,6 +395,7 @@ void run_test()
 	//assert_bool(true, test_std_unordered_map);
 	//assert_bool(true, test_std_unordered_map_object);
 	//assert_bool(true, test_unorded_map_test_move);
+	assert_bool(true, test_map_insert_swap);
 
 
 	//assert_bool(true, test_registry_util);

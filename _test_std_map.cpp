@@ -449,8 +449,8 @@ public:
 
 bool test_unorded_map_test_move()
 {
-	//_CrtMemState memoryState = { 0 };
-	//_CrtMemCheckpoint(&memoryState);
+	_CrtMemState memoryState = { 0 };
+	_CrtMemCheckpoint(&memoryState);
 
 	{
 		typedef std::list<PSomeClass> SomeClassList, *PSomeClassList;
@@ -463,7 +463,7 @@ bool test_unorded_map_test_move()
 		PSomeClass o12 = new SomeClass(12); l1->push_back(o12);
 		PSomeClass o13 = new SomeClass(13); l1->push_back(o13);
 		PSomeClass o14 = new SomeClass(14); l1->push_back(o14);
-		// make_pare< RValueRef, RValueRef > 가 와야 하는데, PSomeClassList 는 lvalue 이므로
+		// make_pair< RValueRef, RValueRef > 가 와야 하는데, PSomeClassList 는 lvalue 이므로
 		// 에러남. LValue 를 RValue 로 변환해주는 std::move() 를 이용해서 PSomeClassList 를 전달
 		um.insert(std::make_pair<int, PSomeClassList>(1, std::move(l1)));
 
@@ -500,6 +500,42 @@ bool test_unorded_map_test_move()
 		um.clear();
 	}
 
-//	_CrtMemDumpAllObjectsSince(&memoryState);
+	_CrtMemDumpAllObjectsSince(&memoryState);
     return true;
+}
+
+bool test_map_insert_swap()
+{
+	std::unordered_map<int, std::string*> str_map;
+
+	str_map.insert(std::make_pair<int, std::string*>(1, new std::string("1111")));
+	str_map.insert(std::make_pair<int, std::string*>(2, new std::string("2222")));
+	
+	//
+	//	새로운 엔트리를 추가하고, 기존 객체 제거하기 
+	//
+	std::string* pstr = new std::string("3333");
+	std::swap(str_map[3], pstr);
+	_ASSERTE(pstr == nullptr);	// 엔트리 추가이므로 nullptr 과 교환하게 됨
+
+
+	//
+	//	기존 엔트리를 다른 객체로 바꿔치기하고,
+	//	기존 객체 제거하기 
+	//
+
+	_ASSERTE(pstr == nullptr);
+	pstr = new std::string("1122");
+	std::swap(str_map[1], pstr);
+	
+	//
+	// pstr 에는 기존 str_map[1] 아이템 포인터가 있음
+	//
+	_ASSERTE(nullptr != pstr);
+	_ASSERTE(0 == pstr->compare("1111"));
+	log_info "delete %s", pstr->c_str() log_end;
+	delete pstr;
+	
+
+	return true;
 }
