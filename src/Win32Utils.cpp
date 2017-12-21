@@ -8,6 +8,7 @@
 **/
 #include "stdafx.h"
 
+
 //	
 //	std
 //
@@ -1204,8 +1205,8 @@ bool dump_all_disk_drive_layout()
                             "       RecognizedPartition = %s\n"\
                             "       HiddenSectors = %u\n",
                             i,
-                            pi->StartingOffset,
-                            pi->PartitionLength,
+                            pi->StartingOffset.QuadPart,
+                            pi->PartitionLength.QuadPart,
                             pi->PartitionNumber,
                             mbr->PartitionType,
                             TRUE == mbr->BootIndicator ? "true" : "false",
@@ -1264,7 +1265,7 @@ bool dump_all_disk_drive_layout()
                                 dump_memory(0, buf, sizeof(buf), dumps);
 
                                 log_info 
-                                    "[*] dump VBR (disk offset 0x%llx)", pi->StartingOffset 
+                                    "[*] dump VBR (disk offset 0x%llx)", pi->StartingOffset.QuadPart 
                                 log_end
                                 for (auto line : dumps)
                                 {
@@ -1295,8 +1296,8 @@ bool dump_all_disk_drive_layout()
                             "       Attributes = %llx\n"\
                             "       Name = %ws\n",
                             i,
-                            pi->StartingOffset,
-                            pi->PartitionLength,
+                            pi->StartingOffset.QuadPart,
+                            pi->PartitionLength.QuadPart,
                             pi->PartitionNumber,
                             p_type.c_str(),
                             p_id.c_str(),
@@ -1313,8 +1314,8 @@ bool dump_all_disk_drive_layout()
                             "   length = %llu\n"\
                             "   number = %u\n",
                             i,
-                            pi->StartingOffset,
-                            pi->PartitionLength,
+                            pi->StartingOffset.QuadPart,
+                            pi->PartitionLength.QuadPart,
                             pi->PartitionNumber
                             log_end;
                     }
@@ -7661,17 +7662,19 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 		DWORD dosSize = (idh->e_cp * 512);
 		if (dosSize > fileSize.QuadPart)
 		{
-			log_err "invalid file size, size=%llu", fileSize.QuadPart log_end;
+			log_err "invalid file size, size=%llu", 
+				fileSize.QuadPart 
+				log_end;
 			return false;
 		}
 
 		PIMAGE_NT_HEADERS inh = (PIMAGE_NT_HEADERS)((DWORD_PTR)idh + idh->e_lfanew);
 		if ((uintptr_t)inh >= (((uintptr_t)idh) + fileSize.QuadPart))
 		{
-			log_err "invalid file size (e_lfanew). file_size=%llu, inh addr=%llu",
+			log_err "invalid file size (e_lfanew). file_size=%llu, inh addr=0x%p",
 				fileSize.QuadPart,
-				(uintptr_t)inh
-				log_end;
+				inh
+				log_end;			
 			return false;
 		}
 		if (IMAGE_NT_SIGNATURE != inh->Signature) return false;

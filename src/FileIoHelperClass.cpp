@@ -219,7 +219,7 @@ FileIoHelper::OpenForWrite(
 									 FILE_BEGIN))
 		{
 			log_err
-				"SetFilePointerEx() failed, file=%ws, size=%I64d, gle=%u", 
+				"SetFilePointerEx() failed, file=%ws, size=%llu, gle=%u", 
 				file_path, 
 				file_size,
 				GetLastError()				
@@ -498,7 +498,7 @@ FileIoHelper::GetFilePointer(
 	// 
 	if (Offset >= mFileSize)
 	{
-		log_err "Req offset > File size. req offset=0x%I64x, file size=0x%I64x",
+		log_err "Req offset > File size. req offset=0x%llx, file size=0x%llx",
 			Offset,
 			mFileSize
 			log_end;
@@ -590,7 +590,7 @@ FileIoHelper::ReadFromFile(
 	uint8_t* src_ptr = GetFilePointer(true, Offset, Size);
 	if (NULL == src_ptr)
 	{
-		log_err "GetFilePointer() failed. offset=0x%I64d, size=%u",
+		log_err "GetFilePointer() failed. offset=0x%llx, size=%u",
 			Offset,
 			Size
 			log_end;
@@ -606,7 +606,7 @@ FileIoHelper::ReadFromFile(
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
 		log_err
-			"exception. offset=0x%I64d, size=%u, code=0x%08x",
+			"exception. offset=0x%llx, size=%u, code=0x%08x",
 			Offset,
 			Size,
 			GetExceptionCode()
@@ -634,7 +634,7 @@ FileIoHelper::WriteToFile(
 	uint8_t* dst_ptr = GetFilePointer(false, Offset, Size);
 	if (NULL == dst_ptr)
 	{
-		log_err "GetFilePointer() failed. offset=0x%I64d, size=%u",
+		log_err "GetFilePointer() failed. offset=0x%llx, size=%u",
 			Offset,
 			Size
 			log_end;
@@ -650,7 +650,7 @@ FileIoHelper::WriteToFile(
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
 		log_err
-			"exception. offset=0x%I64d, size=%u, code=0x%08x",
+			"exception. offset=0x%llx, size=%u, code=0x%08x",
 			Offset,
 			Size,
 			GetExceptionCode()

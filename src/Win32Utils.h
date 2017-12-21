@@ -11,6 +11,7 @@
 #ifndef _win32_utils_
 #define _win32_utils_
 
+#include <inttypes.h>
 #include "boost/algorithm/string.hpp"	// to_uppper, to_lower
 
 #include <conio.h>
