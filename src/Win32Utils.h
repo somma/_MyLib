@@ -565,6 +565,13 @@ typedef std::unique_ptr<std::remove_pointer<SC_HANDLE>::type, void(*)(SC_HANDLE)
 /******************************************************************************
  * API wrapper
 ******************************************************************************/
+
+bool create_guid(_Out_ GUID& guid);
+bool string_to_guid(_In_ const char* guid_string, _Out_ GUID& guid);
+bool guid_to_string(_In_ GUID& guid, _Out_ std::string& guid_string);
+bool wstring_to_guid(_In_ const wchar_t* guid_string, _Out_ GUID& guid);
+bool guid_to_wstring(_In_ GUID& guid, _Out_ std::wstring& guid_string);
+
 std::string Win32ErrorToStringA(IN DWORD ErrorCode);
 std::wstring Win32ErrorToStringW(IN DWORD ErrorCode);
 

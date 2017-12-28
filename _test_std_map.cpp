@@ -537,5 +537,14 @@ bool test_map_insert_swap()
 	delete pstr;
 	
 
+	// 
+	//	리소스 정리
+	//
+	for (auto entry : str_map)
+	{
+		delete entry.second;
+	}
+	str_map.clear();
+
 	return true;
 }

@@ -34,6 +34,8 @@
 #include "ResourceHelper.h"
 #include "gpt_partition_guid.h"
 
+#include <Objbase.h>	// CoCreateGuid()
+
 #pragma comment(lib, "Advapi32.lib")
 #pragma comment(lib, "netapi32.lib")
 #pragma comment(lib, "Shell32.lib")
@@ -41,6 +43,7 @@
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "psapi.lib")
 #pragma comment(lib, "version.lib")
+#pragma comment(lib, "Ole32.lib")
 
 //
 //	create_process_as_login_user()
@@ -4368,6 +4371,93 @@ std::string directory_from_file_patha(_In_ const char* file_path)
 	if (nullptr == file_path) return _null_stringa;
 
 	return extract_last_tokenExA(file_path, "\\", true);
+}
+
+/// @brief	GUID 를 생성한다. 
+bool create_guid(_Out_ GUID& guid)
+{
+	return SUCCEEDED(CoCreateGuid(&guid));
+}
+
+/// @brief	
+bool 
+string_to_guid(
+	_In_ const char* guid_string,
+	_Out_ GUID& guid
+	)
+{
+	_ASSERTE(nullptr != guid_string);
+	if (nullptr == guid_string) return false;
+
+	return wstring_to_guid(MbsToWcsEx(guid_string).c_str(), guid);
+}
+
+/// @brief	
+bool 
+guid_to_string(
+	_In_ GUID& guid,
+	_Out_ std::string& guid_string
+	)
+{
+	std::wstring guid_stringw;
+	if (true != guid_to_wstring(guid, guid_stringw)) return false;
+
+	guid_string = WcsToMbsEx(guid_stringw.c_str());
+	return true;
+}
+
+/// @brief	
+bool 
+wstring_to_guid(
+	_In_ const wchar_t* guid_string,
+	_Out_ GUID& guid
+	)
+{
+	_ASSERTE(nullptr != guid_string);
+	if (nullptr == guid_string) return false;
+
+	return SUCCEEDED(CLSIDFromString(guid_string, &guid));
+}
+
+/// @brief	
+bool 
+guid_to_wstring(
+	_In_ GUID& guid, 
+	_Out_ std::wstring& guid_string
+	)
+{
+	wchar_t buf[40];
+
+	//
+	//	ret 는 buf 에 쓰여진 문자의 갯수 + NULL 
+	//	추가로 NULL Terminate 할 필요 없다. 
+	// 
+	int ret = StringFromGUID2(guid, buf, sizeof(buf) / sizeof(wchar_t));
+	if (0 == ret)
+	{
+		// 
+		//	not enough buffer
+		// 
+		wchar_t* buf2 = (wchar_t*)malloc(256);
+		if (nullptr == buf2) return false;
+
+		ret = StringFromGUID2(guid, buf2, 256 / sizeof(wchar_t));
+		if (0 == ret)
+		{
+			//
+			//	Give up
+			// 
+			return false;
+		}
+	
+		guid_string = buf2;
+		return true;
+	}
+	else
+	{
+		guid_string = buf;
+		return true;
+	}
 }
 
 /**

@@ -27,6 +27,8 @@
 #include "FileInfoCache.h"
 #include "account_info.h"
 
+
+bool test_create_guid();
 bool test_file_info_cache();
 
 // _test_process_token.cpp
@@ -289,6 +291,7 @@ void run_test()
 	//}
 
 	
+	assert_bool(true, test_create_guid);
 	//assert_bool(true, test_file_info_cache);
 	//
 	//assert_bool(true, test_process_token);
@@ -2537,6 +2540,24 @@ bool test_file_info_cache()
 	return true;
 }
 
+bool test_create_guid()
+{
+	GUID guid;
+	GUID guid2;
+	_ASSERTE(true == create_guid(guid));
+	
+	// guid -> string -> guid
+	std::string guid_string;
+	_ASSERTE(guid_to_string(guid, guid_string));
+	_ASSERTE(string_to_guid(guid_string.c_str(), guid2));
+	_ASSERTE(IsEqualGUID(guid, guid2));
+
+	log_info "guid=%s",
+		guid_string.c_str()
+		log_end;
+	return true;
+}
+
 bool test_is_executable_file_w()
 {
 	IMAGE_TYPE type;
@@ -3287,7 +3308,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	_CrtMemState memoryState = { 0 };
 	_CrtMemCheckpoint(&memoryState);
-	//_CrtSetBreakAlloc(520);
+	//_CrtSetBreakAlloc(152);
 
 	run_test();
 
