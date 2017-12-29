@@ -27,6 +27,8 @@
 #include "FileInfoCache.h"
 #include "account_info.h"
 
+// test_iphelp_api.cpp
+extern bool test_iphelp_api();
 
 bool test_create_guid();
 bool test_file_info_cache();
@@ -290,8 +292,8 @@ void run_test()
 	//	Sleep(500);
 	//}
 
-	
-	assert_bool(true, test_create_guid);
+	assert_bool(true, test_iphelp_api);
+	//assert_bool(true, test_create_guid);
 	//assert_bool(true, test_file_info_cache);
 	//
 	//assert_bool(true, test_process_token);
@@ -778,7 +780,7 @@ bool test_random()
 bool test_get_local_ip_list()
 {
 	std::wstring host_name;
-	std::vector<std::wstring> ip_list;
+	std::vector<std::string> ip_list;
 	if (true != get_local_ip_list(host_name, ip_list)) return false;
 
 	log_info "host_name = %ws", host_name.c_str() log_end
@@ -791,7 +793,7 @@ bool test_get_local_ip_list()
     std::for_each(
         ip_list.begin(), 
         ip_list.end(),
-		[](std::wstring& ip)
+		[](std::string& ip)
 		    {
 			    log_info "ip = %ws", ip.c_str() log_end
 		    }
@@ -805,14 +807,14 @@ bool test_get_local_ip_list()
 bool test_get_mac_address()
 {
     std::wstring host_name;
-    std::vector<std::wstring> ip_list;
+    std::vector<std::string> ip_list;
 
     if (true != get_local_ip_list(host_name, ip_list)) return false;
     log_info "hot name = %ws", host_name.c_str() log_end;
 
     for (auto ip : ip_list)
     {
-        std::wstring mac_str;
+        std::string mac_str;
         
         if (true != get_local_mac_by_ipv4(ip.c_str(), mac_str)) return false;
 
@@ -3289,8 +3291,6 @@ bool test_convert_file_time()
 
 	return true;
 }
-
-
 
 /**
  * @brief	

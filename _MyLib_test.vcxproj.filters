@@ -138,6 +138,9 @@
     <ClInclude Include="src\account_info.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\net_util.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -273,6 +276,12 @@
       <Filter>src\CppSQLite</Filter>
     </ClCompile>
     <ClCompile Include="src\account_info.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="test_iphelp_api.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\net_util.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

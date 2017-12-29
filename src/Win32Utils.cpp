@@ -5181,7 +5181,11 @@ bool get_ip_by_hostname(_In_ const wchar_t* host_name, _Out_ std::wstring& ip_st
  * @endcode	
  * @return	
 **/
-bool get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wstring>& ip_list)
+bool 
+get_local_ip_list(
+	_Out_ std::wstring& host_name, 
+	_Out_ std::vector<std::string>& ip_list
+	)
 {
 	WSADATA wsaData={0};
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -5236,15 +5240,15 @@ bool get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wst
             sockaddr_in* sa = (sockaddr_in*) p->ai_addr;			
 
 #if (NTDDI_VERSION >= NTDDI_VISTA)
-            wchar_t addr[16] = {0};
-            if (NULL == InetNtop(AF_INET, (PVOID)&sa->sin_addr, addr, 16))
+            char addr[16] = {0};
+            if (NULL == InetNtopA(AF_INET, (PVOID)&sa->sin_addr, addr, 16))
             {
-                log_err "InetNtop() failed. gle = %u", WSAGetLastError() log_end
+                log_err "InetNtopA() failed. gle = %u", WSAGetLastError() log_end
                 continue;
             }            
             ip_list.push_back( addr );
 #else
-            ip_list.push_back( MbsToWcsEx(inet_ntoa(sa->sin_addr)) );
+            ip_list.push_back( inet_ntoa(sa->sin_addr) );
 #endif
 		}            
 	}
@@ -5264,45 +5268,54 @@ bool get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::wst
 ///         https://msdn.microsoft.com/en-us/library/windows/desktop/aa366058(v=vs.85).aspx
 /// 
 /// @param  ip_str
-bool get_local_mac_by_ipv4(_In_ const wchar_t* ip_str, _Out_ std::wstring& mac_str)
+bool 
+get_local_mac_by_ipv4(
+	_In_ const char* ip_str, 
+	_Out_ std::string& mac_str
+	)
 {
     _ASSERTE(NULL != ip_str);
     if (NULL == ip_str) return false;
 
     IN_ADDR src = { 0 };
-    if (0 == InetPtonW(AF_INET, ip_str, &src))
+    if (0 == InetPtonA(AF_INET, ip_str, &src))
     {
-        log_err "InetPtonW( %ws ) failed." log_end;
+        log_err "InetPtonA( %s ) failed.", 
+			ip_str 
+			log_end;
         return false;
     }
 
-    uint8_t     mac[8] = { 0 };
-    uint32_t    cb_mac = sizeof(mac);
+    uint8_t mac[8] = { 0 };
+    uint32_t cb_mac = sizeof(mac);
     DWORD ret = SendARP((IPAddr)src.S_un.S_addr, (IPAddr)src.S_un.S_addr, mac, (PULONG)&cb_mac);
     if (NO_ERROR != ret)
     {
-        log_err "SendARP( %ws ) failed. ret = %u", ip_str, ret log_end;
+        log_err "SendARP( %s ) failed. ret = %u", 
+			ip_str, 
+			ret 
+			log_end;
         return false;
     }
 
-    wchar_t buf[18] = { 0 };   // 01-34-67-9a-cd-f0[null]
+    char buf[18] = { 0 };   // 01-34-67-9a-cd-f0[null]
 
-    StringCbPrintfW(&buf[0], 6, L"%02x", mac[0]);
-    StringCbPrintfW(&buf[2], 4, L"-");
+    StringCbPrintfA(&buf[0], 6, "%02x", mac[0]);
+    StringCbPrintfA(&buf[2], 4, "-");
 
-    StringCbPrintfW(&buf[3], 6, L"%02x", mac[1]);
-    StringCbPrintfW(&buf[5], 4, L"-");
+    StringCbPrintfA(&buf[3], 6, "%02x", mac[1]);
+    StringCbPrintfA(&buf[5], 4, "-");
 
-    StringCbPrintfW(&buf[6], 6, L"%02x", mac[2]);
-    StringCbPrintfW(&buf[8], 4, L"-");
+    StringCbPrintfA(&buf[6], 6, "%02x", mac[2]);
+    StringCbPrintfA(&buf[8], 4, "-");
 
-    StringCbPrintfW(&buf[9], 6, L"%02x", mac[3]);
-    StringCbPrintfW(&buf[11], 4, L"-");
+    StringCbPrintfA(&buf[9], 6, "%02x", mac[3]);
+    StringCbPrintfA(&buf[11], 4, "-");
 
-    StringCbPrintfW(&buf[12], 6, L"%02x", mac[4]);
-    StringCbPrintfW(&buf[14], 4, L"-");
+    StringCbPrintfA(&buf[12], 6, "%02x", mac[4]);
+    StringCbPrintfA(&buf[14], 4, "-");
 
-    StringCbPrintfW(&buf[15], 6, L"%02x", mac[5]);
+    StringCbPrintfA(&buf[15], 6, "%02x", mac[5]);
     
     mac_str = buf;
     return true;

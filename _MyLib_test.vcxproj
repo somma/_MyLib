@@ -215,6 +215,7 @@ echo "done." </Command>
     <ClInclude Include="src\LeakWatcher.h" />
     <ClInclude Include="src\log.h" />
     <ClInclude Include="src\md5.h" />
+    <ClInclude Include="src\net_util.h" />
     <ClInclude Include="src\nt_name_conv.h" />
     <ClInclude Include="src\process_tree.h" />
     <ClInclude Include="src\Queue.h" />
@@ -251,6 +252,7 @@ echo "done." </Command>
     <ClCompile Include="src\injector.cpp" />
     <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\md5.cpp" />
+    <ClCompile Include="src\net_util.cpp" />
     <ClCompile Include="src\nt_name_conv.cpp" />
     <ClCompile Include="src\process_tree.cpp" />
     <ClCompile Include="src\rc4.cpp" />
@@ -267,6 +269,7 @@ echo "done." </Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="test_iphelp_api.cpp" />
     <ClCompile Include="_MyLib_test.cpp" />
     <ClCompile Include="_test_aes256.cpp" />
     <ClCompile Include="_test_asm.cpp" />
