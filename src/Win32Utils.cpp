@@ -5193,7 +5193,9 @@ get_local_ip_list(
 	DWORD NetbiosNameLen = 0;
 	wchar_t* netbios_name = NULL;
 
-	if(0 == GetComputerNameExW(ComputerNameNetBIOS, netbios_name, &NetbiosNameLen))
+	if(0 == GetComputerNameExW(ComputerNameNetBIOS, 
+							   netbios_name, 
+							   &NetbiosNameLen))
 	{
 		if(ERROR_MORE_DATA == GetLastError())
 		{
@@ -5201,7 +5203,9 @@ get_local_ip_list(
 			netbios_name = (wchar_t*) malloc(NetbiosNameLen * sizeof(wchar_t));
 			if (NULL == netbios_name) return false;
 
-			if(0 == GetComputerNameExW(ComputerNameNetBIOS, netbios_name, &NetbiosNameLen))
+			if(0 == GetComputerNameExW(ComputerNameNetBIOS, 
+									   netbios_name, 
+									   &NetbiosNameLen))
 			{
 				log_err "GetComputerNameExW( ComputerNameNetBIOS ) failed, gle = %u", GetLastError() log_end
 
@@ -7918,6 +7922,23 @@ bin_to_hexa(
 	}
 
 	return true;
+}
+
+
+const
+char*
+get_int_to_char_table(
+	_In_ bool uppercase
+	)
+{
+	if (true == uppercase)
+	{
+		return _int_to_uchar_table;
+	}
+	else
+	{
+		return _int_to_char_table;
+	}
 }
 
 bool 

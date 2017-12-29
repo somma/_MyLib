@@ -283,19 +283,19 @@ int exec_iphelp_api_sample()
         LocalFree(lpMsgBuf);
     }
 
-    /* If DHCP enabled, release and renew the IP address */
-    /* THIS WORKS BUT IT TAKES A LONG TIME AND INTERRUPTS NET CONNECTIONS */
-    if (pAdapterInfo->DhcpEnabled && pInterfaceInfo->NumAdapters) {
-        printf("Calling IpReleaseAddress for Adapter[%d]\n", 0);
-        if ((dwRetVal =
-             IpReleaseAddress(&pInterfaceInfo->Adapter[0])) == NO_ERROR) {
-            printf("Ip Release succeeded.\n");
-        }
-        if ((dwRetVal =
-             IpRenewAddress(&pInterfaceInfo->Adapter[0])) == NO_ERROR) {
-            printf("Ip Renew succeeded.\n");
-        }
-    }
+    ///* If DHCP enabled, release and renew the IP address */
+    ///* THIS WORKS BUT IT TAKES A LONG TIME AND INTERRUPTS NET CONNECTIONS */
+    //if (pAdapterInfo->DhcpEnabled && pInterfaceInfo->NumAdapters) {
+    //    printf("Calling IpReleaseAddress for Adapter[%d]\n", 0);
+    //    if ((dwRetVal =
+    //         IpReleaseAddress(&pInterfaceInfo->Adapter[0])) == NO_ERROR) {
+    //        printf("Ip Release succeeded.\n");
+    //    }
+    //    if ((dwRetVal =
+    //         IpRenewAddress(&pInterfaceInfo->Adapter[0])) == NO_ERROR) {
+    //        printf("Ip Renew succeeded.\n");
+    //    }
+    //}
 
     /* Free allocated memory no longer needed */
     if (pAdapterInfo) {
@@ -508,7 +508,8 @@ int exec_iphelp_api_sample2(ULONG family)
 
     // Make an initial call to GetAdaptersAddresses to get the 
     // size needed into the outBufLen variable
-    if (GetAdaptersAddresses(family, flags, NULL, pAddresses, &outBufLen) == ERROR_BUFFER_OVERFLOW) {
+    if (GetAdaptersAddresses(family, flags, NULL, pAddresses, &outBufLen) == 
+		ERROR_BUFFER_OVERFLOW) {
         FREE(pAddresses);
         pAddresses = (IP_ADAPTER_ADDRESSES *) MALLOC(outBufLen);
     }
@@ -569,10 +570,9 @@ int exec_iphelp_api_sample2(ULONG family)
 					std::string addr_str;
 					if (true == SocketAddressToStr(&pDnServer->Address, addr_str))
 					{
-						log_info "DNS[%u]: %s",
-							i,
-							addr_str.c_str()
-							log_end;
+						printf("DNS[%u]: %s",
+							   i,
+							   addr_str.c_str());
 					}
 					pDnServer = pDnServer->Next;
 				}
@@ -642,8 +642,19 @@ int exec_iphelp_api_sample2(ULONG family)
 
 bool test_iphelp_api()
 {
-//	if (0 != exec_iphelp_api_sample()) return false;
-	if (0 != exec_iphelp_api_sample2(AF_INET)) return false;
-//	if (0 != exec_iphelp_api_sample2(AF_INET6)) return false;
+	_CrtMemState memoryState = { 0 };
+	_CrtMemCheckpoint(&memoryState);
+
+	{
+		//	if (0 != exec_iphelp_api_sample()) return false;
+		//	if (0 != exec_iphelp_api_sample2(AF_INET)) return false;
+		//	if (0 != exec_iphelp_api_sample2(AF_INET6)) return false;
+
+		NetConfig net_config;
+		_ASSERTE(true == net_config.read_net_config());
+		net_config.dump();
+	}
+	
+	_CrtMemDumpAllObjectsSince(&memoryState);
 	return true;
 }

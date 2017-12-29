@@ -35,9 +35,18 @@
 
 typedef class NetAdapter
 {
-	std::string name;
-	std::string desc;
-	std::string ip;
+public:
+	std::wstring friendly_name;		// Wi-Fi
+	std::string name;				// {7F158482-83C5-4C7F-B47C-4CE15F1899CA}
+	std::wstring desc;				// Marvell AVASTAR Wireless-AC Network Controller
+	std::string physical_address;	// BC-83-85-2D-8A-91
+
+	std::vector<std::string> ip_list;	
+	std::vector<std::string> dns_list;
+	std::vector<std::string> gateway_list;
+
+public:
+	void dump();
 
 } *PNetAdapter;
 
@@ -45,14 +54,25 @@ typedef class NetConfig
 {
 public:
 	NetConfig() {}
-	~NetConfig() {}
+	~NetConfig() 
+	{
+		for (auto adapter : _adapters)
+		{
+			delete adapter;
+		}
+		_adapters.clear();
+	}
+
+	bool read_net_config();
+	void dump();
 
 	std::wstring _host_name;
-	std::wstring _domain;
-	std::vector<std::string> _dns;
-	std::vector<NetAdapter> _adapters;
-public:
-	
+	std::vector<PNetAdapter> _adapters;
+private:
+	bool get_host_name(_Out_ std::wstring& host_name);
+	bool get_net_adapters(_In_ ULONG net_family, _Out_ std::vector<PNetAdapter>& adapters);
+
+
 
 } *PNetConfig;
 

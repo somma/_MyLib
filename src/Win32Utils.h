@@ -862,6 +862,12 @@ LPCWSTR  FileTypeToString(IMAGE_TYPE type);
 /******************************************************************************
  * type cast
 ******************************************************************************/
+const 
+char* 
+get_int_to_char_table(
+	_In_ bool uppercase
+	);
+
 bool
 bin_to_hexa_fast(
 	_In_ uint32_t size,

@@ -133,6 +133,8 @@ echo "done." </Command>
       <SDLCheck>true</SDLCheck>
       <EnablePREfast>false</EnablePREfast>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <MultiProcessorCompilation>
+      </MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
