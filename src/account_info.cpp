@@ -11,6 +11,11 @@
 #include <sddl.h>
 #include "account_info.h"
 
+#include <LM.h>
+#pragma comment(lib, "Advapi32.lib")
+#pragma comment(lib, "netapi32.lib")
+
+
 /// @brief	
 account::account(_In_ const wchar_t * name, 
 				 _In_ DWORD password_age,

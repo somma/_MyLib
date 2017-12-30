@@ -10,10 +10,28 @@
 #pragma once
 #include "stdafx.h"
 
-//#define _WINSOCK_DEPRECATED_NO_WARNINGS
-//#include <iphlpapi.h>
+//
+//	Windows 
+//
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
 #include <Icmpapi.h>
 
+//
+//	MyLib
+//
+#include "net_util.h"
+
+//
+//	Libs
+//
+#pragma comment(lib, "iphlpapi.lib")
+#pragma comment(lib, "ws2_32.lib")
 
 typedef HANDLE (WINAPI *pIcmpCreateFile)();
 

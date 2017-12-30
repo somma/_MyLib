@@ -17,11 +17,6 @@
 #include <conio.h>
 #include <winioctl.h>
 
-#include <WinSock2.h>
-#include <ws2tcpip.h>
-#include <iphlpapi.h>
-#include <lm.h>
-
 //> reported as vs 2010 bug, ms says that will be patch this bug next major vs release, vs2012.
 //
 //1>C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\intsafe.h(171): warning C4005: 'INT16_MAX' : macro redefinition
@@ -582,21 +577,6 @@ bool	dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32
 BOOL	GetTimeStringA(OUT std::string& TimeString);
 BOOL	GetTimeStringW(IN std::wstring& TimeString);
 
-#if (NTDDI_VERSION >= NTDDI_VISTA)
-std::string ipv4_to_str(_In_ uint32_t ip_netbyte_order);
-std::string ipv6_to_str(_In_ uint64_t ip_netbyte_order);
-
-std::string ipv4_to_str(_In_ in_addr& ipv4);
-std::string ipv6_to_str(_In_ in6_addr& ipv6);
-
-bool str_to_ipv4(_In_ const wchar_t* ipv4, _Out_ in_addr& ipv4_addr);
-bool str_to_ipv6(_In_ const wchar_t* ipv6, _Out_ in6_addr& ipv6_addr);
-#endif
-
-bool    get_ip_by_hostname(_In_ const wchar_t* host_name, _Out_ std::wstring& ip_string);
-bool	get_local_ip_list(_Out_ std::wstring& host_name, _Out_ std::vector<std::string>& ip_list);
-bool    get_local_mac_by_ipv4(_In_ const char* ip_str, _Out_ std::string& mac_str);
- 
 bool	set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
 
 bool    get_active_window_pid(_Out_ DWORD& pid, _Out_ DWORD& tid);
