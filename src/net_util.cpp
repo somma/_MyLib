@@ -127,8 +127,18 @@ void NetConfig::dump()
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+//
+//	Utility function 
+//
+///////////////////////////////////////////////////////////////////////////////
+
+
 /// @brief	Read host name of this computer
-bool NetConfig::get_host_name(_Out_ std::wstring& host_name)
+bool 
+get_host_name(
+	_Out_ std::wstring& host_name
+	)
 {
 	DWORD length = 0;
 	if (GetComputerNameExW(ComputerNameNetBIOS,nullptr,&length) ||
@@ -167,7 +177,7 @@ bool NetConfig::get_host_name(_Out_ std::wstring& host_name)
 /// @brief	Read network adapter information
 ///	@param	net_family	AF_INET
 bool 
-NetConfig::get_net_adapters(
+get_net_adapters(
 	_In_ ULONG net_family, 
 	_Out_ std::vector<PNetAdapter>& adapters
 	)
@@ -352,19 +362,6 @@ NetConfig::get_net_adapters(
 	return true;
 }
 
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-//	Utility function 
-//
-///////////////////////////////////////////////////////////////////////////////
-
-
-#pragma todo("Win32Util 에서 winsock 관련 코드는 여기로 가져오기 ")
-
 /// @brief	Socket address to string
 bool
 SocketAddressToStr(
@@ -449,19 +446,6 @@ ipv4_to_str(
 	return ipv4_to_str(ia);
 }
 
-/// @brief 
-std::string 
-ipv6_to_str(
-	_In_ uint64_t ip_netbyte_order
-	)
-{
-	in_addr6 ia;
-	RtlCopyMemory(ia.s6_addr, 
-				  &ip_netbyte_order, 
-				  sizeof(ip_netbyte_order));
-	return ipv6_to_str(ia);
-}
-
 /// @brief  
 std::string 
 ipv4_to_str(
@@ -485,7 +469,7 @@ ipv4_to_str(
 /// @brief  
 std::string 
 ipv6_to_str(
-	_In_ in6_addr& ipv6
+	_In_ in_addr6& ipv6
 	)
 {
     char ipv6_buf[46 + 1] = { 0 };
@@ -506,18 +490,20 @@ ipv6_to_str(
 bool 
 str_to_ipv4(
 	_In_ const wchar_t* ipv4, 
-	_Out_ in_addr& ipv4_addr
+	_Out_ uint32_t& ip_netbyte_order
 	)
 {
     _ASSERTE(NULL != ipv4);
     if (NULL != ipv4)
     {
+		in_addr ipv4_addr = { 0 };
         int ret = InetPtonW(AF_INET, 
 							ipv4, 
 							&ipv4_addr);
         switch (ret)
         {
         case 1: 
+			ip_netbyte_order = ipv4_addr.s_addr;
             return true;    // success
         case 0:
             log_err "invalid ipv4 string. input = %ws", 
@@ -540,16 +526,16 @@ str_to_ipv4(
 bool 
 str_to_ipv6(
 	_In_ const wchar_t* ipv6, 
-	_Out_ in6_addr& ipv6_addr
+	_Out_ in_addr6& ip_netbyte_order
 	)
 {
     _ASSERTE(NULL != ipv6);
     if (NULL != ipv6)
     {
-        int ret = InetPtonW(AF_INET6, ipv6, &ipv6_addr);
+		int ret = InetPtonW(AF_INET6, ipv6, &ip_netbyte_order);
         switch (ret)
         {
-        case 1:
+        case 1:			
             return true;    // success
         case 0:
             log_err "invalid ipv4 string. input = %ws", 
@@ -568,70 +554,6 @@ str_to_ipv6(
     return false;
 }
 
-/// @brief  
-bool 
-get_ip_by_hostname(
-	_In_ const wchar_t* host_name, 
-	_Out_ std::wstring& ip_string
-	)
-{
-    _ASSERTE(NULL != host_name);
-    if (NULL == host_name) return false;
-
-    bool ret = false;
-
-    ADDRINFOW hints = { 0 };
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-
-    do
-    {
-        PADDRINFOW Result = NULL;
-        if (0 != GetAddrInfoW(host_name, 
-							  NULL, 
-							  &hints, 
-							  &Result) || 
-			NULL == Result)
-        {
-            log_err 
-                "GetAddrInfoW(host_name = %s) failed, wserr=0x%08x", 
-                host_name, 
-                WSAGetLastError() log_end;
-            break;
-        }
-
-        for (PADDRINFOW p = Result; p != NULL; p = p->ai_next)
-        {
-            if (AF_INET == p->ai_family)
-            {
-                sockaddr_in* sa = (sockaddr_in*)p->ai_addr;
-
-#if (NTDDI_VERSION >= NTDDI_VISTA)
-                wchar_t addr[16] = { 0 };
-                if (NULL == InetNtop(AF_INET, (PVOID)&sa->sin_addr, addr, 16))
-                {
-                    log_err "InetNtop() failed. gle = %u", WSAGetLastError() log_end;
-                    continue;
-                }
-                ip_string = addr;                
-#else
-                ip_string = MbsToWcsEx(inet_ntoa(sa->sin_addr)));
-#endif
-
-                ret = true;
-                break;
-            }
-        }
-        
-        FreeAddrInfoW(Result);    
-    } while (false);
-    WSACleanup();
-
-    return ret;
-}
-
-
 /**
  * @brief	
  * @param	
@@ -642,147 +564,158 @@ get_ip_by_hostname(
  * @return	
 **/
 bool 
-get_local_ip_list(
-	_Out_ std::wstring& host_name, 
+get_ip_list_v4(
 	_Out_ std::vector<std::string>& ip_list
 	)
 {
-	WSADATA wsaData={0};
-	WSAStartup(MAKEWORD(2, 2), &wsaData);
-
-	DWORD NetbiosNameLen = 0;
-	wchar_t* netbios_name = NULL;
-
-	if(0 == GetComputerNameExW(ComputerNameNetBIOS, 
-							   netbios_name, 
-							   &NetbiosNameLen))
+	std::vector<PNetAdapter> adapters;
+	if (true != get_net_adapters(AF_INET, adapters))
 	{
-		if(ERROR_MORE_DATA == GetLastError())
-		{
-			// GetComputerNameExW() 가 리턴하는 NetbiosNameLen 은 null 을 포함한다.
-			netbios_name = (wchar_t*) malloc(NetbiosNameLen * sizeof(wchar_t));
-			if (NULL == netbios_name) return false;
-
-			if(0 == GetComputerNameExW(ComputerNameNetBIOS, 
-									   netbios_name, 
-									   &NetbiosNameLen))
-			{
-				log_err "GetComputerNameExW( ComputerNameNetBIOS ) failed, gle = %u", GetLastError() log_end
-
-				free(netbios_name); netbios_name = NULL;
-				WSACleanup();
-				return false;
-			}
-			else
-			{
-				// enforce null terminate string.
-				netbios_name[NetbiosNameLen] = 0x00;
-			}
-		}
-	}
-
-	host_name = netbios_name;
-	free(netbios_name); netbios_name = NULL;
-
-	ADDRINFOW hints={0};
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-
-	PADDRINFOW Result=NULL;
-	if( 0 != GetAddrInfoW(host_name.c_str(), NULL, &hints, &Result) || NULL == Result )
-	{
-		log_err "GetAddrInfoW(host_name = %s) failed, wserr=0x%08x", host_name.c_str(), WSAGetLastError() log_end
-		WSACleanup();
+		log_err "get_net_adapters() failed." log_end;
 		return false;
 	}
 
-	for (PADDRINFOW p = Result; p != NULL; p = p->ai_next)
+	for (auto adapter : adapters)
 	{
-		if (AF_INET == p->ai_family)
+		for (auto ip : adapter->ip_list)
 		{
-            sockaddr_in* sa = (sockaddr_in*) p->ai_addr;			
-
-#if (NTDDI_VERSION >= NTDDI_VISTA)
-            char addr[16] = {0};
-            if (NULL == InetNtopA(AF_INET, (PVOID)&sa->sin_addr, addr, 16))
-            {
-                log_err "InetNtopA() failed. gle = %u", WSAGetLastError() log_end
-                continue;
-            }            
-            ip_list.push_back( addr );
-#else
-            ip_list.push_back( inet_ntoa(sa->sin_addr) );
-#endif
-		}            
+			ip_list.push_back(ip);
+		}
+		delete adapter;
 	}
+	adapters.clear();
 
-	FreeAddrInfoW(Result); 
-	WSACleanup();
 	return true;
 }
 
+/// @brief	Localhost 의 대표(?) ip 를 리턴한다. 
+std::string
+get_representative_ip_v4(
+	)
+{
+	//
+	//	1순위: 
+	//		dns, gateway 가 설정된 어댑터의 첫번째 IP
+	//	2순위:
+	//		gateway 가 설정된 어댑터의 첫번째 IP
+	//	3순위: 
+	//		첫번째 IP
+	// 
+	std::vector<PNetAdapter> adapters;
+	if (true != get_net_adapters(AF_INET, adapters))
+	{
+		log_err "get_net_adapters() failed." log_end;
+		return "127.0.0.1";
+	}
+
+	std::string ip; 
+	do
+	{
+		//
+		//	1순위 찾기
+		//
+		for (auto adapter : adapters)
+		{
+			if (adapter->ip_list.empty()) continue;
+			if (true != adapter->gateway_list.empty())
+			{
+				if (true != adapter->dns_list.empty())
+				{
+					ip = adapter->ip_list[0];
+					break;
+				}
+			}
+		}
+		if (true != ip.empty()) break;
+
+		//
+		//	2순위 찾기
+		//
+		for (auto adapter : adapters)
+		{
+			if (adapter->ip_list.empty()) continue;
+			if (true != adapter->gateway_list.empty())
+			{
+				ip = adapter->ip_list[0];
+				break;
+			}
+		}
+		if (true != ip.empty()) break;
+
+		//
+		//	3순위
+		//
+		for (auto adapter : adapters)
+		{
+			if (adapter->ip_list.empty()) continue;
+			ip = adapter->ip_list[0];
+			break;
+		}
+
+	} while (false);
+
+	//
+	//	Free
+	//	
+	std::for_each(adapters.begin(), adapters.end(), [](PNetAdapter p) 
+	{
+		if (nullptr != p) delete p; 
+	});
+	adapters.clear();
+
+	return (true != ip.empty()) ? ip : "127.0.0.1";
+}
+
 /// @brief  `ip_str` 주소를 가진 interface 의 mac 주소를 알아낸다. 
-///         리모트 시스템의 mac 주소를 알아오려는 목적인 아니고, 로컬 시스템에 연결된
-///         interface 의 맥 주소를 알아오는 용도의 함수다. 
-///         `127.0.0.1` 은 안됨
-/// 
-///         GetAdaptersAddresses() 함수를 사용할 수도 있으나 이게 더 간편해서 ...
-///         cf. IP_ADAPTER_ADDRESSES  
-///         https://msdn.microsoft.com/en-us/library/windows/desktop/aa366058(v=vs.85).aspx
-/// 
-/// @param  ip_str
-bool 
-get_local_mac_by_ipv4(
-	_In_ const char* ip_str, 
-	_Out_ std::string& mac_str
+std::string
+get_mac_by_ip_v4(
+	_In_ const char* ip_str	
 	)
 {
     _ASSERTE(NULL != ip_str);
     if (NULL == ip_str) return false;
 
-    IN_ADDR src = { 0 };
-    if (0 == InetPtonA(AF_INET, ip_str, &src))
-    {
-        log_err "InetPtonA( %s ) failed.", 
-			ip_str 
-			log_end;
-        return false;
-    }
+	//
+	//	어댑터 정보를 가져온다.
+	//
+	std::vector<PNetAdapter> adapters;
+	if (true != get_net_adapters(AF_INET, adapters))
+	{
+		log_err "get_net_adapters() failed." log_end;
+		return "00:00:00:00:00:00";
+	}
 
-    uint8_t mac[8] = { 0 };
-    uint32_t cb_mac = sizeof(mac);
-    DWORD ret = SendARP((IPAddr)src.S_un.S_addr, (IPAddr)src.S_un.S_addr, mac, (PULONG)&cb_mac);
-    if (NO_ERROR != ret)
-    {
-        log_err "SendARP( %s ) failed. ret = %u", 
-			ip_str, 
-			ret 
-			log_end;
-        return false;
-    }
+	//
+	//	IP 와 매칭한다.
+	//
+	bool matched = false;
+	std::string mac;
+	for (auto adapter : adapters)
+	{
+		if (true == adapter->ip_list.empty()) continue;
+		for (auto ip : adapter->ip_list)
+		{
+			if (0 == ip.compare(ip_str))
+			{
+				mac = adapter->physical_address;
+				matched = true;
+				break;
+			}
+		}		
 
-    char buf[18] = { 0 };   // 01-34-67-9a-cd-f0[null]
+		if (true == matched) break;
+	}
 
-    StringCbPrintfA(&buf[0], 6, "%02x", mac[0]);
-    StringCbPrintfA(&buf[2], 4, "-");
+	//
+	//	Free
+	//
+	std::for_each(adapters.begin(), adapters.end(), [](PNetAdapter p)
+	{
+		if (nullptr != p) delete p;
+	});
+	adapters.clear();
 
-    StringCbPrintfA(&buf[3], 6, "%02x", mac[1]);
-    StringCbPrintfA(&buf[5], 4, "-");
-
-    StringCbPrintfA(&buf[6], 6, "%02x", mac[2]);
-    StringCbPrintfA(&buf[8], 4, "-");
-
-    StringCbPrintfA(&buf[9], 6, "%02x", mac[3]);
-    StringCbPrintfA(&buf[11], 4, "-");
-
-    StringCbPrintfA(&buf[12], 6, "%02x", mac[4]);
-    StringCbPrintfA(&buf[14], 4, "-");
-
-    StringCbPrintfA(&buf[15], 6, "%02x", mac[5]);
-    
-    mac_str = buf;
-    return true;
+	return (true == mac.empty()) ? "00:00:00:00:00:00" : mac;
 }
 
 

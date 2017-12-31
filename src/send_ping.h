@@ -101,7 +101,7 @@ bool send_ping(_In_ const wchar_t* target_ip_str)
     }
 
 
-    in_addr target_addr = { 0 };
+	uint32_t target_addr = 0;
     if (!str_to_ipv4(target_ip_str, target_addr))
     {
         log_err "str_to_ipv4( %s ) failed.", target_ip_str log_end;
@@ -131,7 +131,7 @@ bool send_ping(_In_ const wchar_t* target_ip_str)
     
         DWORD ret = _IcmpSendEcho(
                         h_icmp, 
-                        target_addr.S_un.S_addr, 
+                        target_addr, 
                         ping_buf, 
                         sizeof(ping_buf), 
                         NULL, 

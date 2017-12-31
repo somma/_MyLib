@@ -62,11 +62,6 @@ public:
 
 	std::wstring _host_name;
 	std::vector<PNetAdapter> _adapters;
-private:
-	bool get_host_name(_Out_ std::wstring& host_name);
-	bool get_net_adapters(_In_ ULONG net_family, _Out_ std::vector<PNetAdapter>& adapters);
-
-
 
 } *PNetConfig;
 
@@ -85,6 +80,18 @@ SocketAddressToStr(
 	);
 
 
+bool 
+get_host_name(
+	_Out_ std::wstring& host_name
+	);
+
+bool 
+get_net_adapters(
+	_In_ ULONG net_family, 
+	_Out_ std::vector<PNetAdapter>& adapters
+	);
+
+
 
 //
 //	Win32Util 에 있던 Winsock 관련 함수들 
@@ -98,46 +105,38 @@ ipv4_to_str(
 	);
 
 std::string 
-ipv6_to_str(
-	_In_ uint64_t ip_netbyte_order
-	);
-
-std::string 
 ipv4_to_str(
 	_In_ in_addr& ipv4
 	);
 
 std::string 
 ipv6_to_str(
-	_In_ in6_addr& ipv6
+	_In_ in_addr6& ipv6
 );
+
 
 bool 
 str_to_ipv4(
 	_In_ const wchar_t* ipv4, 
-	_Out_ in_addr& ipv4_addr
+	_Out_ uint32_t& ip_netbyte_order
 	);
 
 bool 
 str_to_ipv6(
 	_In_ const wchar_t* ipv6, 
-	_Out_ in6_addr& ipv6_addr
+	_Out_ in_addr6& ip_netbyte_order
 	);
 
-bool    
-get_ip_by_hostname(
-	_In_ const wchar_t* host_name, 
-	_Out_ std::wstring& ip_string
-	);
-
-bool	
-get_local_ip_list(
-	_Out_ std::wstring& host_name, 
+bool
+get_ip_list_v4(
 	_Out_ std::vector<std::string>& ip_list
 	);
 
-bool    
-get_local_mac_by_ipv4(
-	_In_ const char* ip_str, 
-	_Out_ std::string& mac_str
+std::string 
+get_representative_ip_v4(
+	);
+
+std::string 
+get_mac_by_ip_v4(
+	_In_ const char* ip_str
 	);

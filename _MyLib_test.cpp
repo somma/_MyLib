@@ -107,8 +107,7 @@ bool test_initialize_string();
 
 bool test_base64();
 bool test_random();
-bool test_get_local_ip_list();
-bool test_get_mac_address();
+bool test_ip_mac();
 bool test_ip_to_str();
 
 bool test_strtok();
@@ -292,7 +291,7 @@ void run_test()
 	//	Sleep(500);
 	//}
 
-	assert_bool(true, test_iphelp_api);
+	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 	//assert_bool(true, test_file_info_cache);
 	//
@@ -356,9 +355,8 @@ void run_test()
 	//assert_bool(true, test_get_process_creation_time);
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
-	//assert_bool(true, test_get_local_ip_list);
-	//assert_bool(true, test_get_mac_address);
-	//assert_bool(true, test_ip_to_str);
+	assert_bool(true, test_ip_mac);
+	assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
 	//assert_bool(true, test_cpp_class);	
@@ -777,65 +775,48 @@ bool test_random()
 /**
  * @brief	
 **/
-bool test_get_local_ip_list()
+bool test_ip_mac()
 {
 	std::wstring host_name;
 	std::vector<std::string> ip_list;
-	if (true != get_local_ip_list(host_name, ip_list)) return false;
-
+	
+	log_info "representative ip v4=%s",
+		get_representative_ip_v4().c_str()
+		log_end;
+	
+	_ASSERTE(true == get_host_name(host_name));
+	_ASSERTE(true == get_ip_list_v4(ip_list));
+	
 	log_info "host_name = %ws", host_name.c_str() log_end
-	/*std::vector<std::wstring>::iterator its = ip_list.begin();
-	std::vector<std::wstring>::iterator ite = ip_list.end();
-	for(; its != ite; ++its)
-	{
-		log_info "ip = %ws", its->c_str() log_end
-	}*/
-    std::for_each(
+	std::for_each(
         ip_list.begin(), 
         ip_list.end(),
 		[](std::string& ip)
-		    {
-			    log_info "ip = %ws", ip.c_str() log_end
-		    }
-		);
+		{
+			log_info "ip=%s, mac=%s", 
+				ip.c_str(), 
+				get_mac_by_ip_v4(ip.c_str()).c_str()
+				log_end
+		});
 
 
 	return true;
 }
 
 /// @brief
-bool test_get_mac_address()
-{
-    std::wstring host_name;
-    std::vector<std::string> ip_list;
-
-    if (true != get_local_ip_list(host_name, ip_list)) return false;
-    log_info "hot name = %ws", host_name.c_str() log_end;
-
-    for (auto ip : ip_list)
-    {
-        std::string mac_str;
-        
-        if (true != get_local_mac_by_ipv4(ip.c_str(), mac_str)) return false;
-
-        log_info "ip = %ws, mac = %ws", ip.c_str(), mac_str.c_str() log_end;
-    }
-    return true;
-}
-
-/// @brief
 bool test_ip_to_str()
 {
-    const wchar_t* ip_str = L"211.221.93.88";
+	const wchar_t* ip_str = L"1.2.3.4";
  
-    in_addr addr = { 0 };
+    uint32_t addr = { 0 };
     if (true != str_to_ipv4(ip_str, addr)) return false;
-    log_info "ip = %ws -> %lu", ip_str, addr.S_un.S_addr log_end;
-    log_info "ip = %lu -> %ws", addr.S_un.S_addr, ipv4_to_str(addr).c_str() log_end;
+    log_info "ip = %ws -> %lu", ip_str, addr log_end;
+    log_info "ip = %lu -> %s", addr, ipv4_to_str(addr).c_str() log_end;
 
 
-    addr.S_un.S_addr = 0x0100007f;
-    log_info "ip = %lu -> %ws", addr.S_un.S_addr, ipv4_to_str(addr).c_str() log_end;
+	in_addr inaddr;
+    inaddr.S_un.S_addr = 0x0100007f;
+    log_info "ip = %lu -> %s", inaddr.S_un.S_addr, ipv4_to_str(inaddr).c_str() log_end;
     return true;
 }
 
