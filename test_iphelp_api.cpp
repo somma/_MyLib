@@ -649,10 +649,6 @@ bool test_iphelp_api()
 		//	if (0 != exec_iphelp_api_sample()) return false;
 		//	if (0 != exec_iphelp_api_sample2(AF_INET)) return false;
 		//	if (0 != exec_iphelp_api_sample2(AF_INET6)) return false;
-
-		NetConfig net_config;
-		_ASSERTE(true == net_config.read_net_config());
-		net_config.dump();
 	}
 	
 	_CrtMemDumpAllObjectsSince(&memoryState);

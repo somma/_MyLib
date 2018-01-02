@@ -93,7 +93,15 @@ RUCreateKey(
     HKEY sub_key_handle = NULL;
     REGSAM sam = (true == ReadOnly) ? KEY_READ : KEY_ALL_ACCESS;
 
-    ret = RegCreateKeyExW(RootKey, SubKey, 0, NULL, 0, sam, NULL, &sub_key_handle, &disposition);
+    ret = RegCreateKeyExW(RootKey, 
+						  SubKey, 
+						  0, 
+						  NULL, 
+						  0, 
+						  sam, 
+						  NULL, 
+						  &sub_key_handle, 
+						  &disposition);
     if (ERROR_SUCCESS != ret)
     {
 		//log_err "RegCreateKeyExW(%ws) failed, ret = %u",

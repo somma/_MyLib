@@ -51,21 +51,9 @@ public:
 } *PNetAdapter;
 
 
-typedef class NetConfig
-{
-public:
-	NetConfig() {}
-	virtual ~NetConfig();
-
-	bool read_net_config();
-	void dump();
-
-	std::wstring _host_name;
-	std::vector<PNetAdapter> _adapters;
-
-} *PNetConfig;
-
-
+bool
+InitializeWinsock(
+	);
 
 bool 
 SocketAddressToStr(

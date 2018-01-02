@@ -71,62 +71,6 @@ void NetAdapter::dump()
 #endif//_DEBUG
 }
 
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-//	NetConfig class
-//
-///////////////////////////////////////////////////////////////////////////////
-
-NetConfig::~NetConfig()
-{
-	for (auto adapter : _adapters)
-	{
-		delete adapter;
-	}
-	_adapters.clear();
-}
-
-
-
-/// @brief	
-bool NetConfig::read_net_config()
-{
-	//
-	//	host name
-	//
-	if (true != get_host_name(_host_name))
-	{
-		log_err "get_host_name() failed. " log_end;
-		return false;
-	}
-
-	//
-	//	Network adapters (IPV4 만 가져온다)
-	//
-	if (true != get_net_adapters(AF_INET, _adapters))
-	{
-		log_err "get_net_adapters() failed." log_end;
-		return false;
-	}
-
-	return true;
-}
-
-/// @brief
-void NetConfig::dump()
-{
-#ifdef _DEBUG
-	log_dbg "host=%s", WcsToMbsEx(_host_name.c_str()).c_str() log_end;
-	for (auto adapter : _adapters)
-	{
-		adapter->dump();
-	}
-#endif
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 //	Utility function 
@@ -375,8 +319,33 @@ SocketAddressToStr(
 	return SocketAddressToStr(addr->lpSockaddr, addr_str);
 }
 
+/// @brief	Winsock 을 초기화한다.
+bool
+InitializeWinsock(
+	)
+{
+	static bool initialized = false;
+	if (false == initialized)
+	{
+		WSADATA wsaData;
+		WORD wVersionRequested = MAKEWORD(2, 2);
+		DWORD err = WSAStartup(wVersionRequested, &wsaData);
+		if (0 != err)
+		{
+			_ASSERTE(!"Oops! Check OS version  plz.");
+			log_err "WSAStartup() failed, err=%u",
+				err
+				log_end;
+			return false;
+		}
+	}
+
+	return true;
+}
 
 /// @brief	Socket address to string
+///	@remark	WSAAddressToStringA 함수는 deprecated 되었기 때문에 W 버전 함수를 사용하고, 
+///			address string 문자열을 변환한다.
 bool 
 SocketAddressToStr(
 	_In_ const SOCKADDR* addr, 
@@ -385,23 +354,31 @@ SocketAddressToStr(
 {
 	_ASSERTE(nullptr != addr);
 	if (nullptr == addr) return false;
-	
+
 	//
-	//	WSAAddressToStringA 함수는 deprecated 되었기 때문에
-	//	W 버전 함수를 사용하고, address string 문자열을 변환한다.
+	//	Winsock 초기화
+	//
+	if (!InitializeWinsock()) return false;
+
+	//
+	//	필요한 사이즈를 계산
 	//
 	DWORD buf_len = 0;	
-	int ret = WSAAddressToStringW((LPSOCKADDR)addr,
-								  (addr->sa_family == AF_INET) ? sizeof(SOCKADDR_IN) : sizeof(SOCKADDR_IN6),
-								  nullptr,
-								  nullptr,
-								  &buf_len);
+	int ret = WSAAddressToStringW(
+					(LPSOCKADDR)addr,
+					(addr->sa_family == AF_INET) ? sizeof(SOCKADDR_IN) : sizeof(SOCKADDR_IN6),
+					nullptr,
+					nullptr,
+					&buf_len);
 	if (SOCKET_ERROR != ret || WSAEFAULT != WSAGetLastError())
 	{
 		log_err "Oops! Invalid status" log_end;
 		return false;
 	}
 
+	//
+	//	버퍼 할당
+	//
 	_ASSERTE(buf_len > 0);
 	wchar_ptr buf((wchar_t*)malloc( (buf_len + 1) * sizeof(wchar_t) ), [](wchar_t* p)
 	{
@@ -415,11 +392,15 @@ SocketAddressToStr(
 		return false;
 	}
 
-	ret = WSAAddressToStringW((LPSOCKADDR)addr,
-							  (addr->sa_family == AF_INET) ? sizeof(SOCKADDR_IN) : sizeof(SOCKADDR_IN6),
-							  nullptr,
-							  buf.get(),
-							  &buf_len);
+	//
+	//	변환시도
+	//
+	ret = WSAAddressToStringW(
+				(LPSOCKADDR)addr,
+				(addr->sa_family == AF_INET) ? sizeof(SOCKADDR_IN) : sizeof(SOCKADDR_IN6),
+				nullptr,
+				buf.get(),
+				&buf_len);
 	if (SOCKET_ERROR == ret)
 	{
 		log_err "WSAAddressToStringW() failed. wsa gle=%u",
@@ -429,7 +410,7 @@ SocketAddressToStr(
 	}
 
 	//
-	//	wchar -> char 로 변환
+	//	wchar -> char 로 변환하고, 리턴
 	//
 	addr_str = WcsToMbsEx(buf.get());
 	return true;
@@ -452,6 +433,11 @@ ipv4_to_str(
 	_In_ in_addr& ipv4
 	)
 {
+	//
+	//	Winsock 초기화
+	//
+	if (!InitializeWinsock()) return std::string("0.0.0.0");
+
     char ipv4_buf[16 + 1] = { 0 };
     if (NULL == InetNtopA(AF_INET, 
 						  &ipv4, 
@@ -472,6 +458,11 @@ ipv6_to_str(
 	_In_ in_addr6& ipv6
 	)
 {
+	//
+	//	Winsock 초기화
+	//
+	if (!InitializeWinsock()) return std::string("0.0.0.0");
+
     char ipv6_buf[46 + 1] = { 0 };
     if (NULL == InetNtopA(AF_INET6, 
 						  &ipv6, 
@@ -493,6 +484,11 @@ str_to_ipv4(
 	_Out_ uint32_t& ip_netbyte_order
 	)
 {
+	//
+	//	Winsock 초기화
+	//
+	if (!InitializeWinsock()) return false;
+
     _ASSERTE(NULL != ipv4);
     if (NULL != ipv4)
     {
@@ -529,6 +525,11 @@ str_to_ipv6(
 	_Out_ in_addr6& ip_netbyte_order
 	)
 {
+	//
+	//	Winsock 초기화
+	//
+	if (!InitializeWinsock()) return false;
+
     _ASSERTE(NULL != ipv6);
     if (NULL != ipv6)
     {
@@ -568,6 +569,11 @@ get_ip_list_v4(
 	_Out_ std::vector<std::string>& ip_list
 	)
 {
+	//
+	//	Winsock 초기화
+	//
+	if (!InitializeWinsock()) return false;
+
 	std::vector<PNetAdapter> adapters;
 	if (true != get_net_adapters(AF_INET, adapters))
 	{
@@ -593,6 +599,11 @@ std::string
 get_representative_ip_v4(
 	)
 {
+	//
+	//	Winsock 초기화
+	//
+	if (!InitializeWinsock()) return std::string("0.0.0.0");
+
 	//
 	//	1순위: 
 	//		dns, gateway 가 설정된 어댑터의 첫번째 IP
@@ -672,8 +683,13 @@ get_mac_by_ip_v4(
 	_In_ const char* ip_str	
 	)
 {
-    _ASSERTE(NULL != ip_str);
+	_ASSERTE(NULL != ip_str);
     if (NULL == ip_str) return false;
+
+	//
+	//	Winsock 초기화
+	//
+	if (!InitializeWinsock()) return std::string("0.0.0.0");
 
 	//
 	//	어댑터 정보를 가져온다.

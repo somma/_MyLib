@@ -51,10 +51,10 @@ RUReadString(
 	_Out_ std::wstring& value
 	);
 
-bool 
+bool
 RUSetString(
-	_In_ HKEY key_handle, 
-	_In_ const wchar_t* value_name, 
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
 	_In_ const wchar_t* value
 	);
 
