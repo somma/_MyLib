@@ -8,7 +8,6 @@
 **/
 #include "stdafx.h"
 
-
 //	
 //	std
 //
@@ -18,6 +17,7 @@
 
 #include "Win32Utils.h"
 #include "RegistryUtil.h"
+#include "Wow64Util.h"
 
 #include <set>
 #include <errno.h>
@@ -800,6 +800,12 @@ bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
     for (DWORD i = 0; i < length / 4; ++i)
     {
         wchar_t* dos_device_name = &(drive_string[i * 4]);
+
+		//
+		//	A: ´Â °Ç³Ê¶Ú´Ù.
+		// 
+		if (dos_device_name[0] == 'A' || dos_device_name[0] == 'a') continue;
+
         dos_device_name[1] = 0x0000;
         std::wstringstream path;
         path << L"\\\\.\\" << dos_device_name << ":";
@@ -870,24 +876,9 @@ bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
                     disk_numberz.insert(sdn.DeviceNumber);
 
                     disk_numbers.push_back(sdn.DeviceNumber);
-                    log_dbg "disk number = %u, found.", sdn.DeviceNumber log_end
+                    //log_dbg "disk number = %u, found.", sdn.DeviceNumber log_end
                 }
-            }
-            
-            //uint8_t buf[512] = { 0x00 };
-            //if (!ReadFile(hFile, buf, sizeof(buf), &bytes_returned, NULL))
-            //{
-            //    log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
-            //}
-            //else
-            //{
-            //    std::vector<std::string> dumps;
-            //    dump_memory(buf, sizeof(buf), dumps);
-            //    for (auto line : dumps)
-            //    {
-            //        log_info "%s", line.c_str() log_end;
-            //    }
-            //}
+            }            
         }
         CloseHandle(hFile);
     }
@@ -954,14 +945,13 @@ bool get_disk_volume_info(_Inout_ disk_volume_info& info)
 	path << L"\\\\.\\PhysicalDrive" << info._disk_number;
 
 	// open handle for disk as `WIN32 Device Namespace` foramt.
-	HANDLE disk = CreateFileW(
-		path.str().c_str(),
-		GENERIC_READ,
-		FILE_SHARE_READ | FILE_SHARE_WRITE,
-		NULL,
-		OPEN_EXISTING,  // for device or file, only if exists.
-		FILE_ATTRIBUTE_NORMAL,
-		NULL);
+	HANDLE disk = CreateFileW(path.str().c_str(),
+							  GENERIC_READ,
+							  FILE_SHARE_READ | FILE_SHARE_WRITE,
+							  NULL,
+							  OPEN_EXISTING,  // for device or file, only if exists.
+							  FILE_ATTRIBUTE_NORMAL,
+							  NULL);
 	if (INVALID_HANDLE_VALUE == disk)
 	{
 		log_err
@@ -989,15 +979,14 @@ bool get_disk_volume_info(_Inout_ disk_volume_info& info)
             return false;
         }
 
-        if (!DeviceIoControl(
-                    disk,
-                    IOCTL_DISK_GET_DRIVE_LAYOUT_EX,
-                    NULL,
-                    0,
-                    (LPVOID)layout_info,
-                    layout_info_size,
-                    &bytes_returned,
-                    NULL))
+		if (!DeviceIoControl(disk,
+							 IOCTL_DISK_GET_DRIVE_LAYOUT_EX,
+							 NULL,
+							 0,
+							 (LPVOID)layout_info,
+							 layout_info_size,
+							 &bytes_returned,
+							 NULL))
         {
             if (ERROR_INSUFFICIENT_BUFFER == GetLastError())
             {
@@ -1029,11 +1018,11 @@ bool get_disk_volume_info(_Inout_ disk_volume_info& info)
     //
     // ok. DeviceIoControl() succeeded.
     // 
-    log_dbg
-        "disk = %ws, partition style = %s, partition count = %u, ",
-        path.str().c_str(),
-        partition_style_to_str(layout_info->PartitionStyle),        
-        layout_info->PartitionCount);
+    //log_dbg
+    //    "disk = %ws, partition style = %s, partition count = %u, ",
+    //    path.str().c_str(),
+    //    partition_style_to_str(layout_info->PartitionStyle),        
+    //    layout_info->PartitionCount);
 
     for (DWORD i = 0; i < layout_info->PartitionCount; ++i)
     {
@@ -1055,15 +1044,15 @@ bool get_disk_volume_info(_Inout_ disk_volume_info& info)
             }
             vbr.recognized = (TRUE == mbr->RecognizedPartition) ? true : false;
             
-            log_dbg
-                "    [%u/%u] style = MBR, recognized = %s, boot = %s, offset = 0x%llx, length = %llu, number = %u",
-                i + 1,
-                layout_info->PartitionCount,
-                (vbr.recognized) ? "true" : "false",
-                vbr.is_boot_partition ? "true" : "false",
-                vbr.offset.QuadPart,
-                vbr.partition_length.QuadPart,
-                vbr.partition_number);
+            //log_dbg
+            //    "    [%u/%u] style = MBR, recognized = %s, boot = %s, offset = 0x%llx, length = %llu, number = %u",
+            //    i + 1,
+            //    layout_info->PartitionCount,
+            //    (vbr.recognized) ? "true" : "false",
+            //    vbr.is_boot_partition ? "true" : "false",
+            //    vbr.offset.QuadPart,
+            //    vbr.partition_length.QuadPart,
+            //    vbr.partition_number);
         }
         else
         {
@@ -1076,16 +1065,16 @@ bool get_disk_volume_info(_Inout_ disk_volume_info& info)
 
             vbr.recognized = true;
             
-            log_dbg
-                "    [%u/%u] style = GPT, recognized = true, boot = %s, offset = 0x%llx, length = %llu, number = %u, type = %s",
-                i + 1,
-                layout_info->PartitionCount,
-                vbr.is_boot_partition ? "true" : "false",
-                vbr.offset.QuadPart,
-                vbr.partition_length.QuadPart,
-                vbr.partition_number, 
-                gpt_partition_type_to_str(gpt->PartitionType)
-                );
+            //log_dbg
+            //    "    [%u/%u] style = GPT, recognized = true, boot = %s, offset = 0x%llx, length = %llu, number = %u, type = %s",
+            //    i + 1,
+            //    layout_info->PartitionCount,
+            //    vbr.is_boot_partition ? "true" : "false",
+            //    vbr.offset.QuadPart,
+            //    vbr.partition_length.QuadPart,
+            //    vbr.partition_number, 
+            //    gpt_partition_type_to_str(gpt->PartitionType)
+            //    );
         }
 
         info._vbrs.push_back(vbr);
@@ -7988,6 +7977,23 @@ BOOL WUGetProcessorInfo(IN OUT WU_PROCESSOR_INFO& CpuInfo)
     return TRUE;
 }
 
+/// @brief 
+const char* get_archtecture()
+{
+#ifdef _WIN64
+	return "x64";
+#else
+	CWow64Util wow;
+	if (true == wow.IsWow64Process())
+	{
+		return "x64";
+	}
+	else
+	{
+		return "x86";
+	}
+#endif
+}
 
 /// @brief 
 const wchar_t*  osver_to_str(_In_ OSVER os)
@@ -8012,6 +8018,7 @@ const wchar_t*  osver_to_str(_In_ OSVER os)
     case OSV_81: return L"Windows 8.1";
     case OSV_2012R2: return L"Windows Server 2012 R2";
     case OSV_10: return L"Windows 10";
+	case OSV_2016: return L"Windows Server 2016";
     case OSV_UNKNOWN:
     default:
         return L"Unknown OS";
@@ -8019,18 +8026,20 @@ const wchar_t*  osver_to_str(_In_ OSVER os)
 }
 
 /// @brief  RtlGetVersion() wrapper
+///			https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
 OSVER get_os_version()
 {
     static OSVER os = OSV_UNDEF;
     if (os != OSV_UNDEF) return os;
     os = OSV_UNKNOWN;
 
-    // https://github.com/DarthTon/Blackbone/blob/master/contrib/VersionHelpers.h 
     RTL_OSVERSIONINFOEXW osv = { sizeof(osv), 0, };    
     typedef uint32_t(__stdcall *fnRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation);
     fnRtlGetVersion RtlGetVersion = (fnRtlGetVersion)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "RtlGetVersion");
 
-    if (RtlGetVersion != 0 && RtlGetVersion((PRTL_OSVERSIONINFOW)&osv) == 0 && osv.dwPlatformId == VER_PLATFORM_WIN32_NT)
+    if (RtlGetVersion != 0 && 
+		RtlGetVersion((PRTL_OSVERSIONINFOW)&osv) == 0 && 
+		osv.dwPlatformId == VER_PLATFORM_WIN32_NT)
     {
         switch (osv.dwMajorVersion)
         {
@@ -8080,7 +8089,23 @@ OSVER get_os_version()
             break;
 
         case 10:
-            os = OSV_10;
+			if (osv.dwMinorVersion == 0)
+			{
+				if (osv.wProductType == VER_NT_WORKSTATION)
+				{
+					os = OSV_10;
+				}
+				else
+				{
+					os = OSV_2016;
+				}
+			}
+			else
+			{
+				// unknown or unsupported
+				break;
+			}
+            
             break;
         }
     }

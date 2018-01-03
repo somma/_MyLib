@@ -923,7 +923,7 @@ BOOL WUGetProcessorInfo(IN OUT WU_PROCESSOR_INFO& CpuInfo);
 enum OSVER
 {
     // Operating System Version 
-    //  + https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx)
+    //  https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
 
     OSV_UNDEF,
     OSV_2000,
@@ -948,9 +948,11 @@ enum OSVER
     OSV_2012R2,         // win 8 server
 
     OSV_10,
+	OSV_2016,			// windows 10 server 
     OSV_UNKNOWN,
 };
 
+const char* get_archtecture();
 const wchar_t*  osver_to_str(_In_ OSVER os);
 OSVER get_os_version();
 
