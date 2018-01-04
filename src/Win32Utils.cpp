@@ -7261,35 +7261,31 @@ COORD GetCurCoords(void)
 /// @brief	 현재 프로세스에 콘솔이 없다면 새롭게 생성한다. 
 bool create_console()
 {
+	//
+	// 윈도우 7에서 CMD를 관리자 권한으로 실행할 경우 콘솔창이 생성 되지 않음
+	// 관련 URL:
+	// https://github.com/rprichard/win32-console-docs#console-handles-and-handle-sets-traditional
+	//
+	FreeConsole();
+
+	//
+	//	Console 이 없는, service 또는 gui 인 경우 NULL 을 리턴
+	//	
+
+	if (!AllocConsole())
+	{
+		log_err "AllocConsole() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
 	HANDLE h_console = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (NULL == h_console)
 	{
-		//
-		//	Console 이 없는, service 또는 gui 인 경우 NULL 을 리턴
-		//	
-
-		if (!AllocConsole())
-		{
-			log_err "AllocConsole() failed. gle=%u",
-				GetLastError()
-				log_end;
-			return false;
-		}
-
-		h_console = GetStdHandle(STD_OUTPUT_HANDLE);
-		if (NULL == h_console)
-		{
-			log_err "Can not get STD_OUTPUT_HANDLE (No console allocated)." 
-				log_end;
-			return false;
-		}
-		else if (INVALID_HANDLE_VALUE == h_console)
-		{
-			log_err "GetStdHandle() failed. gle=%u", 
-				GetLastError()
-				log_end;
-			return false;
-		}
+		log_err "Can not get STD_OUTPUT_HANDLE (No console allocated)."
+			log_end;
+		return false;
 	}
 	else if (INVALID_HANDLE_VALUE == h_console)
 	{
@@ -7298,7 +7294,9 @@ bool create_console()
 			log_end;
 		return false;
 	}
-	
+
+	log_info "ConsoleHandle(%p)", h_console log_end;
+
 	return true;
 }
 
@@ -7321,6 +7319,11 @@ void write_to_console(_In_ console_font_color color, _In_z_ const char* log_mess
 			//	NULL : console handle 이 없는 프로세스 
 			//	INVALID_HANDLE_VALUE : GetStdHandle() 에러 
 			// 
+			log_err 
+				"GetStdHandle failed(%p), gle=%u", 
+				con_stdout_handle, 
+				GetLastError() 
+			log_end;
 			return; 
 		}
 
