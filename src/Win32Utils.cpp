@@ -137,6 +137,16 @@ unixtime_to_filetime(
 	file_time->dwHighDateTime = ll >> 32;
 }
 
+/// @brief	ftl, ftr 값의 차를 밀리세컨드 단위로 리턴한다. 
+int64_t 
+file_time_delta_msec(
+	_In_ const PFILETIME ftl, 
+	_In_ const PFILETIME ftr
+	)
+{
+	return (llabs(file_time_to_int(ftl) - file_time_to_int(ftr)) / _file_time_to_msec);
+}
+
 /// @brief  ftl, ftr 값의 차를 초단위로 리턴한다. 
 int64_t 
 file_time_delta_sec(
