@@ -7398,11 +7398,13 @@ void clear_console()
     SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
-/// @brief 실행 가능한 파일인 경우 TRUE 리턴
-/// @param path	exe 파일의 full path    
-/// @param type	file type
-/// @return 성공시 true
-bool is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type)
+/// @brief	파일이 실행파일인지 아닌지 확인한다. 
+/// @return	성공시 true
+bool 
+is_executable_file_w(
+	_In_ const wchar_t* path, 
+	_Out_ IMAGE_TYPE& type
+	)
 {
 	_ASSERTE(nullptr != path);
 	if (nullptr == path) return false;
@@ -7421,21 +7423,30 @@ bool is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type)
         return false;
     }
     SmrtHandle sfFile(hFile);
-
 	return is_executable_file_w(hFile, type);
 }
 
 bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 {
+	type = IT_NON_PE;
+
     // check file size 
     // 
     LARGE_INTEGER fileSize;
     if (TRUE != GetFileSizeEx(file_handle, &fileSize))
     {
-        log_err "can not get file size, errorcode=0x%08x", GetLastError() log_end
+        log_err "can not get file size, errorcode=0x%08x", 
+			GetLastError() 
+			log_end
         return false;
     }
-    if (sizeof(IMAGE_DOS_HEADER) > fileSize.QuadPart) return false;
+	if (sizeof(IMAGE_DOS_HEADER) > fileSize.QuadPart)
+	{
+		//
+		//	Not a PE file
+		//
+		return true;
+	}
     
     HANDLE hImageMap = CreateFileMapping(file_handle, 
 										 NULL, 
@@ -7443,14 +7454,26 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 										 0, 
 										 0, 
 										 NULL);
-    if (NULL == hImageMap){return false;}
+    if (NULL == hImageMap)
+	{
+		log_err "CreateFileMapping() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;	
+	}
     SmrtHandle sfMap(hImageMap);
     PBYTE ImageView = (LPBYTE) MapViewOfFile(hImageMap, 
 											 FILE_MAP_READ, 
 											 0, 
 											 0, 
 											 0);
-    if(ImageView == NULL){return false;}
+    if(ImageView == NULL)
+	{
+		log_err "MapViewOfFile() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;	
+	}
     SmrtView sfView(ImageView);
 
 	//
@@ -7460,7 +7483,13 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 	try
 	{
 		PIMAGE_DOS_HEADER idh = (PIMAGE_DOS_HEADER)ImageView;
-		if (idh->e_magic != IMAGE_DOS_SIGNATURE) return false;
+		if (idh->e_magic != IMAGE_DOS_SIGNATURE)
+		{
+			//
+			//	Not a PE file
+			//
+			return true;
+		}
 
 		// check DOS file size
 		// 
@@ -7470,7 +7499,11 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 			log_err "invalid file size, size=%llu", 
 				fileSize.QuadPart 
 				log_end;
-			return false;
+
+			//
+			//	Not a PE file
+			//
+			return true;
 		}
 
 		PIMAGE_NT_HEADERS inh = (PIMAGE_NT_HEADERS)((DWORD_PTR)idh + idh->e_lfanew);
@@ -7480,7 +7513,10 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 				fileSize.QuadPart,
 				inh
 				log_end;			
-			return false;
+			//
+			//	Not a PE file
+			//
+			return true;
 		}
 		if (IMAGE_NT_SIGNATURE != inh->Signature) return false;
 
@@ -7498,8 +7534,7 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 
 		// never called.. ???
 		// if ((characteristics & IMAGE_FILE_SYSTEM) == IMAGE_FILE_SYSTEM){OutputDebugStringW(" IMAGE_FILE_SYSTEM");}
-
-
+		
 		// subsystem check
 		// 
 		if ((subsys & IMAGE_SUBSYSTEM_NATIVE) == IMAGE_SUBSYSTEM_NATIVE)
@@ -7531,7 +7566,10 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 		return false;
 	}
 
-    return false;
+	//
+	//	Not a PE file
+	//
+	return true;
 }
 
 /** ---------------------------------------------------------------------------
@@ -7556,9 +7594,9 @@ LPCWSTR  FileTypeToString(IMAGE_TYPE type)
 		return L"BOOT APP";
     case IT_NATIVE_APP: 
         return L"NATIVE";    
-    case IT_NORMAL:
+    case IT_NON_PE:
     default:
-        return L"NORMAL FILE";
+        return L"NON PE";
     }
 }
 
@@ -7994,7 +8032,7 @@ const char* get_archtecture()
 	return "x64";
 #else
 	CWow64Util wow;
-	if (true == wow.IsWow64Process())
+	if (wow.IsWow64Process())
 	{
 		return "x64";
 	}
