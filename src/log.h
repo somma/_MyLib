@@ -70,6 +70,7 @@ finalize_log(
 
 void
 set_log_format(
+	_In_ bool show_current_time,
 	_In_ bool show_process_name, 
 	_In_ bool show_pid_tid,
 	_In_ bool show_function_name
