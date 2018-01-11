@@ -22,6 +22,7 @@
 **/
 static boost::mutex     _logger_lock;
 static slogger*		    _logger = nullptr;
+static bool				_show_current_time = false;
 static bool			    _show_process_name = true;
 static bool			    _show_pid_tid = true;
 static bool			    _show_function_name = true;
@@ -133,13 +134,14 @@ finalize_log(
 **/
 void
 set_log_format(
+	_In_ bool show_current_time,
 	_In_ bool show_process_name, 
 	_In_ bool show_pid_tid,
 	_In_ bool show_function_name
 	)
 {
     boost::lock_guard< boost::mutex > lock(_logger_lock);
-
+	_show_current_time = show_current_time;
 	_show_process_name = show_process_name;
 	_show_pid_tid = show_pid_tid;
 	_show_function_name = show_function_name;
@@ -310,6 +312,19 @@ log_write_fmt(
     size_t remain = sizeof(log_buffer);
     char* pos = log_buffer;
     va_list args;
+
+	if (true == _show_current_time)
+	{
+		StringCbPrintfExA(
+			pos,
+			remain,
+			&pos,
+			&remain,
+			0,
+			"%s ",
+			time_now_to_str(true, false).c_str()
+		);
+	}
 
     // log level
     switch (log_level)
