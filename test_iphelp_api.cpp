@@ -646,9 +646,9 @@ bool test_iphelp_api()
 	_CrtMemCheckpoint(&memoryState);
 
 	{
-		//	if (0 != exec_iphelp_api_sample()) return false;
-		//	if (0 != exec_iphelp_api_sample2(AF_INET)) return false;
-		//	if (0 != exec_iphelp_api_sample2(AF_INET6)) return false;
+		//if (0 != exec_iphelp_api_sample()) return false;
+		//if (0 != exec_iphelp_api_sample2(AF_INET)) return false;
+		//if (0 != exec_iphelp_api_sample2(AF_INET6)) return false;
 	}
 	
 	_CrtMemDumpAllObjectsSince(&memoryState);

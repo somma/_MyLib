@@ -149,13 +149,14 @@ set_log_format(
 
 void
 get_log_format(
+	_Out_ bool& show_current_time,
 	_Out_ bool& show_process_name,
 	_Out_ bool& show_pid_tid,
 	_Out_ bool& show_function_name
 	)
 {
 	boost::lock_guard< boost::mutex > lock(_logger_lock);
-
+	show_current_time = _show_current_time;
 	show_process_name = _show_process_name;
 	show_pid_tid = _show_pid_tid;
 	show_function_name = _show_function_name;

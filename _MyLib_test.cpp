@@ -229,7 +229,7 @@ void run_test()
 	//							   f.str().c_str())) return;
 	//	set_log_format(false, false, true);
 	//}
-	set_log_format(false, false, false);
+	set_log_format(false, false, false, false);
 
 	//
 	//	std::string ฐüทร 
@@ -291,7 +291,7 @@ void run_test()
 	//	Sleep(500);
 	//}
 
-	//assert_bool(true, test_iphelp_api);
+	assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 	//assert_bool(true, test_file_info_cache);
 	//
@@ -398,7 +398,7 @@ void run_test()
 	//assert_bool(true, test_std_unordered_map);
 	//assert_bool(true, test_std_unordered_map_object);
 	//assert_bool(true, test_unorded_map_test_move);
-	assert_bool(true, test_map_insert_swap);
+	//assert_bool(true, test_map_insert_swap);
 
 
 	//assert_bool(true, test_registry_util);
