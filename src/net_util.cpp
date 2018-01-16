@@ -244,12 +244,28 @@ get_net_adapters(
 		}
 
 		///	Assigned IP
+		ULONG subnet_mask;
 		PIP_ADAPTER_UNICAST_ADDRESS unicast_addr = cur->FirstUnicastAddress;
 		while (nullptr != unicast_addr)
 		{
 			if (true == SocketAddressToStr(&unicast_addr->Address, str))
 			{
 				adapter->ip_list.push_back(str);
+			}
+
+			//
+			//	subnet mask
+			//	PrefixLength를 이용해서 subnet mask를 구한다.
+			//
+			if (NO_ERROR != ConvertLengthToIpv4Mask(unicast_addr->OnLinkPrefixLength, &subnet_mask))
+			{
+				log_err "ConvertLengthToIpv4Mask() failed. PrefixLength=%u",
+					unicast_addr->OnLinkPrefixLength
+					log_end;
+			}
+			else
+			{
+				adapter->subnet_mask_list.push_back(subnet_mask);
 			}
 
 			unicast_addr = unicast_addr->Next;
@@ -586,6 +602,52 @@ get_ip_list_v4(
 		for (auto ip : adapter->ip_list)
 		{
 			ip_list.push_back(ip);
+		}
+		delete adapter;
+	}
+	adapters.clear();
+
+	return true;
+}
+
+/**
+* @brief
+* @param
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
+**/
+bool
+get_broadcast_list_v4(
+	_Out_ std::vector<uint32_t>& broadcast_list
+	)
+{
+	//
+	//	Winsock 초기화
+	//
+	if (!InitializeWinsock()) return false;
+
+	std::vector<PNetAdapter> adapters;
+	if (true != get_net_adapters(AF_INET, adapters))
+	{
+		log_err "get_net_adapters() failed." log_end;
+		return false;
+	}
+
+	for (auto adapter : adapters)
+	{
+		for (auto ip : adapter->ip_list)
+		{
+			for (auto subnet_mask : adapter->subnet_mask_list)
+			{
+				uint32_t ip_addr = 0;
+				if (true == str_to_ipv4(MbsToWcsEx(ip.c_str()).c_str(), ip_addr))
+				{
+					broadcast_list.push_back(ip_addr | ~subnet_mask);
+				}
+			}
 		}
 		delete adapter;
 	}
