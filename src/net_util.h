@@ -41,7 +41,8 @@ public:
 	std::wstring desc;				// Marvell AVASTAR Wireless-AC Network Controller
 	std::string physical_address;	// BC-83-85-2D-8A-91
 
-	std::vector<std::string> ip_list;	
+	std::vector<std::string> ip_list;
+	std::vector<uint32_t> subnet_mask_list;
 	std::vector<std::string> dns_list;
 	std::vector<std::string> gateway_list;
 
@@ -118,6 +119,11 @@ str_to_ipv6(
 bool
 get_ip_list_v4(
 	_Out_ std::vector<std::string>& ip_list
+	);
+
+bool
+get_broadcast_list_v4(
+	_Out_ std::vector<uint32_t>& broadcast_list
 	);
 
 std::string 
