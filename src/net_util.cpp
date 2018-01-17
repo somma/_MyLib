@@ -27,17 +27,17 @@ void NetAdapter::dump()
 	strm << "desc=" << WcsToMbsEx(desc.c_str()) << std::endl;
 	strm << "physical=" << physical_address << std::endl;
 	
-	if (ip_list.size() > 1)
+	if (ip_info_list.size() > 1)
 	{
 		strm << "ip=" << std::endl;
-		for (auto ip : ip_list)
+		for (auto ip_info : ip_info_list)
 		{
-			strm << "\t" << ip << std::endl;
+			strm << "\t" << ip_info->ip << std::endl;
 		}
 	}
-	else if (ip_list.size() == 1)
+	else if (ip_info_list.size() == 1)
 	{
-		strm << "ip=" << ip_list[0].c_str() << std::endl;
+		strm << "ip=" << ip_info_list[0]->ip.c_str() << std::endl;
 	}
 	
 	if (dns_list.size() > 1)
@@ -250,22 +250,17 @@ get_net_adapters(
 		{
 			if (true == SocketAddressToStr(&unicast_addr->Address, str))
 			{
-				adapter->ip_list.push_back(str);
-			}
-
-			//
-			//	subnet mask
-			//	PrefixLength를 이용해서 subnet mask를 구한다.
-			//
-			if (NO_ERROR != ConvertLengthToIpv4Mask(unicast_addr->OnLinkPrefixLength, &subnet_mask))
-			{
-				log_err "ConvertLengthToIpv4Mask() failed. PrefixLength=%u",
-					unicast_addr->OnLinkPrefixLength
-					log_end;
-			}
-			else
-			{
-				adapter->subnet_mask_list.push_back(subnet_mask);
+				//
+				//	subnet mask
+				//	PrefixLength를 이용해서 subnet mask를 구한다.
+				//
+				if (NO_ERROR == ConvertLengthToIpv4Mask(unicast_addr->OnLinkPrefixLength, &subnet_mask))
+				{
+					PNetIpInfo ip_info = new NetIpInfo;
+					ip_info->ip = str;
+					ip_info->subnet_mask = subnet_mask;
+					adapter->ip_info_list.push_back(ip_info);
+				}
 			}
 
 			unicast_addr = unicast_addr->Next;
@@ -429,6 +424,36 @@ SocketAddressToStr(
 	//	wchar -> char 로 변환하고, 리턴
 	//
 	addr_str = WcsToMbsEx(buf.get());
+	return true;
+}
+
+///	@brief	
+bool
+dns_query(
+	_In_ uint32_t ip_netbyte_order,
+	_Out_ std::wstring& host_name
+	)
+{
+	std::string dns_query_ip;
+	PDNS_RECORD dns_record;
+
+	dns_query_ip = ipv4_to_str(swap_endian_32(ip_netbyte_order)).append(".IN-ADDR.ARPA");
+	if (ERROR_SUCCESS != DnsQuery(MbsToWcsEx(dns_query_ip.c_str()).c_str(), 
+								  DNS_TYPE_PTR, 
+								  DNS_QUERY_NO_WIRE_QUERY,
+								  NULL, 
+								  &dns_record, 
+								  NULL))
+	{
+		log_warn "DnsQuery( ) failed. gle=%s",
+			dns_query_ip.c_str()
+			log_end;
+
+		host_name = L"";
+		return false;
+	}
+
+	host_name = dns_record->Data.PTR.pNameHost;
 	return true;
 }
 
@@ -599,9 +624,10 @@ get_ip_list_v4(
 
 	for (auto adapter : adapters)
 	{
-		for (auto ip : adapter->ip_list)
+		for (auto ip_info : adapter->ip_info_list)
 		{
-			ip_list.push_back(ip);
+			ip_list.push_back(ip_info->ip);
+			delete ip_info;
 		}
 		delete adapter;
 	}
@@ -638,16 +664,14 @@ get_broadcast_list_v4(
 
 	for (auto adapter : adapters)
 	{
-		for (auto ip : adapter->ip_list)
+		for (auto ip_info : adapter->ip_info_list)
 		{
-			for (auto subnet_mask : adapter->subnet_mask_list)
+			uint32_t ip_addr = 0;
+			if (true == str_to_ipv4(MbsToWcsEx(ip_info->ip.c_str()).c_str(), ip_addr))
 			{
-				uint32_t ip_addr = 0;
-				if (true == str_to_ipv4(MbsToWcsEx(ip.c_str()).c_str(), ip_addr))
-				{
-					broadcast_list.push_back(ip_addr | ~subnet_mask);
-				}
+				broadcast_list.push_back(ip_addr | ~ip_info->subnet_mask);
 			}
+			delete ip_info;
 		}
 		delete adapter;
 	}
@@ -689,12 +713,12 @@ get_representative_ip_v4(
 		//
 		for (auto adapter : adapters)
 		{
-			if (adapter->ip_list.empty()) continue;
+			if (adapter->ip_info_list.empty()) continue;
 			if (true != adapter->gateway_list.empty())
 			{
 				if (true != adapter->dns_list.empty())
 				{
-					ip = adapter->ip_list[0];
+					ip = adapter->ip_info_list[0]->ip;
 					break;
 				}
 			}
@@ -706,10 +730,10 @@ get_representative_ip_v4(
 		//
 		for (auto adapter : adapters)
 		{
-			if (adapter->ip_list.empty()) continue;
+			if (adapter->ip_info_list.empty()) continue;
 			if (true != adapter->gateway_list.empty())
 			{
-				ip = adapter->ip_list[0];
+				ip = adapter->ip_info_list[0]->ip;
 				break;
 			}
 		}
@@ -720,8 +744,8 @@ get_representative_ip_v4(
 		//
 		for (auto adapter : adapters)
 		{
-			if (adapter->ip_list.empty()) continue;
-			ip = adapter->ip_list[0];
+			if (adapter->ip_info_list.empty()) continue;
+			ip = adapter->ip_info_list[0]->ip;
 			break;
 		}
 
@@ -732,7 +756,15 @@ get_representative_ip_v4(
 	//	
 	std::for_each(adapters.begin(), adapters.end(), [](PNetAdapter p) 
 	{
-		if (nullptr != p) delete p; 
+		if (nullptr != p)
+		{
+			for (auto ip_info : p->ip_info_list)
+			{
+				delete ip_info;
+			}
+
+			delete p;
+		}
 	});
 	adapters.clear();
 
@@ -770,10 +802,10 @@ get_mac_by_ip_v4(
 	std::string mac;
 	for (auto adapter : adapters)
 	{
-		if (true == adapter->ip_list.empty()) continue;
-		for (auto ip : adapter->ip_list)
+		if (true == adapter->ip_info_list.empty()) continue;
+		for (auto ip_info : adapter->ip_info_list)
 		{
-			if (0 == ip.compare(ip_str))
+			if (0 == ip_info->ip.compare(ip_str))
 			{
 				mac = adapter->physical_address;
 				matched = true;
@@ -789,7 +821,14 @@ get_mac_by_ip_v4(
 	//
 	std::for_each(adapters.begin(), adapters.end(), [](PNetAdapter p)
 	{
-		if (nullptr != p) delete p;
+		if (nullptr != p)
+		{
+			for (auto ip_info : p->ip_info_list)
+			{
+				delete ip_info;
+			}
+			delete p;
+		}
 	});
 	adapters.clear();
 
