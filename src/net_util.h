@@ -92,6 +92,7 @@ get_net_adapters(
 bool
 dns_query(
 	_In_ uint32_t ip_netbyte_order,
+	_In_ bool cache_only,
 	_Out_ std::wstring& domain_name
 	);
 

@@ -431,6 +431,7 @@ SocketAddressToStr(
 bool
 dns_query(
 	_In_ uint32_t ip_netbyte_order,
+	_In_ bool cache_only,
 	_Out_ std::wstring& domain_name
 	)
 {
@@ -438,12 +439,12 @@ dns_query(
 	PDNS_RECORD dns_record;
 
 	dns_query_ip = ipv4_to_str(swap_endian_32(ip_netbyte_order)).append(".IN-ADDR.ARPA");
-	if (ERROR_SUCCESS != DnsQuery(MbsToWcsEx(dns_query_ip.c_str()).c_str(), 
-								  DNS_TYPE_PTR, 
-								  DNS_QUERY_NO_WIRE_QUERY,
-								  NULL, 
-								  &dns_record, 
-								  NULL))
+	if (ERROR_SUCCESS != DnsQuery_W(MbsToWcsEx(dns_query_ip.c_str()).c_str(),
+									DNS_TYPE_PTR, 
+									(true == cache_only) ? DNS_QUERY_NO_WIRE_QUERY : DNS_QUERY_STANDARD,
+									NULL, 
+									&dns_record, 
+									NULL))
 	{
 		log_warn "DnsQuery( ) failed. gle=%s",
 			dns_query_ip.c_str()
