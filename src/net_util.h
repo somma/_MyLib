@@ -25,12 +25,22 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
+#include <WinDNS.h>
 
 //
 //	libs
 //
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "Dnsapi.lib")
+
+typedef class NetIpInfo
+{
+public:
+	std::string ip;
+	uint32_t subnet_mask;
+
+} *PNetIpInfo;
 
 
 typedef class NetAdapter
@@ -41,8 +51,7 @@ public:
 	std::wstring desc;				// Marvell AVASTAR Wireless-AC Network Controller
 	std::string physical_address;	// BC-83-85-2D-8A-91
 
-	std::vector<std::string> ip_list;
-	std::vector<uint32_t> subnet_mask_list;
+	std::vector<PNetIpInfo> ip_info_list;
 	std::vector<std::string> dns_list;
 	std::vector<std::string> gateway_list;
 
@@ -80,7 +89,11 @@ get_net_adapters(
 	_Out_ std::vector<PNetAdapter>& adapters
 	);
 
-
+bool
+dns_query(
+	_In_ uint32_t ip_netbyte_order,
+	_Out_ std::wstring& domain_name
+	);
 
 //
 //	Win32Util 에 있던 Winsock 관련 함수들 
