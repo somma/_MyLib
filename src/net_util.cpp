@@ -431,7 +431,7 @@ SocketAddressToStr(
 bool
 dns_query(
 	_In_ uint32_t ip_netbyte_order,
-	_Out_ std::wstring& host_name
+	_Out_ std::wstring& domain_name
 	)
 {
 	std::string dns_query_ip;
@@ -449,11 +449,11 @@ dns_query(
 			dns_query_ip.c_str()
 			log_end;
 
-		host_name = L"";
+		domain_name = L"";
 		return false;
 	}
 
-	host_name = dns_record->Data.PTR.pNameHost;
+	domain_name = dns_record->Data.PTR.pNameHost;
 	return true;
 }
 

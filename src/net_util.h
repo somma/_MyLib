@@ -92,7 +92,7 @@ get_net_adapters(
 bool
 dns_query(
 	_In_ uint32_t addr_src,
-	_Out_ std::wstring& host_name
+	_Out_ std::wstring& domain_name
 	);
 
 //
