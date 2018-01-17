@@ -91,7 +91,7 @@ get_net_adapters(
 
 bool
 dns_query(
-	_In_ uint32_t addr_src,
+	_In_ uint32_t ip_netbyte_order,
 	_Out_ std::wstring& domain_name
 	);
 
