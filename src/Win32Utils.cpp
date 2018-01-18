@@ -4376,6 +4376,14 @@ bool create_guid(_Out_ GUID& guid)
 	return SUCCEEDED(CoCreateGuid(&guid));
 }
 
+bool create_guid(_Out_ std::string& guid)
+{
+	GUID g;
+	if (true != create_guid(g)) return false;
+	if (true != guid_to_string(g, guid)) return false;
+	return true;
+}
+
 /// @brief	
 bool 
 string_to_guid(

@@ -563,6 +563,7 @@ typedef std::unique_ptr<std::remove_pointer<SC_HANDLE>::type, void(*)(SC_HANDLE)
 ******************************************************************************/
 
 bool create_guid(_Out_ GUID& guid);
+bool create_guid(_Out_ std::string& guid);
 bool string_to_guid(_In_ const char* guid_string, _Out_ GUID& guid);
 bool guid_to_string(_In_ GUID& guid, _Out_ std::string& guid_string);
 bool wstring_to_guid(_In_ const wchar_t* guid_string, _Out_ GUID& guid);
