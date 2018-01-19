@@ -446,7 +446,7 @@ dns_query(
 									&dns_record, 
 									NULL))
 	{
-		log_warn "DnsQuery( ) failed. gle=%s",
+		log_warn "DnsQuery() failed. ip=%s",
 			dns_query_ip.c_str()
 			log_end;
 
