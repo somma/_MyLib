@@ -291,14 +291,14 @@ void run_test()
 	//	Sleep(500);
 	//}
 
-	assert_bool(true, test_iphelp_api);
+	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 	//assert_bool(true, test_file_info_cache);
 	//
 	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
-	//assert_bool(true, test_std_move);	
+	assert_bool(true, test_std_move);	
 	//assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);
 	//assert_bool(true, test_GeneralHashFunctions);

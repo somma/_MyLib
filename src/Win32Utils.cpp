@@ -4122,12 +4122,6 @@ get_module_path(
 
 /**
  * @brief	현재 모듈의 full path 를 구한다. 
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
 **/
 bool get_current_module_path(_Out_ std::wstring& module_path)
 {
@@ -4165,12 +4159,6 @@ bool get_current_module_dir(_Out_ std::wstring& module_dir)
 
 /**
  * @brief	현재 모듈의 파일명을 구한다. (경로제외)
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
 **/
 bool get_current_module_file(_Out_ std::wstring& module_file)
 {
@@ -4231,13 +4219,7 @@ std::wstring get_module_dirEx(_In_ const wchar_t* module_name)
 
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief	현재 모듈의 full path 를 구한다. 
 **/
 std::wstring get_current_module_pathEx()
 {
@@ -4275,13 +4257,7 @@ std::wstring get_current_module_dirEx()
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief	현재 모듈의 파일명을 구한다. (경로제외)
 **/
 std::wstring get_current_module_fileEx()
 {
@@ -7276,9 +7252,20 @@ COORD GetCurCoords(void)
     return csbi.dwCursorPosition;
 }
 
-/// @brief	 현재 프로세스에 콘솔이 없다면 새롭게 생성한다. 
+/// @brief	 콘솔을 생성한다.
 bool create_console()
 {
+	//
+	//	부모 프로세스의 콘솔핸들에 연결시도한다.
+	//
+	if (AttachConsole(ATTACH_PARENT_PROCESS))
+	{
+		return true;
+	}
+
+	//
+	//	부모 프로세스에 console handle 이 없는 경우 생성한다.
+	//
 	HANDLE h_console = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (NULL == h_console)
 	{

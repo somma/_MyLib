@@ -49,7 +49,7 @@
 #define log_mask_sys    0x00000001      // for log_info, log_err, xxx
 
 /// @brief	 Maximum log count on single log file.
-#define	_max_log_count 20000
+#define	_max_log_count 60000
 
 
 //

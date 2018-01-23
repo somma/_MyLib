@@ -25,7 +25,7 @@ static slogger*		    _logger = nullptr;
 static bool				_show_current_time = false;
 static bool			    _show_process_name = true;
 static bool			    _show_pid_tid = true;
-static bool			    _show_function_name = true;
+static bool			    _show_function_name = false;
 
 static uint32_t         _log_mask = log_mask_all; 
 static uint32_t			_log_level = log_level_debug;
@@ -554,13 +554,13 @@ slogger::slog_start(
 	_In_opt_z_ const wchar_t *log_file_path
 	)
 {
-	_ASSERTE(NULL == _logger_thread);
-    if (NULL != _logger_thread) { return false; }
+	_ASSERTE(nullptr == _logger_thread);
+    if (nullptr != _logger_thread) { return false; }
     
 	//
 	//	if log file specified, backup existing log file and create new one
 	//
-	if (NULL != log_file_path)
+	if (nullptr != log_file_path)
 	{
 		_log_file_path = log_file_path;
 		if (true != rotate_log_file(log_file_path))
@@ -631,17 +631,21 @@ bool slogger::rotate_log_file(_In_ const wchar_t* log_file_path)
 {
 	if (true == is_file_existsW(log_file_path))
 	{
+		std::wstring ext;
+		get_file_extensionw(log_file_path, ext);
+
 		wchar_t buf[64];
 		SYSTEMTIME time; GetLocalTime(&time);
 		if (!SUCCEEDED(StringCbPrintfW(buf,
 									   sizeof(buf),
-									   L"%04u-%02u-%02u_%02u-%02u-%02u.log",
+									   L"%04u-%02u-%02u_%02u-%02u-%02u.%s",
 									   time.wYear,
 									   time.wMonth,
 									   time.wDay,
 									   time.wHour,
 									   time.wMinute,
-									   time.wSecond)))
+									   time.wSecond, 
+									   ext.c_str())))
 		{
 			return false;
 		}
@@ -666,7 +670,7 @@ bool slogger::rotate_log_file(_In_ const wchar_t* log_file_path)
 	
 	if (true == is_file_existsW(log_file_path))
 	{
-		_ASSERTE(!"oops");
+		//_ASSERTE(!"oops");
 		return false;
 	}
 

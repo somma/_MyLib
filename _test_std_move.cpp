@@ -44,34 +44,30 @@ void print_test_classex(test_class&& o)
 
 
 
+struct rec
+{
+	int a;
+	int b;
+	int c;
+};
 
-// 헐 머야 똑같네....이런..ㅅㅂ
 bool test_std_move()
 {
-	//for (int i = 0; i < 10; ++i)
-	//{
-	//	print_test_class(test_class(i));
-	//}
-	//
-	//log_info "" log_end;
-
-	//for (int i = 0; i < 10; ++i)
-	//{
-	//	print_test_classex(test_class(i));
-	//}
-
-
-	std::list<test_class> ll;
+	std::list<rec> recs;
+	for (int i = 0; i < 8; ++i)
 	{
-		test_class l(1);
-		ll.push_back(std::move(l));
-		log_info "v=%d", l._v log_end;
+		recs.push_back(rec{ i, i + 1, i + 2 });
 	}
 
-	for (auto l : ll)
+	for (auto rec : recs)
 	{
-		log_info "v=%d", l._v log_end;
-	}	
+		log_info "a=%d, b=%d, c=%d",
+			rec.a,
+			rec.b,
+			rec.c
+			log_end;
+	}
+
 	return true;
 }
 
