@@ -7259,6 +7259,15 @@ bool create_console()
 	//
 	if (AttachConsole(ATTACH_PARENT_PROCESS))
 	{
+		//
+		//	Console Attach 한 경우 프롬프트의 끝부분에서 바로 출력이 시작되어
+		//	아래처럼 좀 어색하기 때문에, 
+		//
+		//	C:\x64_release>[INFO] Monster.
+		//
+		//	강제로 \n 을 한번 추가해준다.
+		//
+		write_to_console(fc_none, "\n");
 		return true;
 	}
 
