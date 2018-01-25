@@ -699,7 +699,7 @@ void slogger::slog_thread()
     {
         if (true == _log_queue.empty()) 
         {
-            Sleep(10);
+            Sleep(100);
             continue;
         }
 

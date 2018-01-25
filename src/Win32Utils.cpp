@@ -2808,7 +2808,7 @@ find_files(
 
     while (bResult) 
     {
-        WaitForSingleObject(NULL, 0);
+        Sleep(100);
 
         if (wfd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) 
         {
@@ -2912,7 +2912,7 @@ FindSubDirectory(
     std::wstringstream s;
     while (bResult) 
     {
-        WaitForSingleObject(NULL, 0);
+        Sleep(100);
 
         _wsplitpath_s(RootDir.c_str(), drive, _MAX_DRIVE, dir, MAX_PATH, NULL, NULL, NULL, NULL);
         if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
@@ -5748,7 +5748,6 @@ bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code)
 		return false;			
 	}
 
-	//DWORD ret = WaitForSingleObject(handle, INFINITE);
 	return true;
 }
 
