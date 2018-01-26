@@ -217,6 +217,7 @@ echo "done." </Command>
     <ClInclude Include="src\LeakWatcher.h" />
     <ClInclude Include="src\log.h" />
     <ClInclude Include="src\md5.h" />
+    <ClInclude Include="src\mm_queue.h" />
     <ClInclude Include="src\net_util.h" />
     <ClInclude Include="src\nt_name_conv.h" />
     <ClInclude Include="src\process_tree.h" />
@@ -254,6 +255,7 @@ echo "done." </Command>
     <ClCompile Include="src\injector.cpp" />
     <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\md5.cpp" />
+    <ClCompile Include="src\mm_queue.cpp" />
     <ClCompile Include="src\net_util.cpp" />
     <ClCompile Include="src\nt_name_conv.cpp" />
     <ClCompile Include="src\process_tree.cpp" />
@@ -281,6 +283,7 @@ echo "done." </Command>
     <ClCompile Include="_test_boost_thread.cpp" />
     <ClCompile Include="_test_cpp_class.cpp" />
     <ClCompile Include="_test_file_io_helper.cpp" />
+    <ClCompile Include="_test_mm_queue.cpp" />
     <ClCompile Include="_test_NtApi.cpp" />
     <ClCompile Include="_test_ppl.cpp" />
     <ClCompile Include="_test_process_token.cpp" />

@@ -59,6 +59,7 @@ extern bool test_ppl();
 
 // _test_file_io_helper.cpp
 bool test_file_io_helper();
+bool test_file_io_helper2();
 
 // _test_scm.cpp
 extern bool test_scm_context();	
@@ -298,7 +299,7 @@ void run_test()
 	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
-	assert_bool(true, test_std_move);	
+	//assert_bool(true, test_std_move);	
 	//assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);
 	//assert_bool(true, test_GeneralHashFunctions);
@@ -312,6 +313,7 @@ void run_test()
 
 	//assert_bool(true, test_find_and_replace);
 	//assert_bool(true, test_file_io_helper);
+	assert_bool(true, test_file_io_helper2);
 
 	//assert_bool(true, test_scm_context);
 

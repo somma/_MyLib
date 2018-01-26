@@ -156,3 +156,35 @@ bool test_file_io_helper()
 
 	return true;
 }
+
+/// @brief	큰 사이즈의 MMF 파일을 생성하고, 파일 전체를 매핑했을때
+///			프로세스의 메모리 점유율을 확인해보기 위한 테스트
+bool test_file_io_helper2()
+{
+	FileIoHelper mmf;
+
+	//
+	//	2GB 짜리 파일 생성
+	//
+
+	uint32_t size = (1024 * 1024 * 1024); // 2gb
+	_ASSERTE(true == mmf.OpenForWrite(L"c:\\dbg\\mmf_test.dat", size));
+	log_info "mmf file creaed." log_end;
+	_pause;
+	uint8_t* p = mmf.GetFilePointer(false, 0, size);
+	log_info "view created." log_end; 
+	_pause;
+
+	for (uint32_t i = 0; i < size; ++i)
+	{
+		p[i] = 'A';
+	}
+
+	mmf.ReleaseFilePointer();
+	log_info "view relased." log_end;
+	_pause;
+	mmf.close();
+	log_info "mmf relased." log_end;
+	_pause;
+	return true;
+}
