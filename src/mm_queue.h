@@ -8,10 +8,33 @@
 **/
 #pragma once
 
+#include "boost\thread\mutex.hpp"
+
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <sal.h>
 #include <stdint.h>
+
+
+typedef struct _q_entry_header
+{
+	uint32_t offset;
+	uint32_t size;
+	uint32_t ref_count;
+	volatile bool busy;
+
+} q_entry_header;
+
+
+typedef struct _q_entry
+{
+	q_entry_header h;
+
+	//
+	//	Used pointer
+	//	
+	char buf[1];
+} q_entry;
 
 
 typedef class MmQueue
@@ -23,9 +46,10 @@ public:
 	bool initialize(_In_ uint32_t size, _In_ const wchar_t* file_path);
 	void finalize();
 
-	char* mmf_alloc(_In_ uint32_t size);
-	void mmf_free(_In_ char* p);
-
+	bool push_back(_In_ uint32_t size, _In_ const char* const buf);
+	char* pop_front();
+	void release(_In_ const char* p);
+	
 private:
 	char* get_ptr(_In_ bool read_only, _In_ uint64_t Offset, _In_ uint32_t Size);
 	void release_ptr(_In_ char* ptr);
@@ -35,6 +59,12 @@ private:
 	uint32_t _mmf_size;
 	HANDLE _mmf_handle;
 	HANDLE _map_handle;
+	char* _mmf;
+
+	boost::mutex _lock;
+	uint32_t _push_offset;
+	uint32_t _pop_offset;
+	uint32_t _remain;
 
 
 } *PMmQueue;

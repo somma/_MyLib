@@ -61,6 +61,9 @@ extern bool test_ppl();
 bool test_file_io_helper();
 bool test_file_io_helper2();
 
+// _test_mm_queue.cpp
+bool test_mmio_queue();
+
 // _test_scm.cpp
 extern bool test_scm_context();	
 
@@ -313,7 +316,8 @@ void run_test()
 
 	//assert_bool(true, test_find_and_replace);
 	//assert_bool(true, test_file_io_helper);
-	assert_bool(true, test_file_io_helper2);
+	//assert_bool(true, test_file_io_helper2);
+	assert_bool(true, test_mmio_queue);	
 
 	//assert_bool(true, test_scm_context);
 
@@ -357,8 +361,8 @@ void run_test()
 	//assert_bool(true, test_get_process_creation_time);
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
-	assert_bool(true, test_ip_mac);
-	assert_bool(true, test_ip_to_str);
+	//assert_bool(true, test_ip_mac);
+	//assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
 	//assert_bool(true, test_cpp_class);	

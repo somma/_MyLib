@@ -17,7 +17,11 @@ MmQueue::MmQueue():
 	_optimized_io_size(0), 
 	_mmf_size(0),
 	_mmf_handle(INVALID_HANDLE_VALUE),
-	_map_handle(NULL)
+	_map_handle(NULL), 
+	_mmf(nullptr),
+	_push_offset(0),
+	_pop_offset(0), 
+	_remain(0)
 {
 }
 
@@ -69,7 +73,11 @@ bool MmQueue::initialize(_In_ uint32_t size, _In_ const wchar_t* file_path)
 	_ASSERTE(INVALID_HANDLE_VALUE == _mmf_handle);
 	_mmf_handle = CreateFileW(file_path,
 							  GENERIC_READ | GENERIC_WRITE,
+#ifdef _DEBUG
+							  FILE_SHARE_READ,
+#else
 							  0, // no share
+#endif//_DEBUG
 							  nullptr,
 							  CREATE_ALWAYS,
 							  FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
@@ -84,9 +92,9 @@ bool MmQueue::initialize(_In_ uint32_t size, _In_ const wchar_t* file_path)
 	}
 
 	//
-	//	_mmf_size 만큼 파일사이즈를 키운다.
+	//	요청한 size 만큼 파일사이즈를 키운다.
 	//
-	if (true != set_file_size(_mmf_handle, _mmf_size))
+	if (true != set_file_size(_mmf_handle, size))
 	{
 		log_err "set_file_size() failed. requested size=%u",
 			_mmf_size
@@ -94,6 +102,11 @@ bool MmQueue::initialize(_In_ uint32_t size, _In_ const wchar_t* file_path)
 		return false;
 	}
 
+	//
+	//	요청한 사이즈의 mapping object 를 생성하고, 
+	//	mapping object 전체를 process 주소공간에 매핑한다. 
+	//
+	_ASSERTE(nullptr == _mmf);
 	_ASSERTE(NULL == _map_handle);
 	_map_handle = CreateFileMappingW(_mmf_handle,
 									 nullptr,
@@ -109,11 +122,88 @@ bool MmQueue::initialize(_In_ uint32_t size, _In_ const wchar_t* file_path)
 		return false;
 	}
 
+	_mmf = (char*)MapViewOfFile(_map_handle,
+								PAGE_READWRITE,
+								0,
+								0,
+								0);
+	if (nullptr == _mmf)
+	{
+		log_err "MapViewOfFile() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	//
+	//	size 정보를 업데이트
+	//
+	_mmf_size = size;
+	_remain = size;
+
 	return true;
+}
+
+bool MmQueue::push_back(_In_ uint32_t size, _In_ const char* const buf)
+{
+	_ASSERTE(nullptr != _mmf);
+	_ASSERTE(size > 0);
+	if (nullptr == _mmf) return false;
+	if (!(size > 0)) return false;
+
+	_ASSERTE(size < _mmf_size);
+	_ASSERTE(nullptr != buf);
+	if (size >= _mmf_size) return false;	
+	if (nullptr == buf) return false;
+
+	//
+	//	남은 공간보다 더 큰사이즈를 요청한 경우 
+	//
+	uint32_t size_need = size + sizeof(q_entry_header);
+	if (_remain < size_need)
+	{
+		log_err "Not enough space left. remain=%u, req size=%u",
+			_remain,
+			size_need
+			log_end;
+		return false;
+	}
+
+	//
+	//	_remain 사이즈 갱신
+	//
+	_ASSERTE(_remain >= size_need);
+	_remain -= size_need;
+
+	return true;
+}
+
+char* MmQueue::pop_front()
+{
+	return nullptr;
+}
+
+void MmQueue::release(_In_ const char* p)
+{
+	_ASSERTE(nullptr != p);
+	if (nullptr == p) return;
+
+	q_entry* entry = CONTAINING_RECORD(p, q_entry, buf);
+	_ASSERTE(true == entry->h.busy);
+	if (true != entry->h.busy)
+	{
+		entry->h.busy = false;
+	}
 }
 
 void MmQueue::finalize()
 {
+	if (nullptr != _mmf)
+	{
+		UnmapViewOfFile(_mmf);
+		_mmf = nullptr;
+	}
+
 	if (NULL != _map_handle)
 	{
 		CloseHandle(_map_handle);
@@ -125,16 +215,6 @@ void MmQueue::finalize()
 		CloseHandle(_mmf_handle);
 		_mmf_handle = INVALID_HANDLE_VALUE;
 	}
-}
-
-char* MmQueue::mmf_alloc(_In_ uint32_t size)
-{
-	return nullptr;
-}
-
-void MmQueue::mmf_free(_In_ char* p)
-{
-	
 }
 
 char*
