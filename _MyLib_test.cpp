@@ -59,6 +59,7 @@ extern bool test_ppl();
 
 // _test_file_io_helper.cpp
 bool test_file_io_helper();
+bool test_file_io_helper2();
 
 // _test_scm.cpp
 extern bool test_scm_context();	
@@ -298,7 +299,7 @@ void run_test()
 	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
-	assert_bool(true, test_std_move);	
+	//assert_bool(true, test_std_move);	
 	//assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);
 	//assert_bool(true, test_GeneralHashFunctions);
@@ -312,7 +313,8 @@ void run_test()
 
 	//assert_bool(true, test_find_and_replace);
 	//assert_bool(true, test_file_io_helper);
-
+	//assert_bool(true, test_file_io_helper2);
+	
 	//assert_bool(true, test_scm_context);
 
 	//assert_bool(true, test_regexp);
@@ -355,8 +357,8 @@ void run_test()
 	//assert_bool(true, test_get_process_creation_time);
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
-	assert_bool(true, test_ip_mac);
-	assert_bool(true, test_ip_to_str);
+	//assert_bool(true, test_ip_mac);
+	//assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
 	//assert_bool(true, test_cpp_class);	
@@ -2530,8 +2532,7 @@ bool test_create_guid()
 	_ASSERTE(true == create_guid(guid));
 	
 	// guid -> string -> guid
-	std::string guid_string;
-	_ASSERTE(guid_to_string(guid, guid_string));
+	std::string guid_string = guid_to_string(guid);
 	_ASSERTE(string_to_guid(guid_string.c_str(), guid2));
 	_ASSERTE(IsEqualGUID(guid, guid2));
 
