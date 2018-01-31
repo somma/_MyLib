@@ -4356,7 +4356,15 @@ bool create_guid(_Out_ std::string& guid)
 {
 	GUID g;
 	if (true != create_guid(g)) return false;
-	if (true != guid_to_string(g, guid)) return false;
+	guid = guid_to_string(g);
+	return true;
+}
+
+bool create_guid(_Out_ std::wstring& guid)
+{
+	GUID g;
+	if (true != create_guid(g)) return false;
+	guid = guid_to_stringw(g);
 	return true;
 }
 
@@ -4375,20 +4383,6 @@ string_to_guid(
 
 /// @brief	
 bool 
-guid_to_string(
-	_In_ GUID& guid,
-	_Out_ std::string& guid_string
-	)
-{
-	std::wstring guid_stringw;
-	if (true != guid_to_wstring(guid, guid_stringw)) return false;
-
-	guid_string = WcsToMbsEx(guid_stringw.c_str());
-	return true;
-}
-
-/// @brief	
-bool 
 wstring_to_guid(
 	_In_ const wchar_t* guid_string,
 	_Out_ GUID& guid
@@ -4401,12 +4395,22 @@ wstring_to_guid(
 }
 
 /// @brief	
-bool 
-guid_to_wstring(
-	_In_ GUID& guid, 
-	_Out_ std::wstring& guid_string
+std::string
+guid_to_string(
+	_In_ GUID& guid
+)
+{
+	std::wstring guid_stringw = guid_to_stringw(guid);
+	return WcsToMbsEx(guid_stringw.c_str());
+}
+
+/// @brief	
+std::wstring
+guid_to_stringw(
+	_In_ GUID& guid
 	)
 {
+	const wchar_t* null_guid = L"{00000000-0000-0000-0000-000000000000}";
 	wchar_t buf[40];
 
 	//
@@ -4420,7 +4424,7 @@ guid_to_wstring(
 		//	not enough buffer
 		// 
 		wchar_t* buf2 = (wchar_t*)malloc(256);
-		if (nullptr == buf2) return false;
+		if (nullptr == buf2) return null_guid;
 
 		ret = StringFromGUID2(guid, buf2, 256 / sizeof(wchar_t));
 		if (0 == ret)
@@ -4428,16 +4432,14 @@ guid_to_wstring(
 			//
 			//	Give up
 			// 
-			return false;
+			return null_guid;
 		}
 	
-		guid_string = buf2;
-		return true;
+		return std::wstring(buf2);		
 	}
 	else
 	{
-		guid_string = buf;
-		return true;
+		return std::wstring(buf);
 	}
 }
 
