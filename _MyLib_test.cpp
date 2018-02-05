@@ -3292,7 +3292,48 @@ int _tmain(int argc, _TCHAR* argv[])
 	_CrtMemCheckpoint(&memoryState);
 	//_CrtSetBreakAlloc(152);
 
-	run_test();
+	if (argc == 1)
+	{
+		run_test();
+	}
+	else
+	{
+		set_log_to(log_to_con);
+		set_log_level(log_level_info);
+
+		if (argv[1][0] != L'/' || 
+			argv[1][1] == L'?')
+		{
+			log_err
+				"\nUsage:\n\n"\
+				"%ws /?	show help \n"\
+				"%ws /filetime_to_str 131618627540824506\n",
+				argv[0],
+				argv[0]
+				log_end;
+			return 0;
+		}
+		//
+		//	mylib.exe /filetime_to_str 131618627540824506
+		//	
+		else if (argc == 3 && (0 == _wcsicmp(&argv[1][1], L"filetime_to_str")))
+		{			
+			uint64_t ftime;
+			if (true != wstr_to_uint64(argv[2], ftime))
+			{
+				log_err "wstr_to_uint64() failed. str=%ws",
+					argv[2]
+					log_end;
+				return -1;
+			}
+
+			log_info "Input=%llu, Local Time=%s",
+				ftime,
+				file_time_to_str(ftime, true, true).c_str()
+				log_end;
+			return 0;
+		}
+	}	
 
 	_CrtMemDumpAllObjectsSince(&memoryState);
 	return 0;
