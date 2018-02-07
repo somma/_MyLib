@@ -436,8 +436,11 @@ dns_query(
 	)
 {
 	std::string dns_query_ip;
-	PDNS_RECORD dns_record;
+	PDNS_RECORD dns_record = nullptr;
 
+	//
+	//	127.0.0.1 -> 1.0.0.127.IN-ADDR.ARPA
+	//
 	dns_query_ip = ipv4_to_str(swap_endian_32(ip_netbyte_order)).append(".IN-ADDR.ARPA");
 
 	DNS_STATUS status;
@@ -462,6 +465,11 @@ dns_query(
 	}
 
 	domain_name = dns_record->Data.PTR.pNameHost;
+
+	//
+	//	Free memory allocated for DNS records 
+	//
+	DnsRecordListFree(dns_record, DnsFreeRecordListDeep);
 	return true;
 }
 
@@ -524,6 +532,21 @@ ipv6_to_str(
         return std::string("0.0.0.0");
     }
     return std::string(ipv6_buf);
+}
+
+/// @brief  
+uint16_t
+str_to_big_endian_16(
+	_In_ const wchar_t* uint32_string
+)
+{
+	uint32_t value;
+	if (true != wstr_to_uint32(uint32_string, value))
+	{
+		return 0;
+	}
+
+	return htons(static_cast<uint16_t>(value));
 }
 
 /// @brief  
