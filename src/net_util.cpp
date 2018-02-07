@@ -454,7 +454,7 @@ dns_query(
 	{
 		if (DNS_ERROR_RECORD_DOES_NOT_EXIST != status)
 		{
-			log_warn "DnsQuery() failed. ip=%s, status=%u",
+			log_err "DnsQuery() failed. ip=%s, status=%u",
 				dns_query_ip.c_str(),
 				status
 				log_end;
