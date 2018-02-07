@@ -436,25 +436,40 @@ dns_query(
 	)
 {
 	std::string dns_query_ip;
-	PDNS_RECORD dns_record;
+	PDNS_RECORD dns_record = nullptr;
 
+	//
+	//	127.0.0.1 -> 1.0.0.127.IN-ADDR.ARPA
+	//
 	dns_query_ip = ipv4_to_str(swap_endian_32(ip_netbyte_order)).append(".IN-ADDR.ARPA");
-	if (ERROR_SUCCESS != DnsQuery_W(MbsToWcsEx(dns_query_ip.c_str()).c_str(),
-									DNS_TYPE_PTR, 
-									(true == cache_only) ? DNS_QUERY_NO_WIRE_QUERY : DNS_QUERY_STANDARD,
-									NULL, 
-									&dns_record, 
-									NULL))
+
+	DNS_STATUS status;
+	status = DnsQuery_W(MbsToWcsEx(dns_query_ip.c_str()).c_str(),
+						DNS_TYPE_PTR,
+						(true == cache_only) ? DNS_QUERY_NO_WIRE_QUERY : DNS_QUERY_STANDARD,
+						NULL,
+						&dns_record,
+						NULL);
+	if (ERROR_SUCCESS != status)
 	{
-		log_warn "DnsQuery() failed. ip=%s",
-			dns_query_ip.c_str()
-			log_end;
+		if (DNS_ERROR_RECORD_DOES_NOT_EXIST != status)
+		{
+			log_err "DnsQuery() failed. ip=%s, status=%u",
+				dns_query_ip.c_str(),
+				status
+				log_end;
+		}
 
 		domain_name = L"";
 		return false;
 	}
 
 	domain_name = dns_record->Data.PTR.pNameHost;
+
+	//
+	//	Free memory allocated for DNS records 
+	//
+	DnsRecordListFree(dns_record, DnsFreeRecordListDeep);
 	return true;
 }
 

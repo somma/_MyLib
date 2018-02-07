@@ -117,7 +117,6 @@ ipv6_to_str(
 	_In_ in_addr6& ipv6
 );
 
-
 bool 
 str_to_ipv4(
 	_In_ const wchar_t* ipv4, 
