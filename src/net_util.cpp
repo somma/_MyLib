@@ -535,21 +535,6 @@ ipv6_to_str(
 }
 
 /// @brief  
-uint16_t
-str_to_big_endian_16(
-	_In_ const wchar_t* uint32_string
-)
-{
-	uint32_t value;
-	if (true != wstr_to_uint32(uint32_string, value))
-	{
-		return 0;
-	}
-
-	return htons(static_cast<uint16_t>(value));
-}
-
-/// @brief  
 bool 
 str_to_ipv4(
 	_In_ const wchar_t* ipv4, 

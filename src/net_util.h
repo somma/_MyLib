@@ -117,11 +117,6 @@ ipv6_to_str(
 	_In_ in_addr6& ipv6
 );
 
-uint16_t
-str_to_big_endian_16(
-	_In_ const wchar_t* uint32_string
-);
-
 bool 
 str_to_ipv4(
 	_In_ const wchar_t* ipv4, 
