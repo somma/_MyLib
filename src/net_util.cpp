@@ -693,6 +693,11 @@ get_broadcast_list_v4(
 	}
 	adapters.clear();
 
+	//
+	//	255.255.255.255(0xffffffff) Ãß°¡
+	//
+	broadcast_list.push_back(0xffffffff);
+
 	return true;
 }
 
