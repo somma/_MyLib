@@ -804,6 +804,7 @@ enum console_font_color
 };
 
 bool create_console();
+void destroy_console();
 void write_to_console(_In_ console_font_color color, _In_z_ const char* log_message);
 void clear_console();
 

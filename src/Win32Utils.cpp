@@ -121,6 +121,7 @@ int_to_file_time(
 /// @brief	unixtime(DWORD) -> FILETIME
 ///	@remark	Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64*
 ///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
+///			https://support.microsoft.com/en-us/help/167296/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime
 void
 unixtime_to_filetime(
 	_In_ uint32_t unix_time, 
@@ -7315,6 +7316,11 @@ bool create_console()
 	}
 	
 	return true;
+}
+
+void destroy_console()
+{
+	FreeConsole();
 }
 
 void write_to_console(_In_ console_font_color color, _In_z_ const char* log_message)
