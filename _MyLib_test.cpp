@@ -361,7 +361,7 @@ void run_test()
 	//assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
-	//assert_bool(true, test_cpp_class);	
+	assert_bool(true, test_cpp_class);	
 	//assert_bool(true, test_nt_name_to_dos_name);
 
 	//assert_bool(true, test_query_dos_device);

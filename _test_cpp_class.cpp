@@ -57,6 +57,11 @@ public:
 
 	}
 
+	virtual bool v_method(const char* msg)
+	{
+		log_dbg "%s", msg log_end;
+		return true;
+	}
 public:
 	int member1;
 
@@ -74,6 +79,12 @@ public:
 	virtual ~child()
 	{
 		log_dbg "" log_end
+	}
+
+	virtual bool v_method(const char* msg)
+	{
+		log_dbg "%s", msg log_end;
+		return true;
 	}
 };
 
@@ -93,15 +104,53 @@ public:
 	}
 };
 
-/**
- * @brief	생성자 / 소멸자 호출 순서 확인용 테스트
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
+
+
+class base
+{
+public:
+	base()
+	{
+	}
+	virtual ~base()
+	{
+	}
+
+	bool method(const char* msg)
+	{
+		call_base(msg);
+		call_child(msg);
+		return true;
+	}
+
+protected:
+	bool call_base(const char* msg)
+	{
+		log_dbg "%s", msg log_end;
+		return true;
+	}
+
+	virtual bool call_child(const char* msg) = 0;
+};
+
+class childt: public base
+{
+public:
+	virtual bool call_child(const char* msg)
+	{
+		log_dbg "%s", msg log_end;
+		return true;
+	}
+};
+
+bool test_template_method()
+{
+	base* obj = new childt();
+	obj->method("template method call");
+	return true;
+}
+
+/// @brief 생성자 / 소멸자 호출 순서 확인용 테스트
 bool test_call_order()
 {
 	/* expected output 
@@ -111,6 +160,7 @@ bool test_call_order()
 		[INFO] test_base::~test_base,
 	*/
 	test_base* obj = new child(1);
+	obj->v_method("call v_method");
 	delete obj;
 
 	/*
@@ -131,8 +181,6 @@ bool test_call_order()
 	child_has_diff_creator* obj3 = new child_has_diff_creator(1,2, 3);
 	obj3->member1 = 1;
 	delete obj3;
-
-	
 
 	return true;
 }
@@ -179,6 +227,7 @@ bool test_cpp_class()
 
 	if (true != test_call_order()) return false;
 	if (true != test_copy_assign()) return false;
+	if (true != test_template_method()) return false;
 	
 	set_log_format(b1, b2, b3, b4);
 
