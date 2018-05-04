@@ -231,6 +231,8 @@ psid_to_wstr_sid(
 	)
 {
 	_ASSERTE(nullptr != sid);
+	
+	sid_string = L"";
 	if (nullptr == sid) return false;
 
 	//

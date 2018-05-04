@@ -9,6 +9,8 @@
 **---------------------------------------------------------------------------*/
 #pragma once
 
+#include <string>
+
 bool 
 aes256_encrypt(
 	_In_ const unsigned char* key,

@@ -463,7 +463,12 @@ dns_query(
 		domain_name = L"";
 		return false;
 	}
-
+	_ASSERTE(nullptr != dns_record);
+	if (nullptr == dns_record)
+	{
+		domain_name = L"";
+		return false;
+	}	
 	domain_name = dns_record->Data.PTR.pNameHost;
 
 	//

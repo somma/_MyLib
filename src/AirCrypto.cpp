@@ -21,6 +21,8 @@
 #include "AIRCrypto.h"
 #pragma comment(lib, "libeay32.lib")
 
+#include "Win32Utils.h"
+
 /**
 * @brief	aes256 파일 암호화
 * @param 	target_file_path ex) C:\\test_folder\\a.txt
@@ -57,7 +59,9 @@ aes256_encrypt(
 							 false,
 							 false))
 	{
-		log_err "extract_last_tokenW(%ws) failed.", encrypt_file_path log_end;
+		log_err "extract_last_tokenW(%ws) failed.", 
+			encrypt_file_path.c_str() 
+			log_end;
 		return false;
 	}
 
@@ -68,7 +72,9 @@ aes256_encrypt(
 							 true,
 							 false))
 	{
-		log_err "extract_last_tokenW(path=%ws) failed.", target_file_path log_end;
+		log_err "extract_last_tokenW(path=%ws) failed.", 
+			target_file_path.c_str() 
+			log_end;
 		return false;
 	}
 
@@ -141,7 +147,9 @@ aes256_decrypt(
 							false, 
 							false))
 	{
-		log_err "extract_last_tokenW(path=%ws) failed.", decrypt_file_path log_end;
+		log_err "extract_last_tokenW(path=%ws) failed.", 
+			decrypt_file_path.c_str() 
+			log_end;
 		return false;
 	}
 	std::wstring decrypt_file_directory;
@@ -151,7 +159,9 @@ aes256_decrypt(
 							true, 
 							false))
 	{
-		log_err "extract_last_tokenW(path=%ws) failed.", decrypt_file_path log_end;
+		log_err "extract_last_tokenW(path=%ws) failed.", 
+			decrypt_file_path.c_str()
+			log_end;
 		return false;
 	}
 
@@ -388,12 +398,6 @@ AirCryptBuffer(
 
 	EVP_CIPHER_CTX_cleanup(&ctx);
 	ERR_free_strings();
-
-	log_info "encrypt=%s, input len=%u, output len=%u",  
-		true == Encrypt ? "true" : "false", 
-		InputLength, 
-		OutputLength 
-		log_end;
 
 	return true;
 }
