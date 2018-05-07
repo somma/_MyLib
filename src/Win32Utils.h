@@ -93,7 +93,7 @@ typedef struct _continuous_memory
 	#define todo TODO
 #endif
 
-#define free_and_nil(p)     do { if (NULL != p) { free(p); p = NULL;} } while(p != NULL);
+#define free_and_nil(p)	do{if (nullptr != p) { free(p); p = nullptr;} } while(false);
 
 #define     _pause  _getch()
 
