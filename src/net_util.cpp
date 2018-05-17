@@ -428,6 +428,67 @@ SocketAddressToStr(
 }
 
 ///	@brief	
+/*
+	수동으로 ip -> DNS 조회 테스트 해보기 
+	
+	> nslookup
+	> set type = PTR
+	> set debug
+
+	> 103.27.148.71
+	Server:  google - public - dns - a.google.com
+	Address : 8.8.8.8
+
+	------------
+	Got answer :
+		HEADER:
+		opcode = QUERY, id = 5, rcode = NXDOMAIN
+		header flags : response, want recursion, recursion avail.
+		questions = 1, answers = 0, authority records = 1, additional = 0
+
+		QUESTIONS :
+			71.148.27.103.in - addr.arpa, type = PTR, class = IN
+			AUTHORITY RECORDS :
+		->  103.in - addr.arpa
+		ttl = 1798 (29 mins 58 secs)
+		primary name server = ns1.apnic.net
+		responsible mail addr = read - txt - record - of - zone - first - dns - admin.apnic.net
+		serial = 36246
+		refresh = 7200 (2 hours)
+		retry = 1800 (30 mins)
+		expire = 604800 (7 days)
+		default TTL = 172800 (2 days)
+
+	------------
+		*** google - public - dns - a.google.com can't find 71.148.27.103.in-addr.arpa.: Non-existent domain
+
+
+
+	> 103.243.220.231
+	Server:  google - public - dns - a.google.com
+	Address : 8.8.8.8
+
+	------------
+	Got answer :
+	HEADER:
+		opcode = QUERY, id = 6, rcode = NOERROR
+		header flags : response, want recursion, recursion avail.
+		questions = 1, answers = 1, authority records = 0, additional = 0
+
+		QUESTIONS :
+			231.220.243.103.in - addr.arpa, type = PTR, class = IN
+			ANSWERS :
+		->  231.220.243.103.in - addr.arpa
+		name = 175.bm - nginx - loadbalancer.mgmt.sin1.adnexus.net
+		ttl = 3004 (50 mins 4 secs)
+
+	------------
+	Non - authoritative answer :
+	231.220.243.103.in - addr.arpa
+		name = 175.bm - nginx - loadbalancer.mgmt.sin1.adnexus.net
+		ttl = 3004 (50 mins 4 secs)
+	
+*/
 bool
 dns_query(
 	_In_ uint32_t ip_netbyte_order,
@@ -442,19 +503,44 @@ dns_query(
 	//	127.0.0.1 -> 1.0.0.127.IN-ADDR.ARPA
 	//
 	dns_query_ip = ipv4_to_str(swap_endian_32(ip_netbyte_order)).append(".IN-ADDR.ARPA");
-
-	DNS_STATUS status;
-	status = DnsQuery_W(MbsToWcsEx(dns_query_ip.c_str()).c_str(),
-						DNS_TYPE_PTR,
-						(true == cache_only) ? DNS_QUERY_NO_WIRE_QUERY : DNS_QUERY_STANDARD,
-						NULL,
-						&dns_record,
-						NULL);
+	
+	//--------------------------------------------------------------------------------
+	//
+	// DNS_QUERY_STANDARD 옵션을 사용한 경우 
+	//	- local cache -> query with UDP -> query with TCP (응답데이터가 잘린경우)
+	//	- DNS_QUERY_NO_MULTICAST : DNS 서버에만 요청을 전송(음?)
+	//	- DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE 옵션을 주면 tcp 를 통한 재시도를 방지 함
+	//
+	//--------------------------------------------------------------------------------
+	//
+	//	DNS_QUERY_STANDARD vs DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE 성능 비교
+	//	ipconfig /flushdns 명령으로 cache 를 비우고 188 개의 ip 를 dns 로 변환테스트
+	//	
+	//	DNS_QUERY_STANDARD 옵션 사용
+	//		1st try) total=188, succ=70, cache=0,  wire=70, elapsed= 145830.484375 ms
+	//		2nd try) total=188, succ=70, cache=57, wire=13, elapsed= 137857.656250 ms
+	//	1st try 와 2nd try 간 차이가 크지 않다(10초). DNS 이름이 없는 IP 들이 대부분의 
+	//	시간을 잡아먹기 때문
+	// 
+	//	DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE 옵션 사용
+	//		1st try) total=188, succ=70, cache=0, wire=70, elapsed=   33709.382813 ms
+	//		2nd try) total=188, succ=70, cache=69, wire=1, elapsed=   14285.799805 ms
+	//	전체적으로 DNS_QUERY_STANDARD 보다 약 5배 빠르다. DNS 이름 없는 IP 조회 시간이 상대적으로
+	//	빠르기 때문에 1st try, 2nd try 간 차이가 DNS_QUERY_STANDARD 보다 더 큼
+	//
+	//--------------------------------------------------------------------------------
+	DNS_STATUS status = DnsQuery_W(MbsToWcsEx(dns_query_ip.c_str()).c_str(),
+								   DNS_TYPE_PTR,
+								   (true == cache_only) ? DNS_QUERY_NO_WIRE_QUERY : (DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE),
+								   NULL,
+								   &dns_record,
+								   NULL);
 	if (ERROR_SUCCESS != status)
 	{
 		if (DNS_ERROR_RECORD_DOES_NOT_EXIST != status)
 		{
-			log_err "DnsQuery() failed. ip=%s, status=%u",
+			log_err "DnsQuery(cache_only=%s) failed. ip=%s, status=%u",
+				true == cache_only ? "O" : "X",
 				dns_query_ip.c_str(),
 				status
 				log_end;

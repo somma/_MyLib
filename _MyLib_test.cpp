@@ -27,6 +27,9 @@
 #include "FileInfoCache.h"
 #include "account_info.h"
 
+// _test_dns_query.cpp
+extern bool test_dns_query();
+
 // test_iphelp_api.cpp
 extern bool test_iphelp_api();
 
@@ -292,6 +295,7 @@ void run_test()
 	//	Sleep(500);
 	//}
 
+	assert_bool(true, test_dns_query);
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 	//assert_bool(true, test_file_info_cache);
@@ -361,7 +365,7 @@ void run_test()
 	//assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
-	assert_bool(true, test_cpp_class);	
+	//assert_bool(true, test_cpp_class);	
 	//assert_bool(true, test_nt_name_to_dos_name);
 
 	//assert_bool(true, test_query_dos_device);
