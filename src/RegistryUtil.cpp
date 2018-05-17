@@ -32,9 +32,9 @@
 ///					SOFTWARE\Microsoft\Windows\CurrentVersion\Run 
 HKEY 
 RUOpenKey(
-    HKEY RootKey,
-    const wchar_t* SubKey, 
-    bool ReadOnly
+    _In_ HKEY RootKey,
+	_In_ const wchar_t* SubKey,
+	_In_ bool ReadOnly
     )
 {
     HKEY hSubKey = nullptr;
@@ -62,7 +62,7 @@ RUOpenKey(
 -----------------------------------------------------------------------------*/
 void
 RUCloseKey(
-    HKEY Key
+	_In_ HKEY Key
     )
 {
     DWORD ret = RegCloseKey(Key);
@@ -83,9 +83,9 @@ RUCloseKey(
 ///					SOFTWARE\Microsoft\Windows\CurrentVersion\Run     
 HKEY
 RUCreateKey(
-    HKEY RootKey,
-    const wchar_t* SubKey,
-    bool ReadOnly
+	_In_ HKEY RootKey,
+	_In_ const wchar_t* SubKey,
+	_In_ bool ReadOnly
     )
 {
     DWORD ret = ERROR_SUCCESS;
@@ -644,47 +644,49 @@ reg_enum_key_values(
 			//log_dbg "value count = %u", value_count log_end;
 			wchar_t* value_name = (wchar_t*)malloc(max_value_name_cc * sizeof(wchar_t));
 			BYTE*    value_data = (BYTE*)malloc(max_value_data_byte);
-
-			for (DWORD i = 0; i < value_count; i++)
+			if (nullptr != value_name && nullptr != value_data)
 			{
-				RtlZeroMemory(value_name, (max_value_name_cc) * sizeof(wchar_t));
-				RtlZeroMemory(value_data, max_value_data_byte);
-
-				DWORD value_type      = REG_NONE;
-				DWORD value_name_cc   = max_value_name_cc;
-				DWORD value_data_size = max_value_data_byte;
-
-				ret = RegEnumValue(key,
-								   i,
-								   value_name,
-								   &value_name_cc,
-								   NULL,
-								   &value_type,
-								   value_data,
-								   &value_data_size);
-				if (ret == ERROR_SUCCESS)
+				for (DWORD i = 0; i < value_count; i++)
 				{
-					//log_dbg
-					//    "index = %u, value_name = %ws, value_type = %u, data = %ws", 
-					//    i, 
-					//    value_name, 
-					//    value_type, 
-					//    (char*)value_data
-					//    log_end;
-					if (true != value_cb(i, 
-										 value_type, 
-										 value_name, 
-										 value_data_size, 
-										 value_data, 
-										 value_cb_tag))
+					RtlZeroMemory(value_name, (max_value_name_cc) * sizeof(wchar_t));
+					RtlZeroMemory(value_data, max_value_data_byte);
+
+					DWORD value_type = REG_NONE;
+					DWORD value_name_cc = max_value_name_cc;
+					DWORD value_data_size = max_value_data_byte;
+
+					ret = RegEnumValue(key,
+									   i,
+									   value_name,
+									   &value_name_cc,
+									   NULL,
+									   &value_type,
+									   value_data,
+									   &value_data_size);
+					if (ret == ERROR_SUCCESS)
 					{
-						// caller calceld.
-						break;
+						//log_dbg
+						//    "index = %u, value_name = %ws, value_type = %u, data = %ws", 
+						//    i, 
+						//    value_name, 
+						//    value_type, 
+						//    (char*)value_data
+						//    log_end;
+						if (true != value_cb(i,
+											 value_type,
+											 value_name,
+											 value_data_size,
+											 value_data,
+											 value_cb_tag))
+						{
+							// caller calceld.
+							break;
+						}
 					}
-				}
-				else
-				{
-					log_err "RegEnumValue() failed. ret = %u", ret log_end;
+					else
+					{
+						log_err "RegEnumValue() failed. ret = %u", ret log_end;
+					}
 				}
 			}
 

@@ -409,11 +409,11 @@ get_account_infos(
 				accounts.push_back(ac);
 
 				if (user_info) { NetApiBufferFree(user_info); user_info = nullptr; }
-
 				user_info_0++;
 			}
 		}
 		if (buffer) { NetApiBufferFree(buffer); buffer = nullptr; }
+
 	} while (ERROR_MORE_DATA == ret);
 
 	if (buffer) { NetApiBufferFree(buffer); buffer = nullptr; }

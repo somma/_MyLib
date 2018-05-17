@@ -10,10 +10,9 @@
  * ----------------		----------------	----------------
  * 22/03/2007			Noh Yong Hwan		birth
 **---------------------------------------------------------------------------*/
-
 #include "stdafx.h"
 #include "CStream.h"
-
+#include <strsafe.h>
 
 /**	-----------------------------------------------------------------------
 	\brief	
@@ -25,7 +24,7 @@
 	\endcode		
 -------------------------------------------------------------------------*/
 #define MAX_UNSIGNED_LONG	0xFFFFFFFF	
-unsigned long CStream::ChangeCursor(const unsigned long offset, unsigned long from)
+unsigned long CStream::ChangeCursor(_In_ const unsigned long offset, _In_ unsigned long from)
 {
 	_ASSERTE(0 <= offset);
 	_ASSERTE(0 <= from);
@@ -69,7 +68,7 @@ unsigned long CStream::ChangeCursor(const unsigned long offset, unsigned long fr
 	
 	\endcode		
 -------------------------------------------------------------------------*/
-unsigned long CMemoryStream::SetSize(unsigned long newSize) 
+unsigned long CMemoryStream::SetSize(_In_ unsigned long newSize)
 {
 	unsigned long oldPosition = GetCurrentCusor();
 	char *ptr=NULL;
@@ -86,7 +85,7 @@ unsigned long CMemoryStream::SetSize(unsigned long newSize)
 			// 메모리가 부족함.
 			// m_pMemory 는 변경되지 않음. 
 			// 
-			CHAR log[512]={0};
+			char log[512]={0};
 			StringCbPrintfA(log, sizeof(log), "%s(), can not reallocate memory, new memory size=%u bytes", __FUNCTION__, newSize);
 			OutputDebugStringA(log);
 			return MAX_UNSIGNED_LONG;
@@ -116,7 +115,7 @@ unsigned long CMemoryStream::SetSize(unsigned long newSize)
 	
 	\endcode		
 -------------------------------------------------------------------------*/
-unsigned long CMemoryStream::ReadFromStream(void *Buffer, unsigned long Count)
+unsigned long CMemoryStream::ReadFromStream(_Out_ void *Buffer, _In_ unsigned long Count)
 {
 	_ASSERTE(nullptr != Buffer);
 	if (nullptr == Buffer) return 0;

@@ -284,6 +284,9 @@
     <ClCompile Include="src\net_util.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="_test_dns_query.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">

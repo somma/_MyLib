@@ -27,7 +27,7 @@ typedef std::shared_ptr<SC_HANDLE> sc_handle_ptr;
 
 /// @brief	service context manager for legacy dirver or win32 service.
 scm_context::scm_context(
-	_In_z_ const wchar_t* bin_path, 
+	_In_opt_z_ const wchar_t* bin_path,
 	_In_z_ const wchar_t* service_name, 
 	_In_z_ const wchar_t* service_display_name,
 	_In_ bool win32_service,
@@ -47,7 +47,7 @@ scm_context::scm_context(
 
 /// @brief	service context manager for minifilter driver
 scm_context::scm_context(
-	_In_z_ const wchar_t* bin_path,
+	_In_opt_z_ const wchar_t* bin_path,
 	_In_z_ const wchar_t* service_name,
 	_In_z_ const wchar_t* service_display_name,
 	_In_z_ const wchar_t* altitude,
