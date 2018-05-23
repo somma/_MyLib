@@ -295,7 +295,7 @@ void run_test()
 	//	Sleep(500);
 	//}
 
-	assert_bool(true, test_dns_query);
+	//assert_bool(true, test_dns_query);
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 	//assert_bool(true, test_file_info_cache);

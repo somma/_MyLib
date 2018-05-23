@@ -2384,7 +2384,7 @@ bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring&
         
     for (int i = 0; i < 3; ++i) // 버퍼 늘리는건 세번만...
     {
-        DWORD dwret = GetProcessImageFileName(process_handle, buf, buf_len / sizeof(wchar_t));
+        DWORD dwret = GetProcessImageFileNameW(process_handle, buf, buf_len / sizeof(wchar_t));
         if (0 == dwret)
         {
             DWORD gle = GetLastError();

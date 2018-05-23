@@ -31,7 +31,7 @@ bool proc_tree_callback(_In_ process& process_info, _In_ DWORD_PTR callback_tag)
 bool test_process_tree()
 {
 	cprocess_tree proc_tree;
-	if (!proc_tree.build_process_tree()) return false;
+	if (!proc_tree.build_process_tree(true)) return false;
 
 	// 프로세스 열거 테스트 (by callback)
 	proc_tree.iterate_process(proc_tree_callback, 0);
@@ -52,7 +52,7 @@ bool test_process_tree()
 bool test_image_path_by_pid()
 {
 	cprocess_tree proc_tree;
-	if (!proc_tree.build_process_tree()) return false;
+	if (!proc_tree.build_process_tree(true)) return false;
 
 	DWORD pid = proc_tree.find_process(L"explorer.exe");
 
@@ -73,7 +73,7 @@ bool test_image_path_by_pid()
 bool test_get_process_creation_time()
 {
 	cprocess_tree proc_tree;
-	if (!proc_tree.build_process_tree()) return false;
+	if (!proc_tree.build_process_tree(true)) return false;
 
 	DWORD pid = proc_tree.find_process(L"explorer.exe");
 

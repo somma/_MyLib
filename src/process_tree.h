@@ -55,9 +55,6 @@ private:
 	bool			_killed;
 };
 
-
-
-
 /**
  * @brief	place holder for running processes
 **/
@@ -69,7 +66,7 @@ class cprocess_tree
 {
 public:
 	bool	clear_process_tree() { _proc_map.clear(); }
-	bool	build_process_tree();
+	bool	build_process_tree(_In_ bool set_debug_privilege);
 
 	DWORD			find_process(_In_ const wchar_t* process_name);
 	const wchar_t*	get_process_name(_In_ DWORD pid);
