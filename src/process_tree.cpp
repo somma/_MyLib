@@ -96,8 +96,15 @@ cprocess_tree::build_process_tree(_In_ bool set_debug_privilege)
 		{
 			log_err "set_privilege(SE_DEBUG_NAME) failed."
 				log_end;
+			//
+			// `SeDebugPrivilege`를 활성화 하지 못한 경우 실패를 반환
+			// 하고 함수를 빠져 나가지 않는 이유는 `SeDebugPrivilege`
+			// 권한이 없다고 해서 프로세스 정보를 수집 못하는게 아니기 떄문이다.
+			//
+			
 		}
 	}
+
 	_proc_map.clear();
 
 	PROCESSENTRY32W proc_entry = {0};

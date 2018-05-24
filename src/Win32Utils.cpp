@@ -5021,131 +5021,155 @@ BOOL GetTimeStringW(IN std::wstring& TimeString)
 */
 bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 {
-	//
-	//	set_privilege(SE_DEBUG_NAME, true) 호출 후 set_privilege(SE_DEBUG_NAME, false) 를 
-	//	호출하면 set_privilege(SE_DEBUG_NAME, false) 호출 이후의 OpenProcess() 가 종종
-	//	권한이 있음에도 불구하고, 실패하는 경우가 발생한다. 
-	//	정확한 원인 분석은 해보지 않아서 잘 모르겠음. 나중에 시간나면 한번...
-	//	일단 set_privilege(SE_DEBUG_NAME, false) 를 호출하지 않도록 하게 하기 위해
-	//	예외코드만 추가해 둠
-	//
-	_ASSERTE(true == enable);
-	if (true != enable) return false;
+    //
+    //    set_privilege(SE_DEBUG_NAME, true) 호출 후 set_privilege(SE_DEBUG_NAME, false) 를 
+    //    호출하면 set_privilege(SE_DEBUG_NAME, false) 호출 이후의 OpenProcess() 가 종종
+    //    권한이 있음에도 불구하고, 실패하는 경우가 발생한다. 
+    //    정확한 원인 분석은 해보지 않아서 잘 모르겠음. 나중에 시간나면 한번...
+    //    일단 set_privilege(SE_DEBUG_NAME, false) 를 호출하지 않도록 하게 하기 위해
+    //    예외코드만 추가해 둠
+    //
+    _ASSERTE(true == enable);
+    if (true != enable) return false;
 
-	if (IsWindowsXPOrGreater())
-	{
-		HANDLE hToken;
-		if (TRUE != OpenThreadToken(GetCurrentThread(),
-									TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, FALSE,
-									&hToken))
-		{
-			if (GetLastError() == ERROR_NO_TOKEN)
-			{
-				if (ImpersonateSelf(SecurityImpersonation) != TRUE)
-				{
-					log_err "ImpersonateSelf( ) failed. gle=%u",
-						GetLastError()
-						log_end
-						return false;
-				}
+    if (IsWindowsXPOrGreater())
+    {
+        HANDLE hToken;
+        if (TRUE != OpenThreadToken(GetCurrentThread(),
+                                    TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, 
+                                    FALSE,
+                                    &hToken))
+        {
+            if (GetLastError() == ERROR_NO_TOKEN)
+            {
+                //
+                //    Impersonate 되지 않은 상태인 경우 Thread 는 Access token 을 가지고 있지 
+                //    때문에 항상 ERROR_NO_TOKEN 이 리턴한다.
+                //
+                //    이 경우 OpenProcessToken() 을 호출해서 프로세스의 Access token 을 얻어서
+                //    프로세스의 Privilige 를 변경할 수 있다. 
+                // 
+                //    아니면 ImpersonateSelf() 를 호출해서 현재 스레드의 Access token 을 생성하고
+                //    (생성된 token 은 현재 스레드에서만 유효) 현재 스레드의 Privilege 만 변경할 
+                //    수 있다. Privilege 변경 후 할일이 끝나면 RevertToSelf() 를 호출해서 
+                //    Impersion 을 끝낼 수 있다.
+                //
+                if (ImpersonateSelf(SecurityImpersonation) != TRUE)
+                {
+                    log_err "ImpersonateSelf( ) failed. gle=%u",
+                        GetLastError()
+                        log_end;
+                    return false;
+                }
 
-				if (TRUE != OpenThreadToken(GetCurrentThread(),
-											TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
-											FALSE,
-											&hToken))
-				{
-					log_err "OpenThreadToken() failed. gle=%u",
-						GetLastError()
-						log_end
-						return false;
-				}
-			}
-			else
-			{
-				log_err "OpenThread() failed. gle=%u",
-					GetLastError()
-					log_end
-					return false;
-			}
-		}		
-		handle_ptr token_ptr(hToken, [](_In_ HANDLE h) {CloseHandle(h); });
+                if (TRUE != OpenThreadToken(GetCurrentThread(),
+                                            TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
+                                            FALSE,
+                                            &hToken))
+                {
+                    log_err "OpenThreadToken() failed. gle=%u",
+                        GetLastError()
+                        log_end;
+                    return false;
+                }                
+            }
+            else
+            {
+                log_err "OpenThreadToken() failed. gle=%u",
+                    GetLastError()
+                    log_end;
+                return false;
+            }
+        }        
+        handle_ptr token_ptr(hToken, [](_In_ HANDLE h) {CloseHandle(h); });
+        
+        TOKEN_PRIVILEGES tp = { 0 };
+        TOKEN_PRIVILEGES tpPrevious = { 0 };
+        LUID luid = { 0 };
+        DWORD cb = sizeof(TOKEN_PRIVILEGES);
+        if (!LookupPrivilegeValue(NULL,
+                                  privilege,
+                                  &luid))
+        {
+            log_err "LookupPrivilegeValue() failed. priv=%ws, gle=%u",
+                privilege,
+                GetLastError()
+                log_end                
+            return false;
+        }
 
+        // 
+        // first pass.  get current privilege setting
+        // 
+        tp.PrivilegeCount = 1;
+        tp.Privileges[0].Luid = luid;
+        tp.Privileges[0].Attributes = 0;
+        if (!AdjustTokenPrivileges(hToken,
+                                   FALSE,
+                                   &tp,
+                                   sizeof(TOKEN_PRIVILEGES),
+                                   &tpPrevious,
+                                   &cb))
+        {
+            log_err "AdjustTokenPrivileges() failed. priv=%ws, gle=%u",
+                privilege,
+                GetLastError()
+                log_end;
+            return false;
+        }
 
-		TOKEN_PRIVILEGES tp = { 0 };
-		TOKEN_PRIVILEGES tpPrevious = { 0 };
-		LUID luid = { 0 };
-		DWORD cb = sizeof(TOKEN_PRIVILEGES);
-		if (!LookupPrivilegeValue(NULL,
-								  privilege,
-								  &luid))
-		{
-			log_err "LookupPrivilegeValue() failed. priv=%ws, gle=%u",
-				privilege,
-				GetLastError()
-				log_end				
-			return false;
-		}
+        if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
+        {
+            //
+            //    luid 에 매칭되는 Privilige 가 없는 경우이므로 
+            //    tpPrevious 의 count 는 0 이어야 한다. 
+            //
+            _ASSERTE(tpPrevious.PrivilegeCount == 00);
+            log_err "Token does not have specified privilege. priv=%ws",
+                privilege
+                log_end;
+            return false;
+        }
+        
+        // 
+        // second pass.  set privilege based on previous setting
+        // 
+        tp.PrivilegeCount = 1;
+        tp.Privileges[0].Luid = luid;
+        if (enable)
+        {
+            tpPrevious.Privileges[0].Attributes |= (SE_PRIVILEGE_ENABLED);
+        }
+        else
+        {
+            tpPrevious.Privileges[0].Attributes ^= (SE_PRIVILEGE_ENABLED &
+                                                    tpPrevious.Privileges[0].Attributes);
+        }
 
-		// 
-		// first pass.  get current privilege setting
-		// 
-		tp.PrivilegeCount = 1;
-		tp.Privileges[0].Luid = luid;
-		tp.Privileges[0].Attributes = 0;
-		if (!AdjustTokenPrivileges(hToken,
-								   FALSE,
-								   &tp,
-								   sizeof(TOKEN_PRIVILEGES),
-								   &tpPrevious,
-								   &cb))
-		{
-			log_err "AdjustTokenPrivileges() failed. priv=%ws, gle=%u",
-				privilege,
-				GetLastError()
-				log_end;
-			return false;
-		}
+        if (!AdjustTokenPrivileges(hToken,
+                                   FALSE,
+                                   &tpPrevious,
+                                   cb,
+                                   NULL,
+                                   NULL))
+        {
+            log_err "AdjustTokenPrivileges() failed. priv=%ws, gle=%u",
+                privilege,
+                GetLastError()
+                log_end;
+            return false;
+        }
 
-		// 
-		// second pass.  set privilege based on previous setting
-		// 
-		tp.PrivilegeCount = 1;
-		tp.Privileges[0].Luid = luid;
-		if (enable)
-		{
-			tpPrevious.Privileges[0].Attributes |= (SE_PRIVILEGE_ENABLED);
-		}
-		else
-		{
-			tpPrevious.Privileges[0].Attributes ^= (SE_PRIVILEGE_ENABLED &
-													tpPrevious.Privileges[0].Attributes);
-		}
+        if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
+        {
+            log_err "Token does not have specified privilege. priv=%ws",
+                privilege
+                log_end;
+            return false;
+        }
+    }
 
-		BOOL ret = AdjustTokenPrivileges(hToken,
-										 FALSE,
-										 &tpPrevious,
-										 cb,
-										 NULL,
-										 NULL);
-		if (!ret)
-		{
-			log_err "AdjustTokenPrivileges() failed. priv=%ws, gle=%u",
-				privilege,
-				GetLastError()
-				log_end;
-			return false;
-		}
-
-		if (ret != ERROR_NOT_ALL_ASSIGNED)
-		{
-			log_err "Token does not have specified privilege. priv=%ws",
-				privilege
-				log_end;
-			return false;
-		}
-	}
-
-	return true;
+    return true;
 }
 
 /**
