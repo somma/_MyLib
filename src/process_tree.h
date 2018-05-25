@@ -25,13 +25,29 @@ class process
 {
 public:
 	process()
-	:_process_name(L""), _ppid(0), _pid(0), _creation_time(0), _full_path(L""), _killed(false)
+		:
+		_process_name(L""), 
+		_ppid(0), 
+		_pid(0), 
+		_creation_time(0), 
+		_full_path(L""), 
+		_killed(false)
 	{
-
 	}
 
-	process(_In_ const wchar_t* process_name, _In_ DWORD ppid, _In_ DWORD pid, _In_ uint64_t creation_time, _In_ std::wstring& full_path, _In_ bool killed)
-	: _process_name(process_name), _ppid(ppid), _pid(pid), _creation_time(creation_time), _full_path(full_path), _killed(killed)
+	process(_In_ const wchar_t* process_name, 
+			_In_ DWORD ppid, 
+			_In_ DWORD pid, 
+			_In_ uint64_t creation_time, 
+			_In_ std::wstring& full_path, 
+			_In_ bool killed) 
+		:	
+		_process_name(process_name), 
+		_ppid(ppid), 
+		_pid(pid), 
+		_creation_time(creation_time), 
+		_full_path(full_path), 
+		_killed(killed)
 	{
 	}
 
@@ -59,7 +75,7 @@ private:
  * @brief	place holder for running processes
 **/
 typedef std::map< DWORD, process >	process_map;
-typedef bool (*fnproc_tree_callback)(_In_ process& process_info, _In_ DWORD_PTR callback_tag);
+typedef boost::function<bool(_In_ process& process_info, _In_ DWORD_PTR callback_tag)> fnproc_tree_callback;
 
 
 class cprocess_tree
@@ -70,8 +86,8 @@ public:
 
 	DWORD			find_process(_In_ const wchar_t* process_name);
 	const wchar_t*	get_process_name(_In_ DWORD pid);
-    const wchar_t*  get_process_path(_In_ DWORD pid);
-    uint64_t        get_process_time(_In_ DWORD pid);
+	const wchar_t*  get_process_path(_In_ DWORD pid);
+	uint64_t        get_process_time(_In_ DWORD pid);
 
 	DWORD			get_parent_pid(_In_ DWORD child_pid);
 	const wchar_t*	get_parent_name(_In_ DWORD child_pid);
