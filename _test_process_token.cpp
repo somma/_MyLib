@@ -5,7 +5,7 @@
 bool test_process_token()
 {
 	cprocess_tree proc_tree;
-	_ASSERTE(true == proc_tree.build_process_tree());
+	_ASSERTE(true == proc_tree.build_process_tree(true));
 	proc_tree.iterate_process([](_In_ process& proc, _In_ DWORD_PTR tag)->bool
 	{
 		UNREFERENCED_PARAMETER(tag);

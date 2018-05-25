@@ -31,7 +31,6 @@ bool proc_tree_callback(_In_ process& process_info, _In_ DWORD_PTR callback_tag)
 
 bool test_process_tree()
 {
-	
 	cprocess_tree proc_tree;
 	if (!proc_tree.build_process_tree(true)) return false;
 
@@ -39,12 +38,84 @@ bool test_process_tree()
 	proc_tree.iterate_process(proc_tree_callback, 0);
 	proc_tree.iterate_process_tree(proc_tree.find_process(L"cmd.exe"), proc_tree_callback, 0);
 
-	// print 
-	proc_tree.print_process_tree(L"cmd.exe");
+	// 프로세스 열거 테스트 (by lambda)
+	proc_tree.iterate_process([](_In_ process& process_info, _In_ DWORD_PTR callback_tag)->bool 
+	{
+		UNREFERENCED_PARAMETER(callback_tag);
+		log_info "pid = %u, name = %ws, path = %ws",
+			process_info.pid(),
+			process_info.process_name(),
+			process_info.process_path()
+			log_end
+			return true;
+	},
+	0);
 
-	// 프로세스 종료 테스트	
-	proc_tree.kill_process_tree(proc_tree.find_process(L"cmd.exe"));
+	// 프로세스 열거 테스트 (by boost::function, lambda with capture)
+	int count = 0;
+	boost::function<bool(_In_ process& process_info, _In_ DWORD_PTR callback_tag)> callback = [&count](_In_ process& process_info, _In_ DWORD_PTR callback_tag)->bool
+	{
+		UNREFERENCED_PARAMETER(callback_tag);
+		log_info "pid = %u, name = %ws, path = %ws",
+			process_info.pid(),
+			process_info.process_name(),
+			process_info.process_path()
+			log_end;
+		++count;
+		return true;
+	};
+	proc_tree.iterate_process(callback, 0);
+	_ASSERTE(count > 0);
 
+	// 프로세스 열거 테스트 (by lambda with capture local variable)
+	count = 0;
+	proc_tree.iterate_process([&count](_In_ process& process_info, _In_ DWORD_PTR callback_tag)->bool
+	{
+		UNREFERENCED_PARAMETER(callback_tag);
+		log_info "pid = %u, name = %ws, path = %ws",
+			process_info.pid(),
+			process_info.process_name(),
+			process_info.process_path()
+			log_end;
+		count++;
+		return true;
+	},
+	0);
+	_ASSERTE(count > 0);
+
+	// 
+	//	run notepad.exe & kill & ...
+	// 
+	PROCESS_INFORMATION pi = { 0 };
+	STARTUPINFOW si = { 0 };
+	if (!CreateProcessW(L"c:\\windows\\system32\\notepad.exe",
+						nullptr,
+						nullptr,
+						nullptr,
+						FALSE,
+						0,
+						nullptr,
+						nullptr,
+						&si,
+						&pi))
+	{
+		log_err "CreateProcessW() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	Sleep(1000);
+
+	log_info "kill notepad..." log_end;
+	_ASSERTE(true == proc_tree.build_process_tree(false));
+	proc_tree.print_process_tree(L"notepad.exe");
+	_ASSERTE(true == proc_tree.kill_process_tree(proc_tree.find_process(L"notepad.exe"), 
+												 false));
+
+	//
+	//	print process tree
+	//
+	log_info "print explorer family..." log_end;
 	proc_tree.print_process_tree(L"explorer.exe");
 	
 	return true;

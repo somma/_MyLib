@@ -19,56 +19,60 @@
  * @endcode	
  * @return	
 **/
-bool process::kill(_In_ DWORD exit_code)
+bool process::kill(_In_ DWORD exit_code, _In_ bool enable_debug_priv)
 {
 	_ASSERTE(true != _killed);	
 	if (true == _killed) return true;
 
-	if (!set_privilege(SE_DEBUG_NAME, true))
+	//
+	//	first try without set privilege
+	//
+	HANDLE h = OpenProcess(PROCESS_TERMINATE, FALSE, _pid);
+	if (NULL == h && true == enable_debug_priv)
 	{
-		log_err "set_privilege() failed. pid=%u",
-			_pid
+		DWORD gle = GetLastError();
+		if (true != set_privilege(SE_DEBUG_NAME, true))
+		{
+			log_err
+				"OpenProcess() failed and no debug privilege), pid = %u, gle = %u",
+				_pid,
+				gle
+				log_end;
+			return false;
+		}
+
+		//
+		//	re-try with debug privilege
+		//	
+		h = OpenProcess(PROCESS_TERMINATE, FALSE, _pid);
+	}
+
+	if (NULL == h)
+	{
+		log_err
+			"OpenProcess() failed, pid = %u, gle = %u",
+			_pid,
+			GetLastError()
 			log_end;
 		return false;
 	}
-	
-	HANDLE h = NULL;
-#pragma warning(disable: 4127)
-    do 
-	{
-		h = OpenProcess(PROCESS_TERMINATE, FALSE, _pid);
-		if (NULL == h)
-		{
-			log_err 
-				"OpenProcess() failed, pid = %u, gle = %u", 
-				_pid,
-				GetLastError()
-			log_end;
-			break;
-		}
-	
-		if (!TerminateProcess(h, exit_code))
-		{
-			log_err 
-				"TerminateProcess() failed, pid = %u, gle = %u", 
-				_pid,
-				GetLastError()
-			log_end;
-			break;			
-		}
-	
 
-		_killed = true;	
+	if (!TerminateProcess(h, exit_code))
+	{
+		log_err
+			"TerminateProcess() failed, pid = %u, gle = %u",
+			_pid,
+			GetLastError()
+			log_end;
+	}
+	else
+	{
+		_killed = true;
 		log_dbg "pid = %u, %ws terminated", _pid, _process_name.c_str() log_end;
-
-	} while (false);
-#pragma warning(default: 4127)
-
-	if (NULL!=h) 
-	{
-		CloseHandle(h); // TerminateProcess() is asynchronous, so must call CloseHandle()
 	}
 
+	_ASSERTE(NULL != h);
+	CloseHandle(h); // TerminateProcess() is asynchronous, so must call CloseHandle()
 	return (true == _killed) ? true : false;
 }
 
@@ -82,7 +86,7 @@ bool process::kill(_In_ DWORD exit_code)
  * @return	
 **/
 bool 
-cprocess_tree::build_process_tree(_In_ bool set_debug_privilege)
+cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 {
 	//
 	// 권한(SeDebugPrivilege)이 없는 경우 특정 프로세스(csrss, WmiPrvSE 등)를
@@ -90,7 +94,7 @@ cprocess_tree::build_process_tree(_In_ bool set_debug_privilege)
 	// `set_debug_privilege` 값이 true인 경우 디버그 권한을 설정을 하고 아닌 경우 설정
 	// 하지 않는다.
 	//
-	if (true == set_debug_privilege)
+	if (true == enable_debug_priv)
 	{
 		if (true != set_privilege(SE_DEBUG_NAME, true))
 		{
@@ -309,42 +313,35 @@ const wchar_t* cprocess_tree::get_parent_name(_In_ DWORD child_pid)
 	return it->second.process_name();
 }
 
-/**
- * @brief	모든 프로세스를 콜백 함수를 통해 열거한다.
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-void 
+/// @brief	모든 process 를 iterate 한다. 
+///			callback 에서 false 를 리턴(iterate 중지/취소) 하거나
+///			유효하지 않는 파라미터 입력시 false 를 리턴한다.
+bool 
 cprocess_tree::iterate_process(
 	_In_ fnproc_tree_callback callback, 
 	_In_ DWORD_PTR callback_tag
 	)
 {
 	_ASSERTE(NULL != callback);		
-	if (NULL == callback) return;
+	if (NULL == callback) return false;
 	
 	process_map::iterator its = _proc_map.begin();
 	process_map::iterator ite= _proc_map.end();
 	for(; its != ite; ++its)
 	{
-		if (true != callback(its->second, callback_tag)) break;
+		if (true != callback(its->second, callback_tag))
+		{
+			return false;
+		}
 	}
+	return true;
 }
 
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-void 
+/// @brief	지정된 process tree 를 iterate 한다. 
+///			callback 에서 false 를 리턴(iterate 중지/취소) 하거나,
+///			지정된 프로세스를 찾을 수 없거나,
+///			유효하지 않는 파라미터 입력시 false 를 리턴한다.
+bool
 cprocess_tree::iterate_process_tree(
 	_In_ DWORD root_pid, 
 	_In_ fnproc_tree_callback callback, 
@@ -352,13 +349,69 @@ cprocess_tree::iterate_process_tree(
 	)
 {
 	_ASSERTE(NULL != callback);		
-	if (NULL == callback) return;
+	if (NULL == callback) return false;
 
 	process_map::iterator it = _proc_map.find(root_pid);
-	if (it == _proc_map.end()) return;
+	if (it == _proc_map.end()) return false;
 
 	process root = it->second;
-	iterate_process_tree(root, callback, callback_tag);
+	return iterate_process_tree(root, callback, callback_tag);
+}
+
+/// @brief	process map 을 순회하면서 콜백함수를 호출한다. 
+///			콜백함수가 false 를 리턴하면 순회를 즉시 멈춘다.
+bool
+cprocess_tree::iterate_process_tree(
+	_In_ process& root, 
+	_In_ fnproc_tree_callback callback, 
+	_In_ DWORD_PTR callback_tag
+	)
+{
+	// parent first
+	if (true != callback(root, callback_tag)) return false;
+
+	//
+	//	pid == 0 인 프로세스라면 recursive call 을 하지 않는다. 
+	//	win10 에서 toolhelp 를 이용한 경우 
+	// 
+	//	`[System Process]` : 
+	//	`System` 
+	// 
+	//	이렇게 두개의 프로세스 정보가 리턴되는데, [System Process] 의 경우
+	//	pid, ppid, create time 등이 모두 0 이다. 
+	//	[System Process] 의 자식 프로세스는 없으므로 recursive call 을 하지 않는다.
+	//	
+	if (0 == root.pid())
+	{
+		return true;
+	}
+
+	// childs
+	process_map::iterator its = _proc_map.begin();
+	process_map::iterator ite= _proc_map.end();
+	for(; its != ite; ++its)
+	{
+		//	ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, 
+		//	ppid 를 할당받은 경우가 발생할 수 있다. 
+		//	따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 
+		//	더 커야 한다.
+		// 
+		//	수정: Jang, Hyowon (jang.hw73@gmail.com)
+		//	생성시간이 동일한 경우 print되지 않는 프로세스가 존재하기 때문에(ex. creation_time == 0) 
+		//	생성시간의 값이 더 크거나 같은 값으로 해야 한다.
+		if ( its->second.ppid() == root.pid() && 
+			 its->second.creation_time() >= root.creation_time())
+		{
+			if (true != iterate_process_tree(its->second,
+											 callback,
+											 callback_tag))
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 /**
@@ -411,7 +464,7 @@ void cprocess_tree::print_process_tree(_In_ const wchar_t* root_process_name)
  * @endcode	
  * @return	
 **/
-bool cprocess_tree::kill_process(_In_ DWORD pid)
+bool cprocess_tree::kill_process(_In_ DWORD pid, _In_ bool enable_debug_priv)
 {
 	if (pid == 0 || pid == 4) return false;
 
@@ -419,7 +472,7 @@ bool cprocess_tree::kill_process(_In_ DWORD pid)
 	if (it == _proc_map.end()) return true;
 	process prcs = it->second;
 
-	return prcs.kill(0);
+	return prcs.kill(0, enable_debug_priv);
 }
 
 /**
@@ -431,13 +484,13 @@ bool cprocess_tree::kill_process(_In_ DWORD pid)
  * @endcode	
  * @return	
 **/
-bool cprocess_tree::kill_process(_In_ const wchar_t* process_name)
+bool cprocess_tree::kill_process(_In_ const wchar_t* process_name, _In_ bool enable_debug_priv)
 {
 	_ASSERTE(NULL != process_name);
 	if (NULL == process_name) return false;
 	
 	DWORD pid = find_process(process_name);
-	return kill_process(pid);
+	return kill_process(pid, enable_debug_priv);
 }
 
 /**
@@ -449,7 +502,7 @@ bool cprocess_tree::kill_process(_In_ const wchar_t* process_name)
  * @endcode	
  * @return	
 **/
-bool cprocess_tree::kill_process_tree(_In_ DWORD root_pid)
+bool cprocess_tree::kill_process_tree(_In_ DWORD root_pid, _In_ bool enable_debug_priv)
 {
 	if (root_pid == 0 || root_pid == 4) return false;
 
@@ -465,8 +518,7 @@ bool cprocess_tree::kill_process_tree(_In_ DWORD root_pid)
 	}
 
 	// kill process tree include root.
-	kill_process_tree(root);
-	
+	kill_process_tree(root, enable_debug_priv);	
 	return true;
 }
 
@@ -546,7 +598,7 @@ void cprocess_tree::print_process_tree(_In_ process& p, _In_ DWORD& depth)
  * @endcode	
  * @return	
 **/
-void cprocess_tree::kill_process_tree(_In_ process& root)
+void cprocess_tree::kill_process_tree(_In_ process& root, _In_ bool enable_debug_priv)
 {
 	// terminate child processes first if exists.
 	process_map::iterator its = _proc_map.begin();
@@ -560,68 +612,12 @@ void cprocess_tree::kill_process_tree(_In_ process& root)
 		if ( its->second.ppid() == root.pid() && 
 			 its->second.creation_time() >= root.creation_time())
 		{
-			kill_process_tree(its->second);
+			kill_process_tree(its->second, enable_debug_priv);
 		}
 	}
 
 	// terminate parent process
-	root.kill(0);
+	root.kill(0, enable_debug_priv);
 }
 
 
-/**
- * @brief	process map 을 순회하면서 콜백함수를 호출한다. 
-			콜백함수가 false 를 리턴하면 순회를 즉시 멈춘다.
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-void 
-cprocess_tree::iterate_process_tree(
-	_In_ process& root, 
-	_In_ fnproc_tree_callback callback, 
-	_In_ DWORD_PTR callback_tag
-	)
-{
-	// parent first
-	if (true != callback(root, callback_tag)) return;
-
-	//
-	//	pid == 0 인 프로세스라면 recursive call 을 하지 않는다. 
-	//	win10 에서 toolhelp 를 이용한 경우 
-	// 
-	//	`[System Process]` : 
-	//	`System` 
-	// 
-	//	이렇게 두개의 프로세스 정보가 리턴되는데, [System Process] 의 경우
-	//	pid, ppid, create time 등이 모두 0 이다. 
-	//	[System Process] 의 자식 프로세스는 없으므로 recursive call 을 하지 않는다.
-	//	
-	if (0 == root.pid())
-	{
-		return;
-	}
-
-	// childs
-	process_map::iterator its = _proc_map.begin();
-	process_map::iterator ite= _proc_map.end();
-	for(; its != ite; ++its)
-	{
-		//	ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, 
-		//	ppid 를 할당받은 경우가 발생할 수 있다. 
-		//	따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 
-		//	더 커야 한다.
-		// 
-		//	수정: Jang, Hyowon (jang.hw73@gmail.com)
-		//	생성시간이 동일한 경우 print되지 않는 프로세스가 존재하기 때문에(ex. creation_time == 0) 
-		//	생성시간의 값이 더 크거나 같은 값으로 해야 한다.
-		if ( its->second.ppid() == root.pid() && 
-			 its->second.creation_time() >= root.creation_time())
-		{
-			iterate_process_tree(its->second, callback, callback_tag);
-		}
-	}
-}

@@ -356,7 +356,12 @@ void run_test()
 	//assert_bool(true, test_to_lower_uppper_string);
 
 	//assert_bool(true, test_initialize_string);
+	
+	uint32_t lt = get_log_to();
+	set_log_to(log_to_con | lt);
 	assert_bool(true, test_process_tree);
+	set_log_to(lt);
+
 	//assert_bool(true, test_image_path_by_pid);
 	//assert_bool(true, test_get_process_creation_time);
 	//assert_bool(true, test_base64);
@@ -434,7 +439,7 @@ void run_test()
 		_fail_count
 	log_end
 
-	//finalize_log();
+	finalize_log();
 }
 
 /// @brief

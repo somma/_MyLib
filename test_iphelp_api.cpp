@@ -57,10 +57,10 @@ int exec_iphelp_api_sample()
 	std::string ip_str;
 
     /* variables used for AddIpAddress */
-    UINT iaIPAddress;
-    UINT imIPMask;
-    ULONG NTEContext;
-    ULONG NTEInstance;
+//    UINT iaIPAddress;
+//    UINT imIPMask;
+//    ULONG NTEContext;
+//    ULONG NTEInstance;
 
     /* variables used for GetIpStatistics */
     MIB_IPSTATS *pStats;
@@ -88,7 +88,9 @@ int exec_iphelp_api_sample()
         }
     }
 
-    if (dwRetVal = GetNetworkParams(pFixedInfo, &ulOutBufLen) != NO_ERROR) {
+	dwRetVal = GetNetworkParams(pFixedInfo, &ulOutBufLen);
+    if (dwRetVal != NO_ERROR) 
+	{
         printf("GetNetworkParams failed with error %d\n", dwRetVal);
         if (pFixedInfo)
             FREE(pFixedInfo);
@@ -466,7 +468,7 @@ int exec_iphelp_api_sample2(ULONG family)
 {
  /* Declare and initialize variables */
 
-    DWORD dwSize = 0;
+//    DWORD dwSize = 0;
     DWORD dwRetVal = 0;
 
     unsigned int i = 0;
