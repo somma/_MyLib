@@ -295,7 +295,7 @@ void run_test()
 	//	Sleep(500);
 	//}
 
-	assert_bool(true, test_dns_query);
+	//assert_bool(true, test_dns_query);
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 	//assert_bool(true, test_file_info_cache);
@@ -356,7 +356,7 @@ void run_test()
 	//assert_bool(true, test_to_lower_uppper_string);
 
 	//assert_bool(true, test_initialize_string);
-	//assert_bool(true, test_process_tree);
+	assert_bool(true, test_process_tree);
 	//assert_bool(true, test_image_path_by_pid);
 	//assert_bool(true, test_get_process_creation_time);
 	//assert_bool(true, test_base64);
