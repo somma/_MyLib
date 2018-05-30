@@ -7435,15 +7435,11 @@ void clear_console()
 
 /// @brief	파일이 실행파일인지 아닌지 확인한다. 
 /// @return	성공시 true
-bool 
-is_executable_file_w(
-	_In_ const wchar_t* path, 
-	_Out_ IMAGE_TYPE& type
-	)
+IMAGE_TYPE get_image_type(_In_ const wchar_t* path)
 {
 	_ASSERTE(nullptr != path);
-	if (nullptr == path) return false;
-	if (true != is_file_existsW(path)) return false;
+	if (nullptr == path) return IT_UNKNOWN;
+	if (true != is_file_existsW(path)) return IT_UNKNOWN;
 	
     HANDLE hFile = CreateFileW(path, 
 							   GENERIC_READ,
@@ -7455,32 +7451,30 @@ is_executable_file_w(
     if (INVALID_HANDLE_VALUE == hFile)
     {
         //log_err "access denied or invalid path, %ws, gle = %u", path, GetLastError() log_end
-        return false;
+        return IT_UNKNOWN;
     }
     SmrtHandle sfFile(hFile);
-	return is_executable_file_w(hFile, type);
+	return get_image_type(hFile);
 }
 
-bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
+IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 {
-	type = IT_NON_PE;
-
-    // check file size 
+	// check file size 
     // 
     LARGE_INTEGER fileSize;
     if (TRUE != GetFileSizeEx(file_handle, &fileSize))
     {
-        log_err "can not get file size, errorcode=0x%08x", 
-			GetLastError() 
-			log_end
-        return false;
+		log_err "can not get file size, errorcode=0x%08x",
+			GetLastError()
+			log_end;
+		return IT_UNKNOWN;
     }
 	if (sizeof(IMAGE_DOS_HEADER) > fileSize.QuadPart)
 	{
 		//
 		//	Not a PE file
 		//
-		return true;
+		return IT_UNKNOWN;
 	}
     
     HANDLE hImageMap = CreateFileMapping(file_handle, 
@@ -7494,7 +7488,7 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 		log_err "CreateFileMapping() failed. gle=%u",
 			GetLastError()
 			log_end;
-		return false;	
+		return IT_UNKNOWN;
 	}
     SmrtHandle sfMap(hImageMap);
     PBYTE ImageView = (LPBYTE) MapViewOfFile(hImageMap, 
@@ -7507,7 +7501,7 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 		log_err "MapViewOfFile() failed. gle=%u",
 			GetLastError()
 			log_end;
-		return false;	
+		return IT_UNKNOWN;
 	}
     SmrtView sfView(ImageView);
 
@@ -7523,7 +7517,7 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 			//
 			//	Not a PE file
 			//
-			return true;
+			return IT_UNKNOWN;
 		}
 
 		// check DOS file size
@@ -7538,7 +7532,7 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 			//
 			//	Not a PE file
 			//
-			return true;
+			return IT_UNKNOWN;
 		}
 
 		PIMAGE_NT_HEADERS inh = (PIMAGE_NT_HEADERS)((DWORD_PTR)idh + idh->e_lfanew);
@@ -7551,20 +7545,19 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 			//
 			//	Not a PE file
 			//
-			return true;
+			return IT_UNKNOWN;
 		}
-		if (IMAGE_NT_SIGNATURE != inh->Signature) return false;
+		if (IMAGE_NT_SIGNATURE != inh->Signature) return IT_UNKNOWN;;
 
 		WORD subsys = inh->OptionalHeader.Subsystem;
 		WORD characteristics = inh->FileHeader.Characteristics;
 
 		// characteristics check
-		if ((characteristics & IMAGE_FILE_EXECUTABLE_IMAGE) != IMAGE_FILE_EXECUTABLE_IMAGE) return false;   // not executable
+		if ((characteristics & IMAGE_FILE_EXECUTABLE_IMAGE) != IMAGE_FILE_EXECUTABLE_IMAGE) return IT_UNKNOWN;   // not executable
 
 		if ((characteristics & IMAGE_FILE_DLL) == IMAGE_FILE_DLL)
 		{
-			type = IT_DLL;
-			return true;
+			return IT_DLL;
 		}
 
 		// never called.. ???
@@ -7574,48 +7567,37 @@ bool is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type)
 		// 
 		if ((subsys & IMAGE_SUBSYSTEM_NATIVE) == IMAGE_SUBSYSTEM_NATIVE)
 		{
-			type = IT_NATIVE_APP;
-			return true;
+			return IT_NATIVE_APP;
 		}
 
 		if ((subsys & IMAGE_SUBSYSTEM_WINDOWS_GUI) == IMAGE_SUBSYSTEM_WINDOWS_GUI)
 		{
-			type = IT_EXE_GUI;
-			return true;
+			return IT_EXE_GUI;
 		}
 		if ((subsys & IMAGE_SUBSYSTEM_WINDOWS_CUI) == IMAGE_SUBSYSTEM_WINDOWS_CUI)
 		{
-			type = IT_EXE_CUI;
-			return true;
+			return IT_EXE_CUI;
 		}
 		if ((subsys & IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION) == IMAGE_SUBSYSTEM_WINDOWS_BOOT_APPLICATION)
 		{
-			type = IT_EXE_BOOT;
-			return true;
+			return IT_EXE_BOOT;
 		}
 		
 	}
 	catch(std::exception& e)
 	{
 		log_warn "Invalid/Malformed pe file, exception=%s", e.what() log_end;
-		return false;
+		return IT_UNKNOWN;
 	}
 
 	//
 	//	Not a PE file
 	//
-	return true;
+	return IT_UNKNOWN;
 }
 
-/** ---------------------------------------------------------------------------
-    \brief  
-
-    \param  
-    \return         
-    \code
-    \endcode        
------------------------------------------------------------------------------*/
-LPCWSTR  FileTypeToString(IMAGE_TYPE type)
+/// @brief
+LPCWSTR  image_type_to_string(_In_ IMAGE_TYPE type)
 {
     switch(type)
     {
@@ -7629,9 +7611,9 @@ LPCWSTR  FileTypeToString(IMAGE_TYPE type)
 		return L"BOOT APP";
     case IT_NATIVE_APP: 
         return L"NATIVE";    
-    case IT_NON_PE:
+    case IT_UNKNOWN:
     default:
-        return L"NON PE";
+        return L"Unknown";
     }
 }
 

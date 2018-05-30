@@ -836,12 +836,12 @@ typedef enum _IMAGE_TYPE
     IT_EXE_CUI,                 // cui app
 	IT_EXE_BOOT,				// boot app
     IT_NATIVE_APP,              // ntoskrnl.exe, win32k.sys, csrss.exe
-    IT_NON_PE                   // unknown or not executable or invalid image
+    IT_UNKNOWN                  // unknown or not executable or invalid image
 } IMAGE_TYPE;
 
-bool    is_executable_file_w(_In_ const wchar_t* path, _Out_ IMAGE_TYPE& type);
-bool	is_executable_file_w(_In_ HANDLE file_handle, _Out_ IMAGE_TYPE& type);
-LPCWSTR  FileTypeToString(IMAGE_TYPE type);
+IMAGE_TYPE get_image_type(_In_ const wchar_t* path);
+IMAGE_TYPE get_image_type(_In_ HANDLE file_handle);
+LPCWSTR  image_type_to_string(IMAGE_TYPE type);
 
 
 /******************************************************************************
