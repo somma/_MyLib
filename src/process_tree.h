@@ -18,10 +18,21 @@
 
 #include <TlHelp32.h>
 
+#ifndef _system_proc_def_
+#define _system_proc_def_
+
+#define _system_proc_   L"System"
+#define _system_proc_pid 4
+#define _explorer_proc_ L"explorer.exe"
+
+#define _idle_proc_		L"System Idle Process";
+#define _idle_proc_pid	0
+#endif
+
 /**
  * @brief	class for running process
 **/
-class process
+typedef class process
 {
 public:
 	process()
@@ -55,12 +66,12 @@ public:
 	bool suspend() { /* not implemented yet */ return true; }
 	bool resume()  { /* not implemented yet */ return true; }
 
-	const wchar_t*	process_name()	{ return _process_name.c_str(); }
-    const wchar_t*  process_path()  { return _full_path.c_str(); }
-	DWORD			ppid()			{ return _ppid; }
-	DWORD			pid()			{ return _pid; }
-	uint64_t		creation_time() { return _creation_time; }
-	bool			killed()		{ return _killed; }
+	const wchar_t*	process_name() const { return _process_name.c_str(); }
+    const wchar_t*  process_path() const { return _full_path.c_str(); }
+	DWORD			ppid() const { return _ppid; }
+	DWORD			pid() const { return _pid; }
+	uint64_t		creation_time() const { return _creation_time; }
+	bool			killed() { return _killed; }
 
 private:
 	std::wstring	_process_name;
@@ -69,7 +80,7 @@ private:
 	uint64_t		_creation_time;
     std::wstring    _full_path;
 	bool			_killed;
-};
+} *pprocess;
 
 /**
  * @brief	place holder for running processes
@@ -81,33 +92,37 @@ typedef boost::function<bool(_In_ process& process_info, _In_ DWORD_PTR callback
 class cprocess_tree
 {
 public:
-	bool	clear_process_tree() { _proc_map.clear(); }
-	bool	build_process_tree(_In_ bool enable_debug_priv);
+	size_t size() const { return _proc_map.size(); }
+	bool clear_process_tree() { _proc_map.clear(); }
+	bool build_process_tree(_In_ bool enable_debug_priv);
 
-	DWORD			find_process(_In_ const wchar_t* process_name);
-	const wchar_t*	get_process_name(_In_ DWORD pid);
-	const wchar_t*  get_process_path(_In_ DWORD pid);
-	uint64_t        get_process_time(_In_ DWORD pid);
+	DWORD find_process(_In_ const wchar_t* process_name);
 
-	DWORD			get_parent_pid(_In_ DWORD child_pid);
-	const wchar_t*	get_parent_name(_In_ DWORD child_pid);
+	const process* get_process(_In_ DWORD pid);
+	const wchar_t*get_process_name(_In_ DWORD pid);
+	const wchar_t* get_process_path(_In_ DWORD pid);
+	uint64_t get_process_time(_In_ DWORD pid);
+
+	const process* get_parent(_In_ process& process);
+	const process* get_parent(_In_ DWORD pid);
+	DWORD get_parent_pid(_In_ DWORD pid);
+	const wchar_t* get_parent_name(_In_ DWORD pid);
 
 	bool iterate_process(_In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag);
 	bool iterate_process_tree(_In_ DWORD root_pid, _In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag);
 	bool iterate_process_tree(_In_ process& root, _In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag);
 
-	void	print_process_tree(_In_ DWORD root_pid);
-	void	print_process_tree(_In_ const wchar_t* root_process_name);
+	void print_process_tree(_In_ DWORD root_pid);
+	void print_process_tree(_In_ const wchar_t* root_process_name);
 
-	bool	kill_process(_In_ DWORD pid, _In_ bool enable_debug_priv);
-	bool	kill_process(_In_ const wchar_t* process_name, _In_ bool enable_debug_priv);
+	bool kill_process(_In_ DWORD pid, _In_ bool enable_debug_priv);
+	bool kill_process(_In_ const wchar_t* process_name, _In_ bool enable_debug_priv);
 
-	bool	kill_process_tree(_In_ DWORD root_pid, _In_ bool enable_debug_priv);
-
+	bool kill_process_tree(_In_ DWORD root_pid, _In_ bool enable_debug_priv);
 private:
-	void	add_process(_In_ DWORD ppid, _In_ DWORD pid, _In_ FILETIME& creation_time, _In_ const wchar_t* process_name, _In_ std::wstring& full_path);
-	void	print_process_tree(_In_ process& p, _In_ DWORD& depth);
-	void	kill_process_tree(_In_ process& root, _In_ bool enable_debug_priv);
+	void add_process(_In_ DWORD ppid, _In_ DWORD pid, _In_ FILETIME& creation_time, _In_ const wchar_t* process_name, _In_ std::wstring& full_path);
+	void print_process_tree(_In_ process& p, _In_ DWORD& depth);
+	void kill_process_tree(_In_ process& root, _In_ bool enable_debug_priv);
 private:
 	process_map _proc_map;
 };

@@ -8,6 +8,8 @@
  * 2014:6:15 22:23 created
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include "process_tree.h"
 
 /**
@@ -145,15 +147,15 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 			//
 			if (0 == proc_entry.th32ProcessID)
 			{
-				full_path = L"System Idle Process";
+				full_path = _null_stringw;
 				create_time = now;
 			}
 			//
-			// System Idle Process
+			// System Process
 			//
 			else if (4 == proc_entry.th32ProcessID)
 			{
-				full_path = L"System";
+				full_path = _null_stringw;
 				create_time = now;
 			}
 			else
@@ -200,6 +202,7 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 					CloseHandle(process_handle); process_handle = NULL;
 				}
 			}
+
 			add_process(proc_entry.th32ParentProcessID, 
 						proc_entry.th32ProcessID, 
 						create_time, 
@@ -242,75 +245,98 @@ DWORD cprocess_tree::find_process(_In_ const wchar_t* process_name)
 	return 0;
 }
 
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
+const process* cprocess_tree::get_process(_In_ DWORD pid)
+{
+	auto p = _proc_map.find(pid);
+	if (_proc_map.end() == p) 
+		return nullptr;
+	else
+		return &(p->second);
+}
+
 const wchar_t* cprocess_tree::get_process_name(_In_ DWORD pid)
 {
-	process_map::iterator it = _proc_map.find(pid);
-	if (it == _proc_map.end()) return NULL;
-
-	return it->second.process_name();
+	const process* p = get_process(pid);
+	if (nullptr != p)
+	{
+		return p->process_name();
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 const wchar_t* cprocess_tree::get_process_path(_In_ DWORD pid)
 {
-    process_map::iterator it = _proc_map.find(pid);
-    if (it == _proc_map.end()) return NULL;
-
-    return it->second.process_path();
+	const process* p = get_process(pid);
+	if (nullptr != p)
+	{
+		return p->process_path();
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
  uint64_t cprocess_tree::get_process_time(DWORD pid)
  {
-     process_map::iterator it = _proc_map.find(pid);
-     if (it == _proc_map.end()) return NULL;
-
-     return it->second.creation_time();
+	 const process* p = get_process(pid);
+	 if (nullptr != p)
+	 {
+		 return p->creation_time();
+	 }
+	 else
+	 {
+		 return 0;
+	 }	 
  }
 
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-DWORD cprocess_tree::get_parent_pid(_In_ DWORD child_pid)
-{
-	process_map::iterator it = _proc_map.find(child_pid);
-	if (it == _proc_map.end()) return 0;
+ /// @brief	부모 프로세스 객체를 리턴한다.
+ const process* cprocess_tree::get_parent(_In_ process& process)
+ {
+	 if (process.pid() == _idle_proc_pid || process.pid() == _system_proc_pid) return nullptr;
 
-	process prcs = it->second;
-	return prcs.ppid();
+	 auto p = _proc_map.find(process.ppid());
+	 if (p == _proc_map.end()) return nullptr;
+
+	 if (p->second.creation_time() <= process.creation_time())
+	 {
+		 return &(p->second);
+	 }
+	 else
+	 {
+		 return nullptr;
+	 }
+ }
+
+const process* cprocess_tree::get_parent(_In_ DWORD pid)
+{
+	const process* me = get_process(pid);
+	if (nullptr == me) return nullptr;
+
+	return get_parent(*const_cast<process*>(me));
 }
 
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-const wchar_t* cprocess_tree::get_parent_name(_In_ DWORD child_pid)
+ /// @brief
+DWORD cprocess_tree::get_parent_pid(_In_ DWORD pid)
 {
-	DWORD ppid = get_parent_pid(child_pid);
-	if (0 == ppid) return NULL;
+	const process* p = get_parent(pid);
+	if (nullptr == p) return 0xffffffff;
+	
+	return p->ppid();	
+}
 
-	process_map::iterator it = _proc_map.find(ppid);
-	if (it == _proc_map.end()) return NULL;
+/// @brief 
+const wchar_t* cprocess_tree::get_parent_name(_In_ DWORD pid)
+{
+	if (0 == pid || 4 == pid) return nullptr;
+	
+	const process* p = get_parent(pid);
+	if (nullptr == p) return nullptr;
 
-	return it->second.process_name();
+	return p->process_name();
 }
 
 /// @brief	모든 process 를 iterate 한다. 
@@ -619,5 +645,4 @@ void cprocess_tree::kill_process_tree(_In_ process& root, _In_ bool enable_debug
 	// terminate parent process
 	root.kill(0, enable_debug_priv);
 }
-
 

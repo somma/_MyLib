@@ -9,7 +9,7 @@
 
 #include "stdafx.h"
 #include "process_tree.h"
-
+#include <vector>
 
 /**
  * @brief	test for cprocess_tree class 
@@ -26,6 +26,48 @@ bool proc_tree_callback(_In_ process& process_info, _In_ DWORD_PTR callback_tag)
 		process_info.process_name(),
 		process_info.process_path()
 		log_end
+	return true;
+}
+
+/// @brief	
+bool test_iterate_process_tree()
+{
+	cprocess_tree proc_tree;
+	if (!proc_tree.build_process_tree(true)) return false;
+
+	///	부모 프로세스가 없는 프로세스 목록을 먼저 생성한다. 
+	std::vector<pprocess> top_level_procs;
+	proc_tree.iterate_process([&](_In_ process& process_info, _In_ DWORD_PTR callback_tag)->bool
+	{
+		UNREFERENCED_PARAMETER(callback_tag);
+		const process* p = proc_tree.get_parent(process_info);
+		if (nullptr == p)
+		{
+			top_level_procs.push_back(&process_info);
+		}
+
+		return true;
+	}, 0);
+
+	/// top_level_proces 와 그 자식 프로세스들을 부모->자식 순으로 iterate 한다. 
+	size_t count = 0;
+	for (auto top_level_proc : top_level_procs)
+	{
+		log_info "\n\n" log_end;
+		proc_tree.iterate_process_tree(*top_level_proc, [&](_In_ process& process_info, _In_ DWORD_PTR callback_tag)->bool 
+		{
+			UNREFERENCED_PARAMETER(callback_tag);
+			log_info "pid = %u, name = %ws, path = %ws",
+				process_info.pid(),
+				process_info.process_name(),
+				process_info.process_path()
+				log_end;
+
+			count++;
+			return true;
+		}, 0);
+	}
+	_ASSERTE(proc_tree.size() == count);
 	return true;
 }
 

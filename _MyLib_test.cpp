@@ -118,6 +118,7 @@ bool test_strtok();
 
 // test_process_tree.cpp
 extern bool test_process_tree();
+extern bool test_iterate_process_tree();
 extern bool test_image_path_by_pid();
 extern bool test_get_process_creation_time();
 
@@ -359,7 +360,8 @@ void run_test()
 	
 	uint32_t lt = get_log_to();
 	set_log_to(log_to_con | lt);
-	assert_bool(true, test_process_tree);
+	//assert_bool(true, test_process_tree);
+	assert_bool(true, test_iterate_process_tree);
 	set_log_to(lt);
 
 	//assert_bool(true, test_image_path_by_pid);
@@ -2554,8 +2556,9 @@ bool test_create_guid()
 bool test_is_executable_file_w()
 {
 	IMAGE_TYPE type;
-	_ASSERTE(false == is_executable_file_w(L"c:\\work.mylib\\test_upx_invalid_lfanew.exe", type));
-	_ASSERTE(true == is_executable_file_w(L"c:\\windows\\system32\\notepad.exe", type));
+	
+	_ASSERTE(IT_UNKNOWN == get_image_type(L"c:\\work.mylib\\test_upx_invalid_lfanew.exe"));
+	_ASSERTE(IT_EXE_GUI == get_image_type(L"c:\\windows\\system32\\notepad.exe"));
 	return true;
 }
 
