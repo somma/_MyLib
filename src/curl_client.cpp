@@ -11,6 +11,17 @@
 #include "curl_client.h"
 #include "log.h"
 
+/// @brief
+curl_client::curl_client() :
+	_curl(nullptr)
+{
+}
+
+curl_client::~curl_client()
+{
+	finalize();
+}
+
 ///	@brief	libcUrl 에서 데이터 수신시 호출되는 콜백 함수
 ///	@param	ptr         수신한 데이터
 ///	@param	size        nmemb(메모리 블럭) 의 사이즈 / 엘리먼트 사이즈
@@ -60,7 +71,6 @@ bool curl_client::initialize()
 void curl_client::finalize()
 {
 	curl_easy_cleanup(_curl);
-	_curl = nullptr;
 }
 
 ///	@brief	http post 요청을 수행한다.
@@ -71,7 +81,7 @@ void curl_client::finalize()
 bool
 curl_client::http_post(
 	_In_ const char* url,
-	_In_ const std::string post_data,
+	_In_ const std::string& post_data,
 	_Out_ std::string& response
 )
 {
