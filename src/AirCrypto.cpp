@@ -66,7 +66,7 @@ aes256_encrypt(
 	}
 
 	std::wstring target_file_directory;
-	if (!extract_last_tokenW(const_cast<std::wstring&>(target_file_path),
+	if (!extract_last_tokenW(const_cast<std::wstring&>(encrypt_file_path),
 							 L"\\",
 							 target_file_directory,
 							 true,
