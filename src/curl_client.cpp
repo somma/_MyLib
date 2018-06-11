@@ -80,10 +80,10 @@ void curl_client::finalize()
 ///	@return	성공시 true, 실패시 false
 bool
 curl_client::http_post(
-	_In_ const char* url,
-	_In_ const std::string& post_data,
+	_In_  const char* url,
+	_In_  const std::string& post_data,
 	_Out_ std::string& response
-)
+	)
 {
 	_ASSERTE(nullptr != url);
 	_ASSERTE(true != post_data.empty());
@@ -210,6 +210,36 @@ curl_client::set_common_opt(
 		return false;
 	}
 
+	// Set timeout
+	// 목적지 서버상태가 Overload 상태인지, 또는 크리티컬한 에러가 있는 상태인지에 따라 적용
+	// e.g. 설정한 시간(10초)내에 서버에서 응답이 없을 경우 강제 해제
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_CONNECTTIMEOUT,
+								 10L);
+	if(CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+	
+	// Set connect timeout
+	// 굉장히 큰파일, 또는 느린 연결 속도(네트워크속도에 좌우됨) 등에 따라 적용
+	// e.g. 설정한 시간(90초) 내에 다운로드가 완료되지 않을 경우 강제 해제
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_TIMEOUT,
+								 90L);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
 #ifdef _DEBUG 
 	//	get verbose debug output please
 	curl_code = curl_easy_setopt(_curl,
@@ -248,9 +278,18 @@ curl_client::perform()
 
 	//	Get the last response code.
 	long http_code = 0;
-	curl_easy_getinfo(_curl,
-					  CURLINFO_RESPONSE_CODE,
-					  &http_code);
+	if (CURLE_OK != curl_easy_getinfo(_curl,
+									  CURLINFO_RESPONSE_CODE,
+									  &http_code))
+	{
+		log_err "curl_easy_getinfo() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+
+		return false;
+	}
+
 	if (http_code != 200)
 	{
 		log_err "http request failed. response code = %u",
