@@ -421,7 +421,7 @@ scm_context::uninstall_service(
 		}
 	}
 
-	log_info "Service deleted successfully. service=%ws", 
+	log_dbg "Service deleted successfully. service=%ws", 
 		_service_name.c_str() 
 		log_end
 
@@ -537,14 +537,14 @@ scm_context::start_service(
 
 	if (svc_status.dwCurrentState != SERVICE_RUNNING)
 	{
-		log_info "service start failed. svc=%ws",
+		log_err "service start failed. svc=%ws",
 			_service_name.c_str()
 			log_end;
 
 		return false;
 	}
 
-	log_info "service is started. svc=%ws",
+	log_dbg "service is started. svc=%ws",
 		_service_name.c_str()
 		log_end;
 
@@ -691,13 +691,13 @@ scm_context::stop_service(
 
 	if (svc_status.dwCurrentState == SERVICE_STOPPED)
 	{
-		log_info "service has stopped. svc=%ws",
+		log_dbg "service has stopped. svc=%ws",
 			_service_name.c_str()
 			log_end;
 	}
 	else
 	{
-		log_info "service stop failed. svc=%ws, status=%s",
+		log_dbg "service stop failed. svc=%ws, status=%s",
 			_service_name.c_str(),
 			scm_context::service_status_to_str(svc_status.dwCurrentState)
 			log_end;
