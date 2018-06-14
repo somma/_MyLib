@@ -650,9 +650,9 @@ str_to_ipv4(
 			ip_netbyte_order = ipv4_addr.s_addr;
             return true;    // success
         case 0:
-            log_err "invalid ipv4 string. input = %ws", 
-				ipv4 
-				log_end;
+			//log_err "invalid ipv4 string. input = %ws",
+			//	ipv4
+			//	log_end;
             return false;
         case -1: 
             log_err "InetPtonW() failed. input = %ws, wsa gle = %u", 
@@ -687,7 +687,7 @@ str_to_ipv6(
         case 1:			
             return true;    // success
         case 0:
-            log_err "invalid ipv4 string. input = %ws", 
+            log_err "invalid ipv6 string. input = %ws", 
 				ipv6 
 				log_end;
             return false;
