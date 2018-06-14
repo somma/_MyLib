@@ -537,9 +537,15 @@ dns_query(
 								   NULL);
 	if (ERROR_SUCCESS != status)
 	{
-		if (DNS_ERROR_RECORD_DOES_NOT_EXIST != status)
+		if (DNS_ERROR_RECORD_DOES_NOT_EXIST == status || DNS_ERROR_RCODE_NAME_ERROR == status)
 		{
-			log_err "DnsQuery(cache_only=%s) failed. ip=%s, status=%u",
+			//
+			//	dns 이름 없는 경우, ... 뭐 그런거다... 없다.
+			//
+		}
+		else
+		{
+			log_dbg "DnsQuery(cache_only=%s) failed. ip=%s, status=%u",
 				true == cache_only ? "O" : "X",
 				dns_query_ip.c_str(),
 				status
@@ -650,9 +656,9 @@ str_to_ipv4(
 			ip_netbyte_order = ipv4_addr.s_addr;
             return true;    // success
         case 0:
-			//log_err "invalid ipv4 string. input = %ws",
-			//	ipv4
-			//	log_end;
+			log_err "invalid ipv4 string. input = %ws",
+				ipv4
+				log_end;
             return false;
         case -1: 
             log_err "InetPtonW() failed. input = %ws, wsa gle = %u", 
