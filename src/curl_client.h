@@ -54,19 +54,19 @@
 typedef class curl_client
 {
 public:
-	curl_client() :_curl(nullptr) {}
-	virtual ~curl_client() { finalize(); }
+	curl_client();
+	~curl_client();
 
 public:
 	bool initialize();
-	void finalize();
-	bool http_post(_In_ const char* url, 
-				   _In_ const std::string post_data, 
-				   _Out_ std::string& response);
+	bool http_post(_In_		 const char* url,
+				   _In_		 const std::string& body_data,
+				   _Out_	 std::string& response);
 private:
-	bool set_common_opt(_In_ const char* url, 
-						_Out_ CMemoryStream &stream);
+	bool set_common_opt(_In_ const char* url,
+						_Out_ CMemoryStream& stream);
 	bool perform();
+	void finalize();
 
 private:
 	CURL* _curl;
