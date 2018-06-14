@@ -28,7 +28,11 @@ static bool			    _show_pid_tid = true;
 static bool			    _show_function_name = false;
 
 static uint32_t         _log_mask = log_mask_all; 
+#ifdef _DEBUG
 static uint32_t			_log_level = log_level_debug;
+#else
+static uint32_t			_log_level = log_level_info;
+#endif
 static uint32_t			_log_to = log_to_ods;
 
 /**
