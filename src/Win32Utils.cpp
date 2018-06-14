@@ -1,7 +1,7 @@
 /**
  * @file    Windows API wrapper and utility routines.
- * @brief   
- * @ref     
+ * @brief
+ * @ref
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2011/08/26 created.
  * @copyright All rights reserved by Yonghwan, Roh.
@@ -18,6 +18,7 @@
 #include "Win32Utils.h"
 #include "RegistryUtil.h"
 #include "Wow64Util.h"
+#include <Strsafe.h>
 
 #include <set>
 #include <errno.h>
@@ -84,8 +85,8 @@ int get_random_int(_In_ int min, _In_ int max)
 /// @brief	
 std::string FAT2Str(IN FATTIME& fat)
 {
-    FILETIME	ft={0};
-	
+	FILETIME	ft = { 0 };
+
 	if (0x00 != fat.usDate && 0x00 != fat.usTime)
 	{
 		DosDateTimeToFileTime(fat.usDate, fat.usTime, &ft);
@@ -106,11 +107,11 @@ uint64_t file_time_to_int(_In_ const PFILETIME file_time)
 /// @brief	uint64_t -> FILETIME
 ///	@remark	Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64*
 ///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
-void 
+void
 int_to_file_time(
-	_In_ uint64_t file_time_int, 
+	_In_ uint64_t file_time_int,
 	_Out_ PFILETIME const file_time
-	)
+)
 {
 	_ASSERTE(nullptr != file_time);
 	if (nullptr == file_time) return;
@@ -124,7 +125,7 @@ int_to_file_time(
 ///			https://support.microsoft.com/en-us/help/167296/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime
 void
 unixtime_to_filetime(
-	_In_ uint32_t unix_time, 
+	_In_ uint32_t unix_time,
 	_Out_ PFILETIME const file_time)
 {
 	_ASSERTE(nullptr != file_time);
@@ -139,41 +140,41 @@ unixtime_to_filetime(
 }
 
 /// @brief	ftl, ftr 값의 차를 밀리세컨드 단위로 리턴한다. 
-int64_t 
+int64_t
 file_time_delta_msec(
-	_In_ const PFILETIME ftl, 
+	_In_ const PFILETIME ftl,
 	_In_ const PFILETIME ftr
-	)
+)
 {
 	return (llabs(file_time_to_int(ftl) - file_time_to_int(ftr)) / _file_time_to_msec);
 }
 
 /// @brief  ftl, ftr 값의 차를 초단위로 리턴한다. 
-int64_t 
+int64_t
 file_time_delta_sec(
-	_In_ const PFILETIME ftl, 
+	_In_ const PFILETIME ftl,
 	_In_ const PFILETIME ftr
-	)
+)
 {
-	return (llabs( file_time_to_int(ftl) - file_time_to_int(ftr) ) / _file_time_to_sec);
+	return (llabs(file_time_to_int(ftl) - file_time_to_int(ftr)) / _file_time_to_sec);
 }
 
 /// @brief	ftl, ftr 값의 차를 일단위로 리턴한다. 
-int64_t 
+int64_t
 file_time_delta_day(
-	_In_ const PFILETIME ftl, 
+	_In_ const PFILETIME ftl,
 	_In_ const PFILETIME ft2
-	)
+)
 {
-	return (llabs( file_time_to_int(ftl) - file_time_to_int(ft2) ) / _file_time_to_day);
+	return (llabs(file_time_to_int(ftl) - file_time_to_int(ft2)) / _file_time_to_day);
 }
 
 /// @brief file_time 에 secs 초를 더한 파일타임을 리턴한다.
-FILETIME 
+FILETIME
 add_sec_to_file_time(
-	_In_ const PFILETIME file_time, 
+	_In_ const PFILETIME file_time,
 	_In_ int32_t secs
-	)
+)
 {
 	if (secs == 0) return *file_time;
 
@@ -185,11 +186,11 @@ add_sec_to_file_time(
 }
 
 /// @brief file_time 에 day 만큼 더한 파일타임을 리턴한다.
-FILETIME 
+FILETIME
 add_day_to_file_time(
-	_In_ const PFILETIME file_time, 
+	_In_ const PFILETIME file_time,
 	_In_ int32_t day
-	)
+)
 {
 	if (day == 0) return *file_time;
 
@@ -221,49 +222,49 @@ std::string	time_now_to_str2()
 }
 
 /// @brief  FILETIME to `yyyy-mm-dd hh:mi:ss` string representation.
-std::string 
+std::string
 file_time_to_str(
-	_In_ const PFILETIME file_time, 
+	_In_ const PFILETIME file_time,
 	_In_ bool localtime,
 	_In_ bool show_misec
-	)
+)
 {
-    SYSTEMTIME utc;
-    FileTimeToSystemTime(file_time, &utc);    
-    return sys_time_to_str(&utc, localtime, show_misec);
+	SYSTEMTIME utc;
+	FileTimeToSystemTime(file_time, &utc);
+	return sys_time_to_str(&utc, localtime, show_misec);
 }
 
 /// @brief  FILETIME to `yyyy-mm-dd hh:mi:ss` string representation.
-std::string 
+std::string
 file_time_to_str(
 	_In_ uint64_t file_time,
 	_In_ bool localtime,
 	_In_ bool show_misec
-	)
+)
 {
 	FILETIME ft;
 	int_to_file_time(file_time, &ft);
 	return file_time_to_str(&ft, localtime, show_misec);
-}	
+}
 
 /// @brief  SYSTEMTIME (UTC) to `yyyy-mm-dd hh:mi:ss` string representation.
-std::string 
+std::string
 sys_time_to_str(
-	_In_ const PSYSTEMTIME utc_sys_time, 
-	_In_ bool localtime, 
+	_In_ const PSYSTEMTIME utc_sys_time,
+	_In_ bool localtime,
 	_In_ bool show_misec
-	)
+)
 {
-    char buf[32];
+	char buf[32];
 
-    SYSTEMTIME local;
-    PSYSTEMTIME time = utc_sys_time;
+	SYSTEMTIME local;
+	PSYSTEMTIME time = utc_sys_time;
 
-    if (true == localtime)
-    {
-        SystemTimeToTzSpecificLocalTime(NULL, utc_sys_time, &local);
-        time = &local;
-    }
+	if (true == localtime)
+	{
+		SystemTimeToTzSpecificLocalTime(NULL, utc_sys_time, &local);
+		time = &local;
+	}
 
 	HRESULT hr;
 
@@ -298,8 +299,8 @@ sys_time_to_str(
 			log_end;
 		return std::string("1601-01-01 00:00:000");
 	}
-	
-    return std::string(buf);
+
+	return std::string(buf);
 }
 
 
@@ -308,20 +309,20 @@ sys_time_to_str(
 ///			반드시 localtime 으로 변환해야 한다. 
 ///
 ///			https://www.w3.org/TR/NOTE-datetime 참고
-std::string 
+std::string
 sys_time_to_str2(
 	_In_ const PSYSTEMTIME utc_sys_time
-	)
+)
 {
-    char buf[32];
+	char buf[32];
 
 	//
 	//	local time 으로 변환
 	// 
 	SYSTEMTIME local_sys_time;
 	SystemTimeToTzSpecificLocalTime(NULL, utc_sys_time, &local_sys_time);
-	
-	
+
+
 	//
 	//	타임존 정보
 	//	UTC+xxx 인 경우 TimeZone.Bias 값은 음수를 가지므로 +/- 기호를 설정한다.
@@ -334,7 +335,7 @@ sys_time_to_str2(
 		tz_sign = '+';
 	}
 
-		
+
 	HRESULT hr = StringCbPrintfA(buf,
 								 sizeof(buf),
 								 "%04u-%02u-%02uT%02u:%02u:%02u.%u%c%02u:%02u",
@@ -356,7 +357,7 @@ sys_time_to_str2(
 		return std::string("1601-01-01T00:00:000+00:00");
 	}
 
-    return std::string(buf);
+	return std::string(buf);
 }
 
 
@@ -375,16 +376,16 @@ bool is_file_existsW(_In_ const wchar_t* file_path)
 	_ASSERTE(NULL != file_path);
 	if (NULL == file_path) return false;
 
-	WIN32_FILE_ATTRIBUTE_DATA info = {0};
+	WIN32_FILE_ATTRIBUTE_DATA info = { 0 };
 
 	//
 	//	CreateFile()이 아닌 GetFileAttributesEx()를 이용하면 파일이 
 	//	다른 process에 의해 lock되어 있어도
 	//	파일 존재여부를 정확히 체크할 수 있다.
 	//
-	if (FALSE == GetFileAttributesExW(file_path, 
-									  GetFileExInfoStandard, 
-									  &info)) 
+	if (FALSE == GetFileAttributesExW(file_path,
+									  GetFileExInfoStandard,
+									  &info))
 		return false;
 	else
 		return true;
@@ -392,8 +393,8 @@ bool is_file_existsW(_In_ const wchar_t* file_path)
 
 bool is_file_existsA(_In_ const char* file_path)
 {
-    WCHAR* wcs=MbsToWcs(file_path);
-    if(NULL==wcs) { return false;}
+	WCHAR* wcs = MbsToWcs(file_path);
+	if (NULL == wcs) { return false; }
 
 	bool ret = is_file_existsW(wcs); free(wcs);
 	return ret;
@@ -402,180 +403,180 @@ bool is_file_existsA(_In_ const char* file_path)
 /// @brief  `file_path` 가 존재하고, directory 이면 true 리턴
 ///         `file_path` 가 없거나, 파일이면 false 리턴
 bool is_dir(_In_ const wchar_t* file_path)
-{   
-    WIN32_FILE_ATTRIBUTE_DATA info = { 0 };
-    if (TRUE == GetFileAttributesExW(file_path, 
-									 GetFileExInfoStandard, 
+{
+	WIN32_FILE_ATTRIBUTE_DATA info = { 0 };
+	if (TRUE == GetFileAttributesExW(file_path,
+									 GetFileExInfoStandard,
 									 &info))
-    {
-        // 파일이 존재하고, 디렉토리라면 true
-        if (info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-        {
-            return true;
-        }
-    }
+	{
+		// 파일이 존재하고, 디렉토리라면 true
+		if (info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
 /// @brief  `file_path` 파일이 존재하고, 디렉토리가 아닌 파일이면 true 리턴
 ///         `file_path` 가 존재하지 않거나 디렉토리인 경우 false 리턴
 bool is_file(_In_ const wchar_t* file_path)
 {
-    WIN32_FILE_ATTRIBUTE_DATA info = { 0 };
-    if (TRUE == GetFileAttributesExW(file_path, 
-									 GetFileExInfoStandard, 
+	WIN32_FILE_ATTRIBUTE_DATA info = { 0 };
+	if (TRUE == GetFileAttributesExW(file_path,
+									 GetFileExInfoStandard,
 									 &info))
-    {
-        // 파일이 존재하고, 디렉토리가 아니면 true
-        if (!(info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-        {
-            return true;
-        }
-    }
+	{
+		// 파일이 존재하고, 디렉토리가 아니면 true
+		if (!(info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		{
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
 /**
  * @brief	file_handle 로 file path 를 구하는 함수
- * @param	
+ * @param
  * @see		http://msdn.microsoft.com/en-us/library/windows/desktop/aa366789(v=vs.85).aspx
  * @see		https://msdn.microsoft.com/en-us/library/aa364962(v=vs.85).aspx
  * @remarks	NtQueryObject() 를 사용하는게 더 좋을 것 같기도 함, 권한 문제가 발생 할 수도 있을것 같으나
  * @remarks 확인해본적 없음
- * @code		
- * @endcode	
- * @return	
+ * @code
+ * @endcode
+ * @return
 **/
-bool 
+bool
 get_filepath_by_handle(
-	_In_ HANDLE file_handle, 
+	_In_ HANDLE file_handle,
 	_Out_ std::wstring& file_path
-	)
+)
 {
 	_ASSERTE(NULL != file_handle);
-	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);	
+	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
 	if (NULL == file_handle || INVALID_HANDLE_VALUE == file_handle) return false;
-	
-	LARGE_INTEGER file_size = {0};
+
+	LARGE_INTEGER file_size = { 0 };
 	if (TRUE != GetFileSizeEx(file_handle, &file_size))
 	{
 		log_err
-			"GetFileSize( file handle = 0x%08x ), gle = %u", 
-			file_handle, 
+			"GetFileSize( file handle = 0x%08x ), gle = %u",
+			file_handle,
 			GetLastError()
-		log_end
-		return false;
+			log_end
+			return false;
 	}
 
 	if (0 == file_size.QuadPart)
 	{
 		log_err "zero length file" log_end
-		return false;
+			return false;
 	}
 
 	handle_ptr map_handle(
-		CreateFileMapping(file_handle, NULL, PAGE_READONLY, 0, 1, NULL), 
+		CreateFileMapping(file_handle, NULL, PAGE_READONLY, 0, 1, NULL),
 		[](HANDLE h) {
-			if (INVALID_HANDLE_VALUE == h) return;
-			if (NULL == h) return;
-			CloseHandle(h);
+		if (INVALID_HANDLE_VALUE == h) return;
+		if (NULL == h) return;
+		CloseHandle(h);
 	});
-	
+
 	if (NULL == map_handle.get())
 	{
 		log_err "CreateFileMapping(), gle = %u", GetLastError() log_end
-		return false;
+			return false;
 	}
 
 	void_ptr map_ptr(
 		MapViewOfFile(map_handle.get(), FILE_MAP_READ, 0, 0, 1),
 		[](void* p) {
-			if (NULL != p)
-			{
-				UnmapViewOfFile(p);
-			}
+		if (NULL != p)
+		{
+			UnmapViewOfFile(p);
+		}
 	});
-	
+
 	if (NULL == map_ptr.get())
 	{
 		log_err "MapViewOfFile(), gle = %u", GetLastError() log_end
-		return false;
+			return false;
 	}
 
 	std::wstring nt_device_name;
 	if (true != get_mapped_file_name(
-					GetCurrentProcess(), 
-					map_ptr.get(), 
-					nt_device_name))
+		GetCurrentProcess(),
+		map_ptr.get(),
+		nt_device_name))
 	{
 		log_err "get_mapped_file_name()" log_end
-		return false;
+			return false;
 	}
 
 	if (true != nt_name_to_dos_name(nt_device_name.c_str(), file_path))
 	{
 		log_err "nt_name_to_dos_name( nt name = %s )", nt_device_name.c_str() log_end
-		return false;
+			return false;
 	}
-	
+
 	return true;
 }
 
 /**
- * @brief	wrapper function for GetMappedFileName() 
- * @param	
+ * @brief	wrapper function for GetMappedFileName()
+ * @param
  * @see		http://msdn.microsoft.com/en-us/library/windows/desktop/ms683195(v=vs.85).aspx
- * @remarks	
- * @code		
- * @endcode	
+ * @remarks
+ * @code
+ * @endcode
  * @return	true if succeeded.
  * @return	file_name is nt device name (e.g. Device\HarddiskVolume2\Windows\System32\drivers\etc\hosts)
  * @return	if you want use dos device name, use nt_name_to_dos_name() function.
 **/
-bool 
+bool
 get_mapped_file_name(
-	_In_ HANDLE process_handle, 
-	_In_ const void* mapped_addr, 
+	_In_ HANDLE process_handle,
+	_In_ const void* mapped_addr,
 	_Out_ std::wstring& file_name
-	)
+)
 {
 	bool		ret = false;
 	DWORD		ret_cch_buf = 0;
 	DWORD		cch_buf = MAX_PATH;
-	wchar_t*	buf = NULL; 
-	
-	for(;;)
+	wchar_t*	buf = NULL;
+
+	for (;;)
 	{
 		if (NULL != buf) free(buf);
 
-		buf = (wchar_t*) malloc((cch_buf + 1) * sizeof(wchar_t));	// add NULL 
-		if (NULL == buf) 
+		buf = (wchar_t*)malloc((cch_buf + 1) * sizeof(wchar_t));	// add NULL 
+		if (NULL == buf)
 		{
-			log_err 
-				"insufficient memory, malloc( %u )", 
-				(cch_buf + 1) * sizeof(wchar_t) 
-			log_end
-			return false;
+			log_err
+				"insufficient memory, malloc( %u )",
+				(cch_buf + 1) * sizeof(wchar_t)
+				log_end
+				return false;
 		}
 
 		ret_cch_buf = GetMappedFileNameW(
-							process_handle, 
-							const_cast<void*>(mapped_addr), 
-							buf, 
-							cch_buf
-							);
+			process_handle,
+			const_cast<void*>(mapped_addr),
+			buf,
+			cch_buf
+		);
 		if (0 == ret_cch_buf)
 		{
-			log_err 
+			log_err
 				"GetMappedFileNameW( process handle = 0x%08x, addr = 0x%p ), gle = %u",
-				process_handle, 
-				mapped_addr, 
+				process_handle,
+				mapped_addr,
 				GetLastError()
-			log_end
-			
-			break;
+				log_end
+
+				break;
 		}
 
 		if (ret_cch_buf < cch_buf)
@@ -593,17 +594,17 @@ get_mapped_file_name(
 		}
 		else
 		{
-			log_err 
+			log_err
 				"unexpected ret_cch_buf(%u) : cch_buf(%u), GetMappedFileNameW()",
 				ret_cch_buf,
 				cch_buf
-			log_end
-			break;
+				log_end
+				break;
 		}
 	}
 
-	if(true == ret) file_name = buf;
-	
+	if (true == ret) file_name = buf;
+
 	free(buf); buf = NULL;
 	return ret;
 }
@@ -612,25 +613,25 @@ get_mapped_file_name(
  * @brief	convert nt name -> dos name
  * @param	nt_name		ex) \Device\HarddiskVolume2\Windows\System32\drivers\etc\hosts
  * @param	dos_name	ex) c:\Windows\System32\drivers\etc\hosts
- * @see		
- * @remarks	
- * @code		
- * @endcode	
+ * @see
+ * @remarks
+ * @code
+ * @endcode
  * @return	true if succeeded, dos_name string is always lower case.
 **/
-bool 
+bool
 nt_name_to_dos_name(
-	_In_ const wchar_t* nt_name, 
+	_In_ const wchar_t* nt_name,
 	_Out_ std::wstring& dos_name
-	)
+)
 {
 	_ASSERTE(NULL != nt_name);
 	if (NULL == nt_name) return false;
-	
+
 	bool ret = false;
 
-    // 시스템에 매핑되어있는 드라이브 목록을 구한다. 
-    // 
+	// 시스템에 매핑되어있는 드라이브 목록을 구한다. 
+	// 
 	// 0               4               8               12
 	// +---+---+---+---+---+---+---+---+---+---+---+---+
 	// | A | : | \ |NUL| C | : | \ |NUL| D | : | \ |NUL|
@@ -639,19 +640,19 @@ nt_name_to_dos_name(
 	// 매핑된 드라이브를 나타내는 문자열 버퍼는 
 	// 26 (알파벳) * 4 (드라이브 명) = 104 바이트면 충분함
 	// 유니코드인 경우 208바이트 	
-	wchar_t drive_string[128 + 1] = {0};
+	wchar_t drive_string[128 + 1] = { 0 };
 	DWORD length = GetLogicalDriveStringsW(128, drive_string);
-	if ( 0 == length)
+	if (0 == length)
 	{
-		log_err 
+		log_err
 			"GetLogicalDriveStringsW(), gle = %u", GetLastError()
-		log_end
-		return false;
+			log_end
+			return false;
 	}
 
 	std::wstring nt_namel(nt_name);
 	to_lower_string(nt_namel);			// 소문자로 모두 변환
-	
+
 	for (DWORD i = 0; i < length / 4; ++i)
 	{
 		// C:  --> \Device\HarddiskVolume1 매핑 정보를 조회 
@@ -659,14 +660,14 @@ nt_name_to_dos_name(
 		wchar_t* dos_device_name = &(drive_string[i * 4]);
 		dos_device_name[2] = 0x0000;
 
-		std::wstring nt_device;	
+		std::wstring nt_device;
 		if (true != query_dos_device(dos_device_name, nt_device))
 		{
-			log_err 
-				"query_dos_device( dos_device_name = %s )", 
+			log_err
+				"query_dos_device( dos_device_name = %s )",
 				dos_device_name
-			log_end
-			return false;
+				log_end
+				return false;
 		}
 		to_lower_string(nt_device);
 
@@ -685,9 +686,9 @@ nt_name_to_dos_name(
 		else
 		{
 			// we found!
-			dos_name = dos_device_name;	
+			dos_name = dos_device_name;
 			dos_name += nt_namel.substr(pos + nt_device.size(), nt_namel.size());
-			
+
 			ret = true;
 			break;
 		}
@@ -700,9 +701,9 @@ nt_name_to_dos_name(
  * @brief	wrapper function fro QueryDosDevice()
  * @param	dos_device	e.g. c:, d:  (no back slash)
  * @see		http://msdn.microsoft.com/en-us/library/windows/desktop/aa365461(v=vs.85).aspx
- * @remarks	
- * @code		
- * @endcode	
+ * @remarks
+ * @code
+ * @endcode
  * @return	true if succeeded. nt_device = \Device\HarddiskVolume1
 **/
 bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_device)
@@ -713,38 +714,38 @@ bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_dev
 	bool		ret = false;
 	DWORD		cch_buf = MAX_PATH;
 	wchar_t*	buf = NULL;
-	for(;;)
+	for (;;)
 	{
 		if (NULL != buf) free(buf);
 
-		buf = (wchar_t*) malloc( (cch_buf+1) * sizeof(wchar_t) );
+		buf = (wchar_t*)malloc((cch_buf + 1) * sizeof(wchar_t));
 		if (NULL == buf)
 		{
 			log_err
-				"insufficient memory, malloc( %u )", 
+				"insufficient memory, malloc( %u )",
 				(cch_buf + 1) * sizeof(wchar_t)
-			log_end
-			return false;
+				log_end
+				return false;
 		}
-		
+
 		DWORD cch_ret = QueryDosDevice(dos_device, buf, cch_buf);
 		if (0 == cch_ret)
 		{
 			DWORD gle = GetLastError();
-			if(ERROR_INSUFFICIENT_BUFFER != gle)
+			if (ERROR_INSUFFICIENT_BUFFER != gle)
 			{
-				log_err 
-					"QueryDosDevice( dos = %s ), gle = %u", 
-					dos_device, 
+				log_err
+					"QueryDosDevice( dos = %s ), gle = %u",
+					dos_device,
 					GetLastError()
-				log_end
-				break;
+					log_end
+					break;
 			}
 
 			// we need more buffer
 			cch_buf *= 2;
 			continue;
-		} 
+		}
 		else if (cch_ret <= cch_buf)
 		{
 			// success, add null and break the loop
@@ -755,17 +756,17 @@ bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_dev
 		else
 		{
 			// opps! unknown error 
-			log_err 
+			log_err
 				"unexpected cch_ret(%u) : cch_buf(%u), QueryDosDevice( %s )",
 				cch_ret,
-				cch_buf, 
+				cch_buf,
 				dos_device
-			log_end
-			break;
+				log_end
+				break;
 		}
 	}
-	
-	if(true == ret) nt_device = buf;
+
+	if (true == ret) nt_device = buf;
 
 	free(buf); buf = NULL;
 	return ret;
@@ -784,8 +785,8 @@ bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_dev
 ///         
 bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
 {
-    // 시스템에 매핑되어있는 드라이브 목록을 구한다. 
-    // 
+	// 시스템에 매핑되어있는 드라이브 목록을 구한다. 
+	// 
 	// 0               4               8               12
 	// +---+---+---+---+---+---+---+---+---+---+---+---+
 	// | A | : | \ |NUL| C | : | \ |NUL| D | : | \ |NUL|
@@ -794,154 +795,155 @@ bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
 	// 매핑된 드라이브를 나타내는 문자열 버퍼는 
 	// 26 (알파벳) * 4 (드라이브 명) = 104 바이트면 충분함
 	// 유니코드인 경우 208바이트 	
-	wchar_t drive_string[128 + 1] = {0};
+	wchar_t drive_string[128 + 1] = { 0 };
 	DWORD length = GetLogicalDriveStringsW(128, drive_string);
-	if ( 0 == length)
+	if (0 == length)
 	{
-		log_err 
+		log_err
 			"GetLogicalDriveStringsW(), gle = %u", GetLastError()
-		log_end
-		return false;
+			log_end
+			return false;
 	}
 
-    // 하나의 디스크에 여러개의 파티션(볼륨)이 구성되어 있을 수 있기때문에
-    // 이미 구한 disk_number 인지 확인한다.
-    std::set<uint32_t> disk_numberz;
+	// 하나의 디스크에 여러개의 파티션(볼륨)이 구성되어 있을 수 있기때문에
+	// 이미 구한 disk_number 인지 확인한다.
+	std::set<uint32_t> disk_numberz;
 
-    for (DWORD i = 0; i < length / 4; ++i)
-    {
-        wchar_t* dos_device_name = &(drive_string[i * 4]);
+	for (DWORD i = 0; i < length / 4; ++i)
+	{
+		wchar_t* dos_device_name = &(drive_string[i * 4]);
 
 		//
 		//	A: 는 건너뛴다.
 		// 
 		if (dos_device_name[0] == 'A' || dos_device_name[0] == 'a') continue;
 
-        dos_device_name[1] = 0x0000;
-        std::wstringstream path;
-        path << L"\\\\.\\" << dos_device_name << ":";
-        HANDLE hFile = CreateFileW(
-                            path.str().c_str(), //L"\\\\.\\c:", 
-                            GENERIC_READ, 
-                            FILE_SHARE_READ | FILE_SHARE_WRITE, 
-                            NULL, 
-                            OPEN_EXISTING,  // for device or file, only if exists.
-                            FILE_ATTRIBUTE_NORMAL,
-                            NULL);
-        if (INVALID_HANDLE_VALUE == hFile)
-        {
-            // cdrom 이 비어있거나, network fs 이거나,...
-            // 에러나는 상황들이 있을 수 있음
-            log_warn
-                "CreateFile( %ws ) failed. gle = %u", 
-                path.str().c_str(), 
-                GetLastError() 
-            log_end;
-            continue;
-        }
+		dos_device_name[1] = 0x0000;
+		std::wstringstream path;
+		path << L"\\\\.\\" << dos_device_name << ":";
+		HANDLE hFile = CreateFileW(
+			path.str().c_str(), //L"\\\\.\\c:", 
+			GENERIC_READ,
+			FILE_SHARE_READ | FILE_SHARE_WRITE,
+			NULL,
+			OPEN_EXISTING,  // for device or file, only if exists.
+			FILE_ATTRIBUTE_NORMAL,
+			NULL);
+		if (INVALID_HANDLE_VALUE == hFile)
+		{
+			// cdrom 이 비어있거나, network fs 이거나,...
+			// 에러나는 상황들이 있을 수 있음
+			log_warn
+				"CreateFile( %ws ) failed. gle = %u",
+				path.str().c_str(),
+				GetLastError()
+				log_end;
+			continue;
+		}
 
-        STORAGE_DEVICE_NUMBER sdn = { 0 };
-        DWORD bytes_returned = 0;
+		STORAGE_DEVICE_NUMBER sdn = { 0 };
+		DWORD bytes_returned = 0;
 
-        // disk number 를 알아내기 위해서 호출하는것이므로
-        // hFile 디바이스에 대한 모든 volume extents 목록을 가져올 필요없이
-        // 하나만 가져오면 된다. 
-        // 
-        // :참고용:
-        // use IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS
-        //      device number, extent 정보를 얻어올때
-        // 
-        // use IOCTL_DISK_GET_DRIVE_LAYOUT_EX  
-        //      디바이스의 파티션 정보를 얻어올때 
+		// disk number 를 알아내기 위해서 호출하는것이므로
+		// hFile 디바이스에 대한 모든 volume extents 목록을 가져올 필요없이
+		// 하나만 가져오면 된다. 
+		// 
+		// :참고용:
+		// use IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS
+		//      device number, extent 정보를 얻어올때
+		// 
+		// use IOCTL_DISK_GET_DRIVE_LAYOUT_EX  
+		//      디바이스의 파티션 정보를 얻어올때 
 
 
-        bool ioctrl_succeeded = true;
-        if (!DeviceIoControl(
-                    hFile,
-                    IOCTL_STORAGE_GET_DEVICE_NUMBER,
-                    NULL,
-                    0,
-                    (LPVOID)&sdn,
-                    sizeof(sdn),
-                    (LPDWORD)&bytes_returned,
-                    NULL))
-        {
-            DWORD gle = GetLastError();
-            if (ERROR_MORE_DATA != gle)
-            {
-                log_err 
-                    "DeviceIoControl( IOCTL_STORAGE_GET_DEVICE_NUMBER ) failed. device = %ws, gle = %u", 
-                    path.str().c_str(),
-                    gle 
-                log_end;
-                ioctrl_succeeded = false;
-            }
-        }
+		bool ioctrl_succeeded = true;
+		if (!DeviceIoControl(
+			hFile,
+			IOCTL_STORAGE_GET_DEVICE_NUMBER,
+			NULL,
+			0,
+			(LPVOID)&sdn,
+			sizeof(sdn),
+			(LPDWORD)&bytes_returned,
+			NULL))
+		{
+			DWORD gle = GetLastError();
+			if (ERROR_MORE_DATA != gle)
+			{
+				log_err
+					"DeviceIoControl( IOCTL_STORAGE_GET_DEVICE_NUMBER ) failed. device = %ws, gle = %u",
+					path.str().c_str(),
+					gle
+					log_end;
+				ioctrl_succeeded = false;
+			}
+		}
 
-        if (true == ioctrl_succeeded)
-        {
-            if (sdn.DeviceType == FILE_DEVICE_DISK)
-            {
-                if (disk_numberz.end() == disk_numberz.find(sdn.DeviceNumber))
-                {
-                    disk_numberz.insert(sdn.DeviceNumber);
+		if (true == ioctrl_succeeded)
+		{
+			if (sdn.DeviceType == FILE_DEVICE_DISK)
+			{
+				if (disk_numberz.end() == disk_numberz.find(sdn.DeviceNumber))
+				{
+					disk_numberz.insert(sdn.DeviceNumber);
 
-                    disk_numbers.push_back(sdn.DeviceNumber);
-                    //log_dbg "disk number = %u, found.", sdn.DeviceNumber log_end
-                }
-            }            
-        }
-        CloseHandle(hFile);
-    }
+					disk_numbers.push_back(sdn.DeviceNumber);
+					//log_dbg "disk number = %u, found.", sdn.DeviceNumber log_end
+				}
+			}
+		}
+		CloseHandle(hFile);
+	}
 
-    return true;
+	return true;
 }
 
 /// @brief  
 const char* partition_style_to_str(_In_ DWORD partition_style)
 {
-    switch (partition_style)
-    {
-    case PARTITION_STYLE_MBR: return "MBR";
-    case PARTITION_STYLE_GPT: return "GPT";
-    case PARTITION_STYLE_RAW: return "RAW";
-    default: 
-        return "UNKNOWN";
-    }
+	switch (partition_style)
+	{
+	case PARTITION_STYLE_MBR: return "MBR";
+	case PARTITION_STYLE_GPT: return "GPT";
+	case PARTITION_STYLE_RAW: return "RAW";
+	default:
+		return "UNKNOWN";
+	}
 }
- 
+
 /// @brief  
 const char* gpt_partition_type_to_str(_In_ GUID& partition_type)
 {
-    if (IsEqualGUID(partition_type, PARTITION_BASIC_DATA_GUID))
-    {
-        return "PARTITION_BASIC_DATA_GUID";
-    } else if (IsEqualGUID(partition_type, PARTITION_ENTRY_UNUSED_GUID))
-    {
-        return "PARTITION_ENTRY_UNUSED_GUID";
-    }
-    else if (IsEqualGUID(partition_type, PARTITION_SYSTEM_GUID))
-    {
-        return "PARTITION_SYSTEM_GUID";
-    }
-    else if (IsEqualGUID(partition_type, PARTITION_MSFT_RESERVED_GUID))
-    {
-        return "PARTITION_MSFT_RESERVED_GUID";
-    }
-    else if (IsEqualGUID(partition_type, PARTITION_LDM_METADATA_GUID))
-    {
-        return "PARTITION_LDM_METADATA_GUID";
-    }
-    else if (IsEqualGUID(partition_type, PARTITION_LDM_DATA_GUID))
-    {
-        return "PARTITION_LDM_DATA_GUID";
-    }
-    else if (IsEqualGUID(partition_type, PARTITION_MSFT_RECOVERY_GUID))
-    {
-        return "PARTITION_MSFT_RECOVERY_GUID";
-    }
-    else
-        return "UNKNOWN GUID";
+	if (IsEqualGUID(partition_type, PARTITION_BASIC_DATA_GUID))
+	{
+		return "PARTITION_BASIC_DATA_GUID";
+	}
+	else if (IsEqualGUID(partition_type, PARTITION_ENTRY_UNUSED_GUID))
+	{
+		return "PARTITION_ENTRY_UNUSED_GUID";
+	}
+	else if (IsEqualGUID(partition_type, PARTITION_SYSTEM_GUID))
+	{
+		return "PARTITION_SYSTEM_GUID";
+	}
+	else if (IsEqualGUID(partition_type, PARTITION_MSFT_RESERVED_GUID))
+	{
+		return "PARTITION_MSFT_RESERVED_GUID";
+	}
+	else if (IsEqualGUID(partition_type, PARTITION_LDM_METADATA_GUID))
+	{
+		return "PARTITION_LDM_METADATA_GUID";
+	}
+	else if (IsEqualGUID(partition_type, PARTITION_LDM_DATA_GUID))
+	{
+		return "PARTITION_LDM_DATA_GUID";
+	}
+	else if (IsEqualGUID(partition_type, PARTITION_MSFT_RECOVERY_GUID))
+	{
+		return "PARTITION_MSFT_RECOVERY_GUID";
+	}
+	else
+		return "UNKNOWN GUID";
 }
 
 /// @brief  info._disk_number 디스크내 VBR (Volume Boot Record) 의 VBR 정보를 구한다.
@@ -971,24 +973,24 @@ bool get_disk_volume_info(_Inout_ disk_volume_info& info)
 			GetLastError());
 			return false;
 	}
-	handle_ptr handle_guard(disk, [](HANDLE h){
+	handle_ptr handle_guard(disk, [](HANDLE h) {
 		CloseHandle(h);
 	});
 
-    DWORD bytes_returned = 0;
-    uint32_t layout_info_size = sizeof(DRIVE_LAYOUT_INFORMATION_EX) * 4;
-    PDRIVE_LAYOUT_INFORMATION_EX layout_info = (PDRIVE_LAYOUT_INFORMATION_EX)malloc(layout_info_size);
-    
-    for (;;)
-    {
-        if (NULL == layout_info)
-        {
-            log_err
-                "insufficient rsrc for DRIVE_LAYOUT_INFORMATION_EX buffer. device = %ws",
-                path.str().c_str());
+	DWORD bytes_returned = 0;
+	uint32_t layout_info_size = sizeof(DRIVE_LAYOUT_INFORMATION_EX) * 4;
+	PDRIVE_LAYOUT_INFORMATION_EX layout_info = (PDRIVE_LAYOUT_INFORMATION_EX)malloc(layout_info_size);
 
-            return false;
-        }
+	for (;;)
+	{
+		if (NULL == layout_info)
+		{
+			log_err
+				"insufficient rsrc for DRIVE_LAYOUT_INFORMATION_EX buffer. device = %ws",
+				path.str().c_str());
+
+				return false;
+		}
 
 		if (!DeviceIoControl(disk,
 							 IOCTL_DISK_GET_DRIVE_LAYOUT_EX,
@@ -998,441 +1000,441 @@ bool get_disk_volume_info(_Inout_ disk_volume_info& info)
 							 layout_info_size,
 							 &bytes_returned,
 							 NULL))
-        {
-            if (ERROR_INSUFFICIENT_BUFFER == GetLastError())
-            {
-                layout_info_size *= 2;
-                layout_info = (PDRIVE_LAYOUT_INFORMATION_EX)realloc(layout_info, layout_info_size);
-                continue;
-            }
-            else
-            {
-                log_err
-                    "DeviceIoControl( IOCTL_DISK_GET_DRIVE_LAYOUT_EX ) failed. "\
-                    "device = %ws, gle = %u, bytes_returned = %u",
-                    path.str().c_str(),
-                    GetLastError(),
-                    bytes_returned);
-                return false;
-            }
-        }
-        else
-        {
-            // ok. we got!
-            break;
-        }
-    }
+		{
+			if (ERROR_INSUFFICIENT_BUFFER == GetLastError())
+			{
+				layout_info_size *= 2;
+				layout_info = (PDRIVE_LAYOUT_INFORMATION_EX)realloc(layout_info, layout_info_size);
+				continue;
+			}
+			else
+			{
+				log_err
+					"DeviceIoControl( IOCTL_DISK_GET_DRIVE_LAYOUT_EX ) failed. "\
+					"device = %ws, gle = %u, bytes_returned = %u",
+					path.str().c_str(),
+					GetLastError(),
+					bytes_returned);
+					return false;
+			}
+		}
+		else
+		{
+			// ok. we got!
+			break;
+		}
+	}
 	void_ptr buf_guard(layout_info, [](void* p) {
 		free(p);
 	});
 
-    //
-    // ok. DeviceIoControl() succeeded.
-    // 
-    //log_dbg
-    //    "disk = %ws, partition style = %s, partition count = %u, ",
-    //    path.str().c_str(),
-    //    partition_style_to_str(layout_info->PartitionStyle),        
-    //    layout_info->PartitionCount);
+	//
+	// ok. DeviceIoControl() succeeded.
+	// 
+	//log_dbg
+	//    "disk = %ws, partition style = %s, partition count = %u, ",
+	//    path.str().c_str(),
+	//    partition_style_to_str(layout_info->PartitionStyle),        
+	//    layout_info->PartitionCount);
 
-    for (DWORD i = 0; i < layout_info->PartitionCount; ++i)
-    {
-        vbr_info vbr = { 0 };
+	for (DWORD i = 0; i < layout_info->PartitionCount; ++i)
+	{
+		vbr_info vbr = { 0 };
 
-        PPARTITION_INFORMATION_EX pi = &layout_info->PartitionEntry[i];
-        vbr.offset = pi->StartingOffset;
-        vbr.partition_length = pi->PartitionLength;
-        vbr.partition_number = pi->PartitionNumber;
-        vbr.rewrite_partition = (TRUE == pi->RewritePartition) ? true : false;
-        
-        if (pi->PartitionStyle == PARTITION_STYLE_MBR)
-        {
-            vbr.is_mbr = true;
-            PPARTITION_INFORMATION_MBR mbr = &pi->Mbr;
-            if (TRUE == mbr->BootIndicator)
-            {
-                vbr.is_boot_partition = true;
-            }
-            vbr.recognized = (TRUE == mbr->RecognizedPartition) ? true : false;
-            
-            //log_dbg
-            //    "    [%u/%u] style = MBR, recognized = %s, boot = %s, offset = 0x%llx, length = %llu, number = %u",
-            //    i + 1,
-            //    layout_info->PartitionCount,
-            //    (vbr.recognized) ? "true" : "false",
-            //    vbr.is_boot_partition ? "true" : "false",
-            //    vbr.offset.QuadPart,
-            //    vbr.partition_length.QuadPart,
-            //    vbr.partition_number);
-        }
-        else
-        {
-            vbr.is_mbr = false;
-            PPARTITION_INFORMATION_GPT gpt = &pi->Gpt;
-            if (TRUE == IsEqualGUID(PARTITION_SYSTEM_GUID, gpt->PartitionType))
-            {
-                vbr.is_boot_partition = true;
-            }
+		PPARTITION_INFORMATION_EX pi = &layout_info->PartitionEntry[i];
+		vbr.offset = pi->StartingOffset;
+		vbr.partition_length = pi->PartitionLength;
+		vbr.partition_number = pi->PartitionNumber;
+		vbr.rewrite_partition = (TRUE == pi->RewritePartition) ? true : false;
 
-            vbr.recognized = true;
-            
-            //log_dbg
-            //    "    [%u/%u] style = GPT, recognized = true, boot = %s, offset = 0x%llx, length = %llu, number = %u, type = %s",
-            //    i + 1,
-            //    layout_info->PartitionCount,
-            //    vbr.is_boot_partition ? "true" : "false",
-            //    vbr.offset.QuadPart,
-            //    vbr.partition_length.QuadPart,
-            //    vbr.partition_number, 
-            //    gpt_partition_type_to_str(gpt->PartitionType)
-            //    );
-        }
+		if (pi->PartitionStyle == PARTITION_STYLE_MBR)
+		{
+			vbr.is_mbr = true;
+			PPARTITION_INFORMATION_MBR mbr = &pi->Mbr;
+			if (TRUE == mbr->BootIndicator)
+			{
+				vbr.is_boot_partition = true;
+			}
+			vbr.recognized = (TRUE == mbr->RecognizedPartition) ? true : false;
 
-        info._vbrs.push_back(vbr);
-    }
+			//log_dbg
+			//    "    [%u/%u] style = MBR, recognized = %s, boot = %s, offset = 0x%llx, length = %llu, number = %u",
+			//    i + 1,
+			//    layout_info->PartitionCount,
+			//    (vbr.recognized) ? "true" : "false",
+			//    vbr.is_boot_partition ? "true" : "false",
+			//    vbr.offset.QuadPart,
+			//    vbr.partition_length.QuadPart,
+			//    vbr.partition_number);
+		}
+		else
+		{
+			vbr.is_mbr = false;
+			PPARTITION_INFORMATION_GPT gpt = &pi->Gpt;
+			if (TRUE == IsEqualGUID(PARTITION_SYSTEM_GUID, gpt->PartitionType))
+			{
+				vbr.is_boot_partition = true;
+			}
 
-    return true;
+			vbr.recognized = true;
+
+			//log_dbg
+			//    "    [%u/%u] style = GPT, recognized = true, boot = %s, offset = 0x%llx, length = %llu, number = %u, type = %s",
+			//    i + 1,
+			//    layout_info->PartitionCount,
+			//    vbr.is_boot_partition ? "true" : "false",
+			//    vbr.offset.QuadPart,
+			//    vbr.partition_length.QuadPart,
+			//    vbr.partition_number, 
+			//    gpt_partition_type_to_str(gpt->PartitionType)
+			//    );
+		}
+
+		info._vbrs.push_back(vbr);
+	}
+
+	return true;
 }
 
 /// @brief  sample code about using IOCTL_DISK_GET_DRIVE_LAYOUT_EX
 ///         disk 의 파티션 정보를 덤프한다. 
 bool dump_all_disk_drive_layout()
 {
-    std::vector<uint32_t> disk_numbers;
-    bool ret = get_disk_numbers(disk_numbers);
-    if (true != ret)
-        return false;
+	std::vector<uint32_t> disk_numbers;
+	bool ret = get_disk_numbers(disk_numbers);
+	if (true != ret)
+		return false;
 
-    DWORD bytes_returned = 0;
+	DWORD bytes_returned = 0;
 
-    for (auto disk_number : disk_numbers)
-    {
-        std::wstringstream path;
-        path << L"\\\\.\\PhysicalDrive" << disk_number;
-        
-        // open handle for disk as `WIN32 Device Namespace` foramt.
-        HANDLE disk = CreateFileW(
-                        path.str().c_str(),
-                        GENERIC_READ/* | GENERIC_WRITE*/,
-                        FILE_SHARE_READ | FILE_SHARE_WRITE,
-                        NULL,
-                        OPEN_EXISTING,  // for device or file, only if exists.
-                        FILE_ATTRIBUTE_NORMAL,
-                        NULL);
-        if (INVALID_HANDLE_VALUE == disk)
-        {
-            log_err
-                "CreateFile( %ws ) failed. gle = %u",
-                path.str().c_str(),
-                GetLastError()
-            log_end;
-            continue;
-        }
+	for (auto disk_number : disk_numbers)
+	{
+		std::wstringstream path;
+		path << L"\\\\.\\PhysicalDrive" << disk_number;
 
-        // get information about drive layout
-        bool break_loop = false;
-        uint32_t dli_size = sizeof(DRIVE_LAYOUT_INFORMATION_EX) * 4;
-        PDRIVE_LAYOUT_INFORMATION_EX dli = (PDRIVE_LAYOUT_INFORMATION_EX)malloc(dli_size);
-        if (NULL == dli)
-        {
-            log_err
-                "insufficient rsrc for DRIVE_LAYOUT_INFORMATION_EX buffer. device = %ws", 
-                path.str().c_str()
-            log_end;
+		// open handle for disk as `WIN32 Device Namespace` foramt.
+		HANDLE disk = CreateFileW(
+			path.str().c_str(),
+			GENERIC_READ/* | GENERIC_WRITE*/,
+			FILE_SHARE_READ | FILE_SHARE_WRITE,
+			NULL,
+			OPEN_EXISTING,  // for device or file, only if exists.
+			FILE_ATTRIBUTE_NORMAL,
+			NULL);
+		if (INVALID_HANDLE_VALUE == disk)
+		{
+			log_err
+				"CreateFile( %ws ) failed. gle = %u",
+				path.str().c_str(),
+				GetLastError()
+				log_end;
+			continue;
+		}
 
-            CloseHandle(disk);
-            continue;
-        }
+		// get information about drive layout
+		bool break_loop = false;
+		uint32_t dli_size = sizeof(DRIVE_LAYOUT_INFORMATION_EX) * 4;
+		PDRIVE_LAYOUT_INFORMATION_EX dli = (PDRIVE_LAYOUT_INFORMATION_EX)malloc(dli_size);
+		if (NULL == dli)
+		{
+			log_err
+				"insufficient rsrc for DRIVE_LAYOUT_INFORMATION_EX buffer. device = %ws",
+				path.str().c_str()
+				log_end;
 
-        while(true != break_loop)
-        {
-            // get needed buffer size
-            if (!DeviceIoControl(
-                    disk,
-                    IOCTL_DISK_GET_DRIVE_LAYOUT_EX,
-                    NULL,
-                    0,
-                    (LPVOID)dli,
-                    dli_size,
-                    (LPDWORD)&bytes_returned,
-                    NULL))
-            {
-                DWORD gle = GetLastError();
-                if (ERROR_INSUFFICIENT_BUFFER == gle)
-                {
-                    dli_size *= 2;
-                    dli = (PDRIVE_LAYOUT_INFORMATION_EX)realloc(dli, dli_size);
-                }
-                else
-                {
-                    log_err
-                        "DeviceIoControl( IOCTL_DISK_GET_DRIVE_LAYOUT_EX ) failed. "\
-                        "device = %ws, gle = %u, bytes_returned = %u",
-                        path.str().c_str(),
-                        gle,
-                        bytes_returned
-                        log_end;
-                    break_loop = true;
-                }
+			CloseHandle(disk);
+			continue;
+		}
 
-                continue;
-            }
-            else
-            {
-                // ok. print partition info for the drive
-                log_info
-                    "===============================================\n"\
-                    "device = %ws\npartition style = %u, count = %u",
-                    path.str().c_str(),
-                    dli->PartitionStyle,
-                    dli->PartitionCount
-                    log_end;
+		while (true != break_loop)
+		{
+			// get needed buffer size
+			if (!DeviceIoControl(
+				disk,
+				IOCTL_DISK_GET_DRIVE_LAYOUT_EX,
+				NULL,
+				0,
+				(LPVOID)dli,
+				dli_size,
+				(LPDWORD)&bytes_returned,
+				NULL))
+			{
+				DWORD gle = GetLastError();
+				if (ERROR_INSUFFICIENT_BUFFER == gle)
+				{
+					dli_size *= 2;
+					dli = (PDRIVE_LAYOUT_INFORMATION_EX)realloc(dli, dli_size);
+				}
+				else
+				{
+					log_err
+						"DeviceIoControl( IOCTL_DISK_GET_DRIVE_LAYOUT_EX ) failed. "\
+						"device = %ws, gle = %u, bytes_returned = %u",
+						path.str().c_str(),
+						gle,
+						bytes_returned
+						log_end;
+					break_loop = true;
+				}
 
-                for (DWORD i = 0; i < dli->PartitionCount; ++i)
-                {
-                    PPARTITION_INFORMATION_EX pi = &dli->PartitionEntry[i];
-                    if (pi->PartitionStyle == PARTITION_STYLE_MBR)
-                    {
-                        PPARTITION_INFORMATION_MBR mbr = &pi->Mbr;
-                        log_info
-                            "partition [%u] info\n"\
-                            "   style = PARTITION_STYLE_MBR\n"\
-                            "   start offset = 0x%llx\n"\
-                            "   length = %llu\n"\
-                            "   number = %u\n"\
-                            "   [MBR]\n"\
-                            "       PartitionType = %u\n"\
-                            "       BootIndicator = %s\n"\
-                            "       RecognizedPartition = %s\n"\
-                            "       HiddenSectors = %u\n",
-                            i,
-                            pi->StartingOffset.QuadPart,
-                            pi->PartitionLength.QuadPart,
-                            pi->PartitionNumber,
-                            mbr->PartitionType,
-                            TRUE == mbr->BootIndicator ? "true" : "false",
-                            TRUE == mbr->RecognizedPartition ? "true" : "false",
-                            mbr->HiddenSectors
-                            log_end;
+				continue;
+			}
+			else
+			{
+				// ok. print partition info for the drive
+				log_info
+					"===============================================\n"\
+					"device = %ws\npartition style = %u, count = %u",
+					path.str().c_str(),
+					dli->PartitionStyle,
+					dli->PartitionCount
+					log_end;
 
-                        if (mbr->BootIndicator)
-                        {
-                            uint8_t buf[512] = { 0x00 };
-                            LARGE_INTEGER li_new_pos = { 0 };
-                            LARGE_INTEGER li_distance = { 0 };
-                            
-                            // boot 파티션이 설치된 디스크의 첫 섹터는 MBR
-                            log_info "[*] dump MBR" log_end
-                            li_distance.QuadPart = 0;
-                            if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
-                            {
-                                log_err
-                                    "SetFilePointerEx() failed, gle = %u", GetLastError()
-                                    log_end;
-                                continue;
-                            }
-                            
-                            if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
-                            {
-                                log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
-                            }
-                            else
-                            {
-                                std::vector<std::string> dumps;
-                                dump_memory(0, buf, sizeof(buf), dumps);
-                                for (auto line : dumps)
-                                {
-                                    log_info "%s", line.c_str() log_end;
-                                }
-                            }
+				for (DWORD i = 0; i < dli->PartitionCount; ++i)
+				{
+					PPARTITION_INFORMATION_EX pi = &dli->PartitionEntry[i];
+					if (pi->PartitionStyle == PARTITION_STYLE_MBR)
+					{
+						PPARTITION_INFORMATION_MBR mbr = &pi->Mbr;
+						log_info
+							"partition [%u] info\n"\
+							"   style = PARTITION_STYLE_MBR\n"\
+							"   start offset = 0x%llx\n"\
+							"   length = %llu\n"\
+							"   number = %u\n"\
+							"   [MBR]\n"\
+							"       PartitionType = %u\n"\
+							"       BootIndicator = %s\n"\
+							"       RecognizedPartition = %s\n"\
+							"       HiddenSectors = %u\n",
+							i,
+							pi->StartingOffset.QuadPart,
+							pi->PartitionLength.QuadPart,
+							pi->PartitionNumber,
+							mbr->PartitionType,
+							TRUE == mbr->BootIndicator ? "true" : "false",
+							TRUE == mbr->RecognizedPartition ? "true" : "false",
+							mbr->HiddenSectors
+							log_end;
 
-                            // boot 파티션의 첫 섹터는 VBR
-                            li_distance = pi->StartingOffset;
-                            if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
-                            {
-                                log_err
-                                    "SetFilePointerEx() failed, gle = %u", GetLastError()
-                                    log_end;
-                                continue;
-                            }
-                            
-                            if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
-                            {
-                                log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
-                            }
-                            else
-                            {
-                                std::vector<std::string> dumps;
-                                dump_memory(0, buf, sizeof(buf), dumps);
+						if (mbr->BootIndicator)
+						{
+							uint8_t buf[512] = { 0x00 };
+							LARGE_INTEGER li_new_pos = { 0 };
+							LARGE_INTEGER li_distance = { 0 };
 
-                                log_info 
-                                    "[*] dump VBR (disk offset 0x%llx)", pi->StartingOffset.QuadPart 
-                                log_end
-                                for (auto line : dumps)
-                                {
-                                    log_info "%s", line.c_str() log_end;
-                                }
-                            }
-                        }
-                    }
-                    else if (pi->PartitionStyle == PARTITION_STYLE_GPT)
-                    {
-                        PPARTITION_INFORMATION_GPT gpt = &pi->Gpt;
+							// boot 파티션이 설치된 디스크의 첫 섹터는 MBR
+							log_info "[*] dump MBR" log_end
+								li_distance.QuadPart = 0;
+							if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
+							{
+								log_err
+									"SetFilePointerEx() failed, gle = %u", GetLastError()
+									log_end;
+								continue;
+							}
 
-                        std::string p_type;
-                        std::string p_id;
+							if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
+							{
+								log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+							}
+							else
+							{
+								std::vector<std::string> dumps;
+								dump_memory(0, buf, sizeof(buf), dumps);
+								for (auto line : dumps)
+								{
+									log_info "%s", line.c_str() log_end;
+								}
+							}
 
-                        bin_to_hexa(sizeof(GUID), (uint8_t*)&gpt->PartitionType, false, p_type);
-                        bin_to_hexa(sizeof(GUID), (uint8_t*)&gpt->PartitionId, false, p_id);
+							// boot 파티션의 첫 섹터는 VBR
+							li_distance = pi->StartingOffset;
+							if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
+							{
+								log_err
+									"SetFilePointerEx() failed, gle = %u", GetLastError()
+									log_end;
+								continue;
+							}
 
-                        log_info
-                            "partition [%u] info\n"\
-                            "   style = PARTITION_STYLE_GPT\n"\
-                            "   start offset = 0x%llx\n"\
-                            "   length = %llu\n"\
-                            "   number = %u\n"\
-                            "   [GPT]\n"\
-                            "       PartitionType = %s\n"\
-                            "       PartitionId = %s\n"\
-                            "       Attributes = %llx\n"\
-                            "       Name = %ws\n",
-                            i,
-                            pi->StartingOffset.QuadPart,
-                            pi->PartitionLength.QuadPart,
-                            pi->PartitionNumber,
-                            p_type.c_str(),
-                            p_id.c_str(),
-                            gpt->Attributes,
-                            gpt->Name
-                            log_end;
-                    }
-                    else
-                    {
-                        log_info
-                            "partition [%u] info\n"\
-                            "   style = PARTITION_STYLE_RAW\n"\
-                            "   start offset = 0x%llx\n"\
-                            "   length = %llu\n"\
-                            "   number = %u\n",
-                            i,
-                            pi->StartingOffset.QuadPart,
-                            pi->PartitionLength.QuadPart,
-                            pi->PartitionNumber
-                            log_end;
-                    }
+							if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
+							{
+								log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+							}
+							else
+							{
+								std::vector<std::string> dumps;
+								dump_memory(0, buf, sizeof(buf), dumps);
 
-                    
-                }
+								log_info
+									"[*] dump VBR (disk offset 0x%llx)", pi->StartingOffset.QuadPart
+									log_end
+									for (auto line : dumps)
+									{
+										log_info "%s", line.c_str() log_end;
+									}
+							}
+						}
+					}
+					else if (pi->PartitionStyle == PARTITION_STYLE_GPT)
+					{
+						PPARTITION_INFORMATION_GPT gpt = &pi->Gpt;
 
-                break_loop = true;
-            }
-        }
+						std::string p_type;
+						std::string p_id;
 
-        free_and_nil(dli);
-        CloseHandle(disk);
-    }
-    return true;
+						bin_to_hexa(sizeof(GUID), (uint8_t*)&gpt->PartitionType, false, p_type);
+						bin_to_hexa(sizeof(GUID), (uint8_t*)&gpt->PartitionId, false, p_id);
+
+						log_info
+							"partition [%u] info\n"\
+							"   style = PARTITION_STYLE_GPT\n"\
+							"   start offset = 0x%llx\n"\
+							"   length = %llu\n"\
+							"   number = %u\n"\
+							"   [GPT]\n"\
+							"       PartitionType = %s\n"\
+							"       PartitionId = %s\n"\
+							"       Attributes = %llx\n"\
+							"       Name = %ws\n",
+							i,
+							pi->StartingOffset.QuadPart,
+							pi->PartitionLength.QuadPart,
+							pi->PartitionNumber,
+							p_type.c_str(),
+							p_id.c_str(),
+							gpt->Attributes,
+							gpt->Name
+							log_end;
+					}
+					else
+					{
+						log_info
+							"partition [%u] info\n"\
+							"   style = PARTITION_STYLE_RAW\n"\
+							"   start offset = 0x%llx\n"\
+							"   length = %llu\n"\
+							"   number = %u\n",
+							i,
+							pi->StartingOffset.QuadPart,
+							pi->PartitionLength.QuadPart,
+							pi->PartitionNumber
+							log_end;
+					}
+
+
+				}
+
+				break_loop = true;
+			}
+		}
+
+		free_and_nil(dli);
+		CloseHandle(disk);
+	}
+	return true;
 }
 
 /// @brief  c 드라이브로 매핑된 파티션(볼륨)의 boot_area 정보를 출력한다. 
 ///         당연히 CreateFile 로 open하는 핸들은 볼륨의 핸들이어야 한다. 
 bool dump_boot_area()
 {
-    DWORD bytes_returned = 0;
+	DWORD bytes_returned = 0;
 
-    // open handle for disk
-    if (true != set_privilege(SE_MANAGE_VOLUME_NAME, true))
-    {
-        log_err "set_privilege(SE_MANAGE_VOLUME_NAME) failed." log_end;
-        return false;
-    }
+	// open handle for disk
+	if (true != set_privilege(SE_MANAGE_VOLUME_NAME, true))
+	{
+		log_err "set_privilege(SE_MANAGE_VOLUME_NAME) failed." log_end;
+		return false;
+	}
 
-    HANDLE disk = INVALID_HANDLE_VALUE;
-    
+	HANDLE disk = INVALID_HANDLE_VALUE;
+
 #pragma warning(disable: 4127)  // conditional expression is constant
-    do
-    {
-        std::wstringstream path;
-        path << L"\\\\.\\h:";           // 볼륨을 오픈해야 한다. \\.\PhysicalDrive0 같은거 오픈하면 안됨
-        disk = CreateFileW(
-                        path.str().c_str(),
-                        GENERIC_READ,
-                        FILE_SHARE_READ | FILE_SHARE_WRITE,
-                        NULL,
-                        OPEN_EXISTING,  // for device or file, only if exists.
-                        FILE_ATTRIBUTE_NORMAL,
-                        NULL);
-        if (INVALID_HANDLE_VALUE == disk)
-        {
-            log_err
-                "CreateFile( %ws ) failed. gle = %u",
-                path.str().c_str(),
-                GetLastError()
-                log_end;
-            break;
-        }
+	do
+	{
+		std::wstringstream path;
+		path << L"\\\\.\\h:";           // 볼륨을 오픈해야 한다. \\.\PhysicalDrive0 같은거 오픈하면 안됨
+		disk = CreateFileW(
+			path.str().c_str(),
+			GENERIC_READ,
+			FILE_SHARE_READ | FILE_SHARE_WRITE,
+			NULL,
+			OPEN_EXISTING,  // for device or file, only if exists.
+			FILE_ATTRIBUTE_NORMAL,
+			NULL);
+		if (INVALID_HANDLE_VALUE == disk)
+		{
+			log_err
+				"CreateFile( %ws ) failed. gle = %u",
+				path.str().c_str(),
+				GetLastError()
+				log_end;
+			break;
+		}
 
-        BOOT_AREA_INFO bai = { 0 };
+		BOOT_AREA_INFO bai = { 0 };
 
-        if (!DeviceIoControl(
-                disk,
-                FSCTL_GET_BOOT_AREA_INFO,
-                NULL,
-                0,
-                (LPVOID)&bai,
-                sizeof(bai),
-                (LPDWORD)&bytes_returned,
-                NULL))
-        {
-            log_err "DeviceIoControl(FSCTL_GET_BOOT_AREA_INFO) failed. gle = %u\n", GetLastError() log_end;
+		if (!DeviceIoControl(
+			disk,
+			FSCTL_GET_BOOT_AREA_INFO,
+			NULL,
+			0,
+			(LPVOID)&bai,
+			sizeof(bai),
+			(LPDWORD)&bytes_returned,
+			NULL))
+		{
+			log_err "DeviceIoControl(FSCTL_GET_BOOT_AREA_INFO) failed. gle = %u\n", GetLastError() log_end;
 
-            break;
-        }
+			break;
+		}
 
-        log_info
-            "===============================================\n"\
-            "device = %ws\nBootSectorCount = %u, Offset = 0x%llx, Offset2 = 0x%llx",
-            path.str().c_str(),
-            bai.BootSectorCount,
-            bai.BootSectors[0].Offset.QuadPart,
-            bai.BootSectors[1].Offset.QuadPart
-            log_end;
+		log_info
+			"===============================================\n"\
+			"device = %ws\nBootSectorCount = %u, Offset = 0x%llx, Offset2 = 0x%llx",
+			path.str().c_str(),
+			bai.BootSectorCount,
+			bai.BootSectors[0].Offset.QuadPart,
+			bai.BootSectors[1].Offset.QuadPart
+			log_end;
 
-        uint8_t buf[512] = { 0x00 };
-        LARGE_INTEGER li_new_pos = { 0 };
-        LARGE_INTEGER li_distance = { 0 };
-        li_distance.LowPart = bai.BootSectors[0].Offset.LowPart;
-        li_distance.HighPart = bai.BootSectors[0].Offset.HighPart;
-        if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
-        {
-            log_err
-                "SetFilePointerEx() failed, gle = %u", GetLastError()
-                log_end;
-            break;
-        }
+		uint8_t buf[512] = { 0x00 };
+		LARGE_INTEGER li_new_pos = { 0 };
+		LARGE_INTEGER li_distance = { 0 };
+		li_distance.LowPart = bai.BootSectors[0].Offset.LowPart;
+		li_distance.HighPart = bai.BootSectors[0].Offset.HighPart;
+		if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
+		{
+			log_err
+				"SetFilePointerEx() failed, gle = %u", GetLastError()
+				log_end;
+			break;
+		}
 
-        if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
-        {
-            log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
-        }
-        else
-        {
-            std::vector<std::string> dumps;
-            dump_memory(0, buf, sizeof(buf), dumps);
-            for (auto line : dumps)
-            {
-                log_info "%s", line.c_str() log_end;
-            }
-        }
-    } while (false);
+		if (!ReadFile(disk, buf, sizeof(buf), &bytes_returned, NULL))
+		{
+			log_err "ReadFile( ) failed. gle = %u", GetLastError() log_end;
+		}
+		else
+		{
+			std::vector<std::string> dumps;
+			dump_memory(0, buf, sizeof(buf), dumps);
+			for (auto line : dumps)
+			{
+				log_info "%s", line.c_str() log_end;
+			}
+		}
+	} while (false);
 #pragma warning(default: 4127)  // conditional expression is constant
 
-    if (disk != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(disk);
-    }
+	if (disk != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(disk);
+	}
 
-    return true;
+	return true;
 }
 
 /**
@@ -1446,23 +1448,23 @@ HANDLE open_file_to_write(_In_ const wchar_t* file_path)
 		return INVALID_HANDLE_VALUE;
 	}
 
-	HANDLE hFile = CreateFileW(file_path, 
-						GENERIC_WRITE,                                
-						FILE_SHARE_READ, 
-						NULL, 
-						OPEN_ALWAYS, 
-						FILE_ATTRIBUTE_NORMAL, 
-						NULL);	
-	if(hFile == INVALID_HANDLE_VALUE)
-	{						
-        log_err
-            "CreateFile(path=%S), gle=%u", 
-            file_path, 
-            GetLastError()
-        log_end
+	HANDLE hFile = CreateFileW(file_path,
+							   GENERIC_WRITE,
+							   FILE_SHARE_READ,
+							   NULL,
+							   OPEN_ALWAYS,
+							   FILE_ATTRIBUTE_NORMAL,
+							   NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		log_err
+			"CreateFile(path=%S), gle=%u",
+			file_path,
+			GetLastError()
+			log_end
 	}
 
-    return hFile;
+	return hFile;
 }
 
 /**
@@ -1476,46 +1478,46 @@ HANDLE open_file_to_read(LPCWCH file_path)
 		return INVALID_HANDLE_VALUE;
 	}
 
-	HANDLE hFile = CreateFileW(file_path, 
-						GENERIC_READ, 
-						FILE_SHARE_READ, 
-						NULL, 
-						OPEN_EXISTING, 
-						FILE_ATTRIBUTE_NORMAL, 
-						NULL);	
-	if(hFile == INVALID_HANDLE_VALUE)
-	{						
-        log_err
-            "CreateFile(path=%ws), gle=%u", 
-            file_path, 
-            GetLastError()
-        log_end
+	HANDLE hFile = CreateFileW(file_path,
+							   GENERIC_READ,
+							   FILE_SHARE_READ,
+							   NULL,
+							   OPEN_EXISTING,
+							   FILE_ATTRIBUTE_NORMAL,
+							   NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		log_err
+			"CreateFile(path=%ws), gle=%u",
+			file_path,
+			GetLastError()
+			log_end
 	}
 
-    return hFile;
+	return hFile;
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
-bool 
+bool
 get_file_size(
-	_In_ HANDLE file_handle, 
+	_In_ HANDLE file_handle,
 	_Out_ int64_t& size
-	)
+)
 {
 	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
 	if (INVALID_HANDLE_VALUE == file_handle) return false;
 
-	LARGE_INTEGER size_tmp = {0};
-	
-	if (TRUE != GetFileSizeEx(file_handle, 
+	LARGE_INTEGER size_tmp = { 0 };
+
+	if (TRUE != GetFileSizeEx(file_handle,
 							  &size_tmp))
 	{
 		log_err "GetFileSizeEx( file = 0x%p ), gle = %u",
@@ -1540,7 +1542,7 @@ bool
 get_file_version(
 	_In_ const wchar_t* file_path,
 	_Out_ std::wstring& file_version
-	)
+)
 {
 	_ASSERTE(nullptr != file_path);
 	if (nullptr == file_path)
@@ -1572,10 +1574,10 @@ get_file_version(
 	}
 
 	wchar_ptr buffer((wchar_t*)malloc(size),
-					[](_In_ wchar_t* ptr)
-					{
-						if (nullptr != ptr) free(ptr);
-					});
+					 [](_In_ wchar_t* ptr)
+	{
+		if (nullptr != ptr) free(ptr);
+	});
 	if (nullptr == buffer.get())
 	{
 		log_err "Not enough memory. malloc size=%u",
@@ -1623,7 +1625,7 @@ get_file_version(
 /**
 * @brief	파일에 포맷문자열을 쓴다.
 */
-BOOL write_to_filew(LPCWCH file_path, LPCWCH format,...)
+BOOL write_to_filew(LPCWCH file_path, LPCWCH format, ...)
 {
 	_ASSERTE(NULL != file_path);
 	if (NULL == file_path)
@@ -1631,45 +1633,42 @@ BOOL write_to_filew(LPCWCH file_path, LPCWCH format,...)
 		return FALSE;
 	}
 
-	HANDLE hFile = CreateFileW(
-                        file_path, 
-						GENERIC_WRITE, 
-						FILE_SHARE_READ,
-						NULL, 
-						OPEN_ALWAYS, 
-						FILE_ATTRIBUTE_NORMAL, 
-						NULL);	
-	if(hFile == INVALID_HANDLE_VALUE)
-	{						
-        log_err
-            "CreateFile(%S), gle=%u", 
-            file_path, GetLastError()
-        log_end
-        return FALSE;
+	HANDLE hFile = CreateFileW(file_path,
+							   GENERIC_WRITE,
+							   FILE_SHARE_READ,
+							   NULL,
+							   OPEN_ALWAYS,
+							   FILE_ATTRIBUTE_NORMAL,
+							   NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		log_err
+			"CreateFile(%S), gle=%u",
+			file_path, GetLastError()
+			log_end
+			return FALSE;
 	}
 
 	// 자원 관리 객체 생성
 	//
 	SmrtHandle file_handle(hFile);
-
-	DWORD pos = SetFilePointer (hFile, 0, NULL, FILE_END);
+	DWORD pos = SetFilePointer(hFile, 0, NULL, FILE_END);
 	if (INVALID_SET_FILE_POINTER == pos) return FALSE;
 
 	va_list args;
 	DWORD dw = 0;
-	WCHAR temp[5120] = {0};
+	WCHAR temp[1024] = { 0 };
 	WCHAR* pszDestEnd = temp;
 	size_t cbRemaining = sizeof(temp);
-		
-	va_start(args, format);	
-	if (TRUE != SUCCEEDED(StringCbVPrintfExW(
-                                pszDestEnd, 
-								cbRemaining,
-								&pszDestEnd, 
-								&cbRemaining, 
-								0, 
-								format, 
-								args)))
+
+	va_start(args, format);
+	if (TRUE != SUCCEEDED(StringCbVPrintfExW(pszDestEnd,
+											 cbRemaining,
+											 &pszDestEnd,
+											 &cbRemaining,
+											 0,
+											 format,
+											 args)))
 	{
 		_ASSERTE(!"StringCbVPrintf");
 		va_end(args);
@@ -1677,13 +1676,11 @@ BOOL write_to_filew(LPCWCH file_path, LPCWCH format,...)
 	}
 	va_end(args);
 
-	if (TRUE != WriteFile(
-					hFile, 
-					temp, 
-					(DWORD)((DWORD_PTR)pszDestEnd - (DWORD_PTR)temp), 
-					&dw, 
-					NULL
-					))
+	if (TRUE != WriteFile(hFile,
+						  temp,
+						  (DWORD)((DWORD_PTR)pszDestEnd - (DWORD_PTR)temp),
+						  &dw,
+						  NULL))
 	{
 		return FALSE;
 	}
@@ -1694,27 +1691,26 @@ BOOL write_to_filew(LPCWCH file_path, LPCWCH format,...)
 /**
 * @brief	파일에 포맷 문자열을 쓴다
 */
-BOOL write_to_filew(HANDLE hFile,LPCWCH format,...)
+BOOL write_to_filew(HANDLE hFile, LPCWCH format, ...)
 {
-	DWORD pos = SetFilePointer (hFile, 0, NULL, FILE_END);
+	DWORD pos = SetFilePointer(hFile, 0, NULL, FILE_END);
 	if (INVALID_SET_FILE_POINTER == pos) return FALSE;
 
 	va_list args;
 	DWORD dw = 0;
-	WCHAR temp[5120] = {0};
+	WCHAR temp[1024] = { 0 };
 	WCHAR* pszDestEnd = temp;
 	size_t cbRemaining = sizeof(temp);
-		
 
-	va_start(args, format);	
-	if (TRUE != SUCCEEDED(StringCbVPrintfExW(
-                                pszDestEnd, 
-								cbRemaining,
-								&pszDestEnd, 
-								&cbRemaining, 
-								0, 
-								format, 
-								args)))
+
+	va_start(args, format);
+	if (TRUE != SUCCEEDED(StringCbVPrintfExW(pszDestEnd,
+											 cbRemaining,
+											 &pszDestEnd,
+											 &cbRemaining,
+											 0,
+											 format,
+											 args)))
 	{
 		_ASSERTE(!"StringCbVPrintf");
 		va_end(args);
@@ -1722,42 +1718,40 @@ BOOL write_to_filew(HANDLE hFile,LPCWCH format,...)
 	}
 	va_end(args);
 
-	if (TRUE != WriteFile(
-					hFile, 
-					temp, 
-					(DWORD)((DWORD_PTR)pszDestEnd - (DWORD_PTR)temp), 
-					&dw, 
-					NULL))
+	if (TRUE != WriteFile(hFile,
+						  temp,
+						  (DWORD)((DWORD_PTR)pszDestEnd - (DWORD_PTR)temp),
+						  &dw,
+						  NULL))
 	{
 		return FALSE;
 	}
-	
+
 	return TRUE;		// for success
 }
 
 /**
 * @brief	파일에 포맷 문자열을 쓴다
 */
-BOOL write_to_filea(HANDLE hFile,LPCCH format,...)
+BOOL write_to_filea(HANDLE hFile, LPCCH format, ...)
 {
-	DWORD pos = SetFilePointer (hFile, 0, NULL, FILE_END);
+	DWORD pos = SetFilePointer(hFile, 0, NULL, FILE_END);
 	if (INVALID_SET_FILE_POINTER == pos) return FALSE;
-		
+
 	va_list args;
 	DWORD dw = 0;
-	CHAR temp[5120] = {0};
+	CHAR temp[5120] = { 0 };
 	CHAR* pszDestEnd = temp;
-	size_t cbRemaining = sizeof(temp);	
+	size_t cbRemaining = sizeof(temp);
 
-	va_start(args, format);	
-	if (TRUE != SUCCEEDED(StringCbVPrintfExA(
-                                pszDestEnd, 
-								cbRemaining,
-								&pszDestEnd, 
-								&cbRemaining, 
-								0, 
-								format, 
-								args)))
+	va_start(args, format);
+	if (TRUE != SUCCEEDED(StringCbVPrintfExA(pszDestEnd,
+											 cbRemaining,
+											 &pszDestEnd,
+											 &cbRemaining,
+											 0,
+											 format,
+											 args)))
 	{
 		_ASSERTE(!"StringCbVPrintf");
 		va_end(args);
@@ -1765,27 +1759,26 @@ BOOL write_to_filea(HANDLE hFile,LPCCH format,...)
 	}
 	va_end(args);
 
-	if(TRUE != WriteFile(	
-					hFile, 
-					temp, 
-					(DWORD)((DWORD_PTR)pszDestEnd - (DWORD_PTR)temp), 
-					&dw, 
-					NULL))
+	if (TRUE != WriteFile(hFile,
+						  temp,
+						  (DWORD)((DWORD_PTR)pszDestEnd - (DWORD_PTR)temp),
+						  &dw,
+						  NULL))
 	{
 		return FALSE;
 	}
-	
+
 	return TRUE;		// for success
 }
 
 /**
  * @brief	retrieve current file position
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool get_file_position(_In_ HANDLE file_handle, _Out_ int64_t& position)
 {
@@ -1795,20 +1788,20 @@ bool get_file_position(_In_ HANDLE file_handle, _Out_ int64_t& position)
 	DWORD file_type = GetFileType(file_handle);
 	if (FILE_TYPE_DISK != file_type)
 	{
-		log_err 
-			"invalid file type = %u, FILE_TYPE_DISK (1) only", file_type 
-		log_end
-		return false;
+		log_err
+			"invalid file type = %u, FILE_TYPE_DISK (1) only", file_type
+			log_end
+			return false;
 	}
 
-	LARGE_INTEGER li_new_pos = {0};
-	LARGE_INTEGER li_distance= {0};
+	LARGE_INTEGER li_new_pos = { 0 };
+	LARGE_INTEGER li_distance = { 0 };
 	if (!SetFilePointerEx(file_handle, li_distance, &li_new_pos, FILE_CURRENT))
 	{
 		log_err
 			"SetFilePointerEx() failed, gle = %u", GetLastError()
-		log_end
-		return false;
+			log_end
+			return false;
 	}
 
 	position = li_new_pos.QuadPart;
@@ -1816,12 +1809,12 @@ bool get_file_position(_In_ HANDLE file_handle, _Out_ int64_t& position)
 }
 
 /// @brief	파일포인터를 distance 로 이동한다.
-bool 
+bool
 set_file_position(
-	_In_ HANDLE file_handle, 
-	_In_ int64_t distance, 
+	_In_ HANDLE file_handle,
+	_In_ int64_t distance,
 	_Out_opt_ int64_t* new_position
-	)
+)
 {
 	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
 	if (INVALID_HANDLE_VALUE == file_handle) return false;
@@ -1829,21 +1822,21 @@ set_file_position(
 	DWORD file_type = GetFileType(file_handle);
 	if (FILE_TYPE_DISK != file_type)
 	{
-		log_err 
-			"invalid file type = %u, FILE_TYPE_DISK (1) only", file_type 
-		log_end
-		return false;
+		log_err
+			"invalid file type = %u, FILE_TYPE_DISK (1) only", file_type
+			log_end
+			return false;
 	}
 
-	LARGE_INTEGER li_distance = {0}; li_distance.QuadPart = distance;
-	LARGE_INTEGER li_new_pos = {0};
+	LARGE_INTEGER li_distance = { 0 }; li_distance.QuadPart = distance;
+	LARGE_INTEGER li_new_pos = { 0 };
 
 	if (!SetFilePointerEx(file_handle, li_distance, &li_new_pos, FILE_BEGIN))
 	{
 		log_err
 			"SetFilePointerEx() failed, gle = %u", GetLastError()
-		log_end
-		return false;
+			log_end
+			return false;
 	}
 
 	if (NULL != new_position) { *new_position = li_new_pos.QuadPart; }
@@ -1889,212 +1882,212 @@ bool set_file_size(_In_ HANDLE file_handle, _In_ int64_t new_size)
 /**
 * @brief	문자열을 UTF8 형식 파일로 저장한다.
 *           http://digitz.tistory.com/303   ANSI와 UTF-8과의 상호 변환
-*           http://en.wikipedia.org/wiki/Byte_Order_Mark  
+*           http://en.wikipedia.org/wiki/Byte_Order_Mark
 *           http://golbenge.wordpress.com/2009/12/24/stl%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-unicode-%ED%85%8D%EC%8A%A4%ED%8A%B8-%ED%8C%8C%EC%9D%BC-%EC%B6%9C%EB%A0%A5/
 */
-BOOL 
+BOOL
 SaveToFileAsUTF8A(
-    IN LPCWSTR FilePathDoesNotExists, 
-    IN LPCSTR NullTerminatedAsciiString
-    )
+	IN LPCWSTR FilePathDoesNotExists,
+	IN LPCSTR NullTerminatedAsciiString
+)
 {
-    _ASSERTE(NULL != FilePathDoesNotExists);
-    if (NULL == FilePathDoesNotExists) return FALSE;    
-    if (TRUE == is_file_existsW(FilePathDoesNotExists)) return FALSE;
+	_ASSERTE(NULL != FilePathDoesNotExists);
+	if (NULL == FilePathDoesNotExists) return FALSE;
+	if (TRUE == is_file_existsW(FilePathDoesNotExists)) return FALSE;
 
-    // ASCII ==> WIDE CHAR (UCS-2)
-    // 
-    PWSTR WideString = MbsToWcs(NullTerminatedAsciiString);
-    if (NULL == WideString) return FALSE;
-    SmrtPtr<PWSTR> spw(WideString);
+	// ASCII ==> WIDE CHAR (UCS-2)
+	// 
+	PWSTR WideString = MbsToWcs(NullTerminatedAsciiString);
+	if (NULL == WideString) return FALSE;
+	SmrtPtr<PWSTR> spw(WideString);
 
-    return SaveToFileAsUTF8W(
-                FilePathDoesNotExists, 
-                WideString
-                );
+	return SaveToFileAsUTF8W(
+		FilePathDoesNotExists,
+		WideString
+	);
 }
 
 
 /**
 * @brief	문자열을 UTF8 형식 파일로 저장한다.
 */
-BOOL 
+BOOL
 SaveToFileAsUTF8W(
-    IN LPCWSTR FilePathDoesNotExists, 
-    IN LPCWSTR NullTerminatedWideString
-    )
+	IN LPCWSTR FilePathDoesNotExists,
+	IN LPCWSTR NullTerminatedWideString
+)
 {
-    _ASSERTE(NULL != FilePathDoesNotExists);
-    if (NULL == FilePathDoesNotExists) return FALSE;    
-    if (TRUE == is_file_existsW(FilePathDoesNotExists)) return FALSE;
+	_ASSERTE(NULL != FilePathDoesNotExists);
+	if (NULL == FilePathDoesNotExists) return FALSE;
+	if (TRUE == is_file_existsW(FilePathDoesNotExists)) return FALSE;
 
-    // UCS-2 ==> UTF-8
-    // 
-    PSTR Utf8String = WcsToMbsUTF8(NullTerminatedWideString);
-    if (NULL == NullTerminatedWideString) return FALSE;
-    SmrtPtr<PSTR> spu(Utf8String);
+	// UCS-2 ==> UTF-8
+	// 
+	PSTR Utf8String = WcsToMbsUTF8(NullTerminatedWideString);
+	if (NULL == NullTerminatedWideString) return FALSE;
+	SmrtPtr<PSTR> spu(Utf8String);
 
-    HANDLE hFile = open_file_to_write(FilePathDoesNotExists);
-    if (INVALID_HANDLE_VALUE == hFile) 
-    {
-        log_err
-            "OpenFileToWrite(path=%S) failed",
-            FilePathDoesNotExists
-        log_end
-        return FALSE;
-    }
+	HANDLE hFile = open_file_to_write(FilePathDoesNotExists);
+	if (INVALID_HANDLE_VALUE == hFile)
+	{
+		log_err
+			"OpenFileToWrite(path=%S) failed",
+			FilePathDoesNotExists
+			log_end
+			return FALSE;
+	}
 
-    // write file 
-    // 
-    DWORD cbWritten=0;
-    BYTE ByteOrderMark[] = {0xEF, 0xBB, 0xBF};
-    if (TRUE != WriteFile(
-                    hFile, 
-                    ByteOrderMark, 
-                    sizeof(ByteOrderMark), 
-                    &cbWritten, 
-                    NULL))
-    {
-        log_err
-            "WriteFile(BOM) failed, gle=%u", 
-            GetLastError()
-        log_end
+	// write file 
+	// 
+	DWORD cbWritten = 0;
+	BYTE ByteOrderMark[] = { 0xEF, 0xBB, 0xBF };
+	if (TRUE != WriteFile(
+		hFile,
+		ByteOrderMark,
+		sizeof(ByteOrderMark),
+		&cbWritten,
+		NULL))
+	{
+		log_err
+			"WriteFile(BOM) failed, gle=%u",
+			GetLastError()
+			log_end
 
-        CloseHandle(hFile); hFile = NULL;
-        return FALSE;
-    }
+			CloseHandle(hFile); hFile = NULL;
+		return FALSE;
+	}
 
-    if (TRUE != WriteFile(
-                    hFile, 
-                    Utf8String, 
-                    (DWORD)strlen(Utf8String), 
-                    &cbWritten, 
-                    NULL))
-    {
-        log_err
-            "WriteFile(Utf8String) failed, gle=%u", 
-            GetLastError()
-        log_end
-        CloseHandle(hFile); hFile = NULL;
-        return FALSE;
-    }
-    
-    CloseHandle(hFile); hFile = NULL;
-    return TRUE;
+	if (TRUE != WriteFile(
+		hFile,
+		Utf8String,
+		(DWORD)strlen(Utf8String),
+		&cbWritten,
+		NULL))
+	{
+		log_err
+			"WriteFile(Utf8String) failed, gle=%u",
+			GetLastError()
+			log_end
+			CloseHandle(hFile); hFile = NULL;
+		return FALSE;
+	}
+
+	CloseHandle(hFile); hFile = NULL;
+	return TRUE;
 }
 
 /**
 * @brief	파일을 메모리에 로드한다. 반환되는 메모리는 동적할당된 메모리이므로 caller 가 해제해야 함
 */
-bool 
+bool
 LoadFileToMemory(
-    _In_ const LPCWSTR  FilePath, 
-    _Out_ DWORD&  MemorySize, 
+	_In_ const LPCWSTR  FilePath,
+	_Out_ DWORD&  MemorySize,
 	_Outptr_ PBYTE&  Memory
-    )
+)
 {
-    _ASSERTE(nullptr != FilePath);
-    _ASSERTE(true == is_file_existsW(FilePath));
+	_ASSERTE(nullptr != FilePath);
+	_ASSERTE(true == is_file_existsW(FilePath));
 	if (nullptr == FilePath ||
 		true != is_file_existsW(FilePath))
 	{
 		return false;
 	}
-    HANDLE hFile = CreateFileW((LPCWSTR)FilePath, 
-								GENERIC_READ, 
-								FILE_SHARE_READ/* | FILE_SHARE_WRITE*/,
-								NULL, 
-								OPEN_EXISTING, 
-								FILE_ATTRIBUTE_NORMAL, 
-								NULL);
-    if (INVALID_HANDLE_VALUE == hFile)
-    {
-        log_err
-            "CreateFile(%ws) failed, gle=%u", 
-            FilePath, 
-            GetLastError()
+	HANDLE hFile = CreateFileW((LPCWSTR)FilePath,
+							   GENERIC_READ,
+							   FILE_SHARE_READ/* | FILE_SHARE_WRITE*/,
+							   NULL,
+							   OPEN_EXISTING,
+							   FILE_ATTRIBUTE_NORMAL,
+							   NULL);
+	if (INVALID_HANDLE_VALUE == hFile)
+	{
+		log_err
+			"CreateFile(%ws) failed, gle=%u",
+			FilePath,
+			GetLastError()
 			log_end
-        return false;
-    }
-    SmrtHandle sfFile(hFile);
+			return false;
+	}
+	SmrtHandle sfFile(hFile);
 
-    // check file size 
-    // 
-    LARGE_INTEGER fileSize;
-    if (TRUE != GetFileSizeEx(hFile, &fileSize))
-    {
-        log_err
-            "%ws, can not get file size, gle=%u", 
-            FilePath, 
-            GetLastError() 
+	// check file size 
+	// 
+	LARGE_INTEGER fileSize;
+	if (TRUE != GetFileSizeEx(hFile, &fileSize))
+	{
+		log_err
+			"%ws, can not get file size, gle=%u",
+			FilePath,
+			GetLastError()
 			log_end
-        return false;
-    }
+			return false;
+	}
 
 	if (0 == fileSize.QuadPart)
 	{
 		log_err "Can not map zero length file" log_end
-		return false;
+			return false;
 	}
-   
-    HANDLE hImageMap = CreateFileMapping(hFile, 
-										 NULL, 
-										 PAGE_READONLY, 
-										 0, 
-										 0, 
+
+	HANDLE hImageMap = CreateFileMapping(hFile,
+										 NULL,
+										 PAGE_READONLY,
+										 0,
+										 0,
 										 NULL);
-    if (NULL == hImageMap)
-    {
-        log_err
-            "CreateFileMapping(%ws) failed, gle=%u", 
-            FilePath, 
-            GetLastError() 
+	if (NULL == hImageMap)
+	{
+		log_err
+			"CreateFileMapping(%ws) failed, gle=%u",
+			FilePath,
+			GetLastError()
 			log_end
 
-        return false;
-    }
-    SmrtHandle sfMap(hImageMap);
+			return false;
+	}
+	SmrtHandle sfMap(hImageMap);
 
-    PBYTE ImageView = (LPBYTE) MapViewOfFile(hImageMap, 
-											 FILE_MAP_READ, 
-											 0, 
-											 0, 
-											 0);
-    if(ImageView == nullptr)
-    {
-        log_err
-            "MapViewOfFile(%ws) failed, gle=%u", 
-            FilePath, 
-            GetLastError() 
+	PBYTE ImageView = (LPBYTE)MapViewOfFile(hImageMap,
+											FILE_MAP_READ,
+											0,
+											0,
+											0);
+	if (ImageView == nullptr)
+	{
+		log_err
+			"MapViewOfFile(%ws) failed, gle=%u",
+			FilePath,
+			GetLastError()
 			log_end
-        return false;
-    }
-    SmrtView sfView(ImageView);
+			return false;
+	}
+	SmrtView sfView(ImageView);
 
-    MemorySize = fileSize.LowPart;  // max config fileSize = 4 MB 이므로 안전함
-    Memory = (PBYTE) malloc(MemorySize);
-    if (nullptr == Memory) {return false;}
+	MemorySize = fileSize.LowPart;  // max config fileSize = 4 MB 이므로 안전함
+	Memory = (PBYTE)malloc(MemorySize);
+	if (nullptr == Memory) { return false; }
 
-    RtlZeroMemory(Memory, MemorySize);
-    RtlCopyMemory(Memory, ImageView, MemorySize);
-    return true;
+	RtlZeroMemory(Memory, MemorySize);
+	RtlCopyMemory(Memory, ImageView, MemorySize);
+	return true;
 }
 
 /**
- * @brief	바이너리 파일로 데이터를 저장한다.	
+ * @brief	바이너리 파일로 데이터를 저장한다.
  */
-bool 
+bool
 SaveBinaryFile(
 	_In_ const LPCWSTR  Directory,
-    _In_ const LPCWSTR  FileName, 
-    _In_ DWORD    Size,
-    _In_ PBYTE    Data
-    )
+	_In_ const LPCWSTR  FileName,
+	_In_ DWORD    Size,
+	_In_ PBYTE    Data
+)
 {
-    _ASSERTE(nullptr != Directory);
-    _ASSERTE(nullptr != FileName);
-    _ASSERTE(0 < Size);
-    _ASSERTE(nullptr != Data);
+	_ASSERTE(nullptr != Directory);
+	_ASSERTE(nullptr != FileName);
+	_ASSERTE(0 < Size);
+	_ASSERTE(nullptr != Data);
 	if (nullptr == Directory ||
 		nullptr == FileName ||
 		0 >= Size ||
@@ -2102,69 +2095,69 @@ SaveBinaryFile(
 	{
 		return false;
 	}
-    // create data directory
-    //
-    int ret=SHCreateDirectoryExW(NULL, Directory, NULL);
-    if (ERROR_SUCCESS != ret && ERROR_ALREADY_EXISTS != ret)
-    {
-        log_err
-            "SHCreateDirectoryExW(path=%S) failed, ret=0x%08x",
-            Directory, ret
+	// create data directory
+	//
+	int ret = SHCreateDirectoryExW(NULL, Directory, NULL);
+	if (ERROR_SUCCESS != ret && ERROR_ALREADY_EXISTS != ret)
+	{
+		log_err
+			"SHCreateDirectoryExW(path=%S) failed, ret=0x%08x",
+			Directory, ret
 			log_end
-        return false;
-    }
+			return false;
+	}
 
-    WCHAR DataPath[MAX_PATH + 1] = {0};
-    if (true != SUCCEEDED(StringCbPrintfW(DataPath, 
-										  sizeof(DataPath), 
-										  L"%s\\%s", 
-										  Directory, 
+	WCHAR DataPath[MAX_PATH + 1] = { 0 };
+	if (true != SUCCEEDED(StringCbPrintfW(DataPath,
+										  sizeof(DataPath),
+										  L"%s\\%s",
+										  Directory,
 										  FileName)))
-    {
-        log_err
-            "Can not generate target path, dir=%S, file=%S", 
-            Directory, FileName
+	{
+		log_err
+			"Can not generate target path, dir=%S, file=%S",
+			Directory, FileName
 			log_end
-        return false;
-    }
+			return false;
+	}
 
-    // 동일한 파일이 존재하는 경우 기존 파일을 삭제 후 새롭게 생성함
-    // 
-    if (true == is_file_existsW(DataPath))
-    {
+	// 동일한 파일이 존재하는 경우 기존 파일을 삭제 후 새롭게 생성함
+	// 
+	if (true == is_file_existsW(DataPath))
+	{
 		//log_err
 		//	"same file exists, file=%S will be replaced by new file",
 		//	DataPath
 		//	log_end
-        ::DeleteFileW(DataPath);
-    }
+		::DeleteFileW(DataPath);
+	}
 
-    HANDLE hFile = open_file_to_write(DataPath);
-    if (INVALID_HANDLE_VALUE == hFile)
-    {
-        log_err
-            "Can not create file=%S, check path or privilege", 
-            DataPath
+	HANDLE hFile = open_file_to_write(DataPath);
+	if (INVALID_HANDLE_VALUE == hFile)
+	{
+		log_err
+			"Can not create file=%S, check path or privilege",
+			DataPath
 			log_end
-        return false;
-    }
-    SmrtHandle sh(hFile);
+			return false;
+	}
+	SmrtHandle sh(hFile);
 
-    DWORD cbWritten=0;
-    if (TRUE != ::WriteFile(hFile, 
-							Data, 
-							Size, 
-							&cbWritten, 
+	DWORD cbWritten = 0;
+	if (TRUE != ::WriteFile(hFile,
+							Data,
+							Size,
+							&cbWritten,
 							NULL))
-    {
-        log_err
-            "WriteFile(path=%S) failed, gle=%u",
-            DataPath, GetLastError()
+	{
+		log_err
+			"WriteFile(path=%S) failed, gle=%u",
+			DataPath, GetLastError()
 			log_end
-        return false;
-    }
+			return false;
+	}
 
-    return true;
+	return true;
 }
 
 
@@ -2186,17 +2179,17 @@ bool WUDeleteDirectoryW(_In_ std::wstring& DirctoryPathToDelete)
 bool WUCreateDirectory(_In_ const wchar_t* DirectoryPath)
 {
 	_ASSERTE(NULL != DirectoryPath);
-	if (NULL==DirectoryPath) return false;
+	if (NULL == DirectoryPath) return false;
 
 	if (true != is_file_existsW(DirectoryPath))
 	{
 		if (ERROR_SUCCESS != SHCreateDirectoryExW(NULL, DirectoryPath, NULL))
 		{
 			log_err
-				"SHCreateDirectoryExW( path=%ws ) failed. gle=%u", 
+				"SHCreateDirectoryExW( path=%ws ) failed. gle=%u",
 				DirectoryPath, GetLastError()
-			log_end
-			return false;
+				log_end
+				return false;
 		}
 	}
 
@@ -2211,8 +2204,8 @@ bool WUDeleteDirectoryW(_In_ const wchar_t* DirctoryPathToDelete)
 	if (!is_file_existsW(DirctoryPathToDelete)) return true;
 
 
-	SHFILEOPSTRUCTW FileOp={0};
-	
+	SHFILEOPSTRUCTW FileOp = { 0 };
+
 	// FileOp.pFrom, FileOp.pTo 는 NULL char 가 두개이어야 함 (msdn 참고)
 	// 
 	size_t len = (wcslen(DirctoryPathToDelete) + 2) * sizeof(WCHAR);
@@ -2242,134 +2235,134 @@ bool WUDeleteDirectoryW(_In_ const wchar_t* DirctoryPathToDelete)
 	FileOp.pFrom = tmp.get();
 
 	int ret = SHFileOperation(&FileOp);
-	if(0!=ret)
+	if (0 != ret)
 	{
 		log_err
-			"SHFileOperation(path=%S) failed, ret=0x%08x", 
+			"SHFileOperation(path=%S) failed, ret=0x%08x",
 			DirctoryPathToDelete, ret
-		log_end
-		return false;
+			log_end
+			return false;
 	}
 
 	return true;
 }
 
 /**
-* @brief	
+* @brief
 */
-BOOL 
+BOOL
 GetImageFullPathFromPredefinedPathA(
-    IN  LPCSTR ImageName, 
-    IN  DWORD  FullPathBufferLen,
-    OUT LPSTR  FullPathBuffer
-    )
+	IN  LPCSTR ImageName,
+	IN  DWORD  FullPathBufferLen,
+	OUT LPSTR  FullPathBuffer
+)
 {
-    _ASSERTE(NULL != ImageName);
-    _ASSERTE(NULL != FullPathBuffer);
-    if (	(NULL == ImageName) || 
-			(NULL == FullPathBuffer))
-    {
-        return FALSE;
-    }
+	_ASSERTE(NULL != ImageName);
+	_ASSERTE(NULL != FullPathBuffer);
+	if ((NULL == ImageName) ||
+		(NULL == FullPathBuffer))
+	{
+		return FALSE;
+	}
 
-    
-    WCHAR* wcs=MbsToWcs(ImageName);    
-    if(NULL==wcs) { return FALSE;}
-    SmrtPtr<WCHAR*> smpt(wcs);
 
-    WCHAR buf[MAX_PATH] = {0};
-    if (TRUE != GetImageFullPathFromPredefinedPathW(
-                            wcs, 
-                            MAX_PATH, 
-                            buf))
-    {
-        return FALSE;
-    }
+	WCHAR* wcs = MbsToWcs(ImageName);
+	if (NULL == wcs) { return FALSE; }
+	SmrtPtr<WCHAR*> smpt(wcs);
 
-    size_t len = wcslen(buf);
-    if (FullPathBufferLen <= len)
-    {
-        log_err "buffer overflow" log_end
-        return FALSE;
-    }
+	WCHAR buf[MAX_PATH] = { 0 };
+	if (TRUE != GetImageFullPathFromPredefinedPathW(
+		wcs,
+		MAX_PATH,
+		buf))
+	{
+		return FALSE;
+	}
 
-    RtlZeroMemory(FullPathBuffer, FullPathBufferLen);
-    RtlCopyMemory(FullPathBuffer, buf, len);
-    return TRUE;
+	size_t len = wcslen(buf);
+	if (FullPathBufferLen <= len)
+	{
+		log_err "buffer overflow" log_end
+			return FALSE;
+	}
+
+	RtlZeroMemory(FullPathBuffer, FullPathBufferLen);
+	RtlCopyMemory(FullPathBuffer, buf, len);
+	return TRUE;
 }
 
 /**
-* @brief	
+* @brief
 */
-BOOL 
+BOOL
 GetImageFullPathFromPredefinedPathW(
-    IN  LPCWSTR ImageName, 
-    IN  DWORD   FullPathBufferLen,
-    OUT LPWSTR  FullPathBuffer
-    )
+	IN  LPCWSTR ImageName,
+	IN  DWORD   FullPathBufferLen,
+	OUT LPWSTR  FullPathBuffer
+)
 {
-    _ASSERTE(NULL != ImageName);
-    _ASSERTE(NULL != FullPathBuffer);
-    if (	(NULL == ImageName) || 
-			(NULL == FullPathBuffer))
-    {
-        return FALSE;
-    }    
-    
-    WCHAR* lpFilePart = NULL;    
-    if (0 != SearchPathW(
-                NULL,
-                ImageName,
-                NULL,
-                FullPathBufferLen,
-                FullPathBuffer,
-                &lpFilePart
-                ))
-    {
-        return TRUE;
-    }
-    else
-    {
-        // 다시 호출되는 경우 SearchPathBuf 버퍼를 다시 만드는 일이 없도록
-        // static 으로 만듬
-        //
-        static WCHAR SearchPathBuf[MAX_PATH] = {0,};
-        if (0x00 == SearchPathBuf[0])
-        {
-            std::wstring system_root;
-            if (!get_system_dir(system_root))
-            {
-                log_err "get_system_rootdir() failed." log_end;
-                return FALSE;
-            }
+	_ASSERTE(NULL != ImageName);
+	_ASSERTE(NULL != FullPathBuffer);
+	if ((NULL == ImageName) ||
+		(NULL == FullPathBuffer))
+	{
+		return FALSE;
+	}
 
-            if (! SUCCEEDED(StringCbPrintfW(
-                                SearchPathBuf, 
-                                sizeof(SearchPathBuf), 
-                                L"%s\\drivers", 
-                                system_root.c_str())))
-            {
-                log_err "StringCbPrintf() failed" log_end
-                return FALSE;
-            }
-        }    
+	WCHAR* lpFilePart = NULL;
+	if (0 != SearchPathW(
+		NULL,
+		ImageName,
+		NULL,
+		FullPathBufferLen,
+		FullPathBuffer,
+		&lpFilePart
+	))
+	{
+		return TRUE;
+	}
+	else
+	{
+		// 다시 호출되는 경우 SearchPathBuf 버퍼를 다시 만드는 일이 없도록
+		// static 으로 만듬
+		//
+		static WCHAR SearchPathBuf[MAX_PATH] = { 0, };
+		if (0x00 == SearchPathBuf[0])
+		{
+			std::wstring system_root;
+			if (!get_system_dir(system_root))
+			{
+				log_err "get_system_rootdir() failed." log_end;
+				return FALSE;
+			}
 
-        if (0 != SearchPathW(
-                    SearchPathBuf,
-                    ImageName,
-                    NULL,
-                    FullPathBufferLen,
-                    FullPathBuffer,
-                    &lpFilePart
-                    ))
-        {
-            return TRUE;
-        }
-        else
-        {   
-            return FALSE;
-        }
-    }
+			if (!SUCCEEDED(StringCbPrintfW(
+				SearchPathBuf,
+				sizeof(SearchPathBuf),
+				L"%s\\drivers",
+				system_root.c_str())))
+			{
+				log_err "StringCbPrintf() failed" log_end
+					return FALSE;
+			}
+		}
+
+		if (0 != SearchPathW(
+			SearchPathBuf,
+			ImageName,
+			NULL,
+			FullPathBufferLen,
+			FullPathBuffer,
+			&lpFilePart
+		))
+		{
+			return TRUE;
+		}
+		else
+		{
+			return FALSE;
+		}
+	}
 }
 
 /// @brief	Process handle 로 full path 를 구한다. 
@@ -2377,42 +2370,42 @@ GetImageFullPathFromPredefinedPathW(
 ///			( e.g. \Device\Harddisk0\Partition1\Windows\System32\Ctype.nls )
 bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring& full_path)
 {
-    bool ret = false;
-    uint32_t    buf_len = 1024;
-    wchar_t*    buf = (wchar_t*)malloc(buf_len);
-    if (NULL == buf) return false;
-        
-    for (int i = 0; i < 3; ++i) // 버퍼 늘리는건 세번만...
-    {
-        DWORD dwret = GetProcessImageFileNameW(process_handle, buf, buf_len / sizeof(wchar_t));
-        if (0 == dwret)
-        {
-            DWORD gle = GetLastError();
-            if (gle == ERROR_INSUFFICIENT_BUFFER)
-            {
-                buf_len *= 2;
-                free(buf);
-                buf = (wchar_t*)malloc(buf_len);
-                if (NULL == buf) return false;
-                continue;
-            }
-            else
-            {
-                log_err "GetProcessImageFileName() failed. gle = %u", gle log_end;
-                break;
-            }
-        }
-        else
-        {
-            // 성공
-            full_path = buf;
-            ret = true;
-            break;
-        }
-    }
+	bool ret = false;
+	uint32_t    buf_len = 1024;
+	wchar_t*    buf = (wchar_t*)malloc(buf_len);
+	if (NULL == buf) return false;
 
-    free(buf);
-    return ret;
+	for (int i = 0; i < 3; ++i) // 버퍼 늘리는건 세번만...
+	{
+		DWORD dwret = GetProcessImageFileNameW(process_handle, buf, buf_len / sizeof(wchar_t));
+		if (0 == dwret)
+		{
+			DWORD gle = GetLastError();
+			if (gle == ERROR_INSUFFICIENT_BUFFER)
+			{
+				buf_len *= 2;
+				free(buf);
+				buf = (wchar_t*)malloc(buf_len);
+				if (NULL == buf) return false;
+				continue;
+			}
+			else
+			{
+				log_err "GetProcessImageFileName() failed. gle = %u", gle log_end;
+				break;
+			}
+		}
+		else
+		{
+			// 성공
+			full_path = buf;
+			ret = true;
+			break;
+		}
+	}
+
+	free(buf);
+	return ret;
 }
 
 
@@ -2421,12 +2414,12 @@ bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring&
 ///				true 인 경우 `c:\dbg\sound.dll` 형태 (Win32 format) string 리턴
 ///				false 인 경우 `\Device\HarddiskVolume1\dbg\sound.dll` 포맷 리턴		
 #if _WIN32_WINNT >= 0x0600	// after vista
-bool 
+bool
 image_path_by_pid(
-	_In_ DWORD process_id, 
+	_In_ DWORD process_id,
 	_In_ bool win32_format,
 	_Out_ std::wstring& image_path
-	)
+)
 {
 	HANDLE phandle = NULL;
 	do
@@ -2455,23 +2448,23 @@ image_path_by_pid(
 		return false;
 	}
 	handle_ptr process_handle(phandle, [](HANDLE h) {CloseHandle(h); });
-	
+
 	wchar_t*	name = NULL;
 	DWORD		name_len = MAX_PATH;
 	DWORD		ret = 0;
-	
+
 	//
 	//	ZwQuerySystemInformation 처럼 length 를 0 을 넘겨주면 필요한 버퍼의 길이를
 	//	리턴해 주지 않는다. 큼직하게 버퍼 잡아서 호출해야 함
 	//
-	for(int i = 0; i < 3; ++i)		// name buffer 를 두배씩 키우는것도 3회만 시도한다.
+	for (int i = 0; i < 3; ++i)		// name buffer 를 두배씩 키우는것도 3회만 시도한다.
 	{
 		if (NULL != name) free(name);
-		name = (wchar_t*) malloc((name_len + 1) * sizeof(wchar_t));
+		name = (wchar_t*)malloc((name_len + 1) * sizeof(wchar_t));
 		if (NULL == name) return false;
 
 		ret = QueryFullProcessImageNameW(process_handle.get(),
-										 (win32_format == true) ? 0 : PROCESS_NAME_NATIVE,
+			(win32_format == true) ? 0 : PROCESS_NAME_NATIVE,
 										 name,
 										 &name_len);
 		if (ret > 0)
@@ -2487,14 +2480,14 @@ image_path_by_pid(
 				name_len *= 2;
 				continue;
 			}
-			else 
+			else
 			{
-				log_err "QueryFullProcessImageName() failed. gle = %u", 
-					gle 
+				log_err "QueryFullProcessImageName() failed. gle = %u",
+					gle
 					log_end;
 				return false;
 			}
-		}		
+		}
 	}
 
 	image_path = name;	// copy
@@ -2507,113 +2500,113 @@ image_path_by_pid(
 /// @brief  GetSystemDirectoryW() wrapper (c:\windows\system32)
 bool get_system_dir(_Out_ std::wstring& system_dir)
 {
-    wchar_t     buf[MAX_PATH] = { 0x00 };
-    uint32_t    buf_len = sizeof(buf);
-    wchar_t*    pbuf = buf;
-    
+	wchar_t     buf[MAX_PATH] = { 0x00 };
+	uint32_t    buf_len = sizeof(buf);
+	wchar_t*    pbuf = buf;
+
 	UINT32 len = GetSystemDirectoryW(pbuf, buf_len);
-    if (0 == len)
-    {
-        log_err "GetSystemDirectoryW() failed. gle=%u", GetLastError() log_end;
-        return false;
-    }
+	if (0 == len)
+	{
+		log_err "GetSystemDirectoryW() failed. gle=%u", GetLastError() log_end;
+		return false;
+	}
 
-    if (len < buf_len)
-    {
-        buf[len] = 0x0000;
-        system_dir = buf;
-        return true;
-    }
-    else if (len == buf_len)
-    {
-        // GetWindowsDirectoryW( ) 는 null char 를 포함하지 않는 길이를 리턴함
-        // 버퍼가 더 필요하다.
-        buf_len *= 2;            
-        pbuf = (wchar_t*)malloc(buf_len);
-        if (NULL == buf)
-        {
-            log_err "not enough memory" log_end;
-            return false;
-        }
+	if (len < buf_len)
+	{
+		buf[len] = 0x0000;
+		system_dir = buf;
+		return true;
+	}
+	else if (len == buf_len)
+	{
+		// GetWindowsDirectoryW( ) 는 null char 를 포함하지 않는 길이를 리턴함
+		// 버퍼가 더 필요하다.
+		buf_len *= 2;
+		pbuf = (wchar_t*)malloc(buf_len);
+		if (NULL == buf)
+		{
+			log_err "not enough memory" log_end;
+			return false;
+		}
 
-        // try again
-        len = GetSystemDirectoryW(pbuf, buf_len);
-        if (0 == len)
-        {
-            log_err "GetSystemDirectoryW() failed. gle=%u", GetLastError() log_end;
-            free(pbuf); 
-            return false;
-        }
-        else
-        {
-            pbuf[len] = 0x0000;
-            system_dir = pbuf;
-            free(pbuf); pbuf = NULL;
-            return true;
-        }
-    }
+		// try again
+		len = GetSystemDirectoryW(pbuf, buf_len);
+		if (0 == len)
+		{
+			log_err "GetSystemDirectoryW() failed. gle=%u", GetLastError() log_end;
+			free(pbuf);
+			return false;
+		}
+		else
+		{
+			pbuf[len] = 0x0000;
+			system_dir = pbuf;
+			free(pbuf); pbuf = NULL;
+			return true;
+		}
+	}
 
-    return true;        // never reach here
+	return true;        // never reach here
 }
 
 /**
  * @brief	windows 경로를 리턴하는 함수 (c:\windows)
- * @param	
- * @see		
+ * @param
+ * @see
  * @remarks	경로가 c:\ 인 경우를 제외하고, '\' 를 붙이지 않음. (GetWindowsDirectory() 함수 스펙)
- * @code		
- * @endcode	
- * @return	
+ * @code
+ * @endcode
+ * @return
 **/
 bool get_windows_dir(_Out_ std::wstring& windows_dir)
 {
-    wchar_t     buf[MAX_PATH] = { 0x00 };
-    uint32_t    buf_len = sizeof(buf);
-    wchar_t*    pbuf = buf;
+	wchar_t     buf[MAX_PATH] = { 0x00 };
+	uint32_t    buf_len = sizeof(buf);
+	wchar_t*    pbuf = buf;
 
-    UINT32 len = GetWindowsDirectoryW(pbuf, buf_len);
-    if (0 == len)
-    {
-        log_err "GetWindowsDirectoryW() failed. gle=%u", GetLastError() log_end;
-        return false;
-    }
+	UINT32 len = GetWindowsDirectoryW(pbuf, buf_len);
+	if (0 == len)
+	{
+		log_err "GetWindowsDirectoryW() failed. gle=%u", GetLastError() log_end;
+		return false;
+	}
 
-    if (len < buf_len)
-    {
-        buf[len] = 0x0000;
-        windows_dir = buf;
-        return true;
-    }
-    else if (len == buf_len)
-    {
-        // GetWindowsDirectoryW( ) 는 null char 를 포함하지 않는 길이를 리턴함
-        // 버퍼가 더 필요하다.
-        buf_len *= 2;
-        pbuf = (wchar_t*)malloc(buf_len);
-        if (NULL == buf)
-        {
-            log_err "not enough memory" log_end;
-            return false;
-        }
+	if (len < buf_len)
+	{
+		buf[len] = 0x0000;
+		windows_dir = buf;
+		return true;
+	}
+	else if (len == buf_len)
+	{
+		// GetWindowsDirectoryW( ) 는 null char 를 포함하지 않는 길이를 리턴함
+		// 버퍼가 더 필요하다.
+		buf_len *= 2;
+		pbuf = (wchar_t*)malloc(buf_len);
+		if (NULL == buf)
+		{
+			log_err "not enough memory" log_end;
+			return false;
+		}
 
-        // try again
-        len = GetSystemDirectoryW(pbuf, buf_len);
-        if (0 == len)
-        {
-            log_err "GetSystemDirectoryW() failed. gle=%u", GetLastError() log_end;
-            free(pbuf);
-            return false;
-        }
-        else
-        {
-            pbuf[len] = 0x0000;
-            windows_dir = pbuf;
-            free(pbuf); pbuf = NULL;
-            return true;
-        }
-    }
+		// try again
+		len = GetSystemDirectoryW(pbuf, buf_len);
+		if (0 == len)
+		{
+			log_err "GetSystemDirectoryW() failed. gle=%u", GetLastError() log_end;
+			free(pbuf);
+			return false;
+		}
+		else
+		{
+			pbuf[len] = 0x0000;
+			windows_dir = pbuf;
+			free(pbuf); pbuf = NULL;
+			return true;
+		}
+	}
 
-    return true;        // never reach here
+	return true;        // never reach here
 }
 
 /**
@@ -2626,11 +2619,11 @@ bool get_windows_dir(_Out_ std::wstring& windows_dir)
  * @param	env_value		환경 변수 값     (\Users\somma 문자열)
  * @return	성공시 true, 실패시 false
 **/
-bool 
+bool
 get_environment_value(
-	_In_ const wchar_t* env_variable, 
+	_In_ const wchar_t* env_variable,
 	_Out_ std::wstring& env_value
-	)
+)
 {
 	_ASSERTE(NULL != env_variable);
 	if (NULL == env_variable) return false;
@@ -2638,36 +2631,36 @@ get_environment_value(
 	DWORD char_count_plus_null = ExpandEnvironmentStrings(env_variable, NULL, 0);
 	if (0 == char_count_plus_null)
 	{
-		log_err 
-			"ExpandEnvironmentStrings( %ws ) failed. gle = %u", 
-			env_variable, 
-			GetLastError() 
-		log_end
-		return false;
+		log_err
+			"ExpandEnvironmentStrings( %ws ) failed. gle = %u",
+			env_variable,
+			GetLastError()
+			log_end
+			return false;
 	}
 
 	uint32_t buf_len = char_count_plus_null * sizeof(wchar_t);
 	wchar_ptr buf(
-		(wchar_t*)malloc(buf_len), 
-		[](wchar_t* p) {if (nullptr != p) free(p);}
+		(wchar_t*)malloc(buf_len),
+		[](wchar_t* p) {if (nullptr != p) free(p); }
 	);
 	if (NULL == buf.get())
 	{
 		log_err "malloc() failed." log_end
-		return false;
+			return false;
 	}
 
-	char_count_plus_null = ExpandEnvironmentStrings(env_variable, 
-													buf.get(), 
+	char_count_plus_null = ExpandEnvironmentStrings(env_variable,
+													buf.get(),
 													buf_len);
 	if (0 == char_count_plus_null)
 	{
-		log_err 
-			"ExpandEnvironmentStrings( %ws ) failed. gle = %u", 
-			env_variable, 
-			GetLastError() 
-		log_end
-		return false;
+		log_err
+			"ExpandEnvironmentStrings( %ws ) failed. gle = %u",
+			env_variable,
+			GetLastError()
+			log_end
+			return false;
 	}
 
 	env_value = buf.get();
@@ -2675,13 +2668,13 @@ get_environment_value(
 }
 
 /**
- * @brief	이미 존재하는 파일의 short file name 을 구한다. 
- * @param	
- * @see		
+ * @brief	이미 존재하는 파일의 short file name 을 구한다.
+ * @param
+ * @see
  * @remarks	https://msdn.microsoft.com/en-us/library/aa365247(v=vs.85).aspx
- * @code		
- * @endcode	
- * @return	
+ * @code
+ * @endcode
+ * @return
 **/
 bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring& short_file_name)
 {
@@ -2690,9 +2683,9 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 
 	wchar_t* short_path = NULL;
 	uint32_t char_count_and_null = 0;
-	char_count_and_null  = GetShortPathNameW(long_file_name, 
-											 short_path, 
-											 char_count_and_null);
+	char_count_and_null = GetShortPathNameW(long_file_name,
+											short_path,
+											char_count_and_null);
 	if (0 == char_count_and_null)
 	{
 		log_err "GetShortPathNameW( %ws ) failed. gle = %u",
@@ -2702,19 +2695,19 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 		return false;
 	}
 
-	short_path = (wchar_t*) malloc( sizeof(wchar_t*) * char_count_and_null );
-	if (NULL == short_path) 
+	short_path = (wchar_t*)malloc(sizeof(wchar_t*) * char_count_and_null);
+	if (NULL == short_path)
 	{
 		log_err "malloc() failed." log_end
-		return false;
+			return false;
 	}
 
-	if (0 == GetShortPathNameW(long_file_name, 
-							   short_path, 
+	if (0 == GetShortPathNameW(long_file_name,
+							   short_path,
 							   char_count_and_null))
 	{
 		log_err "GetShortPathNameW( %ws ) failed.", long_file_name log_end
-		free(short_path);
+			free(short_path);
 		return false;
 	}
 
@@ -2728,7 +2721,7 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 /**
  * @brief      하위 디렉토리에 존재하는 모든 파일들을 enum 하는 함수
 
-				아래 형태 4가지는 모두 동일한 결과를 출력함	
+				아래 형태 4가지는 모두 동일한 결과를 출력함
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData",
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\",
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*",
@@ -2736,35 +2729,35 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 
 				확장자 필터링 같은것도 가능함
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.txt"
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool
 find_files(
-	_In_ const wchar_t* root, 
-	_In_ fnFindFilesCallback cb, 
-	_In_ DWORD_PTR tag, 
+	_In_ const wchar_t* root,
+	_In_ fnFindFilesCallback cb,
+	_In_ DWORD_PTR tag,
 	_In_ bool recursive
-	)
-{ 
-    _ASSERTE(NULL != root);
-    if (NULL == root) return false;
+)
+{
+	_ASSERTE(NULL != root);
+	if (NULL == root) return false;
 
 
 	std::wstring root_dir(root);
 
-    if (root[wcslen(root)-1] == L'\\')
-    {
+	if (root[wcslen(root) - 1] == L'\\')
+	{
 		//
 		//	root 파라미터가 '\' 로 끝나면 안되므로 `\*` 로 강제 변경
 		//
-        root_dir.append(L"*");
-    }
-	else 
+		root_dir.append(L"*");
+	}
+	else
 	{
 		//	`d:\dir\` 인 경우는 이미 검사했으므로 root 는 아래 두 타입 중 하나일것이다.
 		// 
@@ -2777,52 +2770,52 @@ find_files(
 		if (true == is_dir(root))
 		{
 			root_dir.append(L"\\*");
-		}		
+		}
 	}
 
 
-    HANDLE hSrch = INVALID_HANDLE_VALUE;
-    WIN32_FIND_DATAW wfd = {0};
-    WCHAR fname[MAX_PATH+1] = {0};
-    BOOL bResult=TRUE;
-    WCHAR drive[_MAX_DRIVE+1] = {0};
-    WCHAR dir[MAX_PATH+1] = {0};
-    WCHAR newpath[MAX_PATH+1] = {0};
-    
-    hSrch=FindFirstFileW(root_dir.c_str(),&wfd);
-    if(INVALID_HANDLE_VALUE == hSrch) 
-    {
+	HANDLE hSrch = INVALID_HANDLE_VALUE;
+	WIN32_FIND_DATAW wfd = { 0 };
+	WCHAR fname[MAX_PATH + 1] = { 0 };
+	BOOL bResult = TRUE;
+	WCHAR drive[_MAX_DRIVE + 1] = { 0 };
+	WCHAR dir[MAX_PATH + 1] = { 0 };
+	WCHAR newpath[MAX_PATH + 1] = { 0 };
+
+	hSrch = FindFirstFileW(root_dir.c_str(), &wfd);
+	if (INVALID_HANDLE_VALUE == hSrch)
+	{
 		DWORD gle = GetLastError();
 
 		if (ERROR_ACCESS_DENIED != gle)
 		{
 			log_err
-				"FindFirstFileW(path=%S) failed, gle=%u", 
+				"FindFirstFileW(path=%S) failed, gle=%u",
 				root_dir.c_str(), GetLastError()
-			log_end
+				log_end
 		}
-        
-        return false;
-    }
+
+		return false;
+	}
 
 	_wsplitpath_s(root_dir.c_str(), drive, _MAX_DRIVE, dir, MAX_PATH, NULL, NULL, NULL, NULL);
 
-    while (bResult) 
-    {
-        Sleep(100);
+	while (bResult)
+	{
+		Sleep(100);
 
-        if (wfd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) 
-        {
-            // symbolic link 는 처리하지 않음
-            // 
-            if (wfd.dwReserved0 & IO_REPARSE_TAG_SYMLINK)
-            {                
-				bResult=FindNextFile(hSrch,&wfd);
-                continue;                
-            }
-        }
-        else if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-        {
+		if (wfd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+		{
+			// symbolic link 는 처리하지 않음
+			// 
+			if (wfd.dwReserved0 & IO_REPARSE_TAG_SYMLINK)
+			{
+				bResult = FindNextFile(hSrch, &wfd);
+				continue;
+			}
+		}
+		else if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
 			if (true == recursive)
 			{
 				if (0 != _wcsnicmp(&wfd.cFileName[0], L".", 1))
@@ -2830,55 +2823,55 @@ find_files(
 					StringCbPrintfW(newpath, sizeof(newpath), L"%s%s%s\\*.*", drive, dir, wfd.cFileName);
 					find_files(newpath, cb, tag, recursive);
 				}
-			}			            
-        } 
-        else 
-        {
+			}
+		}
+		else
+		{
 			//
 			//	파일 경로만 callback 으로 전달한다. 디렉토리는 전달하지 않음.
 			// 
-            
+
 			StringCbPrintfW(fname, sizeof(fname), L"%s%s%s", drive, dir, wfd.cFileName);
-            if (NULL != cb)
-            {
-                if(TRUE != cb(tag, fname)) break;
-            }
-        }
-        bResult=FindNextFile(hSrch,&wfd);
-    }
-    FindClose(hSrch);
-    return true;
+			if (NULL != cb)
+			{
+				if (TRUE != cb(tag, fname)) break;
+			}
+		}
+		bResult = FindNextFile(hSrch, &wfd);
+	}
+	FindClose(hSrch);
+	return true;
 }
 
 
 /**----------------------------------------------------------------------------
-    \brief  RootPath 하위디렉토리 경로를 enum 하는 함수
-			
-			아래 형태 4가지는 모두 동일한 결과를 출력함			
+	\brief  RootPath 하위디렉토리 경로를 enum 하는 함수
+
+			아래 형태 4가지는 모두 동일한 결과를 출력함
 			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\",
 			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*",
 			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.*"
 
-    \param  
-    \return         
-    \code
-    \endcode        
+	\param
+	\return
+	\code
+	\endcode
 -----------------------------------------------------------------------------*/
-BOOL 
+BOOL
 FindSubDirectory(
-    IN LPCWSTR RootPath, 
-    IN OUT std::vector<std::wstring>& DirectoryList, 
+	IN LPCWSTR RootPath,
+	IN OUT std::vector<std::wstring>& DirectoryList,
 	IN BOOL Recursive
-    )
-{ 
-    _ASSERTE(NULL != RootPath);
-    if (NULL == RootPath) return FALSE;
+)
+{
+	_ASSERTE(NULL != RootPath);
+	if (NULL == RootPath) return FALSE;
 
-    HANDLE hSrch = INVALID_HANDLE_VALUE;
-    WIN32_FIND_DATAW wfd = {0};
-    BOOL bResult=TRUE;
-    WCHAR drive[_MAX_DRIVE+1] = {0};
-    WCHAR dir[MAX_PATH+1] = {0};
+	HANDLE hSrch = INVALID_HANDLE_VALUE;
+	WIN32_FIND_DATAW wfd = { 0 };
+	BOOL bResult = TRUE;
+	WCHAR drive[_MAX_DRIVE + 1] = { 0 };
+	WCHAR dir[MAX_PATH + 1] = { 0 };
 
 	// RootPath 파라미터가 c:\dbg 형태인 경우 c:\dbg 값(RootPath 자신)이 추가됨
 	// 따라서 '\', '\*', '\*.*' 가 아닌 경우 강제로 '\*' 를 붙여 RootPath 경로는 제외함
@@ -2886,11 +2879,11 @@ FindSubDirectory(
 	// 또한 RootPath 파라미터가 '\' 로 끝나면 안되므로 \* 로 강제 변경
 	// 
 	std::wstring RootDir(RootPath);
-	if (RootPath[wcslen(RootPath)-1] == L'\\')
+	if (RootPath[wcslen(RootPath) - 1] == L'\\')
 	{
 		RootDir.append(L"*");
 	}
-	else if (RootPath[wcslen(RootPath)-1] == L'*')
+	else if (RootPath[wcslen(RootPath) - 1] == L'*')
 	{
 		// do nothing
 	}
@@ -2900,30 +2893,30 @@ FindSubDirectory(
 	}
 
 
-    hSrch=FindFirstFileW(RootDir.c_str(),&wfd);
-    if(INVALID_HANDLE_VALUE == hSrch) 
-    {
-        log_err
-            "FindFirstFileW(path=%S) failed, gle=%u", 
-            RootDir.c_str(), GetLastError()
-        log_end
-        return FALSE;
-    }
-	
-    std::wstringstream s;
-    while (bResult) 
-    {
-        Sleep(100);
+	hSrch = FindFirstFileW(RootDir.c_str(), &wfd);
+	if (INVALID_HANDLE_VALUE == hSrch)
+	{
+		log_err
+			"FindFirstFileW(path=%S) failed, gle=%u",
+			RootDir.c_str(), GetLastError()
+			log_end
+			return FALSE;
+	}
 
-        _wsplitpath_s(RootDir.c_str(), drive, _MAX_DRIVE, dir, MAX_PATH, NULL, NULL, NULL, NULL);
-        if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
-        {
-            if (0 != _wcsnicmp(&wfd.cFileName[0], L".", 1))
-            {
-                s.str(L"");
-                s << drive << dir << wfd.cFileName;
-                std::wstring NewDir = s.str();
-                DirectoryList.push_back(NewDir);
+	std::wstringstream s;
+	while (bResult)
+	{
+		Sleep(100);
+
+		_wsplitpath_s(RootDir.c_str(), drive, _MAX_DRIVE, dir, MAX_PATH, NULL, NULL, NULL, NULL);
+		if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			if (0 != _wcsnicmp(&wfd.cFileName[0], L".", 1))
+			{
+				s.str(L"");
+				s << drive << dir << wfd.cFileName;
+				std::wstring NewDir = s.str();
+				DirectoryList.push_back(NewDir);
 
 				if (TRUE == Recursive)
 				{
@@ -2931,191 +2924,191 @@ FindSubDirectory(
 					NewDir = s.str();
 					FindSubDirectory(NewDir.c_str(), DirectoryList, TRUE);
 				}
-            }
-        } 
-        bResult=FindNextFile(hSrch,&wfd);
-    }
-    FindClose(hSrch);
-    return TRUE;
+			}
+		}
+		bResult = FindNextFile(hSrch, &wfd);
+	}
+	FindClose(hSrch);
+	return TRUE;
 }
 
 
 
 /**
  * @brief	ASCII(Multibyte) --> WIDE CHAR 로 변환, caller 는 리턴되는 포인터를 소멸시켜주어야 함
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 wchar_t* MbsToWcs(_In_ const char* mbs)
 {
 	_ASSERTE(nullptr != mbs);
 	_ASSERTE(0x00 != mbs[0]);
-    if(nullptr == mbs) return nullptr;
+	if (nullptr == mbs) return nullptr;
 	if (0x00 == mbs[0]) return nullptr;
 
-    int outLen=MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mbs, -1, nullptr, 0);
-    if(0==outLen) return nullptr;
+	int outLen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mbs, -1, nullptr, 0);
+	if (0 == outLen) return nullptr;
 
-    wchar_t* outWchar=(wchar_t*) malloc(outLen * (sizeof(wchar_t)));  // outLen contains NULL char 
-    if(NULL==outWchar) return nullptr;
-    RtlZeroMemory(outWchar, outLen);
+	wchar_t* outWchar = (wchar_t*)malloc(outLen * (sizeof(wchar_t)));  // outLen contains NULL char 
+	if (NULL == outWchar) return nullptr;
+	RtlZeroMemory(outWchar, outLen);
 
-    if(0==MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mbs, -1, outWchar, outLen))
-    {
-        log_err "MultiByteToWideChar() failed, errcode=0x%08x", GetLastError() log_end
+	if (0 == MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mbs, -1, outWchar, outLen))
+	{
+		log_err "MultiByteToWideChar() failed, errcode=0x%08x", GetLastError() log_end
 
-        free(outWchar);
-        return nullptr;
-    }
+			free(outWchar);
+		return nullptr;
+	}
 
-    return outWchar;
+	return outWchar;
 }
 
 /**
  * @brief	WIDE CHAR --> ASCII(Multibyte) 로 변환, caller 는 리턴되는 포인터를 소멸시켜주어야 함
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 char* WcsToMbs(_In_ const wchar_t* wcs)
 {
-    _ASSERTE(nullptr!=wcs);
+	_ASSERTE(nullptr != wcs);
 	_ASSERTE(0x00 != wcs[0]);
-    if(nullptr ==wcs) return nullptr;
+	if (nullptr == wcs) return nullptr;
 	if (0x00 == wcs[0]) return nullptr;
 
-    int outLen=WideCharToMultiByte(CP_ACP, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
-    if(0==outLen) return nullptr;
+	int outLen = WideCharToMultiByte(CP_ACP, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
+	if (0 == outLen) return nullptr;
 
-    char* outChar=(char*) malloc(outLen * sizeof(char));
-    if(nullptr ==outChar) return nullptr;
-    RtlZeroMemory(outChar, outLen);
+	char* outChar = (char*)malloc(outLen * sizeof(char));
+	if (nullptr == outChar) return nullptr;
+	RtlZeroMemory(outChar, outLen);
 
-    if(0==WideCharToMultiByte(CP_ACP, 0, wcs, -1, outChar, outLen, nullptr, nullptr))
-    {
-        log_err "WideCharToMultiByte() failed, errcode=0x%08x", GetLastError() log_end
-        free(outChar);
-        return nullptr;
-    }
+	if (0 == WideCharToMultiByte(CP_ACP, 0, wcs, -1, outChar, outLen, nullptr, nullptr))
+	{
+		log_err "WideCharToMultiByte() failed, errcode=0x%08x", GetLastError() log_end
+			free(outChar);
+		return nullptr;
+	}
 
-    return outChar;
+	return outChar;
 }
-    
+
 /**
- * @brief	wide char -> utf8 변환, caller 는 리턴되는 포인터를 소멸시켜주어야 함 
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief	wide char -> utf8 변환, caller 는 리턴되는 포인터를 소멸시켜주어야 함
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 char* WcsToMbsUTF8(_In_ const wchar_t* wcs)
 {
-    _ASSERTE(nullptr !=wcs);
+	_ASSERTE(nullptr != wcs);
 	_ASSERTE(0x00 != wcs[0]);
-    if(nullptr ==wcs) return nullptr;
-	if(0x00 == wcs[0]) return nullptr;
+	if (nullptr == wcs) return nullptr;
+	if (0x00 == wcs[0]) return nullptr;
 
-    int outLen=WideCharToMultiByte(CP_UTF8, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
-    if(0==outLen) return nullptr;
+	int outLen = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
+	if (0 == outLen) return nullptr;
 
-    char* outChar=(char*) malloc(outLen * sizeof(char));
-    if(nullptr==outChar) return nullptr;
-    RtlZeroMemory(outChar, outLen);
+	char* outChar = (char*)malloc(outLen * sizeof(char));
+	if (nullptr == outChar) return nullptr;
+	RtlZeroMemory(outChar, outLen);
 
-    if(0==WideCharToMultiByte(CP_UTF8, 0, wcs, -1, outChar, outLen, nullptr, nullptr))
-    {
-        log_err "WideCharToMultiByte() failed, errcode=0x%08x", GetLastError() log_end
+	if (0 == WideCharToMultiByte(CP_UTF8, 0, wcs, -1, outChar, outLen, nullptr, nullptr))
+	{
+		log_err "WideCharToMultiByte() failed, errcode=0x%08x", GetLastError() log_end
 
-        free(outChar);
-        return nullptr;
-    }
+			free(outChar);
+		return nullptr;
+	}
 
-    return outChar;
+	return outChar;
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 wchar_t* Utf8MbsToWcs(_In_ const char* utf8)
 {
-    _ASSERTE(nullptr!=utf8);
+	_ASSERTE(nullptr != utf8);
 	_ASSERTE(0x00 != utf8[0]);
-    if(nullptr==utf8) return nullptr;	
+	if (nullptr == utf8) return nullptr;
 	if (0x00 == utf8[0]) return nullptr;
 
-    int outLen=MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8, -1, nullptr, 0);
-    if(0==outLen) return nullptr;
+	int outLen = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8, -1, nullptr, 0);
+	if (0 == outLen) return nullptr;
 
-    wchar_t* outWchar=(wchar_t*) malloc(outLen * (sizeof(wchar_t)));  // outLen contains nullptr char 
-    if(nullptr==outWchar) return nullptr;
-    RtlZeroMemory(outWchar, outLen);
+	wchar_t* outWchar = (wchar_t*)malloc(outLen * (sizeof(wchar_t)));  // outLen contains nullptr char 
+	if (nullptr == outWchar) return nullptr;
+	RtlZeroMemory(outWchar, outLen);
 
-    if(0==MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8, -1, outWchar, outLen))
-    {
-        log_err "MultiByteToWideChar() failed, errcode=0x%08x", GetLastError() log_end
+	if (0 == MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8, -1, outWchar, outLen))
+	{
+		log_err "MultiByteToWideChar() failed, errcode=0x%08x", GetLastError() log_end
 
-        free(outWchar);
-        return nullptr;
-    }
+			free(outWchar);
+		return nullptr;
+	}
 
-    return outWchar;
+	return outWchar;
 }
 
 /**
-* @brief	
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
+* @brief
+* @param
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
 */
 std::wstring MbsToWcsEx(_In_ const char *mbs)
 {
-	_ASSERTE(nullptr != mbs);	
+	_ASSERTE(nullptr != mbs);
 	if (nullptr == mbs) return _null_stringw;
 	if (0x00 == mbs[0]) return _null_stringw;
 
 	wchar_ptr tmp(MbsToWcs(mbs), [](wchar_t* p) {
 		if (nullptr != p)
-		{ 
-			free(p); 
+		{
+			free(p);
 		}
 	});
 
-    if (nullptr == tmp.get())
-    {
-        return _null_stringw;
-    }
-    else
-    {
-        return std::wstring(tmp.get());
-    }
+	if (nullptr == tmp.get())
+	{
+		return _null_stringw;
+	}
+	else
+	{
+		return std::wstring(tmp.get());
+	}
 }
 
 /**
-* @brief	
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
+* @brief
+* @param
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
 */
 std::string WcsToMbsEx(_In_ const wchar_t *wcs)
 {
@@ -3124,30 +3117,30 @@ std::string WcsToMbsEx(_In_ const wchar_t *wcs)
 	if (0x00 == wcs[0]) return _null_stringa;
 
 	char_ptr tmp(WcsToMbs(wcs), [](char* p) {
-		if (nullptr != p) 
-		{ 
-			free(p); 
+		if (nullptr != p)
+		{
+			free(p);
 		}
 	});
 
-    if (NULL == tmp.get())
-    {
-        return _null_stringa;
-    }
-    else
-    {
-        return std::string(tmp.get());
-    }
+	if (NULL == tmp.get())
+	{
+		return _null_stringa;
+	}
+	else
+	{
+		return std::string(tmp.get());
+	}
 }
 
 /**
-* @brief	
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
+* @brief
+* @param
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
 */
 std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs)
 {
@@ -3162,24 +3155,24 @@ std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs)
 		}
 	});
 
-    if (NULL == tmp.get())
-    {
-        return _null_stringa;
-    }
-    else
-    {
-        return std::string(tmp.get());
-    }
+	if (NULL == tmp.get())
+	{
+		return _null_stringa;
+	}
+	else
+	{
+		return std::string(tmp.get());
+	}
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 {
@@ -3194,14 +3187,14 @@ std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 		}
 	});
 
-    if (NULL == tmp.get())
-    {
-        return _null_stringw;
-    }
-    else
-    {
-        return std::wstring(tmp.get());
-    }
+	if (NULL == tmp.get())
+	{
+		return _null_stringw;
+	}
+	else
+	{
+		return std::wstring(tmp.get());
+	}
 }
 
 /// @brief  src 의 뒤에서부터 fnd 문자열을 찾는다. 
@@ -3209,79 +3202,79 @@ std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 ///         - 확장자 검사같은거 할때 사용
 bool rstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd)
 {
-    _ASSERTE(NULL != src);
-    _ASSERTE(NULL != fnd);
-    if (NULL == src || NULL == fnd) return false;
-    
-    uint32_t src_len = (uint32_t)wcslen(src);
-    uint32_t fnd_len = (uint32_t)wcslen(fnd);
-    if (fnd_len > src_len) return false;
+	_ASSERTE(NULL != src);
+	_ASSERTE(NULL != fnd);
+	if (NULL == src || NULL == fnd) return false;
 
-    int sidx = src_len - 1; // uint32_t 타입 쓰면 안됨!
-    int fidx = fnd_len - 1;
-    while (fidx >= 0)
-    {
-        if (towlower(fnd[fidx--]) != towlower(src[sidx--])) return false;
+	uint32_t src_len = (uint32_t)wcslen(src);
+	uint32_t fnd_len = (uint32_t)wcslen(fnd);
+	if (fnd_len > src_len) return false;
 
-    }
-    return true;
+	int sidx = src_len - 1; // uint32_t 타입 쓰면 안됨!
+	int fidx = fnd_len - 1;
+	while (fidx >= 0)
+	{
+		if (towlower(fnd[fidx--]) != towlower(src[sidx--])) return false;
+
+	}
+	return true;
 }
 
 bool rstrnicmpa(_In_ const char* src, _In_ const char* fnd)
 {
-    _ASSERTE(NULL != src);
-    _ASSERTE(NULL != fnd);
-    if (NULL == src || NULL == fnd) return false;
+	_ASSERTE(NULL != src);
+	_ASSERTE(NULL != fnd);
+	if (NULL == src || NULL == fnd) return false;
 
-    uint32_t src_len = (uint32_t)strlen(src);
-    uint32_t fnd_len = (uint32_t)strlen(fnd);
-    if (fnd_len > src_len) return false;
+	uint32_t src_len = (uint32_t)strlen(src);
+	uint32_t fnd_len = (uint32_t)strlen(fnd);
+	if (fnd_len > src_len) return false;
 
-    int sidx = src_len - 1; // uint32_t 타입 쓰면 안됨!
-    int fidx = fnd_len - 1;
-    while (fidx >= 0)
-    {
-        if (tolower(fnd[fidx--]) != tolower(src[sidx--])) return false;
+	int sidx = src_len - 1; // uint32_t 타입 쓰면 안됨!
+	int fidx = fnd_len - 1;
+	while (fidx >= 0)
+	{
+		if (tolower(fnd[fidx--]) != tolower(src[sidx--])) return false;
 
-    }
-    return true;
+	}
+	return true;
 }
 
 
 /// @brief  src 의 앞에서부터 fnd 문자열을 찾는다. 
 bool lstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd)
 {
-    _ASSERTE(NULL != src);
-    _ASSERTE(NULL != fnd);
-    if (NULL == src || NULL == fnd) return false;
+	_ASSERTE(NULL != src);
+	_ASSERTE(NULL != fnd);
+	if (NULL == src || NULL == fnd) return false;
 
-    return (0 == _wcsnicmp(src, fnd, wcslen(fnd))) ? true : false;
+	return (0 == _wcsnicmp(src, fnd, wcslen(fnd))) ? true : false;
 }
 
 /// @brief  src 의 앞에서부터 fnd 문자열을 찾는다. 
 bool lstrnicmpa(_In_ const char* src, _In_ const char* fnd)
 {
-    _ASSERTE(NULL != src);
-    _ASSERTE(NULL != fnd);
-    if (NULL == src || NULL == fnd) return false;
+	_ASSERTE(NULL != src);
+	_ASSERTE(NULL != fnd);
+	if (NULL == src || NULL == fnd) return false;
 
-    return (0 == _strnicmp(src, fnd, strlen(fnd))) ? true : false;
+	return (0 == _strnicmp(src, fnd, strlen(fnd))) ? true : false;
 }
 
 
 /**	---------------------------------------------------------------------------
-	\brief	
+	\brief
 
 			#include <comutil.h>
 			#pragma comment(lib, "comsuppw.lib")
-			
-            #define STRSAFE_NO_DEPRECATE
-            #include <strsafe.h>
-	\param	
+
+			#define STRSAFE_NO_DEPRECATE
+			#include <strsafe.h>
+	\param
 	\return	success : allocate null terminated TCHAR string and return pointer
 					  (must free TCHAR string)
 			fail    : return NULL
-	\code	
+	\code
 	\endcode
 -----------------------------------------------------------------------------*/
 //LPTSTR BstrToTchar(IN const BSTR bstr)
@@ -3315,7 +3308,7 @@ bool lstrnicmpa(_In_ const char* src, _In_ const char* fnd)
 
 
 /**
- * \brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
+ * \brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
 			(org_string 의 앞에서부터 token 을 검색)
 
 			ABCDEFG.HIJ.KLMN	: org_string
@@ -3325,75 +3318,75 @@ bool lstrnicmpa(_In_ const char* src, _In_ const char* fnd)
 
 			delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제
 
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool
 extract_first_tokenW(
 	_In_ std::wstring& org_string,
 	_In_ const std::wstring& token,
-	_Out_ std::wstring& out_string, 
+	_Out_ std::wstring& out_string,
 	_In_ bool forward,
 	_In_ bool delete_token
-	)
+)
 {
-    if (true == delete_token)
-    {
-        if (&org_string == &out_string) 
-        {
+	if (true == delete_token)
+	{
+		if (&org_string == &out_string)
+		{
 #ifndef TEST_EXPORTS
-            _ASSERTE(!"prarameters conflict! ");
+			_ASSERTE(!"prarameters conflict! ");
 #endif
-            return false;
-        }
-    }
+			return false;
+		}
+	}
 
 	size_t pos = org_string.find(token);
 	if (std::wstring::npos == pos)
 	{
-        out_string = org_string;
-        return true;
+		out_string = org_string;
+		return true;
 	}
 
-	if (true== forward)
+	if (true == forward)
 	{
 		out_string = org_string.substr(0, pos);
-        if (delete_token) org_string.erase(0, pos + token.size());
+		if (delete_token) org_string.erase(0, pos + token.size());
 	}
 	else
 	{
 		out_string = org_string.substr(pos + token.size(), org_string.size());
-        if (delete_token) org_string.erase(pos, org_string.size());
+		if (delete_token) org_string.erase(pos, org_string.size());
 	}
-    return true;
+	return true;
 }
 
 /**
- * \brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
+ * \brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
 			(org_string 의 앞에서부터 token 을 검색)
 
 			ABCDEFG.HIJ.KLMN	: org_string
 				   .			: token
 			ABCDEFG             : out_string if forward = TRUE
 					HIJ.KLMN	: out_string if forward = FALSE
- * @param	
- * @see		
+ * @param
+ * @see
  * @remarks 성공 시 분리된 문자열을 스트링 객체에 리턴
 			실패 시 _nullstringw 리턴
- * @code		
- * @endcode	
- * @return	
+ * @code
+ * @endcode
+ * @return
 **/
-std::wstring 
+std::wstring
 extract_first_tokenExW(
 	_In_ const wchar_t* org,
-	_In_ const wchar_t* token,	
+	_In_ const wchar_t* token,
 	_In_ bool forward
-	)
+)
 {
 	_ASSERTE(NULL != org);
 	_ASSERTE(NULL != token);
@@ -3401,7 +3394,7 @@ extract_first_tokenExW(
 
 	std::wstring org_string = org;
 	std::wstring out_string;
-	if (true != extract_first_tokenW(org_string, token, out_string, forward, false)) 
+	if (true != extract_first_tokenW(org_string, token, out_string, forward, false))
 		return _null_stringw;
 	else
 		return out_string;
@@ -3409,84 +3402,84 @@ extract_first_tokenExW(
 
 
 /**
- * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
+ * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
 			(org_string 의 앞에서부터 token 을 검색)
-			
-			ABCDEFG.HIJ.KLMN	: org_string
-			       .			: token
-		    ABCDEFG             : out_string if forward = TRUE
-			        HIJ.KLMN	: out_string if forward = FALSE
 
-            delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+			ABCDEFG.HIJ.KLMN	: org_string
+				   .			: token
+			ABCDEFG             : out_string if forward = TRUE
+					HIJ.KLMN	: out_string if forward = FALSE
+
+			delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool
 extract_first_tokenA(
 	_In_ std::string& org_string,
 	_In_ const std::string& token,
-	_Out_ std::string& out_string, 
+	_Out_ std::string& out_string,
 	_In_ bool forward,
 	_In_ bool delete_token
-    )	
+)
 {
-    if (true == delete_token)
-    {
-        if (&org_string == &out_string) 
-        {
+	if (true == delete_token)
+	{
+		if (&org_string == &out_string)
+		{
 #ifndef TEST_EXPORTS
-            _ASSERTE(!"prarameters conflict! ");
+			_ASSERTE(!"prarameters conflict! ");
 #endif
-            return false;;
-        }
-    }
+			return false;;
+		}
+	}
 
 	size_t pos = org_string.find(token);
 	if (std::string::npos == pos)
 	{
-        out_string = org_string;
-        return true;
+		out_string = org_string;
+		return true;
 	}
 
 	if (TRUE == forward)
 	{
 		out_string = org_string.substr(0, pos);
-        if (delete_token) org_string.erase(0, pos + token.size());
+		if (delete_token) org_string.erase(0, pos + token.size());
 	}
 	else
 	{
 		out_string = org_string.substr(pos + token.size(), org_string.size());
-        if (delete_token) org_string.erase(pos, org_string.size());
+		if (delete_token) org_string.erase(pos, org_string.size());
 	}
-    return true;
+	return true;
 }
 
 /**
- * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
+ * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
 			(org_string 의 앞에서부터 token 을 검색)
-			
-			ABCDEFG.HIJ.KLMN	: org_string
-			       .			: token
-		    ABCDEFG             : out_string if forward = TRUE
-			        HIJ.KLMN	: out_string if forward = FALSE
 
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+			ABCDEFG.HIJ.KLMN	: org_string
+				   .			: token
+			ABCDEFG             : out_string if forward = TRUE
+					HIJ.KLMN	: out_string if forward = FALSE
+
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 std::string
 extract_first_tokenExA(
-		_In_ const char* org,
-		_In_ const char* token,		
-		_In_ bool forward
-		)
+	_In_ const char* org,
+	_In_ const char* token,
+	_In_ bool forward
+)
 {
 	_ASSERTE(NULL != org);
 	_ASSERTE(NULL != token);
@@ -3494,84 +3487,84 @@ extract_first_tokenExA(
 
 	std::string org_string = org;
 	std::string out_string;
-	if (true != extract_first_tokenA(org_string, token, out_string, forward, false)) 
+	if (true != extract_first_tokenA(org_string, token, out_string, forward, false))
 		return _null_stringa;
 	else
 		return out_string;
 }
 
 /**
- * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
+ * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
 			(org_string 의 뒤에서부터 token 을 검색)
 
 			ABCDEFG.HIJ.KLMN	: org_string
 					   .		: token
 			ABCDEFG.HIJ			: out_string if forward = TRUE
-					    KLMN	: out_string if forward = FALSE
+						KLMN	: out_string if forward = FALSE
 
 			delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제
 **/
-bool 
+bool
 extract_last_tokenW(
 	_In_ std::wstring& org_string,
 	_In_ const std::wstring& token,
-	_Out_ std::wstring& out_string, 
+	_Out_ std::wstring& out_string,
 	_In_ bool forward,
 	_In_ bool delete_token
-	)
+)
 {
-    if (true== delete_token)
-    {
-        if (&org_string == &out_string) 
-        {
-#ifndef TEST_EXPORTS
-            _ASSERTE(!"prarameters conflict! ");
-#endif
-            return false;
-        }
-    }
-
-    size_t pos = org_string.rfind(token);
-	if (std::wstring::npos == pos)
+	if (true == delete_token)
 	{
-        out_string = org_string;
-        return true;
+		if (&org_string == &out_string)
+		{
+#ifndef TEST_EXPORTS
+			_ASSERTE(!"prarameters conflict! ");
+#endif
+			return false;
+		}
 	}
 
-	if (true== forward)
+	size_t pos = org_string.rfind(token);
+	if (std::wstring::npos == pos)
+	{
+		out_string = org_string;
+		return true;
+	}
+
+	if (true == forward)
 	{
 		out_string = org_string.substr(0, pos);
-        if (delete_token) org_string.erase(0, pos + token.size());
+		if (delete_token) org_string.erase(0, pos + token.size());
 	}
 	else
 	{
-        out_string = org_string.substr(pos + token.size(), org_string.size());
-        if (delete_token) org_string.erase(pos, org_string.size());
+		out_string = org_string.substr(pos + token.size(), org_string.size());
+		if (delete_token) org_string.erase(pos, org_string.size());
 	}
-    return true;
+	return true;
 }
 
 /**
- * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
+ * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
 			(org_string 의 뒤에서부터 token 을 검색)
 
 			ABCDEFG.HIJ.KLMN	: org_string
 					   .		: token
 			ABCDEFG.HIJ			: out_string if forward = TRUE
-					    KLMN	: out_string if forward = FALSE
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+						KLMN	: out_string if forward = FALSE
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 std::wstring
 extract_last_tokenExW(
 	_In_ const wchar_t* org,
-	_In_ const wchar_t* token,	
+	_In_ const wchar_t* token,
 	_In_ bool forward
-	)
+)
 {
 	_ASSERTE(NULL != org);
 	_ASSERTE(NULL != token);
@@ -3586,77 +3579,77 @@ extract_last_tokenExW(
 }
 
 /**
- * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다. 
+ * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
 			(org_string 의 뒤에서부터 token 을 검색)
-			
+
 			ABCDEFG.HIJ.KLMN	: org_string
-			           .		: token
-		    ABCDEFG.HIJ			: out_string if forward = TRUE
+					   .		: token
+			ABCDEFG.HIJ			: out_string if forward = TRUE
 						KLMN	: out_string if forward = FALSE
 
-            delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+			delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
-bool 
+bool
 extract_last_tokenA(
 	_In_ std::string& org_string,
 	_In_ const std::string& token,
-	_Out_ std::string& out_string, 
+	_Out_ std::string& out_string,
 	_In_ bool forward,
 	_In_ bool delete_token
-    )
+)
 {
-    if (TRUE == delete_token)
-    {
-        if (&org_string == &out_string) 
-        {
+	if (TRUE == delete_token)
+	{
+		if (&org_string == &out_string)
+		{
 #ifndef TEST_EXPORTS
-            _ASSERTE(!"prarameters conflict! ");
+			_ASSERTE(!"prarameters conflict! ");
 #endif
-            return false;
-        }
-    }
+			return false;
+		}
+	}
 
 	size_t pos = org_string.rfind(token);
 	if (std::string::npos == pos)
 	{
-        out_string = org_string;
-        return true;
+		out_string = org_string;
+		return true;
 	}
 
 	if (true == forward)
 	{
 		out_string = org_string.substr(0, pos);
-        if (delete_token) org_string.erase(0, pos + token.size());
+		if (delete_token) org_string.erase(0, pos + token.size());
 	}
 	else
 	{
-        out_string = org_string.substr(pos + token.size(), org_string.size());
-        if (delete_token) org_string.erase(pos, org_string.size());
+		out_string = org_string.substr(pos + token.size(), org_string.size());
+		if (delete_token) org_string.erase(pos, org_string.size());
 	}
-    return true;
+	return true;
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 std::string
 extract_last_tokenExA(
 	_In_ const char* org,
 	_In_ const char* token,
 	_In_ bool forward
-    )
+)
 {
 	_ASSERTE(NULL != org);
 	_ASSERTE(NULL != token);
@@ -3677,11 +3670,11 @@ extract_last_tokenExA(
 ///			\offsymxl.ttf:WofCompressedData -> ttf
 /// 
 ///			확장자가 없는 경우 false 를 리턴한다.
-bool 
+bool
 get_file_extensionw(
-	_In_ const wchar_t* file_path, 
+	_In_ const wchar_t* file_path,
 	_Out_ std::wstring& ext
-	)
+)
 {
 	_ASSERTE(nullptr != file_path);
 	if (nullptr == file_path) return false;
@@ -3705,75 +3698,75 @@ get_file_extensionw(
 	}
 
 	ext = org_string.substr(0, pos);
-	return true;	
+	return true;
 }
 
 
 /**
  * @brief	trim 함수들
 
-            string szbuf="__12345_____";  
-            cout<<"Before trim: "<<szbuf<<endl;  
-            cout<<"After  trim: "<<trim(szbuf,"_")<<endl;
-            cout<<"After rtrim: "<<rtrim(szbuf,"_")<<endl;
-            cout<<"After ltrim: "<<ltrim(szbuf,"_")<<endl;
-            ----------------------------------------------
-            Before trim: __12345_____
-            After  trim: 12345
-            After rtrim: __12345
-            After ltrim: 12345 
+			string szbuf="__12345_____";
+			cout<<"Before trim: "<<szbuf<<endl;
+			cout<<"After  trim: "<<trim(szbuf,"_")<<endl;
+			cout<<"After rtrim: "<<rtrim(szbuf,"_")<<endl;
+			cout<<"After ltrim: "<<ltrim(szbuf,"_")<<endl;
+			----------------------------------------------
+			Before trim: __12345_____
+			After  trim: 12345
+			After rtrim: __12345
+			After ltrim: 12345
 */
 std::string trima(std::string& s, const std::string& drop)
 {
-    std::string r=s.erase(s.find_last_not_of(drop)+1);
-    return r.erase(0,r.find_first_not_of(drop));
+	std::string r = s.erase(s.find_last_not_of(drop) + 1);
+	return r.erase(0, r.find_first_not_of(drop));
 }
 std::string rtrima(std::string& s, const std::string& drop)
 {
-  return s.erase(s.find_last_not_of(drop)+1); 
+	return s.erase(s.find_last_not_of(drop) + 1);
 }
 std::string ltrima(std::string& s, const std::string& drop)
-{ 
-  return s.erase(0,s.find_first_not_of(drop)); 
+{
+	return s.erase(0, s.find_first_not_of(drop));
 }
 std::wstring  trimw(std::wstring& s, const std::wstring& drop)
 {
-    std::wstring r=s.erase(s.find_last_not_of(drop)+1);
-    return r.erase(0,r.find_first_not_of(drop));
+	std::wstring r = s.erase(s.find_last_not_of(drop) + 1);
+	return r.erase(0, r.find_first_not_of(drop));
 }
 std::wstring rtrimw(std::wstring& s, const std::wstring& drop)
 {
-    return s.erase(s.find_last_not_of(drop)+1); 
+	return s.erase(s.find_last_not_of(drop) + 1);
 }
 std::wstring ltrimw(std::wstring& s, const std::wstring& drop)
 {
-    return s.erase(0,s.find_first_not_of(drop)); 
+	return s.erase(0, s.find_first_not_of(drop));
 }
 
 /// @brief  sprit `str` using `seps` and save each token into `tokens`. 
-bool 
+bool
 split_stringa(
-	_In_ const char* str, 
-	_In_ const char* seps, 
+	_In_ const char* str,
+	_In_ const char* seps,
 	_Out_ std::vector<std::string>& tokens
-	)
+)
 {
 #define max_str_len     2048
 
-    _ASSERTE(NULL != str);
-    if (NULL == str) return false;
+	_ASSERTE(NULL != str);
+	if (NULL == str) return false;
 
-    tokens.clear();
+	tokens.clear();
 
 	//
-    //	strtok_s() modifies the `str` buffer.
-    //	So we have to use copy `str` for out use only.
+	//	strtok_s() modifies the `str` buffer.
+	//	So we have to use copy `str` for out use only.
 	// 
-    size_t buf_len = (strlen(str) * sizeof(char)) + sizeof(char);
-    if (max_str_len < buf_len)
-    {
-        return false;
-    }
+	size_t buf_len = (strlen(str) * sizeof(char)) + sizeof(char);
+	if (max_str_len < buf_len)
+	{
+		return false;
+	}
 
 	char_ptr buf((char*)malloc(buf_len), [](char* p) {
 		if (nullptr != p)
@@ -3788,44 +3781,44 @@ split_stringa(
 	}
 
 	StringCbPrintfA(buf.get(), buf_len, "%s", str);
-	
+
 	//	
 	//	wcstok_s() 함수에서 separator 문자열이 연속되는 경우 알아서 건너뛴다.
 	//
-    char* next_token = NULL;
-    char* token = strtok_s(buf.get(), seps, &next_token);
-    while (NULL != token)
-    {
-        tokens.push_back(token);
-        token = strtok_s(NULL, seps, &next_token);
-    }   
-	
-    return true;
+	char* next_token = NULL;
+	char* token = strtok_s(buf.get(), seps, &next_token);
+	while (NULL != token)
+	{
+		tokens.push_back(token);
+		token = strtok_s(NULL, seps, &next_token);
+	}
+
+	return true;
 }
 
-bool 
+bool
 split_stringw(
-	_In_ const wchar_t* str, 
-	_In_ const wchar_t* seps, 
+	_In_ const wchar_t* str,
+	_In_ const wchar_t* seps,
 	_Out_ std::vector<std::wstring>& tokens
-	)
+)
 {
 #define max_str_len     2048
 
-    _ASSERTE(NULL != str);
-    if (NULL == str) return false;
+	_ASSERTE(NULL != str);
+	if (NULL == str) return false;
 
-    tokens.clear();
+	tokens.clear();
 
 	//
-    //	strtok_s() modifies the `str` buffer.
-    //	so we should make copy.
+	//	strtok_s() modifies the `str` buffer.
+	//	so we should make copy.
 	//
-    size_t buf_len = (wcslen(str) * sizeof(wchar_t)) + sizeof(wchar_t);
-    if (max_str_len < buf_len)
-    {
-        return false;
-    }
+	size_t buf_len = (wcslen(str) * sizeof(wchar_t)) + sizeof(wchar_t);
+	if (max_str_len < buf_len)
+	{
+		return false;
+	}
 
 	wchar_ptr buf((wchar_t*)malloc(buf_len), [](wchar_t* p) {
 		if (nullptr != p)
@@ -3834,21 +3827,21 @@ split_stringw(
 		}
 	});
 
-    if (nullptr == buf.get())
-    {
-        return false;
-    }
+	if (nullptr == buf.get())
+	{
+		return false;
+	}
 
-    StringCbPrintfW(buf.get(), buf_len, L"%ws", str);
+	StringCbPrintfW(buf.get(), buf_len, L"%ws", str);
 
-    wchar_t* next_token = NULL;
-    wchar_t* token = wcstok_s(buf.get(), seps, &next_token);
-    while (NULL != token)
-    {
-        tokens.push_back(token);
-        token = wcstok_s(NULL, seps, &next_token);
-    }
-    return true;
+	wchar_t* next_token = NULL;
+	wchar_t* token = wcstok_s(buf.get(), seps, &next_token);
+	while (NULL != token)
+	{
+		tokens.push_back(token);
+		token = wcstok_s(NULL, seps, &next_token);
+	}
+	return true;
 }
 
 /// @brief  string to hash
@@ -3859,168 +3852,168 @@ split_stringw(
 ///			꽤 좋다. 계속 쓰자.
 uint32_t hash_string32(_In_ const char* s, _In_opt_ uint32_t seed)
 {
-    _ASSERTE(NULL != s);
-    if (NULL == s) return 0;
+	_ASSERTE(NULL != s);
+	if (NULL == s) return 0;
 
-    uint32_t hash = seed;
-    while (*s)
-    {
-        hash = hash * 101 + *s++;
-    }
-    return hash;
+	uint32_t hash = seed;
+	while (*s)
+	{
+		hash = hash * 101 + *s++;
+	}
+	return hash;
 }
 
 uint64_t hash_string64(_In_ const char* s, _In_opt_ uint64_t seed)
 {
-    _ASSERTE(NULL != s);
-    if (NULL == s) return 0;
+	_ASSERTE(NULL != s);
+	if (NULL == s) return 0;
 
-    uint64_t hash = seed;
-    while (*s)
-    {
-        hash = hash * 101 + *s++;
-    }
-    return hash;
+	uint64_t hash = seed;
+	while (*s)
+	{
+		hash = hash * 101 + *s++;
+	}
+	return hash;
 }
 
 uint32_t hash_string32w(_In_ const wchar_t* s, _In_opt_ uint32_t seed)
 {
-    _ASSERTE(NULL != s);
-    if (NULL == s) return 0;
+	_ASSERTE(NULL != s);
+	if (NULL == s) return 0;
 
-    uint32_t ret = 0;
-    char* mbs = WcsToMbs(s);
-    if (NULL != mbs)
-    {
-        ret = hash_string32(mbs, seed);
-        free(mbs);
-    }
+	uint32_t ret = 0;
+	char* mbs = WcsToMbs(s);
+	if (NULL != mbs)
+	{
+		ret = hash_string32(mbs, seed);
+		free(mbs);
+	}
 
-    return ret;
+	return ret;
 }
 
 uint64_t hash_string64w(_In_ const wchar_t* s, _In_opt_ uint64_t seed)
 {
-    _ASSERTE(NULL != s);
-    if (NULL == s) return 0;
+	_ASSERTE(NULL != s);
+	if (NULL == s) return 0;
 
-    uint64_t ret = 0;
-    char* mbs = WcsToMbs(s);
-    if (NULL != mbs)
-    {
-        ret = hash_string64(mbs, seed);
-        free(mbs);
-    }
+	uint64_t ret = 0;
+	char* mbs = WcsToMbs(s);
+	if (NULL != mbs)
+	{
+		ret = hash_string64(mbs, seed);
+		free(mbs);
+	}
 
-    return ret;
+	return ret;
 }
 
 /// @brief  source 에서 find 를 찾아 replace 로 변경해서, 새로운 문자열 객체를 생성/리턴한다.
 ///         실패시 _null_string_a 객체를 리턴한다.
 std::string
 find_and_replace_string_exa(
-    _In_ const char* source,
-    _In_ const char* find,
-    _In_ const char* replace
-    )
+	_In_ const char* source,
+	_In_ const char* find,
+	_In_ const char* replace
+)
 {
-    _ASSERTE(NULL != source);
-    _ASSERTE(NULL != find);
-    _ASSERTE(NULL != replace);
+	_ASSERTE(NULL != source);
+	_ASSERTE(NULL != find);
+	_ASSERTE(NULL != replace);
 
-    if (NULL != source && NULL != find && NULL != replace)
-    {
-        std::string s(source);
-        std::string f(find);
-        std::string r(replace);
-        find_and_replace_string(s, f, r);
-        return s;
-    }
-    else
-        return _null_stringa;
+	if (NULL != source && NULL != find && NULL != replace)
+	{
+		std::string s(source);
+		std::string f(find);
+		std::string r(replace);
+		find_and_replace_string(s, f, r);
+		return s;
+	}
+	else
+		return _null_stringa;
 }
 
 std::wstring
 find_and_replace_string_exw(
-    _In_ const wchar_t* source,
-    _In_ const wchar_t* find,
-    _In_ const wchar_t* replace
-    )
+	_In_ const wchar_t* source,
+	_In_ const wchar_t* find,
+	_In_ const wchar_t* replace
+)
 {
-    _ASSERTE(NULL != source);
-    _ASSERTE(NULL != find);
-    _ASSERTE(NULL != replace);
+	_ASSERTE(NULL != source);
+	_ASSERTE(NULL != find);
+	_ASSERTE(NULL != replace);
 
-    if (NULL != source && NULL != find && NULL != replace)
-    {
-        std::wstring s(source);
-        std::wstring f(find);
-        std::wstring r(replace);
-        find_and_replace_string(s, f, r);
-        return s;
-    }
-    else
-        return _null_stringw;
+	if (NULL != source && NULL != find && NULL != replace)
+	{
+		std::wstring s(source);
+		std::wstring f(find);
+		std::wstring r(replace);
+		find_and_replace_string(s, f, r);
+		return s;
+	}
+	else
+		return _null_stringw;
 }
 
 /**
 * @brief	현재 디렉토리를 리턴하는 함수 (e.g. c:\debug )
-* @param	
-* @code		
-* @endcode	
-* @return	
+* @param
+* @code
+* @endcode
+* @return
 */
 bool WUGetCurrentDirectoryW(_Out_ std::wstring& CurrentDir)
 {
-	UINT32 buflen=0;
-	PWSTR buf=NULL;
+	UINT32 buflen = 0;
+	PWSTR buf = NULL;
 
 	buflen = GetCurrentDirectoryW(buflen, buf);
 	if (0 == buflen)
 	{
 		log_err
-			"GetCurrentDirectoryW() failed. gle=%u", 
+			"GetCurrentDirectoryW() failed. gle=%u",
 			GetLastError()
-		log_end
-		return false;
+			log_end
+			return false;
 	}
 
 	// buflen : NULL 캐릭터를 포함한 필요한 버퍼의 사이즈 in char.
 	// 
-	buf = (PWSTR) malloc(sizeof(WCHAR) * buflen);
+	buf = (PWSTR)malloc(sizeof(WCHAR) * buflen);
 	if (0 == GetCurrentDirectoryW(buflen, buf))
 	{
 		log_err
-			"GetCurrentDirectoryW() failed, gle=%u", 
+			"GetCurrentDirectoryW() failed, gle=%u",
 			GetLastError()
-		log_end
+			log_end
 
-		free(buf);
+			free(buf);
 		return false;
 	}
 
-    CurrentDir = buf;
-    free(buf);
-    return true;
+	CurrentDir = buf;
+	free(buf);
+	return true;
 }
 
 /**
-* @brief	
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
+* @brief
+* @param
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
 */
 bool WUGetCurrentDirectoryA(_Out_ std::string& CurrentDir)
 {
 	std::wstring _cur;
-	if (! WUGetCurrentDirectoryW(_cur))
+	if (!WUGetCurrentDirectoryW(_cur))
 	{
 		return false;
 	}
-	std::string _cura = WcsToMbsEx(_cur.c_str() );
+	std::string _cura = WcsToMbsEx(_cur.c_str());
 	CurrentDir = _cura;
 	return true;
 }
@@ -4029,22 +4022,22 @@ bool WUGetCurrentDirectoryA(_Out_ std::string& CurrentDir)
  * @brief	GetTempPath() wrapper.
 			%TMP% > %TEMP% > %USERPROFILE% 환경변수 순서대로 가져옴
 			마지막에 '\' 붙여서 리턴한다.
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool get_temp_dirW(_Out_ std::wstring& temp_dir)
 {
-	WCHAR path[MAX_PATH + 1] = {0};
+	WCHAR path[MAX_PATH + 1] = { 0 };
 
 	DWORD ret = GetTempPathW(MAX_PATH, path);
 	if (ret > MAX_PATH || 0 == ret)
 	{
 		log_err "GetTempPathW() failed. gle = %u", GetLastError() log_end
-		return false;
+			return false;
 	}
 
 	temp_dir = path;
@@ -4055,49 +4048,49 @@ bool get_temp_dirW(_Out_ std::wstring& temp_dir)
  * @brief	GetTempPath() wrapper.
 			%TMP% > %TEMP% > %USERPROFILE% 환경변수 순서대로 가져옴
 			마지막에 '\' 붙여서 리턴한다.
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool get_temp_dirA(_Out_ std::string& temp_dir)
 {
-	char path[MAX_PATH + 1] = {0};
+	char path[MAX_PATH + 1] = { 0 };
 
 	DWORD ret = GetTempPathA(MAX_PATH, path);
 	if (ret > MAX_PATH || 0 == ret)
 	{
 		log_err "GetTempPathA() failed. gle = %u", GetLastError() log_end
-		return false;
+			return false;
 	}
 
 	temp_dir = path;
-	return true;	
+	return true;
 }
 
 /**
- * @brief	모듈의 full path 를 구한다. 
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief	모듈의 full path 를 구한다.
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
-bool 
+bool
 get_module_path(
-	_In_ const wchar_t* module_name, 
+	_In_ const wchar_t* module_name,
 	_Out_ std::wstring& module_path
-	)
+)
 {
 	DWORD  ret = 0;
 	DWORD  buf_len = MAX_PATH;
-    wchar_t* buf = (wchar_t*)malloc(buf_len * sizeof(wchar_t));
+	wchar_t* buf = (wchar_t*)malloc(buf_len * sizeof(wchar_t));
 	if (NULL == buf) return false;
-	
-	for(;;)
+
+	for (;;)
 	{
 		ret = GetModuleFileNameW(GetModuleHandleW(module_name), buf, buf_len);
 		if (ret == buf_len)
@@ -4107,7 +4100,7 @@ get_module_path(
 			free(buf);
 
 			buf_len *= 2;
-            buf = (wchar_t*)malloc(buf_len * sizeof(wchar_t));
+			buf = (wchar_t*)malloc(buf_len * sizeof(wchar_t));
 			if (NULL == buf) return false;
 		}
 		else
@@ -4122,7 +4115,7 @@ get_module_path(
 }
 
 /**
- * @brief	현재 모듈의 full path 를 구한다. 
+ * @brief	현재 모듈의 full path 를 구한다.
 **/
 bool get_current_module_path(_Out_ std::wstring& module_path)
 {
@@ -4131,7 +4124,7 @@ bool get_current_module_path(_Out_ std::wstring& module_path)
 
 /**
  * @brief	현재 모듈의 파일명을 제외한 디렉토리 경로를 구한다. ('\' 문자는 제외)
- * @return	
+ * @return
 **/
 bool get_current_module_dir(_Out_ std::wstring& module_dir)
 {
@@ -4139,19 +4132,19 @@ bool get_current_module_dir(_Out_ std::wstring& module_dir)
 	if (true != get_current_module_path(module_path))
 	{
 		log_err "get_current_module_path()" log_end
-		return false;
+			return false;
 	}
-	
-	if (true != extract_last_tokenW(module_path, 
-									L"\\", 
-									module_dir, 
-									true, 
+
+	if (true != extract_last_tokenW(module_path,
+									L"\\",
+									module_dir,
+									true,
 									false))
 	{
-		log_err "extract_last_tokenW( org=%s )", 
-			module_path.c_str() 
+		log_err "extract_last_tokenW( org=%s )",
+			module_path.c_str()
 			log_end
-		module_dir = L"";
+			module_dir = L"";
 		return false;
 	}
 
@@ -4167,13 +4160,13 @@ bool get_current_module_file(_Out_ std::wstring& module_file)
 	if (true != get_current_module_path(module_path))
 	{
 		log_err "get_current_module_path()" log_end
-		return false;
+			return false;
 	}
-	
+
 	if (true != extract_last_tokenW(module_path, L"\\", module_file, false, false))
 	{
 		log_err "extract_last_tokenW( org=%s )", module_path.c_str() log_end
-		module_file = L"";
+			module_file = L"";
 		return false;
 	}
 
@@ -4181,13 +4174,13 @@ bool get_current_module_file(_Out_ std::wstring& module_file)
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 std::wstring get_module_pathEx(_In_ const wchar_t* module_name)
 {
@@ -4203,24 +4196,24 @@ std::wstring get_module_pathEx(_In_ const wchar_t* module_name)
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 std::wstring get_module_dirEx(_In_ const wchar_t* module_name)
 {
 	std::wstring module_path = get_module_pathEx(module_name);
 	return extract_last_tokenExW(module_path.c_str(), L"\\", true);
 }
-	
+
 
 
 /**
- * @brief	현재 모듈의 full path 를 구한다. 
+ * @brief	현재 모듈의 full path 를 구한다.
 **/
 std::wstring get_current_module_pathEx()
 {
@@ -4236,13 +4229,13 @@ std::wstring get_current_module_pathEx()
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 std::wstring get_current_module_dirEx()
 {
@@ -4281,36 +4274,36 @@ std::wstring get_current_module_fileEx()
 ///         "\Device\HarddiskVolume455\xyz"      -> "\Device\HarddiskVolume455\"
 std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name)
 {
-    _ASSERTE(NULL != nt_name);
-    if (NULL == nt_name) return false;
+	_ASSERTE(NULL != nt_name);
+	if (NULL == nt_name) return false;
 
-    // 문자열 길이를 계산
-    // input: \Device\HarddiskVolume4\
+	// 문자열 길이를 계산
+	// input: \Device\HarddiskVolume4\
     //        ^      ^               ^  : `\` 를 3번 만날때까지의 길이를 구한다. (마지막 `\` 포함)
-    uint32_t cmp_count = 0;
-    uint32_t met_count = 0;
-    uint32_t max_count = (uint32_t)wcslen(nt_name);
-    for (cmp_count = 0; cmp_count <= max_count; ++cmp_count)
-    {
-        if (met_count == 3) break;
-        if (nt_name[cmp_count] == L'\\')
-        {
-            ++met_count;
-        }
-    }
-    
-    // 그냥 대충 짜자...귀찮..
-    if (cmp_count < 256)
-    {
-        wchar_t buf[256] = { 0x00 };
-        RtlCopyMemory(buf, nt_name, sizeof(wchar_t) * cmp_count);
-        return std::wstring(buf);
-    }
-    else
-    {
-        // oh?! 
-        return _null_stringw;
-    }
+	uint32_t cmp_count = 0;
+	uint32_t met_count = 0;
+	uint32_t max_count = (uint32_t)wcslen(nt_name);
+	for (cmp_count = 0; cmp_count <= max_count; ++cmp_count)
+	{
+		if (met_count == 3) break;
+		if (nt_name[cmp_count] == L'\\')
+		{
+			++met_count;
+		}
+	}
+
+	// 그냥 대충 짜자...귀찮..
+	if (cmp_count < 256)
+	{
+		wchar_t buf[256] = { 0x00 };
+		RtlCopyMemory(buf, nt_name, sizeof(wchar_t) * cmp_count);
+		return std::wstring(buf);
+	}
+	else
+	{
+		// oh?! 
+		return _null_stringw;
+	}
 }
 
 /// @brief	full path 경로명에서 `파일명.확장자:ADS` 부분만 떼어낸다. 
@@ -4370,11 +4363,11 @@ bool create_guid(_Out_ std::wstring& guid)
 }
 
 /// @brief	
-bool 
+bool
 string_to_guid(
 	_In_ const char* guid_string,
 	_Out_ GUID& guid
-	)
+)
 {
 	_ASSERTE(nullptr != guid_string);
 	if (nullptr == guid_string) return false;
@@ -4383,11 +4376,11 @@ string_to_guid(
 }
 
 /// @brief	
-bool 
+bool
 wstring_to_guid(
 	_In_ const wchar_t* guid_string,
 	_Out_ GUID& guid
-	)
+)
 {
 	_ASSERTE(nullptr != guid_string);
 	if (nullptr == guid_string) return false;
@@ -4409,7 +4402,7 @@ guid_to_string(
 std::wstring
 guid_to_stringw(
 	_In_ GUID& guid
-	)
+)
 {
 	const wchar_t* null_guid = L"{00000000-0000-0000-0000-000000000000}";
 	wchar_t buf[40];
@@ -4435,8 +4428,8 @@ guid_to_stringw(
 			// 
 			return null_guid;
 		}
-	
-		return std::wstring(buf2);		
+
+		return std::wstring(buf2);
 	}
 	else
 	{
@@ -4445,240 +4438,240 @@ guid_to_stringw(
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 std::string Win32ErrorToStringA(IN DWORD ErrorCode)
 {
-    char* msg=NULL;
-	if(0 == FormatMessageA(
-		        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		        NULL, 
-		        ErrorCode, 
-		        0, 
-		        (CHAR*) &msg, 
-		        0, 
-		        NULL))
-    {
-        return std::string("error code conversion failed");
-    }
-    
-    std::string ret(msg);    
-    LocalFree(msg);
-    return ret;
+	char* msg = NULL;
+	if (0 == FormatMessageA(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL,
+		ErrorCode,
+		0,
+		(CHAR*)&msg,
+		0,
+		NULL))
+	{
+		return std::string("error code conversion failed");
+	}
+
+	std::string ret(msg);
+	LocalFree(msg);
+	return ret;
 }
 
 /**
-* @brief	
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
+* @brief
+* @param
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
 */
 std::wstring Win32ErrorToStringW(IN DWORD ErrorCode)
 {
-    wchar_t* msg=NULL;
-	if(0 == FormatMessageW(
-		        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		        NULL, 
-		        ErrorCode, 
-		        0, 
-		        (wchar_t*) &msg, 
-		        0, 
-		        NULL))
-    {
-        return std::wstring(L"error code conversion failed");
-    }
-    
-    std::wstring ret(msg);    
-    LocalFree(msg);
-    return ret;
+	wchar_t* msg = NULL;
+	if (0 == FormatMessageW(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL,
+		ErrorCode,
+		0,
+		(wchar_t*)&msg,
+		0,
+		NULL))
+	{
+		return std::wstring(L"error code conversion failed");
+	}
+
+	std::wstring ret(msg);
+	LocalFree(msg);
+	return ret;
 }
 
 /**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
+	\brief
+
+	\param
+	\return
+	\code
+
+	\endcode
 -----------------------------------------------------------------------------*/
 BOOL DumpMemory(DWORD Length, BYTE* Buf)
 {
-	if ( (0 < Length) && (NULL != Buf))
+	if ((0 < Length) && (NULL != Buf))
 	{
-        log_info "length = %u, buffer=0x%08x", Length, Buf log_end
+		log_info "length = %u, buffer=0x%08x", Length, Buf log_end
 
-		CHAR print_buf[128 * sizeof(CHAR)] = {0};
-		DWORD i = 0, x = 0, ib = 0;		
+			CHAR print_buf[128 * sizeof(CHAR)] = { 0 };
+		DWORD i = 0, x = 0, ib = 0;
 		UCHAR*  Addr = Buf;
 		CHAR*	Pos = NULL;
 		size_t	Remain = 0;
-		for(;;)
+		for (;;)
 		{
 			if (i >= Length) break;
-            ib = i;
+			ib = i;
 
 			// reset all
 			//
 			Pos = print_buf;
 			Remain = sizeof(print_buf);
 
-			if (! SUCCEEDED(StringCbPrintfExA(
-                                Pos, 
-								Remain, 
-								&Pos, 
-								&Remain, 
-								0, 
-								"0x%08p    ", 
-								&Addr[i])))
+			if (!SUCCEEDED(StringCbPrintfExA(
+				Pos,
+				Remain,
+				&Pos,
+				&Remain,
+				0,
+				"0x%08p    ",
+				&Addr[i])))
 			{
-                log_err "StringCbPrintfEx() failed" log_end
-				break;
-			}	
+				log_err "StringCbPrintfEx() failed" log_end
+					break;
+			}
 
 			// first 8 bytes
 			//
 			for (x = 0; x < 8; x++, i++)
 			{
-                if (x == Length) break;
+				if (x == Length) break;
 
-				if (! SUCCEEDED(StringCbPrintfExA(
-                                    Pos, 
-									Remain, 
-									&Pos, 
-									&Remain, 
-									0, 
-									"%02X ", 
-									Addr[i])))
+				if (!SUCCEEDED(StringCbPrintfExA(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					"%02X ",
+					Addr[i])))
 				{
-                    log_err "StringCbPrintfEx() failed" log_end
-					break;
-				}		
+					log_err "StringCbPrintfEx() failed" log_end
+						break;
+				}
 			}
 
 			if (x != Length)
-            {
-                // insert space between first 8bytes and last 8 bytes.
-			    //
-			    if (! SUCCEEDED(StringCbPrintfExA(
-                                    Pos, 
-								    Remain, 
-								    &Pos, 
-								    &Remain, 
-								    0,
-								    "%s",
-								    "  ")))
-			    {
-                    log_err "StringCbPrintfEx() failed" log_end
-				    break;
-			    }
-            }
-            
-            // last 8 bytes
+			{
+				// insert space between first 8bytes and last 8 bytes.
+				//
+				if (!SUCCEEDED(StringCbPrintfExA(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					"%s",
+					"  ")))
+				{
+					log_err "StringCbPrintfEx() failed" log_end
+						break;
+				}
+			}
+
+			// last 8 bytes
 			//
 			for (x = 0; x < 8; x++, i++)
 			{
-                if (x == Length) break;
+				if (x == Length) break;
 
-				if (! SUCCEEDED(StringCbPrintfExA(
-                                    Pos, 
-									Remain, 
-									&Pos, 
-									&Remain, 
-									0, 
-									"%02X ", 
-									Addr[i])))
+				if (!SUCCEEDED(StringCbPrintfExA(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					"%02X ",
+					Addr[i])))
 				{
-                    log_err "StringCbPrintfEx() failed" log_end
-					break;
-				}		
+					log_err "StringCbPrintfEx() failed" log_end
+						break;
+				}
 			}
 
-            char tmp[64] = {0};
-            Pos = tmp;
-            Remain = sizeof(tmp) - sizeof(char);
-            for(DWORD p = 0; p < 16; ++p)
-            {
-                if (p == Length) break;
+			char tmp[64] = { 0 };
+			Pos = tmp;
+			Remain = sizeof(tmp) - sizeof(char);
+			for (DWORD p = 0; p < 16; ++p)
+			{
+				if (p == Length) break;
 
-                if (0x20 <= Addr[ib] &&  0x7F > Addr[ib])
-                {
-                    if(!SUCCEEDED(StringCbPrintfExA(
-                                        Pos, 
-                                        Remain, 
-                                        &Pos, 
-                                        &Remain, 
-                                        0, 
-                                        "%c", 
-                                        Addr[ib])))
-                    {
-                        log_err "StringCbPrintfEx() failed" log_end
-					    break;
-                    }
-                }
-                else
-                {
-                    if(!SUCCEEDED(StringCbPrintfExA(
-                                        Pos, 
-                                        Remain, 
-                                        &Pos, 
-                                        &Remain, 
-                                        0,
-                                        "%c",
-                                        '.')))                                        
-                    {
-                        log_err "StringCbPrintfEx() failed" log_end
-					    break;
-                    }                
-                }
-                
-                ++ib;
-            }
-            
+				if (0x20 <= Addr[ib] && 0x7F > Addr[ib])
+				{
+					if (!SUCCEEDED(StringCbPrintfExA(
+						Pos,
+						Remain,
+						&Pos,
+						&Remain,
+						0,
+						"%c",
+						Addr[ib])))
+					{
+						log_err "StringCbPrintfEx() failed" log_end
+							break;
+					}
+				}
+				else
+				{
+					if (!SUCCEEDED(StringCbPrintfExA(
+						Pos,
+						Remain,
+						&Pos,
+						&Remain,
+						0,
+						"%c",
+						'.')))
+					{
+						log_err "StringCbPrintfEx() failed" log_end
+							break;
+					}
+				}
+
+				++ib;
+			}
+
 			// print string..
 			//
-            log_info "  %s   %s", print_buf, tmp log_end            
-			memset(print_buf, 0x00, sizeof(print_buf));
+			log_info "  %s   %s", print_buf, tmp log_end
+				memset(print_buf, 0x00, sizeof(print_buf));
 		}
 
 		log_info "  %s\n\n", print_buf log_end
-		return TRUE;
+			return TRUE;
 	}
 
-    log_err "invalid parameters" log_end
-	return FALSE;
+	log_err "invalid parameters" log_end
+		return FALSE;
 }
 
 /** ---------------------------------------------------------------------------
-    \brief  
+	\brief
 
-    \param  
-    \return         
-    \code
-    \endcode        
+	\param
+	\return
+	\code
+	\endcode
 -----------------------------------------------------------------------------*/
-BOOL DumpMemory(FILE* stream,DWORD Length,BYTE* Buf)
+BOOL DumpMemory(FILE* stream, DWORD Length, BYTE* Buf)
 {
-	if ( (0 < Length) && (NULL != Buf) )
+	if ((0 < Length) && (NULL != Buf))
 	{
 		_ftprintf(stream, TEXT("\n  00 01 02 03 04 05 06 07   08 09 0A 0B 0C 0D 0E 0F\n"));
 		_ftprintf(stream, TEXT("  -- -- -- -- -- -- -- --   -- -- -- -- -- -- -- --\n"));
 
-		TCHAR print_buf[128 * sizeof(TCHAR)] = {0};
-		DWORD i = 0, x = 0;		
+		TCHAR print_buf[128 * sizeof(TCHAR)] = { 0 };
+		DWORD i = 0, x = 0;
 		UCHAR*  Addr = Buf;
 		TCHAR*	Pos = NULL;
 		size_t	Remain = 0;
-		for(;;)
+		for (;;)
 		{
 			if (i >= Length) break;
 
@@ -4691,66 +4684,66 @@ BOOL DumpMemory(FILE* stream,DWORD Length,BYTE* Buf)
 			//
 			for (x = 0; x < 8; x++, i++)
 			{
-                if (x == Length) break; 
+				if (x == Length) break;
 
-				if (! SUCCEEDED(StringCbPrintfEx(
-                                    Pos, 
-									Remain, 
-									&Pos, 
-									&Remain, 
-									0, 
-									TEXT("%02X "), 
-									Addr[i])))
+				if (!SUCCEEDED(StringCbPrintfEx(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					TEXT("%02X "),
+					Addr[i])))
 				{
 					_ftprintf(stream, TEXT("StringCbPrintfEx() failed \n"));
 					break;
-				}		
+				}
 			}
 
-            if(x == Length) break;
-                        
-            // insert space between first 8bytes and last 8 bytes.
+			if (x == Length) break;
+
+			// insert space between first 8bytes and last 8 bytes.
 			//
-			if(!SUCCEEDED(StringCbPrintfEx(
-                                Pos, 
-								Remain, 
-								&Pos, 
-								&Remain, 
-								0,
-								TEXT("%s"),
-								TEXT("  "))))
+			if (!SUCCEEDED(StringCbPrintfEx(
+				Pos,
+				Remain,
+				&Pos,
+				&Remain,
+				0,
+				TEXT("%s"),
+				TEXT("  "))))
 			{
 				_ftprintf(stream, TEXT("StringCbPrintfEx() failed \n"));
 				break;
 			}
 
-            // last 8 bytes
+			// last 8 bytes
 			//
 			for (x = 0; x < 8; x++, i++)
 			{
-                if ((x + 8) == Length) break;
+				if ((x + 8) == Length) break;
 
-				if (! SUCCEEDED(StringCbPrintfEx(
-                                    Pos, 
-									Remain, 
-									&Pos, 
-									&Remain, 
-									0, 
-									TEXT("%02X "), 
-									Addr[i])))
+				if (!SUCCEEDED(StringCbPrintfEx(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					TEXT("%02X "),
+					Addr[i])))
 				{
 					_ftprintf(stream, TEXT("StringCbPrintfEx() failed \n"));
 					break;
-				}		
-			}			
-            
+				}
+			}
+
 			// print string..
 			//
 			_ftprintf(stream, TEXT("  %s\n"), print_buf);
 			memset(print_buf, 0x00, sizeof(print_buf));
 		}
 
-		_ftprintf(stream, TEXT("  %s\n\n"), print_buf);	
+		_ftprintf(stream, TEXT("  %s\n\n"), print_buf);
 		return TRUE;
 	}
 
@@ -4759,167 +4752,167 @@ BOOL DumpMemory(FILE* stream,DWORD Length,BYTE* Buf)
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump)
 {
-	_ASSERTE(NULL!=buf);
+	_ASSERTE(NULL != buf);
 	_ASSERTE(0 < buf_len);
 	if (NULL == buf || 0 == buf_len) return false;
-	
+
 	// !주의! - 한 라인이 line_dump 보다 큰 경우 (설마 그런일이...?!) 문제가 발생 할 수 있음
 	char line_dump[1024];
 
-	if ( (0 < buf_len) && (NULL != buf) )
+	if ((0 < buf_len) && (NULL != buf))
 	{
-        // useless, uh?
+		// useless, uh?
 		//StringCbPrintfA(line_dump, sizeof(line_dump), "buf_len = %u, buffer=0x%08x", buf_len, buf);
 		//dump.push_back(line_dump);
-		
-		CHAR print_buf[128 * sizeof(CHAR)] = {0};
-		DWORD i = 0, x = 0, ib = 0;		
+
+		CHAR print_buf[128 * sizeof(CHAR)] = { 0 };
+		DWORD i = 0, x = 0, ib = 0;
 		UCHAR*  Addr = buf;
 		CHAR*	Pos = NULL;
 		size_t	Remain = 0;
-		for(;;)
+		for (;;)
 		{
 			if (i >= buf_len) break;
-            ib = i;
+			ib = i;
 
 			// reset all
 			//
 			Pos = print_buf;
 			Remain = sizeof(print_buf);
 
-			if (! SUCCEEDED(StringCbPrintfExA(
-                                Pos, 
-								Remain, 
-								&Pos, 
-								&Remain, 
-								0, 
-								"0x%08p    ", 
-								base_offset + i)))
+			if (!SUCCEEDED(StringCbPrintfExA(
+				Pos,
+				Remain,
+				&Pos,
+				&Remain,
+				0,
+				"0x%08p    ",
+				base_offset + i)))
 			{
-                log_err "StringCbPrintfEx() failed" log_end
-				break;
-			}	
+				log_err "StringCbPrintfEx() failed" log_end
+					break;
+			}
 
 			// first 8 bytes
 			//
 			for (x = 0; x < 8; x++, i++)
 			{
-                if (x == buf_len) break;
+				if (x == buf_len) break;
 
-				if (! SUCCEEDED(StringCbPrintfExA(
-                                    Pos, 
-									Remain, 
-									&Pos, 
-									&Remain, 
-									0, 
-									"%02X ", 
-									Addr[i])))
+				if (!SUCCEEDED(StringCbPrintfExA(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					"%02X ",
+					Addr[i])))
 				{
-                    log_err "StringCbPrintfEx() failed" log_end
-					break;
-				}		
+					log_err "StringCbPrintfEx() failed" log_end
+						break;
+				}
 			}
 
 			if (x != buf_len)
-            {
-                // insert space between first 8bytes and last 8 bytes.
-			    //
-			    if (! SUCCEEDED(StringCbPrintfExA(
-                                    Pos, 
-								    Remain, 
-								    &Pos, 
-								    &Remain, 
-								    0,
-								    "%s",
-								    "  ")))
-			    {
-                    log_err "StringCbPrintfEx() failed" log_end
-				    break;
-			    }
-            }
-            
-            // last 8 bytes
+			{
+				// insert space between first 8bytes and last 8 bytes.
+				//
+				if (!SUCCEEDED(StringCbPrintfExA(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					"%s",
+					"  ")))
+				{
+					log_err "StringCbPrintfEx() failed" log_end
+						break;
+				}
+			}
+
+			// last 8 bytes
 			//
 			for (x = 0; x < 8; x++, i++)
 			{
-                if (x == buf_len) break;
+				if (x == buf_len) break;
 
-				if (! SUCCEEDED(StringCbPrintfExA(
-                                    Pos, 
-									Remain, 
-									&Pos, 
-									&Remain, 
-									0, 
-									"%02X ", 
-									Addr[i])))
+				if (!SUCCEEDED(StringCbPrintfExA(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					"%02X ",
+					Addr[i])))
 				{
-                    log_err "StringCbPrintfEx() failed" log_end
-					break;
-				}		
+					log_err "StringCbPrintfEx() failed" log_end
+						break;
+				}
 			}
 
-            char tmp[64] = {0};
-            Pos = tmp;
-            Remain = sizeof(tmp) - sizeof(char);
-            for(DWORD p = 0; p < 16; ++p)
-            {
-                if (p == buf_len) break;
+			char tmp[64] = { 0 };
+			Pos = tmp;
+			Remain = sizeof(tmp) - sizeof(char);
+			for (DWORD p = 0; p < 16; ++p)
+			{
+				if (p == buf_len) break;
 
-                if (0x20 <= Addr[ib] &&  0x7F > Addr[ib])
-                {
-                    if(!SUCCEEDED(StringCbPrintfExA(
-                                        Pos, 
-                                        Remain, 
-                                        &Pos, 
-                                        &Remain, 
-                                        0, 
-                                        "%c", 
-                                        Addr[ib])))
-                    {
-                        log_err "StringCbPrintfEx() failed" log_end
-					    break;
-                    }
-                }
-                else
-                {
-                    if(!SUCCEEDED(StringCbPrintfExA(
-                                        Pos, 
-                                        Remain, 
-                                        &Pos, 
-                                        &Remain, 
-                                        0,
-                                        "%c",
-                                        '.')))                                        
-                    {
-                        log_err "StringCbPrintfEx() failed" log_end
-					    break;
-                    }                
-                }
-                
-                ++ib;
-            }
-            
+				if (0x20 <= Addr[ib] && 0x7F > Addr[ib])
+				{
+					if (!SUCCEEDED(StringCbPrintfExA(
+						Pos,
+						Remain,
+						&Pos,
+						&Remain,
+						0,
+						"%c",
+						Addr[ib])))
+					{
+						log_err "StringCbPrintfEx() failed" log_end
+							break;
+					}
+				}
+				else
+				{
+					if (!SUCCEEDED(StringCbPrintfExA(
+						Pos,
+						Remain,
+						&Pos,
+						&Remain,
+						0,
+						"%c",
+						'.')))
+					{
+						log_err "StringCbPrintfEx() failed" log_end
+							break;
+					}
+				}
+
+				++ib;
+			}
+
 			// add line dump string..
 			StringCbPrintfA(line_dump, sizeof(line_dump), "%s   %s", print_buf, tmp);
 			dump.push_back(line_dump);
-            
+
 			memset(print_buf, 0x00, sizeof(print_buf));
 		}
 
 		// add rest of dump
-		StringCbPrintfA(line_dump, sizeof(line_dump), "%s", print_buf );
+		StringCbPrintfA(line_dump, sizeof(line_dump), "%s", print_buf);
 		dump.push_back(line_dump);
-		
+
 		return true;
 	}
 
@@ -4927,259 +4920,259 @@ bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32
 }
 
 /**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
+	\brief
+
+	\param
+	\return
+	\code
+
+	\endcode
 -----------------------------------------------------------------------------*/
 BOOL GetTimeStringA(OUT std::string& TimeString)
 {
-    __time64_t long_time=0;
-    struct tm newtime={0};
+	__time64_t long_time = 0;
+	struct tm newtime = { 0 };
 
-    // Get time as 64-bit integer.
-    _time64(&long_time);
+	// Get time as 64-bit integer.
+	_time64(&long_time);
 
-    errno_t err=_localtime64_s(&newtime, &long_time ); 
-    if (err)
-    {
-        log_err "_localtime64_s() failed" log_end
-        return FALSE;
-    }
+	errno_t err = _localtime64_s(&newtime, &long_time);
+	if (err)
+	{
+		log_err "_localtime64_s() failed" log_end
+			return FALSE;
+	}
 
-    // e.g. 2009.07.06 23:04:33
-    //
-	CHAR buf[20]={0};
-    if(!SUCCEEDED(StringCbPrintfA(
-                        buf, 
-                        20 * sizeof(CHAR), 
-                        "%.4d.%.2d.%.2d_%.2d.%.2d.%.2d", 
-                        newtime.tm_year + 1900,
-                        newtime.tm_mon + 1,			// 1월 = 0, 2월 = 1, ... 임
-                        newtime.tm_mday,
-                        newtime.tm_hour,
-                        newtime.tm_min,
-                        newtime.tm_sec)))
-    {
-        log_err "StringCbPrintfEx() failed" log_end
-        return FALSE;
-    }
+	// e.g. 2009.07.06 23:04:33
+	//
+	CHAR buf[20] = { 0 };
+	if (!SUCCEEDED(StringCbPrintfA(
+		buf,
+		20 * sizeof(CHAR),
+		"%.4d.%.2d.%.2d_%.2d.%.2d.%.2d",
+		newtime.tm_year + 1900,
+		newtime.tm_mon + 1,			// 1월 = 0, 2월 = 1, ... 임
+		newtime.tm_mday,
+		newtime.tm_hour,
+		newtime.tm_min,
+		newtime.tm_sec)))
+	{
+		log_err "StringCbPrintfEx() failed" log_end
+			return FALSE;
+	}
 
-	TimeString=buf;
+	TimeString = buf;
 	return TRUE;
 }
 
 BOOL GetTimeStringW(IN std::wstring& TimeString)
 {
-    __time64_t long_time=0;
-    struct tm newtime={0};
+	__time64_t long_time = 0;
+	struct tm newtime = { 0 };
 
-    // Get time as 64-bit integer.
-    //
-    _time64(&long_time);
+	// Get time as 64-bit integer.
+	//
+	_time64(&long_time);
 
-    errno_t err=_localtime64_s(&newtime, &long_time ); 
-    if (err)
-    {
-        log_err "_localtime64_s() failed" log_end
-        return FALSE;
-    }
+	errno_t err = _localtime64_s(&newtime, &long_time);
+	if (err)
+	{
+		log_err "_localtime64_s() failed" log_end
+			return FALSE;
+	}
 
-    // e.g. 2009.07.06 23:04:33
-    //
-	WCHAR buf[20]={0};
-    if(!SUCCEEDED(StringCbPrintfW(
-                        buf, 
-                        20 * sizeof(WCHAR), 
-                        L"%.4d.%.2d.%.2d_%.2d.%.2d.%.2d", 
-                        newtime.tm_year + 1900,
-                        newtime.tm_mon,
-                        newtime.tm_mday,
-                        newtime.tm_hour,
-                        newtime.tm_min,
-                        newtime.tm_sec)))
-    {
-        log_err "StringCbPrintfEx() failed" log_end
-        return FALSE;
-    }
+	// e.g. 2009.07.06 23:04:33
+	//
+	WCHAR buf[20] = { 0 };
+	if (!SUCCEEDED(StringCbPrintfW(
+		buf,
+		20 * sizeof(WCHAR),
+		L"%.4d.%.2d.%.2d_%.2d.%.2d.%.2d",
+		newtime.tm_year + 1900,
+		newtime.tm_mon,
+		newtime.tm_mday,
+		newtime.tm_hour,
+		newtime.tm_min,
+		newtime.tm_sec)))
+	{
+		log_err "StringCbPrintfEx() failed" log_end
+			return FALSE;
+	}
 
-	TimeString=buf;
+	TimeString = buf;
 	return TRUE;
 }
 
 /**
 * @brief	http://support.microsoft.com/kb/131065/EN-US/
 * @param	privilege	e.g. SE_DEBUG_NAME
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
 */
 bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 {
-    //
-    //    set_privilege(SE_DEBUG_NAME, true) 호출 후 set_privilege(SE_DEBUG_NAME, false) 를 
-    //    호출하면 set_privilege(SE_DEBUG_NAME, false) 호출 이후의 OpenProcess() 가 종종
-    //    권한이 있음에도 불구하고, 실패하는 경우가 발생한다. 
-    //    정확한 원인 분석은 해보지 않아서 잘 모르겠음. 나중에 시간나면 한번...
-    //    일단 set_privilege(SE_DEBUG_NAME, false) 를 호출하지 않도록 하게 하기 위해
-    //    예외코드만 추가해 둠
-    //
-    _ASSERTE(true == enable);
-    if (true != enable) return false;
+	//
+	//    set_privilege(SE_DEBUG_NAME, true) 호출 후 set_privilege(SE_DEBUG_NAME, false) 를 
+	//    호출하면 set_privilege(SE_DEBUG_NAME, false) 호출 이후의 OpenProcess() 가 종종
+	//    권한이 있음에도 불구하고, 실패하는 경우가 발생한다. 
+	//    정확한 원인 분석은 해보지 않아서 잘 모르겠음. 나중에 시간나면 한번...
+	//    일단 set_privilege(SE_DEBUG_NAME, false) 를 호출하지 않도록 하게 하기 위해
+	//    예외코드만 추가해 둠
+	//
+	_ASSERTE(true == enable);
+	if (true != enable) return false;
 
-    if (IsWindowsXPOrGreater())
-    {
-        HANDLE hToken;
-        if (TRUE != OpenThreadToken(GetCurrentThread(),
-                                    TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, 
-                                    FALSE,
-                                    &hToken))
-        {
-            if (GetLastError() == ERROR_NO_TOKEN)
-            {
-                //
-                //    Impersonate 되지 않은 상태인 경우 Thread 는 Access token 을 가지고 있지 
-                //    때문에 항상 ERROR_NO_TOKEN 이 리턴한다.
-                //
-                //    이 경우 OpenProcessToken() 을 호출해서 프로세스의 Access token 을 얻어서
-                //    프로세스의 Privilige 를 변경할 수 있다. 
-                // 
-                //    아니면 ImpersonateSelf() 를 호출해서 현재 스레드의 Access token 을 생성하고
-                //    (생성된 token 은 현재 스레드에서만 유효) 현재 스레드의 Privilege 만 변경할 
-                //    수 있다. Privilege 변경 후 할일이 끝나면 RevertToSelf() 를 호출해서 
-                //    Impersion 을 끝낼 수 있다.
-                //
-                if (ImpersonateSelf(SecurityImpersonation) != TRUE)
-                {
-                    log_err "ImpersonateSelf( ) failed. gle=%u",
-                        GetLastError()
-                        log_end;
-                    return false;
-                }
+	if (IsWindowsXPOrGreater())
+	{
+		HANDLE hToken;
+		if (TRUE != OpenThreadToken(GetCurrentThread(),
+									TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
+									FALSE,
+									&hToken))
+		{
+			if (GetLastError() == ERROR_NO_TOKEN)
+			{
+				//
+				//    Impersonate 되지 않은 상태인 경우 Thread 는 Access token 을 가지고 있지 
+				//    때문에 항상 ERROR_NO_TOKEN 이 리턴한다.
+				//
+				//    이 경우 OpenProcessToken() 을 호출해서 프로세스의 Access token 을 얻어서
+				//    프로세스의 Privilige 를 변경할 수 있다. 
+				// 
+				//    아니면 ImpersonateSelf() 를 호출해서 현재 스레드의 Access token 을 생성하고
+				//    (생성된 token 은 현재 스레드에서만 유효) 현재 스레드의 Privilege 만 변경할 
+				//    수 있다. Privilege 변경 후 할일이 끝나면 RevertToSelf() 를 호출해서 
+				//    Impersion 을 끝낼 수 있다.
+				//
+				if (ImpersonateSelf(SecurityImpersonation) != TRUE)
+				{
+					log_err "ImpersonateSelf( ) failed. gle=%u",
+						GetLastError()
+						log_end;
+					return false;
+				}
 
-                if (TRUE != OpenThreadToken(GetCurrentThread(),
-                                            TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
-                                            FALSE,
-                                            &hToken))
-                {
-                    log_err "OpenThreadToken() failed. gle=%u",
-                        GetLastError()
-                        log_end;
-                    return false;
-                }                
-            }
-            else
-            {
-                log_err "OpenThreadToken() failed. gle=%u",
-                    GetLastError()
-                    log_end;
-                return false;
-            }
-        }        
-        handle_ptr token_ptr(hToken, [](_In_ HANDLE h) {CloseHandle(h); });
-        
-        TOKEN_PRIVILEGES tp = { 0 };
-        TOKEN_PRIVILEGES tpPrevious = { 0 };
-        LUID luid = { 0 };
-        DWORD cb = sizeof(TOKEN_PRIVILEGES);
-        if (!LookupPrivilegeValue(NULL,
-                                  privilege,
-                                  &luid))
-        {
-            log_err "LookupPrivilegeValue() failed. priv=%ws, gle=%u",
-                privilege,
-                GetLastError()
-                log_end                
-            return false;
-        }
+				if (TRUE != OpenThreadToken(GetCurrentThread(),
+											TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
+											FALSE,
+											&hToken))
+				{
+					log_err "OpenThreadToken() failed. gle=%u",
+						GetLastError()
+						log_end;
+					return false;
+				}
+			}
+			else
+			{
+				log_err "OpenThreadToken() failed. gle=%u",
+					GetLastError()
+					log_end;
+				return false;
+			}
+		}
+		handle_ptr token_ptr(hToken, [](_In_ HANDLE h) {CloseHandle(h); });
 
-        // 
-        // first pass.  get current privilege setting
-        // 
-        tp.PrivilegeCount = 1;
-        tp.Privileges[0].Luid = luid;
-        tp.Privileges[0].Attributes = 0;
-        if (!AdjustTokenPrivileges(hToken,
-                                   FALSE,
-                                   &tp,
-                                   sizeof(TOKEN_PRIVILEGES),
-                                   &tpPrevious,
-                                   &cb))
-        {
-            log_err "AdjustTokenPrivileges() failed. priv=%ws, gle=%u",
-                privilege,
-                GetLastError()
-                log_end;
-            return false;
-        }
+		TOKEN_PRIVILEGES tp = { 0 };
+		TOKEN_PRIVILEGES tpPrevious = { 0 };
+		LUID luid = { 0 };
+		DWORD cb = sizeof(TOKEN_PRIVILEGES);
+		if (!LookupPrivilegeValue(NULL,
+								  privilege,
+								  &luid))
+		{
+			log_err "LookupPrivilegeValue() failed. priv=%ws, gle=%u",
+				privilege,
+				GetLastError()
+				log_end
+				return false;
+		}
 
-        if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
-        {
-            //
-            //    luid 에 매칭되는 Privilige 가 없는 경우이므로 
-            //    tpPrevious 의 count 는 0 이어야 한다. 
-            //
-            _ASSERTE(tpPrevious.PrivilegeCount == 00);
-            log_err "Token does not have specified privilege. priv=%ws",
-                privilege
-                log_end;
-            return false;
-        }
-        
-        // 
-        // second pass.  set privilege based on previous setting
-        // 
-        tp.PrivilegeCount = 1;
-        tp.Privileges[0].Luid = luid;
-        if (enable)
-        {
-            tpPrevious.Privileges[0].Attributes |= (SE_PRIVILEGE_ENABLED);
-        }
-        else
-        {
-            tpPrevious.Privileges[0].Attributes ^= (SE_PRIVILEGE_ENABLED &
-                                                    tpPrevious.Privileges[0].Attributes);
-        }
+		// 
+		// first pass.  get current privilege setting
+		// 
+		tp.PrivilegeCount = 1;
+		tp.Privileges[0].Luid = luid;
+		tp.Privileges[0].Attributes = 0;
+		if (!AdjustTokenPrivileges(hToken,
+								   FALSE,
+								   &tp,
+								   sizeof(TOKEN_PRIVILEGES),
+								   &tpPrevious,
+								   &cb))
+		{
+			log_err "AdjustTokenPrivileges() failed. priv=%ws, gle=%u",
+				privilege,
+				GetLastError()
+				log_end;
+			return false;
+		}
 
-        if (!AdjustTokenPrivileges(hToken,
-                                   FALSE,
-                                   &tpPrevious,
-                                   cb,
-                                   NULL,
-                                   NULL))
-        {
-            log_err "AdjustTokenPrivileges() failed. priv=%ws, gle=%u",
-                privilege,
-                GetLastError()
-                log_end;
-            return false;
-        }
+		if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
+		{
+			//
+			//    luid 에 매칭되는 Privilige 가 없는 경우이므로 
+			//    tpPrevious 의 count 는 0 이어야 한다. 
+			//
+			_ASSERTE(tpPrevious.PrivilegeCount == 00);
+			log_err "Token does not have specified privilege. priv=%ws",
+				privilege
+				log_end;
+			return false;
+		}
 
-        if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
-        {
-            log_err "Token does not have specified privilege. priv=%ws",
-                privilege
-                log_end;
-            return false;
-        }
-    }
+		// 
+		// second pass.  set privilege based on previous setting
+		// 
+		tp.PrivilegeCount = 1;
+		tp.Privileges[0].Luid = luid;
+		if (enable)
+		{
+			tpPrevious.Privileges[0].Attributes |= (SE_PRIVILEGE_ENABLED);
+		}
+		else
+		{
+			tpPrevious.Privileges[0].Attributes ^= (SE_PRIVILEGE_ENABLED &
+													tpPrevious.Privileges[0].Attributes);
+		}
 
-    return true;
+		if (!AdjustTokenPrivileges(hToken,
+								   FALSE,
+								   &tpPrevious,
+								   cb,
+								   NULL,
+								   NULL))
+		{
+			log_err "AdjustTokenPrivileges() failed. priv=%ws, gle=%u",
+				privilege,
+				GetLastError()
+				log_end;
+			return false;
+		}
+
+		if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
+		{
+			log_err "Token does not have specified privilege. priv=%ws",
+				privilege
+				log_end;
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool get_active_window_pid(_Out_ DWORD& pid, _Out_ DWORD& tid)
 {
@@ -5192,13 +5185,13 @@ bool get_active_window_pid(_Out_ DWORD& pid, _Out_ DWORD& tid)
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 DWORD	get_active_console_session_id()
 {
@@ -5208,18 +5201,18 @@ DWORD	get_active_console_session_id()
 /**
  * @brief	get session id of specified process.
  * @param	process_id 는 PROCESS_QUERY_INFORMATION 권한이 필요함
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id)
 {
 	if (!ProcessIdToSessionId(process_id, &session_id))
 	{
 		log_err "ProcessIdToSessionId( pid = %u ) failed. gle = %u", process_id, GetLastError() log_end
-		return false;
+			return false;
 	}
 
 	return true;
@@ -5227,24 +5220,24 @@ bool get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id)
 
 /**
  * @brief	process_id 가 콘솔세션에서 실행중인 경우 true 리턴
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool	process_in_console_session(_In_ DWORD process_id)
 {
 	DWORD console_session = get_active_console_session_id();
 	DWORD session_id = 0xffffffff;
-	if (!get_session_id_by_pid(process_id, session_id)) 
+	if (!get_session_id_by_pid(process_id, session_id))
 	{
 		log_err "get_session_id_by_pid() failed." log_end
-		return false;
+			return false;
 	}
 
-	if (console_session == session_id) 
+	if (console_session == session_id)
 	{
 		return true;
 	}
@@ -5256,12 +5249,12 @@ bool	process_in_console_session(_In_ DWORD process_id)
 
 /// @brief	active console session 에 로그인된 사용자 계정으로 프로세스를 생성한다.
 ///	@remark 이건 여러모로 위험한 함수이므로 쓰지말자. 
-bool 
+bool
 create_process_as_login_user(
 	_In_ uint32_t session_id,
-	_In_ const wchar_t* cmdline, 
+	_In_ const wchar_t* cmdline,
 	_Out_ PROCESS_INFORMATION& pi
-	)
+)
 {
 	_ASSERTE(NULL != cmdline);
 	if (NULL == cmdline) return false;
@@ -5280,10 +5273,10 @@ create_process_as_login_user(
 	DWORD creation_flag = NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE;
 	LPVOID env_block = NULL;
 	size_t cmd_len = 0;
-	wchar_t* cmd = NULL;	
-	STARTUPINFO si = { 0 }; 
+	wchar_t* cmd = NULL;
+	STARTUPINFO si = { 0 };
 	TOKEN_PRIVILEGES tp = { 0 };
-	LUID luid = { 0 };	
+	LUID luid = { 0 };
 	HANDLE snap = INVALID_HANDLE_VALUE;
 	HANDLE primary_token = NULL;
 	HANDLE duplicated_token = NULL;
@@ -5295,7 +5288,7 @@ create_process_as_login_user(
 		snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 		if (snap == INVALID_HANDLE_VALUE)
 		{
-			
+
 			log_err "CreateToolhelp32Snapshot(), gle=%u", GetLastError() log_end;
 			break;
 		}
@@ -5311,7 +5304,7 @@ create_process_as_login_user(
 
 			do
 			{
-				if(true == rstrnicmp(proc_entry.szExeFile, L"explorer.exe"))
+				if (true == rstrnicmp(proc_entry.szExeFile, L"explorer.exe"))
 				{
 					DWORD explorer_sessio_id = 0;
 					if (ProcessIdToSessionId(proc_entry.th32ProcessID, &explorer_sessio_id) &&
@@ -5328,15 +5321,15 @@ create_process_as_login_user(
 
 		if (0xFFFFFFFF == explorer_pid)
 		{
-			log_err "Can not find 'explorer.exe'" log_end;			
+			log_err "Can not find 'explorer.exe'" log_end;
 			break;
 		}
 
 		si.cb = sizeof(si);
 		si.lpDesktop = L"winsta0\\default";
 
-		process_handle = OpenProcess(MAXIMUM_ALLOWED, 
-									 FALSE, 
+		process_handle = OpenProcess(MAXIMUM_ALLOWED,
+									 FALSE,
 									 explorer_pid);
 		if (NULL == process_handle)
 		{
@@ -5362,11 +5355,11 @@ create_process_as_login_user(
 		tp.Privileges[0].Luid = luid;
 		tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-		if (TRUE != DuplicateTokenEx(primary_token, 
-									 MAXIMUM_ALLOWED, 
-									 NULL, 
-									 SecurityIdentification, 
-									 TokenPrimary, 
+		if (TRUE != DuplicateTokenEx(primary_token,
+									 MAXIMUM_ALLOWED,
+									 NULL,
+									 SecurityIdentification,
+									 TokenPrimary,
 									 &duplicated_token))
 		{
 			log_err "DuplicateTokenEx(), gle=%u", GetLastError() log_end;
@@ -5374,20 +5367,20 @@ create_process_as_login_user(
 		}
 
 		//> adjust token privilege
-		if (TRUE != SetTokenInformation(duplicated_token, 
-										TokenSessionId, 
-										(void*)(DWORD_PTR)session_id, 
+		if (TRUE != SetTokenInformation(duplicated_token,
+										TokenSessionId,
+										(void*)(DWORD_PTR)session_id,
 										sizeof(DWORD)))
 		{
 			//log_err L"SetTokenInformation(), gle=0x%08x", GetLastError() log_end		
 			// note - 이 에러는 무시해도 된다. 
 		}
 
-		if (TRUE != AdjustTokenPrivileges(duplicated_token, 
-										  FALSE, 
-										  &tp, 
-										  sizeof(TOKEN_PRIVILEGES), 
-										  (PTOKEN_PRIVILEGES)NULL, 
+		if (TRUE != AdjustTokenPrivileges(duplicated_token,
+										  FALSE,
+										  &tp,
+										  sizeof(TOKEN_PRIVILEGES),
+										  (PTOKEN_PRIVILEGES)NULL,
 										  NULL))
 		{
 			DWORD err = GetLastError();
@@ -5400,8 +5393,8 @@ create_process_as_login_user(
 			// ERROR_NOT_ALL_ASSIGNED is OK!
 		}
 
-		if (TRUE == CreateEnvironmentBlock(&env_block, 
-										   duplicated_token, 
+		if (TRUE == CreateEnvironmentBlock(&env_block,
+										   duplicated_token,
 										   TRUE))
 		{
 			creation_flag |= CREATE_UNICODE_ENVIRONMENT;
@@ -5447,7 +5440,7 @@ create_process_as_login_user(
 		ret = true;
 
 	} while (FALSE);
-	
+
 
 	if (NULL != cmd)
 	{
@@ -5466,7 +5459,7 @@ create_process_as_login_user(
 	{
 		CloseHandle(duplicated_token);
 	}
-	
+
 	if (NULL != env_block)
 	{
 		DestroyEnvironmentBlock(env_block);
@@ -5516,7 +5509,7 @@ bool set_security_attributes_type1(_Out_ SECURITY_ATTRIBUTES& sa)
 		//	Allow 
 		//		- read/write/execute 
 		//		- to authenticated users
-		L"(A;OICI;GRGWGX;;;AU)" 
+		L"(A;OICI;GRGWGX;;;AU)"
 
 		//	ace_type; ace_flags; rights; object_guid; inherit_object_guid; account_sid; (resource_attribute)
 		//
@@ -5529,8 +5522,8 @@ bool set_security_attributes_type1(_Out_ SECURITY_ATTRIBUTES& sa)
 		//	BA: SDDL_BUILTIN_ADMINISTRATORS, SY: SDDL_LOCAL_SYSTEM
 		// 
 		//	Allow full control to administrators
-		L"(A;OICI;GA;;;BA)";    
-	
+		L"(A;OICI;GA;;;BA)";
+
 	if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(dacl_text,
 															  SDDL_REVISION_1,
 															  &(sa.lpSecurityDescriptor),
@@ -5582,8 +5575,8 @@ bool set_security_attributes_type2(_Out_ SECURITY_ATTRIBUTES& sa)
 		//	SY: SDDL_LOCAL_SYSTEM
 		// 
 		//	Allow full control to LOCAL_SYSTE
-		L"(A;OICI;GA;;;SY)";    
-	
+		L"(A;OICI;GA;;;SY)";
+
 	if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(dacl_text,
 															  SDDL_REVISION_1,
 															  &(sa.lpSecurityDescriptor),
@@ -5608,7 +5601,7 @@ bool suspend_process_by_pid(_In_ DWORD pid)
 								  FALSE,
 								  pid);
 		if (NULL != proc_handle) break;
-		
+
 		if (!set_privilege(SE_DEBUG_NAME, true))
 		{
 			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
@@ -5619,7 +5612,7 @@ bool suspend_process_by_pid(_In_ DWORD pid)
 								  FALSE,
 								  pid);
 	} while (false);
-	
+
 	if (NULL == proc_handle)
 	{
 		log_err "Can not access process. pid=%u",
@@ -5649,7 +5642,7 @@ bool resume_process_by_pid(_In_ DWORD pid)
 								  FALSE,
 								  pid);
 		if (NULL != proc_handle) break;
-		
+
 		if (!set_privilege(SE_DEBUG_NAME, true))
 		{
 			log_err "set_privilege( SE_DEBUG_NAME ) failed. " log_end;
@@ -5662,7 +5655,7 @@ bool resume_process_by_pid(_In_ DWORD pid)
 		set_privilege(SE_DEBUG_NAME, false);
 
 	} while (false);
-	
+
 	if (NULL == proc_handle)
 	{
 		log_err "Can not access process. pid=%u",
@@ -5772,25 +5765,25 @@ bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code)
 		log_err "TerminateProcess() failed. gle=%u",
 			GetLastError()
 			log_end;
-		return false;			
+		return false;
 	}
 
 	return true;
 }
 
 /// @brief	프로세스의 실행시간을 구한다.
-bool 
+bool
 get_process_creation_time(
 	_In_ DWORD pid,
 	_Out_ PFILETIME const creation_time
-	)
+)
 {
 	_ASSERTE(0 != pid);
 	_ASSERTE(4 != pid);
 	_ASSERTE(nullptr != creation_time);
 	if (0 == pid || 4 == pid || nullptr == creation_time) return false;
 
-	HANDLE process_handle = NULL;	
+	HANDLE process_handle = NULL;
 	do
 	{
 		process_handle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
@@ -5798,7 +5791,7 @@ get_process_creation_time(
 		{
 			break;
 		}
-		if (!set_privilege(SE_DEBUG_NAME, true)){break;}
+		if (!set_privilege(SE_DEBUG_NAME, true)) { break; }
 		process_handle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
 	} while (false);
 
@@ -5807,24 +5800,24 @@ get_process_creation_time(
 	{
 		log_err "Can not access process. pid=%u",
 			pid
-			log_end;		
+			log_end;
 		return false;
 	}
 
-	handle_ptr hg(process_handle, [](HANDLE h) {CloseHandle(h);});
+	handle_ptr hg(process_handle, [](HANDLE h) {CloseHandle(h); });
 	return get_process_creation_time(process_handle, creation_time);
 }
 
 /// @brief	프로세스의 실행시간을 구한다.
-bool 
+bool
 get_process_creation_time(
-	_In_ HANDLE process_handle, 
+	_In_ HANDLE process_handle,
 	_Out_ PFILETIME const creation_time
-	)
+)
 {
 	_ASSERTE(nullptr != creation_time);
 	if (nullptr == creation_time) return false;
-	
+
 	FILETIME CreationTime;
 	FILETIME ExitTime;
 	FILETIME KernelTime;
@@ -6410,7 +6403,7 @@ void dump_privilege_attributes(_In_ uint32_t privilege_attributes)
 						  "SE_PRIVILEGE_USED_FOR_ACCESS");
 		add_lf = true;
 	}
-	
+
 	if (add_lf == true)
 	{
 		log_info "options=%s", buf log_end;
@@ -6456,12 +6449,12 @@ psid_info get_sid_info(_In_ PSID sid)
 		}
 		return nullptr;
 	}
-	
+
 	//
 	//	sid_string 버퍼는 반드시 LocalFree() 로 소멸해야 한다. 
 	//	
 	wchar_ptr sid_ptr(sid_str, [](wchar_t* p) {LocalFree(p); });
-	
+
 	//
 	//	 User/Group, Reference domain name mapped with this SID
 	//
@@ -6471,7 +6464,7 @@ psid_info get_sid_info(_In_ PSID sid)
 	wchar_t* domain = nullptr;
 	SID_NAME_USE sid_name_use = SidTypeUnknown;
 	LookupAccountSid(nullptr,
-					 sid, 
+					 sid,
 					 nullptr,
 					 &cch_name,
 					 nullptr,
@@ -6496,9 +6489,9 @@ psid_info get_sid_info(_In_ PSID sid)
 			return nullptr;
 		}
 	}
-	wchar_ptr name_ptr(name, [](_In_ wchar_t* ptr){if (nullptr != ptr) { free(ptr); }});
-	wchar_ptr domain_ptr(domain, [](_In_ wchar_t* ptr){if (nullptr != ptr){free(ptr);}});
-		
+	wchar_ptr name_ptr(name, [](_In_ wchar_t* ptr) {if (nullptr != ptr) { free(ptr); }});
+	wchar_ptr domain_ptr(domain, [](_In_ wchar_t* ptr) {if (nullptr != ptr) { free(ptr); }});
+
 	if (TRUE != LookupAccountSid(nullptr,
 								 sid,
 								 name_ptr.get(),
@@ -6529,7 +6522,7 @@ psid_info get_sid_info(_In_ PSID sid)
 psid_info
 get_process_user(
 	_In_ DWORD pid
-	)
+)
 {
 	//
 	//	Open process handle with READ token access
@@ -6569,10 +6562,10 @@ get_process_user(
 }
 
 /// @brief	
-psid_info 
+psid_info
 get_process_user(
 	_In_ HANDLE process_query_token
-	)
+)
 {
 	_ASSERTE(NULL != process_query_token);
 	if (NULL == process_query_token) return nullptr;
@@ -6597,22 +6590,22 @@ get_process_user(
 
 	char_ptr ptr(
 		(char*)malloc(return_length),
-		[](_In_ char* ptr) 
+		[](_In_ char* ptr)
 	{
-		if (nullptr != ptr) free(ptr); 
+		if (nullptr != ptr) free(ptr);
 	});
 	if (nullptr == ptr.get())
 	{
-		log_err "Not enough memory. malloc size=%u", 
+		log_err "Not enough memory. malloc size=%u",
 			return_length
 			log_end;
 		return nullptr;
 	}
-	
+
 	if (TRUE != GetTokenInformation(process_query_token,
 									TokenUser,
 									(PTOKEN_USER)ptr.get(),
-									return_length, 
+									return_length,
 									&return_length))
 	{
 		log_err "GetTokenInformation() failed. gle=%u",
@@ -6625,17 +6618,17 @@ get_process_user(
 }
 
 /// @brief	
-bool 
+bool
 get_process_group(
 	_In_ DWORD pid,
 	_Out_ std::list<pgroup_sid_info>& group
-	)
+)
 {
 	//
 	//	Open process handle with READ token access
 	//
 	handle_ptr proc_handle(
-		OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,FALSE,pid),
+		OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid),
 		[](_In_ HANDLE handle)
 	{
 		if (NULL != handle) { CloseHandle(handle); }
@@ -6671,7 +6664,7 @@ bool
 get_process_group(
 	_In_ HANDLE process_query_token,
 	_Out_ std::list<pgroup_sid_info>& group
-	)
+)
 {
 	_ASSERTE(NULL != process_query_token);
 	if (NULL == process_query_token) return false;
@@ -6696,22 +6689,22 @@ get_process_group(
 
 	char_ptr ptr(
 		(char*)malloc(return_length),
-		[](_In_ char* ptr) 
+		[](_In_ char* ptr)
 	{
-		if (nullptr != ptr) free(ptr); 
+		if (nullptr != ptr) free(ptr);
 	});
 	if (nullptr == ptr.get())
 	{
-		log_err "Not enough memory. malloc size=%u", 
+		log_err "Not enough memory. malloc size=%u",
 			return_length
 			log_end;
 		return false;
 	}
-	
+
 	if (TRUE != GetTokenInformation(process_query_token,
 									TokenGroups,
 									(PTOKEN_GROUPS)ptr.get(),
-									return_length, 
+									return_length,
 									&return_length))
 	{
 		log_err "GetTokenInformation() failed. gle=%u",
@@ -6736,7 +6729,7 @@ get_process_group(
 			{
 				group.push_back(g);
 			}
-		}		
+		}
 	}
 
 	return true;
@@ -7026,7 +7019,7 @@ sub_key_iterate_callback(
 bool
 get_installed_programs(
 	_Out_ std::list<pprogram>& installed_programs
-	)
+)
 {
 	//
 	// HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\
@@ -7102,7 +7095,7 @@ get_installed_programs(
 psid_info
 get_file_owner(
 	_In_ const wchar_t* file_name
-	)
+)
 {
 	_ASSERTE(nullptr != file_name);
 	if (nullptr == file_name) return nullptr;
@@ -7259,23 +7252,23 @@ bool setup_wer(_In_ const wchar_t* dump_dir)
 /// @brief 
 void SetConsoleCoords(COORD xy)
 {
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), xy);
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), xy);
 }
 
 /**
-* @brief	
-* @param	
-* @see		
-* @remarks	
-* @code		
-* @endcode	
-* @return	
+* @brief
+* @param
+* @see
+* @remarks
+* @code
+* @endcode
+* @return
 */
 COORD GetCurCoords(void)
 {
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    return csbi.dwCursorPosition;
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+	return csbi.dwCursorPosition;
 }
 
 /// @brief	 콘솔을 생성한다.
@@ -7319,13 +7312,13 @@ bool create_console()
 		h_console = GetStdHandle(STD_OUTPUT_HANDLE);
 		if (NULL == h_console)
 		{
-			log_err "Can not get STD_OUTPUT_HANDLE (No console allocated)." 
+			log_err "Can not get STD_OUTPUT_HANDLE (No console allocated)."
 				log_end;
 			return false;
 		}
 		else if (INVALID_HANDLE_VALUE == h_console)
 		{
-			log_err "GetStdHandle() failed. gle=%u", 
+			log_err "GetStdHandle() failed. gle=%u",
 				GetLastError()
 				log_end;
 			return false;
@@ -7338,7 +7331,7 @@ bool create_console()
 			log_end;
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -7360,13 +7353,13 @@ void write_to_console(_In_ console_font_color color, _In_z_ const char* log_mess
 		CONSOLE_SCREEN_BUFFER_INFO csbi;
 
 		con_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-		if (NULL == con_stdout_handle || INVALID_HANDLE_VALUE == con_stdout_handle) 
-		{ 
+		if (NULL == con_stdout_handle || INVALID_HANDLE_VALUE == con_stdout_handle)
+		{
 			//
 			//	NULL : console handle 이 없는 프로세스 
 			//	INVALID_HANDLE_VALUE : GetStdHandle() 에러 
 			// 
-			return; 
+			return;
 		}
 
 		GetConsoleScreenBufferInfo(con_stdout_handle, &csbi);
@@ -7374,63 +7367,63 @@ void write_to_console(_In_ console_font_color color, _In_z_ const char* log_mess
 	}
 
 	DWORD len;
-    switch (color)
-    {
-    case fc_red:
-        SetConsoleTextAttribute(con_stdout_handle, FOREGROUND_RED | FOREGROUND_INTENSITY);
-        WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
-        SetConsoleTextAttribute(con_stdout_handle, con_old_color);
-        break;
-    case fc_green:
-        SetConsoleTextAttribute(con_stdout_handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-        WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
-        SetConsoleTextAttribute(con_stdout_handle, con_old_color);
-        break;
-    case fc_none:
-    default:
-        WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
-    }
+	switch (color)
+	{
+	case fc_red:
+		SetConsoleTextAttribute(con_stdout_handle, FOREGROUND_RED | FOREGROUND_INTENSITY);
+		WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
+		SetConsoleTextAttribute(con_stdout_handle, con_old_color);
+		break;
+	case fc_green:
+		SetConsoleTextAttribute(con_stdout_handle, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+		WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
+		SetConsoleTextAttribute(con_stdout_handle, con_old_color);
+		break;
+	case fc_none:
+	default:
+		WriteConsoleA(con_stdout_handle, log_message, (DWORD)strlen(log_message), &len, NULL);
+	}
 }
 
 /// @brief  clear console
 ///         https://msdn.microsoft.com/en-us/library/windows/desktop/ms682022(v=vs.85).aspx
 void clear_console()
 {
-    COORD coordScreen = { 0, 0 };    // home for the cursor 
-    DWORD cCharsWritten;
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    DWORD dwConSize;
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD coordScreen = { 0, 0 };    // home for the cursor 
+	DWORD cCharsWritten;
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	DWORD dwConSize;
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    // Get the number of character cells in the current buffer. 
-    if (!GetConsoleScreenBufferInfo(hConsole, &csbi)){ return; }
-    dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+	// Get the number of character cells in the current buffer. 
+	if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) { return; }
+	dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
 
-    // Fill the entire screen with blanks.
-    if (!FillConsoleOutputCharacter(hConsole,        // Handle to console screen buffer 
-                                    (TCHAR) ' ',     // Character to write to the buffer
-                                    dwConSize,       // Number of cells to write 
-                                    coordScreen,     // Coordinates of first cell 
-                                    &cCharsWritten))// Receive number of characters written
-    {
-        return;
-    }
+	// Fill the entire screen with blanks.
+	if (!FillConsoleOutputCharacter(hConsole,        // Handle to console screen buffer 
+		(TCHAR) ' ',     // Character to write to the buffer
+									dwConSize,       // Number of cells to write 
+									coordScreen,     // Coordinates of first cell 
+									&cCharsWritten))// Receive number of characters written
+	{
+		return;
+	}
 
-    // Get the current text attribute.
-    if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) { return; }
+	// Get the current text attribute.
+	if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) { return; }
 
-    // Set the buffer's attributes accordingly.
-    if (!FillConsoleOutputAttribute(hConsole,         // Handle to console screen buffer 
-                                    csbi.wAttributes, // Character attributes to use
-                                    dwConSize,        // Number of cells to set attribute 
-                                    coordScreen,      // Coordinates of first cell 
-                                    &cCharsWritten)) // Receive number of characters written
-    {
-        return;
-    }
+	// Set the buffer's attributes accordingly.
+	if (!FillConsoleOutputAttribute(hConsole,         // Handle to console screen buffer 
+									csbi.wAttributes, // Character attributes to use
+									dwConSize,        // Number of cells to set attribute 
+									coordScreen,      // Coordinates of first cell 
+									&cCharsWritten)) // Receive number of characters written
+	{
+		return;
+	}
 
-    // Put the cursor at its home coordinates.
-    SetConsoleCursorPosition(hConsole, coordScreen);
+	// Put the cursor at its home coordinates.
+	SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
 /// @brief	파일이 실행파일인지 아닌지 확인한다. 
@@ -7440,35 +7433,35 @@ IMAGE_TYPE get_image_type(_In_ const wchar_t* path)
 	_ASSERTE(nullptr != path);
 	if (nullptr == path) return IT_UNKNOWN;
 	if (true != is_file_existsW(path)) return IT_UNKNOWN;
-	
-    HANDLE hFile = CreateFileW(path, 
+
+	HANDLE hFile = CreateFileW(path,
 							   GENERIC_READ,
 							   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
 							   NULL,
 							   OPEN_EXISTING,
 							   FILE_ATTRIBUTE_NORMAL,
 							   NULL);
-    if (INVALID_HANDLE_VALUE == hFile)
-    {
-        //log_err "access denied or invalid path, %ws, gle = %u", path, GetLastError() log_end
-        return IT_UNKNOWN;
-    }
-    SmrtHandle sfFile(hFile);
+	if (INVALID_HANDLE_VALUE == hFile)
+	{
+		//log_err "access denied or invalid path, %ws, gle = %u", path, GetLastError() log_end
+		return IT_UNKNOWN;
+	}
+	SmrtHandle sfFile(hFile);
 	return get_image_type(hFile);
 }
 
 IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 {
 	// check file size 
-    // 
-    LARGE_INTEGER fileSize;
-    if (TRUE != GetFileSizeEx(file_handle, &fileSize))
-    {
+	// 
+	LARGE_INTEGER fileSize;
+	if (TRUE != GetFileSizeEx(file_handle, &fileSize))
+	{
 		log_err "can not get file size, errorcode=0x%08x",
 			GetLastError()
 			log_end;
 		return IT_UNKNOWN;
-    }
+	}
 	if (sizeof(IMAGE_DOS_HEADER) > fileSize.QuadPart)
 	{
 		//
@@ -7476,34 +7469,34 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 		//
 		return IT_UNKNOWN;
 	}
-    
-    HANDLE hImageMap = CreateFileMapping(file_handle, 
-										 NULL, 
-										 PAGE_READONLY, 
-										 0, 
-										 0, 
+
+	HANDLE hImageMap = CreateFileMapping(file_handle,
+										 NULL,
+										 PAGE_READONLY,
+										 0,
+										 0,
 										 NULL);
-    if (NULL == hImageMap)
+	if (NULL == hImageMap)
 	{
 		log_err "CreateFileMapping() failed. gle=%u",
 			GetLastError()
 			log_end;
 		return IT_UNKNOWN;
 	}
-    SmrtHandle sfMap(hImageMap);
-    PBYTE ImageView = (LPBYTE) MapViewOfFile(hImageMap, 
-											 FILE_MAP_READ, 
-											 0, 
-											 0, 
-											 0);
-    if(ImageView == NULL)
+	SmrtHandle sfMap(hImageMap);
+	PBYTE ImageView = (LPBYTE)MapViewOfFile(hImageMap,
+											FILE_MAP_READ,
+											0,
+											0,
+											0);
+	if (ImageView == NULL)
 	{
 		log_err "MapViewOfFile() failed. gle=%u",
 			GetLastError()
 			log_end;
 		return IT_UNKNOWN;
 	}
-    SmrtView sfView(ImageView);
+	SmrtView sfView(ImageView);
 
 	//
 	// PE 내 offset 값들을 신뢰할 수 없기 때문에 SEH 를 이용한다. 
@@ -7525,8 +7518,8 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 		DWORD dosSize = (idh->e_cp * 512);
 		if (dosSize > fileSize.QuadPart)
 		{
-			log_err "invalid file size, size=%llu", 
-				fileSize.QuadPart 
+			log_err "invalid file size, size=%llu",
+				fileSize.QuadPart
 				log_end;
 
 			//
@@ -7541,7 +7534,7 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 			log_err "invalid file size (e_lfanew). file_size=%llu, inh addr=0x%p",
 				fileSize.QuadPart,
 				inh
-				log_end;			
+				log_end;
 			//
 			//	Not a PE file
 			//
@@ -7562,7 +7555,7 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 
 		// never called.. ???
 		// if ((characteristics & IMAGE_FILE_SYSTEM) == IMAGE_FILE_SYSTEM){OutputDebugStringW(" IMAGE_FILE_SYSTEM");}
-		
+
 		// subsystem check
 		// 
 		if ((subsys & IMAGE_SUBSYSTEM_NATIVE) == IMAGE_SUBSYSTEM_NATIVE)
@@ -7582,9 +7575,9 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 		{
 			return IT_EXE_BOOT;
 		}
-		
+
 	}
-	catch(std::exception& e)
+	catch (std::exception& e)
 	{
 		log_warn "Invalid/Malformed pe file, exception=%s", e.what() log_end;
 		return IT_UNKNOWN;
@@ -7599,34 +7592,34 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 /// @brief
 LPCWSTR  image_type_to_string(_In_ IMAGE_TYPE type)
 {
-    switch(type)
-    {
-    case IT_DLL:
-        return L"DLL";
-    case IT_EXE_GUI:
-        return L"GUI APP";
-    case IT_EXE_CUI:
-        return L"CUI APP";
+	switch (type)
+	{
+	case IT_DLL:
+		return L"DLL";
+	case IT_EXE_GUI:
+		return L"GUI APP";
+	case IT_EXE_CUI:
+		return L"CUI APP";
 	case IT_EXE_BOOT:
 		return L"BOOT APP";
-    case IT_NATIVE_APP: 
-        return L"NATIVE";    
-    case IT_UNKNOWN:
-    default:
-        return L"Unknown";
-    }
+	case IT_NATIVE_APP:
+		return L"NATIVE";
+	case IT_UNKNOWN:
+	default:
+		return L"Unknown";
+	}
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
-bool 
+bool
 bin_to_hexa(
 	_In_ UINT32 code_size,
 	_In_ const UINT8* code,
@@ -7651,19 +7644,19 @@ bin_to_hexa(
 
 	char*	pos = hex_buf.get();
 	size_t	remain = buffer_size;
-	for(UINT32 i = 0; i < code_size; ++i)
-	{	
+	for (UINT32 i = 0; i < code_size; ++i)
+	{
 		HRESULT hr = StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%02x", code[i]);
-		if(!SUCCEEDED(hr))
+		if (!SUCCEEDED(hr))
 		{
-			log_err 
+			log_err
 				"StringCbPrintfExW(pos = 0x%p, remain = %u), hr = 0x%08x",
 				pos, remain, hr
-			log_end
-			return false;
+				log_end
+				return false;
 		}
 	}
-		
+
 	hex_string = hex_buf.get();
 	if (true == upper_case)
 	{
@@ -7682,7 +7675,7 @@ const
 char*
 get_int_to_char_table(
 	_In_ bool uppercase
-	)
+)
 {
 	if (true == uppercase)
 	{
@@ -7694,20 +7687,20 @@ get_int_to_char_table(
 	}
 }
 
-bool 
+bool
 bin_to_hexa_fast(
 	_In_ uint32_t size,
 	_In_reads_bytes_(size) uint8_t* buffer,
 	_In_ bool upper_case,
 	_Out_ std::string& hex_string
-	)
+)
 {
 	char* table = _int_to_char_table;
 	if (true == upper_case)
 	{
 		table = _int_to_uchar_table;
 	}
-	
+
 	uint32_t buffer_size = ((size * 2) + 1) * sizeof(char);
 	char_ptr hex_buffer((char*)malloc(buffer_size), [](char* p) {
 		if (nullptr != p)
@@ -7729,20 +7722,20 @@ bin_to_hexa_fast(
 	return true;
 }
 
-bool 
+bool
 bin_to_hexw_fast(
 	_In_ uint32_t size,
 	_In_reads_bytes_(size) uint8_t* buffer,
 	_In_ bool upper_case,
 	_Out_ std::wstring& hex_string
-	)
+)
 {
 	char* table = _int_to_char_table;
 	if (true == upper_case)
 	{
 		table = _int_to_uchar_table;
 	}
-	
+
 	uint32_t buffer_size = ((size * 2) + 1) * sizeof(wchar_t);
 	wchar_ptr hex_buffer((wchar_t*)malloc(buffer_size), [](wchar_t* p) {
 		if (nullptr != p)
@@ -7765,24 +7758,24 @@ bin_to_hexw_fast(
 
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
-bool 
+bool
 bin_to_hexw(
-	_In_ UINT32 code_size, 
-	_In_ const UINT8* code, 
-	_In_ bool upper_case, 
+	_In_ UINT32 code_size,
+	_In_ const UINT8* code,
+	_In_ bool upper_case,
 	_Out_ std::wstring& hex_string
-	)
+)
 {
 	std::string hexa;
-	if (true != bin_to_hexa(code_size, code, upper_case, hexa)) 
+	if (true != bin_to_hexa(code_size, code, upper_case, hexa))
 	{
 		return false;
 	}
@@ -7792,22 +7785,22 @@ bin_to_hexw(
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool str_to_int32(_In_ const char* int32_string, _Out_ int32_t& int32_val)
 {
 	if (NULL == int32_string) return false;
-	
+
 	errno = 0;
 	int32_val = strtol(int32_string, NULL, 10);
 	if (ERANGE == errno) { return false; }
-	
+
 	return true;
 }
 
@@ -7819,30 +7812,30 @@ bool str_to_uint32(_In_ const char* uint32_string, _Out_ uint32_t& uint32_val)
 	std::string str = uint32_string;
 	trima(str);
 	if (str[0] == '-') return false;
-	
+
 	errno = 0;
 	uint32_val = strtoul(str.c_str(), NULL, 10);
 	if (ERANGE == errno) { return false; }
-	return true;	
+	return true;
 }
 
 bool str_to_int64(_In_ const char* int64_string, _Out_ int64_t& int64_val)
 {
 	if (NULL == int64_string) return false;
 
-	errno = 0; 
+	errno = 0;
 	int64_val = _strtoi64(int64_string, NULL, 10);
-	if (ERANGE == errno) 
-	{ 
+	if (ERANGE == errno)
+	{
 		// msdn 에는 ERANGE 를 리턴한다는 내용이 없고, _I64_MAX, _I64_MIN 를 리턴한다고 하는데,
 		// 실제로 범위를 넘는 input 을 넣어보면 ERANGE 를 리턴함을 확인했음
 		//
 		// test_str_to_xxx() 테스트 확인		
-		return false; 
+		return false;
 	}
 
 	if (EINVAL == errno)
-	{		
+	{
 		return false;
 	}
 
@@ -7858,16 +7851,16 @@ bool str_to_uint64(_In_ const char* uint64_string, _Out_ uint64_t& uint64_val)
 	trima(str);
 	if (str[0] == '-') return false;
 
-	errno = 0; 
+	errno = 0;
 	uint64_val = _strtoui64(str.c_str(), NULL, 10);
-	if (ERANGE == errno) 
-	{ 
+	if (ERANGE == errno)
+	{
 		// msdn 에는 ERANGE 를 리턴한다는 내용이 없고, _UI64_MAX 를 리턴한다고 하는데,
 		// 실제로 범위를 넘는 input 을 넣어보면 ERANGE 를 리턴함을 확인했음
 		//
 		// test_str_to_xxx() 테스트 확인
-		errno = 0; 
-		return false; 
+		errno = 0;
+		return false;
 	}
 
 	if (EINVAL == errno)
@@ -7883,7 +7876,7 @@ bool str_to_uint64(_In_ const char* uint64_string, _Out_ uint64_t& uint64_val)
 bool wstr_to_int32(_In_ const wchar_t* int32_string, _Out_ int32_t& int32_val)
 {
 	if (NULL == int32_string) return false;
-	return str_to_int32(WcsToMbsEx(int32_string).c_str(), int32_val);	
+	return str_to_int32(WcsToMbsEx(int32_string).c_str(), int32_val);
 }
 
 bool wstr_to_uint32(_In_ const wchar_t* uint32_string, _Out_ uint32_t& uint32_val)
@@ -7905,13 +7898,13 @@ bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ uint64_t& uint64_va
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 UINT16 swap_endian_16(_In_ UINT16 value)
 {
@@ -7920,126 +7913,126 @@ UINT16 swap_endian_16(_In_ UINT16 value)
 
 UINT32 swap_endian_32(_In_ UINT32 value)
 {
-	return	( value >> 24)				| 
-			((value << 8) & 0x00FF0000) | 
-			((value >> 8) & 0x0000FF00) | 
-			( value << 24);
+	return	(value >> 24) |
+		((value << 8) & 0x00FF0000) |
+		((value >> 8) & 0x0000FF00) |
+		(value << 24);
 }
 
 UINT64 swap_endian_64(_In_ UINT64 value)
 {
-	return  ( value >> 56)						|
-            ((value << 40) & 0x00FF000000000000)|
-            ((value << 24) & 0x0000FF0000000000)|
-            ((value << 8 ) & 0x000000FF00000000)|
-            ((value >> 8 ) & 0x00000000FF000000)|
-            ((value >> 24) & 0x0000000000FF0000)|
-            ((value >> 40) & 0x000000000000FF00)|
-            ( value << 56);
+	return  (value >> 56) |
+		((value << 40) & 0x00FF000000000000) |
+		((value << 24) & 0x0000FF0000000000) |
+		((value << 8) & 0x000000FF00000000) |
+		((value >> 8) & 0x00000000FF000000) |
+		((value >> 24) & 0x0000000000FF0000) |
+		((value >> 40) & 0x000000000000FF00) |
+		(value << 56);
 }
 
 /**
-* @brief	cpu 정보를 수집한다. 
-* @param	
-* @see		
+* @brief	cpu 정보를 수집한다.
+* @param
+* @see
 * @remarks  xp sp3 이상에서만 사용 가능
-* @code		
-* @endcode	
-* @return	
+* @code
+* @endcode
+* @return
 */
 
 DWORD CountSetBits(ULONG_PTR bitMask)
 {
-    // Helper function to count set bits in the processor mask.
-    // 
+	// Helper function to count set bits in the processor mask.
+	// 
 
-    DWORD LSHIFT = sizeof(ULONG_PTR)*8 - 1;
-    DWORD bitSetCount = 0;
-    ULONG_PTR bitTest = (ULONG_PTR)1 << LSHIFT;    
-    DWORD i;
-    
-    for (i = 0; i <= LSHIFT; ++i)
-    {
-        bitSetCount += ((bitMask & bitTest)?1:0);
-        bitTest/=2;
-    }
+	DWORD LSHIFT = sizeof(ULONG_PTR) * 8 - 1;
+	DWORD bitSetCount = 0;
+	ULONG_PTR bitTest = (ULONG_PTR)1 << LSHIFT;
+	DWORD i;
 
-    return bitSetCount;
+	for (i = 0; i <= LSHIFT; ++i)
+	{
+		bitSetCount += ((bitMask & bitTest) ? 1 : 0);
+		bitTest /= 2;
+	}
+
+	return bitSetCount;
 }
 
 BOOL WUGetProcessorInfo(IN OUT WU_PROCESSOR_INFO& CpuInfo)
 {
-    BOOL done=FALSE;
-    DWORD ReturnedLength=0;
-    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buf = NULL;
-    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION ptr = NULL;
-    PCACHE_DESCRIPTOR Cache = NULL;
+	BOOL done = FALSE;
+	DWORD ReturnedLength = 0;
+	PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buf = NULL;
+	PSYSTEM_LOGICAL_PROCESSOR_INFORMATION ptr = NULL;
+	PCACHE_DESCRIPTOR Cache = NULL;
 
-    while (FALSE == done)
-    {
-        done = GetLogicalProcessorInformation(buf, &ReturnedLength);
-        if (TRUE != done)
-        {
-            if (ERROR_INSUFFICIENT_BUFFER != GetLastError())
-            {
-                return FALSE;
-            }
+	while (FALSE == done)
+	{
+		done = GetLogicalProcessorInformation(buf, &ReturnedLength);
+		if (TRUE != done)
+		{
+			if (ERROR_INSUFFICIENT_BUFFER != GetLastError())
+			{
+				return FALSE;
+			}
 
-            if (NULL != buf) free(buf);
-            buf = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)malloc(ReturnedLength);
-            if (NULL == buf) return FALSE;
-        }
-    }    
+			if (NULL != buf) free(buf);
+			buf = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)malloc(ReturnedLength);
+			if (NULL == buf) return FALSE;
+		}
+	}
 
-    ptr = buf;
-    DWORD offset=0;
-    while (offset + sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION) <= ReturnedLength)
-    {
-        switch (ptr->Relationship) 
-        {
-        case RelationNumaNode:
-            // Non-NUMA systems report a single record of this type.
-            CpuInfo.NumaNodeCount++;
-            break;
+	ptr = buf;
+	DWORD offset = 0;
+	while (offset + sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION) <= ReturnedLength)
+	{
+		switch (ptr->Relationship)
+		{
+		case RelationNumaNode:
+			// Non-NUMA systems report a single record of this type.
+			CpuInfo.NumaNodeCount++;
+			break;
 
-        case RelationProcessorCore:
-            CpuInfo.PhysicalCpuCoreCount++;
+		case RelationProcessorCore:
+			CpuInfo.PhysicalCpuCoreCount++;
 
-            // A hyperthreaded core supplies more than one logical processor.
-            CpuInfo.LogicalCpuCount += CountSetBits(ptr->ProcessorMask);
-            break;
+			// A hyperthreaded core supplies more than one logical processor.
+			CpuInfo.LogicalCpuCount += CountSetBits(ptr->ProcessorMask);
+			break;
 
-        case RelationCache:
-            // Cache data is in ptr->Cache, one CACHE_DESCRIPTOR structure for each cache. 
-            Cache = &ptr->Cache;
-            if (Cache->Level == 1)
-            {
-                CpuInfo.L1Cache++;
-            }
-            else if (Cache->Level == 2)
-            {
-                CpuInfo.L2Cache++;
-            }
-            else if (Cache->Level == 3)
-            {
-                CpuInfo.L3Cache ++;
-            }
-            break;
+		case RelationCache:
+			// Cache data is in ptr->Cache, one CACHE_DESCRIPTOR structure for each cache. 
+			Cache = &ptr->Cache;
+			if (Cache->Level == 1)
+			{
+				CpuInfo.L1Cache++;
+			}
+			else if (Cache->Level == 2)
+			{
+				CpuInfo.L2Cache++;
+			}
+			else if (Cache->Level == 3)
+			{
+				CpuInfo.L3Cache++;
+			}
+			break;
 
-        case RelationProcessorPackage:
-            // Logical processors share a physical package.
-            CpuInfo.PhysicalCpuPackageCount++;
-            break;
+		case RelationProcessorPackage:
+			// Logical processors share a physical package.
+			CpuInfo.PhysicalCpuPackageCount++;
+			break;
 
-        default:            
-            break;
-        }
-        offset += sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION);
-        ptr++;
-    }
+		default:
+			break;
+		}
+		offset += sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION);
+		ptr++;
+	}
 
-    free(buf);
-    return TRUE;
+	free(buf);
+	return TRUE;
 }
 
 /// @brief 
@@ -8063,97 +8056,97 @@ const char* get_archtecture()
 /// @brief 
 const wchar_t*  osver_to_str(_In_ OSVER os)
 {
-    switch (os)
-    {
-    case OSV_UNDEF: return L"Undef";
-    case OSV_2000: return L"Windows 2000";
-    case OSV_XP: return L"Windows XP";
-    case OSV_XPSP1: return L"Windows XP (SP1)";
-    case OSV_XPSP2: return L"Windows XP (SP2)";
-    case OSV_XPSP3: return L"Windows XP (SP3)";
-    case OSV_2003: return L"Windows 2000";
-    case OSV_VISTA: return L"Windows Vista";
-    case OSV_VISTASP1: return L"Windows Vista (SP1)";
-    case OSV_VISTASP2: return L"Windows Vista (SP2)";
-    case OSV_2008: return L"Windows Server 2008";
-    case OSV_7: return L"Windows 7";
-    case OSV_7SP1: return L"Windows 7 (SP1)";
-    case OSV_2008R2: return L"Windows Server 2008 R2";
-    case OSV_8: return L"Windows 8";
-    case OSV_81: return L"Windows 8.1";
-    case OSV_2012R2: return L"Windows Server 2012 R2";
-    case OSV_10: return L"Windows 10";
+	switch (os)
+	{
+	case OSV_UNDEF: return L"Undef";
+	case OSV_2000: return L"Windows 2000";
+	case OSV_XP: return L"Windows XP";
+	case OSV_XPSP1: return L"Windows XP (SP1)";
+	case OSV_XPSP2: return L"Windows XP (SP2)";
+	case OSV_XPSP3: return L"Windows XP (SP3)";
+	case OSV_2003: return L"Windows 2000";
+	case OSV_VISTA: return L"Windows Vista";
+	case OSV_VISTASP1: return L"Windows Vista (SP1)";
+	case OSV_VISTASP2: return L"Windows Vista (SP2)";
+	case OSV_2008: return L"Windows Server 2008";
+	case OSV_7: return L"Windows 7";
+	case OSV_7SP1: return L"Windows 7 (SP1)";
+	case OSV_2008R2: return L"Windows Server 2008 R2";
+	case OSV_8: return L"Windows 8";
+	case OSV_81: return L"Windows 8.1";
+	case OSV_2012R2: return L"Windows Server 2012 R2";
+	case OSV_10: return L"Windows 10";
 	case OSV_2016: return L"Windows Server 2016";
-    case OSV_UNKNOWN:
-    default:
-        return L"Unknown OS";
-    }
+	case OSV_UNKNOWN:
+	default:
+		return L"Unknown OS";
+	}
 }
 
 /// @brief  RtlGetVersion() wrapper
 ///			https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
 OSVER get_os_version()
 {
-    static OSVER os = OSV_UNDEF;
-    if (os != OSV_UNDEF) return os;
-    os = OSV_UNKNOWN;
+	static OSVER os = OSV_UNDEF;
+	if (os != OSV_UNDEF) return os;
+	os = OSV_UNKNOWN;
 
-    RTL_OSVERSIONINFOEXW osv = { sizeof(osv), 0, };    
-    typedef uint32_t(__stdcall *fnRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation);
-    fnRtlGetVersion RtlGetVersion = (fnRtlGetVersion)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "RtlGetVersion");
+	RTL_OSVERSIONINFOEXW osv = { sizeof(osv), 0, };
+	typedef uint32_t(__stdcall *fnRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation);
+	fnRtlGetVersion RtlGetVersion = (fnRtlGetVersion)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "RtlGetVersion");
 
-    if (RtlGetVersion != 0 && 
-		RtlGetVersion((PRTL_OSVERSIONINFOW)&osv) == 0 && 
+	if (RtlGetVersion != 0 &&
+		RtlGetVersion((PRTL_OSVERSIONINFOW)&osv) == 0 &&
 		osv.dwPlatformId == VER_PLATFORM_WIN32_NT)
-    {
-        switch (osv.dwMajorVersion)
-        {
-        case 5:
-            os = OSV_2000;
-            if (osv.dwMinorVersion == 1)
-            {
-                os = OSV_XP;
-                if (osv.wServicePackMajor == 1) os = OSV_XPSP1;
-                else if (osv.wServicePackMajor == 2) os = OSV_XPSP2;
-                else if (osv.wServicePackMajor == 3) os = OSV_XPSP3;
-            }
-            else if (osv.dwMinorVersion == 2)   os = OSV_2003;
-            break;
+	{
+		switch (osv.dwMajorVersion)
+		{
+		case 5:
+			os = OSV_2000;
+			if (osv.dwMinorVersion == 1)
+			{
+				os = OSV_XP;
+				if (osv.wServicePackMajor == 1) os = OSV_XPSP1;
+				else if (osv.wServicePackMajor == 2) os = OSV_XPSP2;
+				else if (osv.wServicePackMajor == 3) os = OSV_XPSP3;
+			}
+			else if (osv.dwMinorVersion == 2)   os = OSV_2003;
+			break;
 
-        case 6:
-            if (osv.dwMinorVersion == 0)
-            {
-                os = OSV_VISTA;
-                if (osv.wProductType == VER_NT_WORKSTATION)
-                {
-                    if (osv.wServicePackMajor == 1) os = OSV_VISTASP1;
-                    else if (osv.wServicePackMajor == 2) os = OSV_VISTASP2;
-                }
-                else
-                    os = OSV_2008;
-            }
-            else if (osv.dwMinorVersion == 1)
-            {
-                if (osv.wProductType == VER_NT_WORKSTATION)
-                {
-                    os = OSV_7;
-                    if (osv.wServicePackMajor == 1) os = OSV_7SP1;
-                }
-                else
-                    os = OSV_2008R2;
-            }
-            else if (osv.dwMinorVersion == 2)
-                os = OSV_8;
-            else if (osv.dwMinorVersion == 3)
-            {
-                if (osv.wProductType == VER_NT_WORKSTATION)
-                    os = OSV_81;
-                else
-                    os = OSV_2012R2;
-            }
-            break;
+		case 6:
+			if (osv.dwMinorVersion == 0)
+			{
+				os = OSV_VISTA;
+				if (osv.wProductType == VER_NT_WORKSTATION)
+				{
+					if (osv.wServicePackMajor == 1) os = OSV_VISTASP1;
+					else if (osv.wServicePackMajor == 2) os = OSV_VISTASP2;
+				}
+				else
+					os = OSV_2008;
+			}
+			else if (osv.dwMinorVersion == 1)
+			{
+				if (osv.wProductType == VER_NT_WORKSTATION)
+				{
+					os = OSV_7;
+					if (osv.wServicePackMajor == 1) os = OSV_7SP1;
+				}
+				else
+					os = OSV_2008R2;
+			}
+			else if (osv.dwMinorVersion == 2)
+				os = OSV_8;
+			else if (osv.dwMinorVersion == 3)
+			{
+				if (osv.wProductType == VER_NT_WORKSTATION)
+					os = OSV_81;
+				else
+					os = OSV_2012R2;
+			}
+			break;
 
-        case 10:
+		case 10:
 			if (osv.dwMinorVersion == 0)
 			{
 				if (osv.wProductType == VER_NT_WORKSTATION)
@@ -8170,10 +8163,10 @@ OSVER get_os_version()
 				// unknown or unsupported
 				break;
 			}
-            
-            break;
-        }
-    }
 
-    return os;
+			break;
+		}
+	}
+
+	return os;
 }
