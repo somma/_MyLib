@@ -6780,7 +6780,7 @@ bool
 get_process_privilege(
 	_In_ DWORD pid,
 	_Out_ std::list<pprivilege_info>& privileges
-)
+	)
 {
 	//
 	//	Open process handle with READ token access
@@ -6822,7 +6822,7 @@ bool
 get_process_privilege(
 	_In_ HANDLE process_query_token,
 	_Out_ std::list<pprivilege_info>& privileges
-)
+	)
 {
 	_ASSERTE(NULL != process_query_token);
 	if (NULL == process_query_token) return false;
@@ -6886,6 +6886,253 @@ get_process_privilege(
 	return true;
 }
 
+/// @brief 프로세스 integrity level을 가져온다.
+bool
+get_process_integrity_level(
+	_In_ DWORD pid,
+	_Out_ DWORD& integrity_level
+	)
+{
+	//
+	//	Open process handle with READ token access
+	//
+	handle_ptr proc_handle(
+		OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid),
+		[](_In_ HANDLE handle)
+	{
+		if (NULL != handle) { CloseHandle(handle); }
+	});
+	if (NULL == proc_handle.get())
+	{
+		log_err "OpenProcess() failed. pid=%u, gle=%u",
+			pid,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	//
+	//	Open token handle
+	//
+	HANDLE th;
+	if (TRUE != OpenProcessToken(proc_handle.get(),
+		TOKEN_QUERY,
+		&th))
+	{
+		log_err "OpenProcessToken() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	handle_ptr token_handle(th, [](_In_ HANDLE th) {CloseHandle(th); });
+
+	return get_process_integrity_level(token_handle.get(), integrity_level);
+}
+
+bool
+get_process_integrity_level(
+	_In_ HANDLE process_query_token,
+	_Out_ DWORD& integrity_level
+	)
+{
+	_ASSERTE(NULL != process_query_token);
+	if (NULL == process_query_token) return false;
+
+	//
+	//	Get token information
+	//
+	DWORD return_length;
+	GetTokenInformation(process_query_token,
+						TokenIntegrityLevel,
+						nullptr,
+						0,
+						&return_length);
+	DWORD gle = GetLastError();
+	if (gle != ERROR_INSUFFICIENT_BUFFER)
+	{
+		log_err "GetTokenInformation() failed. gle=%u",
+			gle
+			log_end;
+		return false;
+	}
+
+	char_ptr ptr(
+		(char*)malloc(return_length),
+		[](_In_ char* ptr)
+	{
+		if (nullptr != ptr) free(ptr);
+	});
+	if (nullptr == ptr.get())
+	{
+		log_err "Not enough memory. malloc size=%u",
+			return_length
+			log_end;
+		return false;
+	}
+
+	if (TRUE != GetTokenInformation(process_query_token,
+									TokenIntegrityLevel,
+									(PTOKEN_MANDATORY_LABEL)ptr.get(),
+									return_length,
+									&return_length))
+	{
+		log_err "GetTokenInformation() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	PTOKEN_MANDATORY_LABEL mandatory_label = (PTOKEN_MANDATORY_LABEL)ptr.get();
+
+	integrity_level = *GetSidSubAuthority(mandatory_label->Label.Sid,
+										  ((PISID)mandatory_label->Label.Sid)->SubAuthorityCount - 1);
+
+	return true;
+}
+
+/// @brief 프로세스 권한을 획득
+bool
+get_process_token_elevation_type(
+	_In_ DWORD pid,
+	_Out_ DWORD& token_elevation_type
+	)
+{
+	//
+	//	Open process handle with READ token access
+	//
+	handle_ptr proc_handle(
+		OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid),
+		[](_In_ HANDLE handle)
+	{
+		if (NULL != handle) { CloseHandle(handle); }
+	});
+	if (NULL == proc_handle.get())
+	{
+		log_err "OpenProcess() failed. pid=%u, gle=%u",
+			pid,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	//
+	//	Open token handle
+	//
+	HANDLE th;
+	if (TRUE != OpenProcessToken(proc_handle.get(),
+		TOKEN_QUERY,
+		&th))
+	{
+		log_err "OpenProcessToken() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	handle_ptr token_handle(th, [](_In_ HANDLE th) {CloseHandle(th); });
+
+	return get_process_token_elevation_type(token_handle.get(), token_elevation_type);
+}
+
+bool
+get_process_token_elevation_type(
+	_In_ HANDLE process_query_token,
+	_Out_ DWORD& token_elevation_type
+	)
+{
+	_ASSERTE(NULL != process_query_token);
+	if (NULL == process_query_token) return false;
+
+	//
+	//	Get token information
+	//
+	DWORD return_length;
+	if (TRUE != GetTokenInformation(process_query_token,
+									TokenElevationType,
+									&token_elevation_type,
+									sizeof(DWORD),
+									&return_length))
+	{
+		log_err "GetTokenInformation() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	
+	return true;
+}
+
+bool
+get_process_token_elevation(
+	_In_ DWORD pid,
+	_Out_ DWORD& token_elevation
+	)
+{
+	//
+	//	Open process handle with READ token access
+	//
+	handle_ptr proc_handle(
+		OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid),
+		[](_In_ HANDLE handle)
+	{
+		if (NULL != handle) { CloseHandle(handle); }
+	});
+	if (NULL == proc_handle.get())
+	{
+		log_err "OpenProcess() failed. pid=%u, gle=%u",
+			pid,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	//
+	//	Open token handle
+	//
+	HANDLE th;
+	if (TRUE != OpenProcessToken(proc_handle.get(),
+		TOKEN_QUERY,
+		&th))
+	{
+		log_err "OpenProcessToken() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	handle_ptr token_handle(th, [](_In_ HANDLE th) {CloseHandle(th); });
+
+	return get_process_token_elevation(token_handle.get(), token_elevation);
+}
+
+bool
+get_process_token_elevation(
+	_In_ HANDLE process_query_token,
+	_Out_ DWORD& token_elevation
+	)
+{
+	_ASSERTE(NULL != process_query_token);
+	if (NULL == process_query_token) return false;
+
+	//
+	//	Get token information
+	//
+	DWORD return_length;
+	TOKEN_ELEVATION te;
+
+	if (TRUE != GetTokenInformation(process_query_token,
+									TokenElevation,
+									&te,
+									sizeof(te),
+									&return_length))
+	{
+		log_err "GetTokenInformation() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	token_elevation = te.TokenIsElevated;
+	return true;
+}
 
 /// @brief 설치된 프로그램의 정보(프로그램명, 버전, 제조사) 읽어 온다.
 ///
