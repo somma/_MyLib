@@ -3200,7 +3200,12 @@ std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 /// @brief  src 의 뒤에서부터 fnd 문자열을 찾는다. 
 ///         fnd 가 src 의 꽁무니와 정확히 일치하면 true, 아니면 false 리턴
 ///         - 확장자 검사같은거 할때 사용
-bool rstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd)
+bool 
+rstrnicmp(
+	_In_ const wchar_t* src, 
+	_In_ const wchar_t* fnd, 
+	_In_ bool case_insensitive
+	)
 {
 	_ASSERTE(NULL != src);
 	_ASSERTE(NULL != fnd);
@@ -3214,13 +3219,24 @@ bool rstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd)
 	int fidx = fnd_len - 1;
 	while (fidx >= 0)
 	{
-		if (towlower(fnd[fidx--]) != towlower(src[sidx--])) return false;
-
+		if (true == case_insensitive)
+		{
+			if (towlower(fnd[fidx--]) != towlower(src[sidx--])) return false;
+		}
+		else
+		{
+			if (fnd[fidx--] != src[sidx--]) return false;
+		}
 	}
 	return true;
 }
 
-bool rstrnicmpa(_In_ const char* src, _In_ const char* fnd)
+bool 
+rstrnicmpa(
+	_In_ const char* src, 
+	_In_ const char* fnd, 
+	_In_ bool case_insensitive
+	)
 {
 	_ASSERTE(NULL != src);
 	_ASSERTE(NULL != fnd);
@@ -3234,31 +3250,60 @@ bool rstrnicmpa(_In_ const char* src, _In_ const char* fnd)
 	int fidx = fnd_len - 1;
 	while (fidx >= 0)
 	{
-		if (tolower(fnd[fidx--]) != tolower(src[sidx--])) return false;
-
+		if (true == case_insensitive)
+		{
+			if (towlower(fnd[fidx--]) != towlower(src[sidx--])) return false;
+		}
+		else
+		{
+			if (fnd[fidx--] != src[sidx--]) return false;
+		}
 	}
 	return true;
 }
 
-
 /// @brief  src 의 앞에서부터 fnd 문자열을 찾는다. 
-bool lstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd)
+bool 
+lstrnicmp(
+	_In_ const wchar_t* src, 
+	_In_ const wchar_t* fnd, 
+	_In_ bool case_insensitive
+	)
 {
 	_ASSERTE(NULL != src);
 	_ASSERTE(NULL != fnd);
 	if (NULL == src || NULL == fnd) return false;
 
-	return (0 == _wcsnicmp(src, fnd, wcslen(fnd))) ? true : false;
+	if (true == case_insensitive)
+	{
+		return (0 == _wcsnicmp(src, fnd, wcslen(fnd))) ? true : false;
+	}
+	else
+	{
+		return (0 == wcsncmp(src, fnd, wcslen(fnd))) ? true : false;
+	}
 }
 
 /// @brief  src 의 앞에서부터 fnd 문자열을 찾는다. 
-bool lstrnicmpa(_In_ const char* src, _In_ const char* fnd)
+bool 
+lstrnicmpa(
+	_In_ const char* src, 
+	_In_ const char* fnd, 
+	_In_ bool case_insensitive
+	)
 {
 	_ASSERTE(NULL != src);
 	_ASSERTE(NULL != fnd);
 	if (NULL == src || NULL == fnd) return false;
 
-	return (0 == _strnicmp(src, fnd, strlen(fnd))) ? true : false;
+	if (true == case_insensitive)
+	{
+		return (0 == _strnicmp(src, fnd, strlen(fnd))) ? true : false;
+	}
+	else
+	{
+		return (0 == strncmp(src, fnd, strlen(fnd))) ? true : false;
+	}
 }
 
 
