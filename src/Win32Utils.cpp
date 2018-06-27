@@ -6990,7 +6990,7 @@ get_process_integrity_level(
 	return true;
 }
 
-/// @brief 프로세스 권한을 획득
+/// @brief 프로세스 token elevation type을 가져온다.
 bool
 get_process_token_elevation_type(
 	_In_ DWORD pid,
@@ -7060,7 +7060,7 @@ get_process_token_elevation_type(
 	
 	return true;
 }
-
+/// @brief 프로세스 toekn elevation을 가져온다.
 bool
 get_process_token_elevation(
 	_In_ DWORD pid,

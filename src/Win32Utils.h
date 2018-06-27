@@ -747,16 +747,16 @@ get_process_token_elevation_type(
 	_Out_ DWORD& token_elevation_type
 	);
 
-/// @brief 프로세스 토큰이 관리자 권한을 가지고 있는지 아닌지 확인한다.
+/// @brief 프로세스 toekn elevation을 가져온다.
 bool
 get_process_token_elevation(
 	_In_ DWORD pid,
-	_Out_ ULONG& token_elevation
+	_Out_ DWORD& token_elevation
 	);
 bool
 get_process_token_elevation(
 	_In_ HANDLE process_query_token,
-	_Out_ ULONG& token_elevation
+	_Out_ DWORD& token_elevation
 	);
 
 /// @brief 프로그램 정보
