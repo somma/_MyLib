@@ -715,12 +715,49 @@ bool
 get_process_privilege(
 	_In_ DWORD pid,
 	_Out_ std::list<pprivilege_info>& privileges
-);
+	);
 bool
 get_process_privilege(
 	_In_ HANDLE process_query_token,
-	_Out_ std::list<pprivilege_info>& privileges);
+	_Out_ std::list<pprivilege_info>& privileges
+	);
 
+/// @brief 프로세스 integrity level을 가져온다.
+bool
+get_process_integrity_level(
+	_In_ DWORD pid,
+	_Out_ DWORD& integrity_level
+	);
+
+bool
+get_process_integrity_level(
+	_In_ HANDLE process_query_token,
+	_Out_ DWORD& integrity_level
+	);
+
+/// @brief 프로세스 token elevation type을 가져온다.
+bool
+get_process_token_elevation_type(
+	_In_ DWORD pid,
+	_Out_ DWORD& token_elevation_type
+	);
+bool
+get_process_token_elevation_type(
+	_In_ HANDLE process_query_token,
+	_Out_ DWORD& token_elevation_type
+	);
+
+/// @brief 프로세스 toekn elevation을 가져온다.
+bool
+get_process_token_elevation(
+	_In_ DWORD pid,
+	_Out_ DWORD& token_elevation
+	);
+bool
+get_process_token_elevation(
+	_In_ HANDLE process_query_token,
+	_Out_ DWORD& token_elevation
+	);
 
 /// @brief 프로그램 정보
 ///
