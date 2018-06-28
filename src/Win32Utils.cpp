@@ -7107,9 +7107,9 @@ get_process_token_elevation_type(
 }
 /// @brief 프로세스 toekn elevation을 가져온다.
 bool
-get_process_token_elevation(
+get_process_token_elevated(
 	_In_ DWORD pid,
-	_Out_ DWORD& token_elevation
+	_Out_ bool& token_is_elevated
 	)
 {
 	//
@@ -7143,15 +7143,17 @@ get_process_token_elevation(
 			log_end;
 		return false;
 	}
-	handle_ptr token_handle(th, [](_In_ HANDLE th) {CloseHandle(th); });
+	handle_ptr token_handle(th, 
+							[](_In_ HANDLE th) {CloseHandle(th); });
 
-	return get_process_token_elevation(token_handle.get(), token_elevation);
+	return get_process_token_elevated(token_handle.get(), 
+									  token_is_elevated);
 }
 
 bool
-get_process_token_elevation(
+get_process_token_elevated(
 	_In_ HANDLE process_query_token,
-	_Out_ DWORD& token_elevation
+	_Out_ bool& token_is_elevated
 	)
 {
 	_ASSERTE(NULL != process_query_token);
@@ -7160,9 +7162,8 @@ get_process_token_elevation(
 	//
 	//	Get token information
 	//
-	DWORD return_length;
-	TOKEN_ELEVATION te;
-
+	DWORD return_length = 0;
+	TOKEN_ELEVATION te = {0x00};
 	if (TRUE != GetTokenInformation(process_query_token,
 									TokenElevation,
 									&te,
@@ -7175,7 +7176,7 @@ get_process_token_elevation(
 		return false;
 	}
 
-	token_elevation = te.TokenIsElevated;
+	token_is_elevated = (0 != te.TokenIsElevated ? true : false);
 	return true;
 }
 

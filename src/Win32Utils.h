@@ -741,6 +741,7 @@ get_process_token_elevation_type(
 	_In_ DWORD pid,
 	_Out_ DWORD& token_elevation_type
 	);
+
 bool
 get_process_token_elevation_type(
 	_In_ HANDLE process_query_token,
@@ -749,14 +750,15 @@ get_process_token_elevation_type(
 
 /// @brief 프로세스 toekn elevation을 가져온다.
 bool
-get_process_token_elevation(
+get_process_token_elevated(
 	_In_ DWORD pid,
-	_Out_ DWORD& token_elevation
+	_Out_ bool& token_is_elevated
 	);
+
 bool
-get_process_token_elevation(
+get_process_token_elevated(
 	_In_ HANDLE process_query_token,
-	_Out_ DWORD& token_elevation
+	_Out_ bool& token_is_elevated
 	);
 
 /// @brief 프로그램 정보
