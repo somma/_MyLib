@@ -5371,7 +5371,7 @@ create_process_as_login_user(
 		}
 
 		si.cb = sizeof(si);
-		si.lpDesktop = L"winsta0\\default";
+		si.lpDesktop = (LPWSTR)L"winsta0\\default";
 
 		process_handle = OpenProcess(MAXIMUM_ALLOWED,
 									 FALSE,
@@ -5534,7 +5534,7 @@ bool set_security_attributes_type1(_Out_ SECURITY_ATTRIBUTES& sa)
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 	sa.bInheritHandle = FALSE;
 
-	wchar_t* dacl_text = \
+	const wchar_t* dacl_text = \
 		L"D:"					// Discretionary ACL
 		L"(D;OICI;GA;;;BG)"		// Deny access to built-in guests
 		L"(D;OICI;GA;;;AN)"     // Deny access to anonymous logon
@@ -5603,7 +5603,7 @@ bool set_security_attributes_type2(_Out_ SECURITY_ATTRIBUTES& sa)
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 	sa.bInheritHandle = FALSE;
 
-	wchar_t* dacl_text = \
+	const wchar_t* dacl_text = \
 		L"D:"					// Discretionary ACL
 		L"(D;OICI;GA;;;BG)"		// Deny access to built-in guests
 		L"(D;OICI;GA;;;AN)"     // Deny access to anonymous logon
