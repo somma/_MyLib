@@ -37,6 +37,9 @@
 typedef class NetIpInfo
 {
 public:
+	NetIpInfo() {}
+	virtual ~NetIpInfo() {};
+public:
 	std::string ip;
 	uint32_t subnet_mask;
 
@@ -46,6 +49,9 @@ public:
 typedef class NetAdapter
 {
 public:
+	NetAdapter();
+	virtual ~NetAdapter();
+
 	std::wstring friendly_name;		// Wi-Fi
 	std::string name;				// {7F158482-83C5-4C7F-B47C-4CE15F1899CA}
 	std::wstring desc;				// Marvell AVASTAR Wireless-AC Network Controller

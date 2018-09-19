@@ -79,24 +79,35 @@ typedef struct _continuous_memory
 
 
 /**	-----------------------------------------------------------------------
-	빌드시에 TODO 메세지를 출력하기 위한 매크로 
+	빌드시에 TODO 메세지를 출력하기 위한 매크로
 
 	#pragma TODO( "요기 구현하셈	\n" )
 
-	요렇게 사용하면 됨 
+	요렇게 사용하면 됨
 	IT EXPERT, 윈도우 프로그래머를 이한 MFC 구조와 원리, 서진택 저
 -------------------------------------------------------------------------*/
 #ifndef _TODO_DEFINED_
-	#define LINE1(x)	#x
-	#define LINE(x)		LINE1(x)
-	#define TODO(msg)	message(  __FILE__"(" LINE(__LINE__) ") [TODO] " msg )
-	#define todo TODO
+#define LINE1(x)	#x
+#define LINE(x)		LINE1(x)
+#define TODO(msg)	message(  __FILE__"(" LINE(__LINE__) ") [TODO] " msg )
+#define todo TODO
 #endif
 
 #define free_and_nil(p)	do{if (nullptr != p) { free(p); p = nullptr;} } while(false);
 
 #define     _pause  _getch()
 
+#define _mem_check_begin \
+	{\
+		_CrtMemState memoryState = { 0 }; \
+		_CrtMemCheckpoint(&memoryState)
+
+#define _mem_check_break(ord) \
+	_CrtSetBreakAlloc(ord)
+
+#define _mem_check_end \
+		_CrtMemDumpAllObjectsSince(&memoryState); \
+	}
 
 /* 
 	x64 에서는 inline asm 을 사용할 수 없으므로 호환성을 위해 제거
@@ -776,10 +787,10 @@ public:
 		_product_version(product_version)
 	{}
 public:
-	std::wstring id() { return _product_id; }
-	std::wstring name() { return _product_name; }
-	std::wstring vendor() { return _product_vendor; }
-	std::wstring version() { return _product_version; }
+	const wchar_t* id() { return _product_id.c_str(); }
+	const wchar_t* name() { return _product_name.c_str(); }
+	const wchar_t* vendor() { return _product_vendor.c_str(); }
+	const wchar_t* version() { return _product_version.c_str(); }
 private:
 	std::wstring _product_id;
 	std::wstring _product_name;

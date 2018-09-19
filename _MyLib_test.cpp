@@ -1,12 +1,11 @@
-/**----------------------------------------------------------------------------
- * _MyLib_test.cpp
- *-----------------------------------------------------------------------------
- * 
- *-----------------------------------------------------------------------------
- * All rights reserved by Noh,Yonghwan (fixbrain@gmail.com, unsorted@msn.com)
- *-----------------------------------------------------------------------------
- * 2014:1:25 13:34 created
-**---------------------------------------------------------------------------*/
+/**
+ * @file    Tests for MyLib
+ * @brief   
+ * @ref     
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
+ * @date    2014/01/25 created.
+ * @copyright All rights reserved by Yonghwan, Roh.
+**/
 #include "stdafx.h"
 #include "process_tree.h"
 #include "base64.h"
@@ -29,6 +28,9 @@
 
 // _test_dns_query.cpp
 extern bool test_dns_query();
+
+// _test_net_util.cpp
+extern bool test_net_util();
 
 // test_iphelp_api.cpp
 extern bool test_iphelp_api();
@@ -286,9 +288,6 @@ void run_test()
 	ccc c(true);
 	c.run();
 
-
-	bool ret = false;
-
 	// log :: rotate_log_file() 함수 테스트 
 	//for (int i=0; ; ++i)
 	//{
@@ -296,6 +295,8 @@ void run_test()
 	//	Sleep(500);
 	//}
 
+	bool ret = false;
+	assert_bool(true, test_net_util);
 	//assert_bool(true, test_dns_query);
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
@@ -358,11 +359,11 @@ void run_test()
 
 	//assert_bool(true, test_initialize_string);
 	
-	uint32_t lt = get_log_to();
-	set_log_to(log_to_con | lt);
-	//assert_bool(true, test_process_tree);
-	assert_bool(true, test_iterate_process_tree);
-	set_log_to(lt);
+	//uint32_t lt = get_log_to();
+	//set_log_to(log_to_con | lt);
+	////assert_bool(true, test_process_tree);
+	//assert_bool(true, test_iterate_process_tree);
+	//set_log_to(lt);
 
 	//assert_bool(true, test_image_path_by_pid);
 	//assert_bool(true, test_get_process_creation_time);
@@ -414,7 +415,7 @@ void run_test()
 	//assert_bool(true, test_map_insert_swap);
 
 
-	assert_bool(true, test_registry_util);
+	//assert_bool(true, test_registry_util);
 	//assert_bool(true, test_read_mouted_device);
 	//assert_bool(true, test_set_binary_data);    
 	//assert_bool(true, test_aes256);
@@ -2555,8 +2556,6 @@ bool test_create_guid()
 
 bool test_is_executable_file_w()
 {
-	IMAGE_TYPE type;
-	
 	_ASSERTE(IT_UNKNOWN == get_image_type(L"c:\\work.mylib\\test_upx_invalid_lfanew.exe"));
 	_ASSERTE(IT_EXE_GUI == get_image_type(L"c:\\windows\\system32\\notepad.exe"));
 	return true;

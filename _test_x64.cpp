@@ -35,7 +35,7 @@ __int64 func_a(int a, float b, int c, int d, int e)
 **/
 __int64 func_a(int a, double b, int c, int d, int e)
 {
-	return a+c+e;	
+	return a+b+c+d+e;	
 }
 
 
@@ -97,6 +97,11 @@ typedef struct _rec
 
 rec func_b(int a, double b, int c, int d, int e)
 {
+	UNREFERENCED_PARAMETER(a);
+	UNREFERENCED_PARAMETER(b);
+	UNREFERENCED_PARAMETER(c);
+	UNREFERENCED_PARAMETER(d);
+	UNREFERENCED_PARAMETER(e);
 	rec r = {0};
 	return r;
 }
@@ -133,6 +138,8 @@ bool test_x64_calling_convension()
 bool test_x64_calling_convension()
 {
 	__int64 ra = func_a(10, 0.1, 20, 30, 40);
+	
+	UNREFERENCED_PARAMETER(ra);
 
 	/*
 000000013F3DBC16 C7 44 24 28 05 00 00 00 mov         dword ptr [rsp+28h],5  
@@ -144,7 +151,7 @@ bool test_x64_calling_convension()
 000000013F3DBC41 E8 90 87 FF FF       call        func_b (13F3D43D6h)  
 	*/
 	rec rb = func_b(1, 1.0, 3, 4, 5);
-
+	UNREFERENCED_PARAMETER(rb);
 
 	return true;
 }

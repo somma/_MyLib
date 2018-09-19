@@ -17,6 +17,19 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+/// @brief	Constructor
+NetAdapter::NetAdapter()
+{
+}
+
+/// @brief	Destructor 
+/*virtual*/ NetAdapter::~NetAdapter()
+{
+	for (auto ip : ip_info_list){delete ip;}
+	ip_info_list.clear();
+}
+
+/// @brief	Print me
 void NetAdapter::dump()
 {
 #ifdef _DEBUG
@@ -128,7 +141,8 @@ get_net_adapters(
 {
 	if ((net_family != AF_INET) && (net_family != AF_INET6))
 	{
-		log_err "Invalid net family. Only AF_INET(2), AF_INET(23) supported."
+		log_err 
+			"Invalid net family. Only AF_INET(2), AF_INET(23) supported."
 			log_end;
 		return false;
 	}
@@ -205,8 +219,7 @@ get_net_adapters(
 			log_err "Not enough memory. " log_end;
 			return false;
 		}
-		adapters.push_back(adapter);
-		
+
 		///	Friendly name
 		if (nullptr != cur->FriendlyName)
 		{
@@ -310,6 +323,10 @@ get_net_adapters(
 			gateway = gateway->Next;
 		}
 
+		//
+		//	¾î´ðÅÍ °´Ã¼ Ãß°¡
+		//
+		adapters.push_back(adapter);
 	_next: 
 		cur = cur->Next;
 	}

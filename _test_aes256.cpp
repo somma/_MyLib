@@ -19,7 +19,7 @@ bool create_test_sample(_In_ const std::wstring& target_file_path)
 		true,
 		false))
 	{
-		log_err "extract_last_tokenW(path=%ws) failed.", target_file_path log_end;
+		log_err "extract_last_tokenW(path=%ws) failed.", target_file_path.c_str() log_end;
 		return false;
 	}
 
