@@ -781,8 +781,7 @@ get_broadcast_list_v4(
 			if (true == str_to_ipv4(MbsToWcsEx(ip_info->ip.c_str()).c_str(), ip_addr))
 			{
 				broadcast_list.push_back(ip_addr | ~ip_info->subnet_mask);
-			}
-			delete ip_info;
+			}			
 		}
 		delete adapter;
 	}

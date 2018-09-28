@@ -57,6 +57,7 @@ public:
 	{
 		for (auto ip : ip_info_list) 
 		{ 
+			_ASSERTE(nullptr != ip);
 			delete ip; 
 		}
 		ip_info_list.clear();

@@ -16,7 +16,7 @@
 
 
 //	SteadyTimer callback, false 를 리턴하면 타이머를 중지
-typedef bool (WINAPI *SteadyTimerCallback)(_In_ DWORD_PTR tag);
+typedef boost::function<bool(DWORD_PTR tag)> SteadyTimerCallback;
 
 class SteadyTimer
 {
@@ -25,7 +25,7 @@ public:
 		_running(false),
 		_interval(0), 
 		_tag(0),
-		_callback(nullptr), 
+		_callback(0), 
 		_timer(_io_service)
 	{
 	}
@@ -81,7 +81,7 @@ public:
 
 		_interval = 0;
 		_tag = 0;
-		_callback = nullptr;
+		_callback = 0;
 		_running = false;
 	}
 

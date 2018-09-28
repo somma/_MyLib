@@ -19,9 +19,9 @@ bool test_steady_timer_using_lambda()
 	SteadyTimer timer;
 	bool ret = timer.start(1, 
 						   random_value, 
-						   [](_In_ DWORD_PTR tag)->bool
+						   [&](_In_ DWORD_PTR tag)->bool
 	{
-		_ASSERTE(1024 == tag);
+		_ASSERTE(random_value == tag);
 		log_info "timer callback" log_end;
 		return true;
 	});
@@ -75,9 +75,57 @@ bool test_steady_timer_using_callback()
 	return true;
 }
 
+class SteadyTimerTest
+{
+public:
+	SteadyTimerTest()
+	{
+	}
+
+	bool callback(_In_ DWORD_PTR tag)
+	{
+		UNREFERENCED_PARAMETER(tag);		
+		_count++;
+		log_info "timer callback: %u", _count log_end;
+		return true;
+	}
+
+	bool start()
+	{
+		//
+		//	1초 짜리 타이머를 생성
+		//	
+		_count = 0;
+		bool ret = _timer.start(1, _count, boost::bind(&SteadyTimerTest::callback,
+													   this, 
+													   _1));
+		_ASSERTE(true == ret);
+		return true;
+	}
+
+	void stop()
+	{
+		_timer.stop();
+	}
+
+private:
+	SteadyTimer _timer;
+	uint32_t _count;
+};
+
+bool test_steady_timer_class()
+{
+	SteadyTimerTest timer;
+	_ASSERTE(true == timer.start());
+	Sleep(5000);
+	timer.stop();
+	return true;
+}
+
 bool test_steady_timer()
 {
 	_ASSERTE(true == test_steady_timer_using_lambda());
 	_ASSERTE(true == test_steady_timer_using_callback());
+	_ASSERTE(true == test_steady_timer_class());
 	return true;
 }
