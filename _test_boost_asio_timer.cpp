@@ -1,12 +1,11 @@
-/**----------------------------------------------------------------------------
- * _test_boost_asio_timer.cpp
- *-----------------------------------------------------------------------------
- * 
- *-----------------------------------------------------------------------------
- * All rights reserved by Noh,Yonghwan (fixbrain@gmail.com, unsorted@msn.com)
- *-----------------------------------------------------------------------------
- * 2014:12:27 17:44 created
-**---------------------------------------------------------------------------*/
+/**
+ * @file    _test_boost_asio_timer.cpp
+ * @brief   This class implements steady timer object.
+ *
+ * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
+ * @date    2014/12/27 17:44 created.
+ * @copyright All rights reserved by Yonghwan, Roh.
+**/
 #include "stdafx.h"
 #include <boost/asio.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -101,9 +100,14 @@ bool test_boost_asio_timer_2()
 
 
 /**
- * @brief	v3 - lamda + 타이머이벤트 계속 발생하기, 취소
+ * @brief	v3 - callback + 타이머이벤트 계속 발생하기, 취소
 **/
-void print(const boost::system::error_code& error, boost::asio::steady_timer& timer, int& count)
+void 
+print(
+	const boost::system::error_code& error, 
+	boost::asio::steady_timer& timer, 
+	int& count
+)
 {
 	if (!error)
 	{
@@ -150,7 +154,7 @@ bool test_boost_asio_timer_3()
 
 
 /**
- * @brief	v3 - lamda + 타이머이벤트 계속 발생, 취소 ==> 클래스 버전
+ * @brief	v3 - method binding + 타이머이벤트 계속 발생, 취소 ==> 클래스 버전
 **/
 
 class TimerClass
@@ -164,7 +168,8 @@ public:
 public: 
 	volatile int count;
 
-	void print(const boost::system::error_code& error, boost::asio::steady_timer& timer)
+	void print(const boost::system::error_code& error, 
+			   boost::asio::steady_timer& timer)
 	{
 		if (!error)
 		{
@@ -209,7 +214,8 @@ public:
 public : 
 	boost::asio::steady_timer* _forever_timer;
 	
-	void print_forever(const boost::system::error_code& error, boost::asio::steady_timer* timer)
+	void print_forever(const boost::system::error_code& error, 
+					   boost::asio::steady_timer* timer)
 	{
 		if (!error)
 		{

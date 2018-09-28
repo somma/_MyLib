@@ -17,70 +17,51 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-/// @brief	Constructor
-NetAdapter::NetAdapter()
-{
-}
-
-/// @brief	Destructor 
-/*virtual*/ NetAdapter::~NetAdapter()
-{
-	for (auto ip : ip_info_list){delete ip;}
-	ip_info_list.clear();
-}
-
 /// @brief	Print me
 void NetAdapter::dump()
 {
 #ifdef _DEBUG
-	std::stringstream strm;
+	//
+	//	Aapter information
+	//
+	log_msg
+	"\nAdapter, friendly name=%ws, name=%s, desc=%ws, mac=%s",
+	friendly_name.c_str(),
+	name.c_str(),
+	desc.c_str(),
+	physical_address.c_str()
+	log_end;
 
-	strm << WcsToMbsEx(friendly_name.c_str()) << std::endl;
-	strm << "name=" << name << std::endl;
-	strm << "desc=" << WcsToMbsEx(desc.c_str()) << std::endl;
-	strm << "physical=" << physical_address << std::endl;
-	
-	if (ip_info_list.size() > 1)
+	//
+	//	DNS list
+	//
+	log_msg "+ Dump DNS lists" log_end;
+	for (auto& dns : dns_list)
 	{
-		strm << "ip=" << std::endl;
-		for (auto ip_info : ip_info_list)
-		{
-			strm << "\t" << ip_info->ip << std::endl;
-		}
-	}
-	else if (ip_info_list.size() == 1)
-	{
-		strm << "ip=" << ip_info_list[0]->ip.c_str() << std::endl;
-	}
-	
-	if (dns_list.size() > 1)
-	{
-		strm << "dns=" << std::endl;
-		for (auto dns : dns_list)
-		{
-			strm << "\t" << dns << std::endl;
-		}
-	}
-	else if (dns_list.size() == 1)
-	{
-		strm << "dns=" << dns_list[0].c_str() << std::endl;
+	log_msg "  - dns=%s", dns.c_str() log_end;
 	}
 
-	if (gateway_list.size() > 1)
+	//
+	//	Gateway list
+	//
+	log_msg "+ Dump gateway lists" log_end;
+	for (auto& gw : gateway_list)
 	{
-		strm << "gateway=" << std::endl;
-		for (auto gw : gateway_list)
-		{
-			strm << "\t" << gw << std::endl;
-		}
-	}
-	else if (gateway_list.size() == 1)
-	{
-		strm << "gateway=" << gateway_list[0].c_str() << std::endl;
+	log_msg "  - gw=%s", gw.c_str() log_end;
 	}
 
-	log_dbg "%s", strm.str().c_str() log_end;
-
+	//
+	//	IP information list
+	//
+	log_msg "+ Dump IP assignments" log_end;
+	for (auto& ip : ip_info_list)
+	{
+	log_msg
+	"  - %s/%s",
+	ip->ip.c_str(),
+	ipv4_to_str(ip->subnet_mask).c_str()
+	log_end;
+	}
 #endif//_DEBUG
 }
 
@@ -889,20 +870,12 @@ get_representative_ip_v4(
 	//
 	//	Free
 	//	
-	std::for_each(adapters.begin(), adapters.end(), [](PNetAdapter p) 
+	std::for_each(adapters.begin(), adapters.end(), [](_In_ PNetAdapter p) 
 	{
-		if (nullptr != p)
-		{
-			for (auto ip_info : p->ip_info_list)
-			{
-				delete ip_info;
-			}
-
-			delete p;
-		}
+		_ASSERTE(nullptr != p);
+		delete p;
 	});
 	adapters.clear();
-
 	return (true != ip.empty()) ? ip : "127.0.0.1";
 }
 

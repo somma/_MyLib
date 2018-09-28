@@ -141,6 +141,9 @@
     <ClInclude Include="src\net_util.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\steady_timer.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -288,6 +291,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="_test_net_util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_steady_timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

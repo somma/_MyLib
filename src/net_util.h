@@ -49,8 +49,18 @@ public:
 typedef class NetAdapter
 {
 public:
-	NetAdapter();
-	virtual ~NetAdapter();
+	NetAdapter() 
+	{
+	}
+
+	virtual ~NetAdapter()
+	{
+		for (auto ip : ip_info_list) 
+		{ 
+			delete ip; 
+		}
+		ip_info_list.clear();
+	}
 
 	std::wstring friendly_name;		// Wi-Fi
 	std::string name;				// {7F158482-83C5-4C7F-B47C-4CE15F1899CA}

@@ -26,6 +26,9 @@
 #include "FileInfoCache.h"
 #include "account_info.h"
 
+// _test_steady_timer.cpp
+bool test_steady_timer();
+
 // _test_dns_query.cpp
 extern bool test_dns_query();
 
@@ -193,110 +196,16 @@ extern bool test_boost_thread();
 //_test_aes256.cpp
 bool test_aes256();
 
-class aaa
-{
-public:
-    aaa(bool value) : _value(value) { }
-    virtual ~aaa() { log_info "..." log_end }
-
-    void run() { log_info "%s", _value == true ? "Ture" : "False"  log_end;}
-protected:
-    bool _value;
-};
-
-class bbb : public aaa
-{
-public:
-    bbb(bool value): aaa(value) { }
-    virtual ~bbb() { }
-    void run() { log_info "%s", _value == true ? "Ture" : "False"  log_end;}
-};
-
-class ccc : public bbb
-{
-public:
-    ccc(bool value) : bbb(value) { }
-    virtual ~ccc() { }
-    void run() { log_info "%s", _value == true ? "Ture" : "False"  log_end;}
-};
-
-
-
+bool test_trivia();
 
 void run_test()
 {
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
 
-	//{
-	//	boost::wformat f = boost::wformat(L"%s\\%s") % get_current_module_dirEx().c_str() % L"_MyLib_tst.log";
-	//	if (true != initialize_log(log_mask_all,
-	//							   log_level_debug,
-	//							   log_to_all,
-	//							   f.str().c_str())) return;
-	//	set_log_format(false, false, true);
-	//}
-	set_log_format(false, false, false, false);
-
-	//
-	//	std::string 관련 
-	// 
-	std::wstring wstr = L"12345";
-	log_info "wstr.size() = %u, wcslen(wstr.c_str()) = %u  (same size)",
-		wstr.size(), wcslen(wstr.c_str())
-		log_end;
-	_ASSERTE(wstr.size() == wcslen(wstr.c_str()));
-
-	std::wstring s = L"";
-	_ASSERTE(true == s.empty());
-
-	std::string sy = WcsToMbsEx(s.c_str());
-	sy = sy;
-
-
-	
-	// empty-string.c_str() 은 nullptr 이 아니다!
-	const wchar_t* p = nullptr;
-	p = s.c_str();
-	_ASSERTE(nullptr != p);
-
-	std::wstring ss = L" ";
-	_ASSERTE(true != ss.empty());
-
-	//
-	//	64비트 정수 출력
-	// 
-	uint64_t t = 0xffffffff00112233;
-	log_info "0x%llx, 0x%016llx", t, t log_end;
-
-	uint64_t y = 0x00112233;
-	log_info "0x%llx, 0x%016llx", y, y log_end;
-
-	//	list 순서
-	std::list<int> li;
-	li.push_back(1);
-	li.push_back(2);
-	li.push_back(3);
-	for (auto v : li)
-	{
-		log_info "%d", v log_end;
-	}
-
-	// 
-	//	생성자/소멸자 호출
-	//
-	ccc c(true);
-	c.run();
-
-	// log :: rotate_log_file() 함수 테스트 
-	//for (int i=0; ; ++i)
-	//{
-	//	log_info "%d", i log_end;
-	//	Sleep(500);
-	//}
-
 	bool ret = false;
-	assert_bool(true, test_net_util);
+	assert_bool(true, test_steady_timer);
+	//assert_bool(true, test_net_util);
 	//assert_bool(true, test_dns_query);
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
@@ -3285,6 +3194,107 @@ bool test_convert_file_time()
 	return true;
 }
 
+bool test_trivia()
+{
+	class aaa
+	{
+	public:
+	    aaa(bool value) : _value(value) { }
+	    virtual ~aaa() { log_info "..." log_end }
+	
+	    void run() { log_info "%s", _value == true ? "Ture" : "False"  log_end;}
+	protected:
+	    bool _value;
+	};
+	
+	class bbb : public aaa
+	{
+	public:
+	    bbb(bool value): aaa(value) { }
+	    virtual ~bbb() { }
+	    void run() { log_info "%s", _value == true ? "Ture" : "False"  log_end;}
+	};
+	
+	class ccc : public bbb
+	{
+	public:
+	    ccc(bool value) : bbb(value) { }
+	    virtual ~ccc() { }
+	    void run() { log_info "%s", _value == true ? "Ture" : "False"  log_end;}
+	};
+
+
+	//{
+	//	boost::wformat f = boost::wformat(L"%s\\%s") % get_current_module_dirEx().c_str() % L"_MyLib_tst.log";
+	//	if (true != initialize_log(log_mask_all,
+	//							   log_level_debug,
+	//							   log_to_all,
+	//							   f.str().c_str())) return;
+	//	set_log_format(false, false, true);
+	//}
+	set_log_format(false, false, false, false);
+
+	//
+	//	std::string 관련 
+	// 
+	std::wstring wstr = L"12345";
+	log_info "wstr.size() = %u, wcslen(wstr.c_str()) = %u  (same size)",
+		wstr.size(), wcslen(wstr.c_str())
+		log_end;
+	_ASSERTE(wstr.size() == wcslen(wstr.c_str()));
+
+	std::wstring s = L"";
+	_ASSERTE(true == s.empty());
+
+	std::string sy = WcsToMbsEx(s.c_str());
+	sy = sy;
+
+
+
+	// empty-string.c_str() 은 nullptr 이 아니다!
+	const wchar_t* p = nullptr;
+	p = s.c_str();
+	_ASSERTE(nullptr != p);
+
+	std::wstring ss = L" ";
+	_ASSERTE(true != ss.empty());
+
+	//
+	//	64비트 정수 출력
+	// 
+	uint64_t t = 0xffffffff00112233;
+	log_info "0x%llx, 0x%016llx", t, t log_end;
+
+	uint64_t y = 0x00112233;
+	log_info "0x%llx, 0x%016llx", y, y log_end;
+
+	//	list 순서
+	std::list<int> li;
+	li.push_back(1);
+	li.push_back(2);
+	li.push_back(3);
+	for (auto v : li)
+	{
+		log_info "%d", v log_end;
+	}
+
+	// 
+	//	생성자/소멸자 호출
+	//
+	ccc c(true);
+	c.run();
+
+	// log :: rotate_log_file() 함수 테스트 
+	//for (int i=0; ; ++i)
+	//{
+	//	log_info "%d", i log_end;
+	//	Sleep(500);
+	//}
+
+
+	return true;
+}
+
 /**
  * @brief	
  * @param	
@@ -3349,3 +3359,4 @@ int _tmain(int argc, _TCHAR* argv[])
 	_CrtMemDumpAllObjectsSince(&memoryState);
 	return 0;
 }
+
