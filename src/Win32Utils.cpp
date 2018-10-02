@@ -8380,9 +8380,7 @@ const wchar_t*  osver_to_str(_In_ OSVER os)
 ///			https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
 OSVER get_os_version()
 {
-	static OSVER os = OSV_UNDEF;
-	if (os != OSV_UNDEF) return os;
-	os = OSV_UNKNOWN;
+	OSVER os = OSV_UNKNOWN;
 
 	RTL_OSVERSIONINFOEXW osv = { sizeof(osv), 0, };
 	typedef uint32_t(__stdcall *fnRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation);
@@ -8403,7 +8401,7 @@ OSVER get_os_version()
 				else if (osv.wServicePackMajor == 2) os = OSV_XPSP2;
 				else if (osv.wServicePackMajor == 3) os = OSV_XPSP3;
 			}
-			else if (osv.dwMinorVersion == 2)   os = OSV_2003;
+			else if (osv.dwMinorVersion == 2) os = OSV_2003;
 			break;
 
 		case 6:
