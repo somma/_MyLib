@@ -3306,52 +3306,6 @@ lstrnicmpa(
 	}
 }
 
-
-/**	---------------------------------------------------------------------------
-	\brief
-
-			#include <comutil.h>
-			#pragma comment(lib, "comsuppw.lib")
-
-			#define STRSAFE_NO_DEPRECATE
-			#include <strsafe.h>
-	\param
-	\return	success : allocate null terminated TCHAR string and return pointer
-					  (must free TCHAR string)
-			fail    : return NULL
-	\code
-	\endcode
------------------------------------------------------------------------------*/
-//LPTSTR BstrToTchar(IN const BSTR bstr)
-//{
-//	_ASSERTE(NULL != bstr);
-//	if (NULL == bstr){return NULL;}
-//	
-//	_bstr_t tmp(bstr);
-//	DWORD	CharCount = tmp.length();
-//
-//#ifdef  UNICODE
-//	DWORD	c_str_buf_len = (sizeof(TCHAR) * CharCount ) + sizeof(TCHAR);
-//#else
-//	// unicode 가 아닌 경우 한글같은 wide char 는 2바이트를 사용함
-//	// 그러나 _bstr_t::length() 는 문자의 갯수만 리턴하므로 
-//	// CharCount * sizeof(TCHAR) * 2 를 해 줘야 한다. 
-//	// 물론 unicode 인 경우는 아무 문제 없음
-//	//
-//	DWORD	c_str_buf_len = (( sizeof(TCHAR) * CharCount ) * 2 ) + sizeof(TCHAR);
-//#endif
-//	LPTSTR	c_str = (LPTSTR) malloc(c_str_buf_len);
-//	RtlZeroMemory(c_str, c_str_buf_len);
-//	if (!SUCCEEDED(StringCbPrintf(c_str, c_str_buf_len, TEXT("%s"), (LPCTSTR)tmp)))
-//	{
-//		free(c_str); 
-//		c_str = NULL;
-//	}
-//
-//	return c_str;
-//}
-
-
 /**
  * \brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
 			(org_string 의 앞에서부터 token 을 검색)
