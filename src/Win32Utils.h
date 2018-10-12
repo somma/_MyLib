@@ -777,25 +777,29 @@ get_process_token_elevated(
 typedef class program
 {
 public:
-	program(_In_ const wchar_t* product_id,
-			_In_ const wchar_t* product_name,
-			_In_ const wchar_t* product_vendor,
-			_In_ const wchar_t* product_version) :
-		_product_id(product_id),
-		_product_name(product_name),
-		_product_vendor(product_vendor),
-		_product_version(product_version)
+	program(_In_ const wchar_t* id,
+			_In_ const wchar_t* name,
+			_In_ const wchar_t* vender,
+			_In_ const wchar_t* version, 
+			_In_ const wchar_t* uninstaller) :
+		_id(id),
+		_name(name),
+		_vender(vender),
+		_version(version), 
+		_uninstaller(uninstaller)
 	{}
 public:
-	const wchar_t* id() { return _product_id.c_str(); }
-	const wchar_t* name() { return _product_name.c_str(); }
-	const wchar_t* vendor() { return _product_vendor.c_str(); }
-	const wchar_t* version() { return _product_version.c_str(); }
+	const wchar_t* id() { return _id.c_str(); }
+	const wchar_t* name() { return _name.c_str(); }
+	const wchar_t* vendor() { return _vender.c_str(); }
+	const wchar_t* version() { return _version.c_str(); }
+	const wchar_t* uninstaller() { return _uninstaller.c_str(); }
 private:
-	std::wstring _product_id;
-	std::wstring _product_name;
-	std::wstring _product_vendor;
-	std::wstring _product_version;
+	std::wstring _id;
+	std::wstring _name;
+	std::wstring _vender;
+	std::wstring _version;
+	std::wstring _uninstaller;
 
 } *pprogram;
 

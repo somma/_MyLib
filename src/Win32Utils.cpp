@@ -7192,7 +7192,21 @@ get_installed_program_info(
 			//	log_end;
 		}
 
-		if (0 == name.compare(L""))
+		//
+		//	Uninstall String
+		//
+		std::wstring uninstaller;
+		if (!RUReadString(key_handle,
+						  L"UninstallString",
+						  uninstaller))
+		{
+			//log_err
+			//	"RUReadString failed(valu=`DisplayVersion`). key=%ws",
+			//	sub_key_name
+			//	log_end;
+		}
+
+		if (true == name.empty())
 		{
 			//
 			// 프로그램명을 알 수 없는 경우에는 처리 하지 않는다.
@@ -7204,7 +7218,8 @@ get_installed_program_info(
 			return new program(sub_key_name,
 							   name.c_str(),
 							   publisher.c_str(),
-							   version.c_str());
+							   version.c_str(), 
+							   uninstaller.c_str());
 		}
 	}
 	_ASSERTE(!"oops nerver reach");
