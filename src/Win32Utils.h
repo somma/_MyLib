@@ -16,6 +16,7 @@
 
 #include <conio.h>
 #include <winioctl.h>
+#include <winsvc.h>
 
 //> reported as vs 2010 bug, ms says that will be patch this bug next major vs release, vs2012.
 //
