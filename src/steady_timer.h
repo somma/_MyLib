@@ -108,7 +108,7 @@ private:
 				//
 				//	타이머 재 시작
 				//
-				timer.expires_from_now(std::chrono::seconds(1));
+				timer.expires_from_now(std::chrono::seconds(this->_interval));
 				timer.async_wait(boost::bind(&SteadyTimer::internal_callback,
 											 this,
 											 boost::asio::placeholders::error,
