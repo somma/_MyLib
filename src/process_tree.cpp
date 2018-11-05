@@ -141,7 +141,9 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 		do
 		{
 			FILETIME create_time={0};
+			BOOL IsWow64 = FALSE;
 			std::wstring full_path;
+
 			//
 			// System Idle Process
 			//
@@ -180,7 +182,7 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 				{
 					if (!get_process_image_full_path(process_handle, full_path))
 					{
-						log_err "get_process_image_full_path() failed. pid=%u, image=%ws",
+						log_err "get_process_image_full_path() failed. pid=%u, process=%ws",
 							proc_entry.th32ProcessID,
 							proc_entry.szExeFile
 							log_end;
@@ -195,10 +197,28 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 										 &dummy_time,
 										 &dummy_time))
 					{
-						log_err "GetProcessTimes() failed, gle = %u", GetLastError() log_end;
+						log_err "GetProcessTimes() failed, pid=%u, process=%ws, gle = %u", 
+							proc_entry.th32ProcessID,
+							proc_entry.szExeFile,
+							GetLastError() 
+							log_end;
 						// use create time 0!
 					}
 
+#ifdef _WIN64
+					//
+					// Is WoW64 process?
+					//					
+					if (!IsWow64Process(process_handle, &IsWow64))
+					{
+						log_err "IsWow64Process() failed. pid=%u, process=%ws, gle = %u",
+							proc_entry.th32ProcessID,
+							proc_entry.szExeFile,
+							GetLastError()
+							log_end;
+						// assume process is not WoW64
+					}
+#endif
 					CloseHandle(process_handle); process_handle = NULL;
 				}
 			}
@@ -206,6 +226,7 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 			add_process(proc_entry.th32ParentProcessID, 
 						proc_entry.th32ProcessID, 
 						create_time, 
+						IsWow64,
 						proc_entry.szExeFile, 
 						full_path);
 		} while (Process32Next(snap, &proc_entry));
@@ -562,11 +583,18 @@ cprocess_tree::add_process(
 	_In_ DWORD ppid, 
 	_In_ DWORD pid, 
 	_In_ FILETIME& creation_time, 
+	_In_ BOOL is_wow64, 
 	_In_ const wchar_t* process_name, 
     _In_ std::wstring& full_path
 	)
 {
-	process p(process_name, ppid, pid, *(uint64_t*)&creation_time, full_path, false);
+	process p(process_name, 
+			  ppid, 
+			  pid, 
+			  *(uint64_t*)&creation_time, 
+			  (is_wow64 ? true : false),
+			  full_path, 
+			  false);
 	_proc_map.insert( std::make_pair(pid, p) );
 }
 

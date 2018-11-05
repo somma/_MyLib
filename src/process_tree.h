@@ -41,6 +41,7 @@ public:
 		_ppid(0), 
 		_pid(0), 
 		_creation_time(0), 
+		_is_wow64(false),
 		_full_path(L""), 
 		_killed(false)
 	{
@@ -50,6 +51,7 @@ public:
 			_In_ DWORD ppid, 
 			_In_ DWORD pid, 
 			_In_ uint64_t creation_time, 
+			_In_ bool is_wow64,
 			_In_ std::wstring& full_path, 
 			_In_ bool killed) 
 		:	
@@ -57,6 +59,7 @@ public:
 		_ppid(ppid), 
 		_pid(pid), 
 		_creation_time(creation_time), 
+		_is_wow64(is_wow64),
 		_full_path(full_path), 
 		_killed(killed)
 	{
@@ -71,6 +74,7 @@ public:
 	DWORD			ppid() const { return _ppid; }
 	DWORD			pid() const { return _pid; }
 	uint64_t		creation_time() const { return _creation_time; }
+	bool			is_wow64() const { return _is_wow64; }
 	bool			killed() { return _killed; }
 
 private:
@@ -78,6 +82,7 @@ private:
 	DWORD			_ppid;
 	DWORD			_pid;
 	uint64_t		_creation_time;
+	bool			_is_wow64;
     std::wstring    _full_path;
 	bool			_killed;
 } *pprocess;
@@ -120,7 +125,7 @@ public:
 
 	bool kill_process_tree(_In_ DWORD root_pid, _In_ bool enable_debug_priv);
 private:
-	void add_process(_In_ DWORD ppid, _In_ DWORD pid, _In_ FILETIME& creation_time, _In_ const wchar_t* process_name, _In_ std::wstring& full_path);
+	void add_process(_In_ DWORD ppid, _In_ DWORD pid, _In_ FILETIME& creation_time, _In_ BOOL is_wow64, _In_ const wchar_t* process_name, _In_ std::wstring& full_path);
 	void print_process_tree(_In_ process& p, _In_ DWORD& depth);
 	void kill_process_tree(_In_ process& root, _In_ bool enable_debug_priv);
 private:

@@ -67,6 +67,10 @@ typedef struct _continuous_memory
 #define ClearFlag(_F,_SF)     ((_F) &= ~(_SF))
 #endif
 
+#define ADD_OFFSET(ptr, offset) (void*)((uintptr_t)ptr + (uintptr_t)offset)
+#define SUB_OFFSET(ptr, offset) (void*)((uintptr_t)ptr - (uintptr_t)offset)
+
+
 /// @brief	상수 이름->문자열 변환
 ///			#define love 0
 ///			#define	you 1
