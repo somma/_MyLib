@@ -7534,7 +7534,7 @@ COORD GetCurCoords(void)
 }
 
 /// @brief	 콘솔을 생성한다.
-bool create_console()
+bool attach_console(_In_ bool create)
 {
 	//
 	//	부모 프로세스의 콘솔핸들에 연결시도한다.
@@ -7553,30 +7553,40 @@ bool create_console()
 		return true;
 	}
 
-	//
-	//	부모 프로세스에 console handle 이 없는 경우 생성한다.
-	//
-	HANDLE h_console = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (NULL == h_console)
+	if (create == true)
 	{
 		//
-		//	Console 이 없는, service 또는 gui 인 경우 NULL 을 리턴
-		//	
-
-		if (!AllocConsole())
-		{
-			log_err "AllocConsole() failed. gle=%u",
-				GetLastError()
-				log_end;
-			return false;
-		}
-
-		h_console = GetStdHandle(STD_OUTPUT_HANDLE);
+		//	부모 프로세스에 console handle 이 없는 경우 생성한다.
+		//
+		HANDLE h_console = GetStdHandle(STD_OUTPUT_HANDLE);
 		if (NULL == h_console)
 		{
-			log_err "Can not get STD_OUTPUT_HANDLE (No console allocated)."
-				log_end;
-			return false;
+			//
+			//	Console 이 없는, service 또는 gui 인 경우 NULL 을 리턴
+			//	
+
+			if (!AllocConsole())
+			{
+				log_err "AllocConsole() failed. gle=%u",
+					GetLastError()
+					log_end;
+				return false;
+			}
+
+			h_console = GetStdHandle(STD_OUTPUT_HANDLE);
+			if (NULL == h_console)
+			{
+				log_err "Can not get STD_OUTPUT_HANDLE (No console allocated)."
+					log_end;
+				return false;
+			}
+			else if (INVALID_HANDLE_VALUE == h_console)
+			{
+				log_err "GetStdHandle() failed. gle=%u",
+					GetLastError()
+					log_end;
+				return false;
+			}
 		}
 		else if (INVALID_HANDLE_VALUE == h_console)
 		{
@@ -7586,14 +7596,7 @@ bool create_console()
 			return false;
 		}
 	}
-	else if (INVALID_HANDLE_VALUE == h_console)
-	{
-		log_err "GetStdHandle() failed. gle=%u",
-			GetLastError()
-			log_end;
-		return false;
-	}
-
+	
 	return true;
 }
 

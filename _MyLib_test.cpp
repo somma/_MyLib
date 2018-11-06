@@ -2497,7 +2497,7 @@ bool test_singleton()
 
 bool test_log_xxx()
 {
-	_ASSERTE(create_console());
+	_ASSERTE(attach_console());
 
 	set_log_env(log_mask_all, log_level_debug, log_to_con);
 	log_dbg "you can see this log, console" log_end;
