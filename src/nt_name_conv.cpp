@@ -65,6 +65,8 @@ bool NameConverter::load(_In_ bool force_reload)
 ///			\Device\Floppy0\temp\123.txt -> \Device\Floppy0\temp\123.txt
 ///			\Device\CdRom0\temp\123.txt -> \Device\CdRom0\temp\123.txt
 ///		
+///			\Device\HarddiskVolumeShadowCopy222 -> \Device\HarddiskVolumeShadowCopy222
+///
 ///			볼륨 네임 또는 디바이스 네임이 없는 root 경로 접근인 경우 %SystemDrive% 를 붙여준다. 
 ///			(알지 못하는 형태이고, `\` 로 시작하는 경로명의 경우)
 ///				\Users\ -> c:\users
@@ -494,57 +496,65 @@ NameConverter::get_drive_letter_by_device_name(
 ///             \device\mup\1.1.1.1\share\abc.exe -> \\1.1.1.1\share\abc.exe
 bool 
 NameConverter::resolve_device_prefix(
-	_In_ const wchar_t* file_name, 
+	_In_ const wchar_t* file_name,
 	_Out_ std::wstring& resolved_file_name
-	)
+)
 {
-    _ASSERTE(NULL != file_name);
-    if (NULL == file_name || file_name[0] != L'\\') return false;
+	_ASSERTE(NULL != file_name);
+	if (NULL == file_name || file_name[0] != L'\\') return false;
 
 
-    // file_name 문자열 정규화 
-    //
-    //  \\Device, Device 등 '\' 가 2개 미만이면 invalid input
-    //  \\Device\\HarddiskVolume4    라면 \\Device\\HarddiskVolume4\\ 로 변환
-    //  \\Device\\HarddiskVolume4\\, \\Device\\HarddiskVolume4\\aaa 라면 그대로 사용
-    uint32_t cmp_count = 0;
-    uint32_t met_count = 0;
-    uint32_t max_count = (uint32_t)wcslen(file_name);
-    for (cmp_count = 0; cmp_count <= max_count; ++cmp_count)
-    {
-        if (met_count == 3) break;
-        if (file_name[cmp_count] == L'\\')
-        {
-            ++met_count;
-        }
-    }
+	// file_name 문자열 정규화 
+	//
+	//  \\Device, Device 등 '\' 가 2개 미만이면 invalid input
+	//  \\Device\\HarddiskVolume4    라면 \\Device\\HarddiskVolume4\\ 로 변환
+	//  \\Device\\HarddiskVolume4\\, \\Device\\HarddiskVolume4\\aaa 라면 그대로 사용
+	uint32_t cmp_count = 0;
+	uint32_t met_count = 0;
+	uint32_t max_count = (uint32_t)wcslen(file_name);
+	for (cmp_count = 0; cmp_count <= max_count; ++cmp_count)
+	{
+		if (met_count == 3) break;
+		if (file_name[cmp_count] == L'\\')
+		{
+			++met_count;
+		}
+	}
 
-    std::wstringstream strm;
-    switch (met_count)
-    {
-    case 0:
-    case 1:
-        log_err "invalid nt_name, nt_name=%ws", file_name log_end;
-        return false;
-    case 2:
-        // '\' 하나 더 붙여준다.            
+	std::wstringstream strm;
+	switch (met_count)
+	{
+	case 0:
+	case 1:
+		log_err "invalid nt_name, nt_name=%ws", file_name log_end;
+		return false;
+	case 2:
+		// '\' 하나 더 붙여준다.            
 		strm << file_name << L"\\";
-        break;
-    case 3:
+		break;
+	case 3:
 		strm << file_name;
-        break;
-    }
-    
+		break;
+	}
+
 	std::wstring revised_file_name = strm.str();
 	std::wstring small_rfn = revised_file_name;
 	to_lower_string(small_rfn);
 
-    
+	//
+	// #0, \Device\HarddiskVolumeShadowCopy 라면 그대로 리턴한다.
+	//
+	if (lstrnicmp(L"\\Device\\HarddiskVolumeShadowCopy", small_rfn.c_str(), true))
+	{
+		resolved_file_name = file_name;
+		return true;
+	}
+
 	boost::lock_guard<boost::mutex> lock(this->_lock);
 
 	//
 	//	#1, is this a dos device?
-	// 
+	// 	
     for (auto dos_device : _dos_devices)
     {
 		// 
