@@ -26,8 +26,11 @@
 #include "FileInfoCache.h"
 #include "account_info.h"
 
+// _test_log.cpp
+extern bool test_log_rotate();
+
 // _test_steady_timer.cpp
-bool test_steady_timer();
+extern bool test_steady_timer();
 
 // _test_dns_query.cpp
 extern bool test_dns_query();
@@ -204,7 +207,8 @@ void run_test()
 	UINT32 _fail_count = 0;
 
 	bool ret = false;
-	assert_bool(true, test_steady_timer);
+	assert_bool(true, test_log_rotate);
+	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_net_util);
 	//assert_bool(true, test_dns_query);
 	//assert_bool(true, test_iphelp_api);

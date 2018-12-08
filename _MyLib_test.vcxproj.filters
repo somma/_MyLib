@@ -296,6 +296,9 @@
     <ClCompile Include="_test_steady_timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="_test_log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">

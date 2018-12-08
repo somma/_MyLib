@@ -49,8 +49,12 @@
 #define log_mask_sys    0x00000001      // for log_info, log_err, xxx
 
 /// @brief	 Maximum log count on single log file.
-#define	_max_log_count 60000
+#define	_max_log_count_def 60000
 
+/// @brief	로테이팅 된 로그 파일의 최대 갯수
+///			이 갯수 보다 많은 로그 파일이 존재하는 경우 로그 로테이팅 시 
+///			가장 오래된 로그파일을 삭제한다. 
+#define _max_log_files_def 20
 
 //
 // C like APIs
@@ -61,7 +65,9 @@ initialize_log(
 	_In_ uint32_t log_mask,
 	_In_ uint32_t log_level,
 	_In_ uint32_t log_to,
-	_In_opt_z_ const wchar_t* log_file_path
+	_In_opt_z_ const wchar_t* log_file_path,
+	_In_ uint32_t max_log_count = _max_log_count_def,
+	_In_ uint32_t max_log_files = _max_log_files_def
 	);
 
 void 
@@ -157,10 +163,14 @@ log_write_fmt_without_deco(
 typedef class slogger: private boost::noncopyable
 {
 public:
-    explicit slogger(_In_ uint32_t log_level,_In_ uint32_t log_to);
+    explicit slogger(_In_ uint32_t log_level,
+					 _In_ uint32_t log_to, 
+					 _In_opt_z_ const wchar_t*log_file_path,
+					 _In_ uint32_t max_log_count = _max_log_count_def, 
+					 _In_ uint32_t max_log_files = _max_log_files_def);
     ~slogger();
 
-    bool slog_start(_In_opt_z_ const wchar_t *log_file_path);
+    bool slog_start();
 	void slog_stop();
 
 	void set_log_env(_In_ uint32_t log_level, _In_ uint32_t log_to)
@@ -177,7 +187,23 @@ private:
     bool volatile _stop_logger;
     uint32_t volatile _log_level;
 	uint32_t volatile _log_to;
+	uint32_t volatile _max_log_count;
+	uint32_t volatile _max_log_files;
 	boost::mutex _lock;
+
+	class log_file_and_ctime
+	{
+	public:		
+		log_file_and_ctime(): ctime{0, 0} { }
+		log_file_and_ctime(const wchar_t* log_file_path, FILETIME& log_file_ctime) :
+			path(log_file_path),
+			ctime(log_file_ctime)
+		{}
+
+		std::wstring path;
+		FILETIME ctime;
+	};
+	std::list<log_file_and_ctime> _log_files;
 
 	typedef class log_entry
 	{
@@ -192,16 +218,25 @@ private:
         std::string _msg;
 	} *plog_entry;
 
-    Queue<plog_entry>	_log_queue;
+	Queue<plog_entry>	_log_queue;
     boost::thread*		_logger_thread;
 		
 	int64_t _log_count;
 	std::wstring _log_file_path;
-	HANDLE _log_file_handle;
+	volatile HANDLE _log_file_handle;
 
 private:
 	bool rotate_log_file(_In_ const wchar_t* log_file_path);
+	bool enum_old_log_files();
+	void remove_old_log_files();
+
     void slog_thread();
+	
+#ifdef MYLIB_TEST
+	friend bool test_log_rotate_with_ext();
+	friend bool test_log_rotate_without_ext();
+#endif
+
 } *pslogger;
 
 

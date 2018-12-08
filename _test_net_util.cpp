@@ -18,13 +18,16 @@ bool test_get_adapters();
 /// @brief	net_util tests
 bool test_net_util()
 {
+	bool ret = false;
+
 	_mem_check_begin;
 	//_mem_check_break(137);
 
-	bool ret = test_get_adapters();
-	return ret;
-
+	ret = test_get_adapters();
+	
 	_mem_check_end;	
+
+	return ret;
 }
 
 

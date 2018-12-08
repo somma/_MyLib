@@ -2787,15 +2787,23 @@ find_files(
 	{
 		DWORD gle = GetLastError();
 
-		if (ERROR_ACCESS_DENIED != gle)
+		if (ERROR_ACCESS_DENIED == gle || ERROR_FILE_NOT_FOUND == gle)
+		{
+			//
+			// 매칭되는 파일이 없거나(* 를 사용한 find_files() 호출의 경우)
+			// 권한이 부족한 경우 
+			// 성공으로 간주한다. 
+			// 
+			return true;
+		}
+		else
 		{
 			log_err
 				"FindFirstFileW(path=%S) failed, gle=%u",
 				root_dir.c_str(), GetLastError()
-				log_end
+				log_end;
+			return false;
 		}
-
-		return false;
 	}
 
 	_wsplitpath_s(root_dir.c_str(), drive, _MAX_DRIVE, dir, MAX_PATH, NULL, NULL, NULL, NULL);
@@ -3678,7 +3686,12 @@ get_file_extensionw(
 	_ASSERTE(nullptr != file_path);
 	if (nullptr == file_path) return false;
 
-	std::wstring org_string(file_path);
+	//
+	// c:\dbg\.\sub\abc_no_ext 형태의 경로명인 경우 `\sub\abc_no_ext` 가 
+	// 확장자로 인식된다. 따라서 뒤에서 `\` 문자열을 먼저 찾은 후 `\` 이후 
+	// 문자열에서 `.` 를 찾는다.
+	//
+	std::wstring org_string = extract_last_tokenExW(file_path, L"\\", false);
 	size_t pos = org_string.rfind(L".");
 	if (std::wstring::npos == pos)
 	{
