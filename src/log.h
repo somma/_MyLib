@@ -182,7 +182,7 @@ public:
 
 	uint32_t log_level() { return _log_level; }
 	uint32_t log_to() { return _log_to; }
-	void slog_write(_In_ uint32_t level, _In_ uint32_t log_to, _In_z_ const char* log_message);
+	void slog_write(_In_ uint32_t level, _In_z_ const char* log_message);
 private:
     bool volatile _stop_logger;
     uint32_t volatile _log_level;
@@ -208,13 +208,12 @@ private:
 	typedef class log_entry
 	{
 	public:
-		log_entry(_In_ uint32_t log_level, _In_ uint32_t log_to, const char* log_message)
-            : _log_level(log_level), _log_to(log_to), _msg(log_message)
+		log_entry(_In_ uint32_t log_level, const char* log_message)
+            : _log_level(log_level), _msg(log_message)
         {
         }
 
         uint32_t    _log_level;
-		uint32_t	_log_to;
         std::string _msg;
 	} *plog_entry;
 

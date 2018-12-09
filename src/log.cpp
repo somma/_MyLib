@@ -411,7 +411,7 @@ log_write_fmt(
 	{
 		if (NULL != _logger)
 		{
-			_logger->slog_write(log_level, _log_to, log_buffer);
+			_logger->slog_write(log_level, log_buffer);
 		}
 		else
 		{
@@ -495,7 +495,7 @@ log_write_fmt_without_deco(
 
 		if (NULL != _logger)
 		{
-			_logger->slog_write(log_level, _log_to, log_buffer);
+			_logger->slog_write(log_level, log_buffer);
 		}
 		else
 		{
@@ -564,47 +564,49 @@ bool slogger::slog_start()
 	_ASSERTE(nullptr == _logger_thread);
 	if (nullptr != _logger_thread) { return false; }
 
-	//
-	// 로그 파일명이 명시되었고, 파일의 확장자가 없는 경우 강제로 .log 를 붙여준다. 
-	//
-	// 로그 파일 확장자가 없는 경우 로테이팅 된 파일의 확장자가 날짜... 형식이 되어서
-	// 확장자가 길~~어질 수 있고, 이런 파일들을 자동으로 지우기 위해서 find_files() 함수를 
-	// 호출해서 file 목록을 만들때 뭔가 에러가 있는데, 디버깅 하기 귀찮아서, 강제로 
-	// 확장자를 붙여주도록 한다. 
-	// 
-	std::wstring ext;
-	if (false == get_file_extensionw(_log_file_path.c_str(), ext))
+	if (_log_file_path.empty() && FlagOn(_log_to, log_to_file))
 	{
-		std::wstringstream strm;
-		strm << _log_file_path << L".log";
-		_log_file_path = strm.str();
-	}
-
-	//
-	// 이미 존재하는 로테이팅 된 로그 파일 목록을 생성 시간 순으로 생성한다.
-	//
-	if (true != enum_old_log_files())
-	{
+		OutputDebugStringA("[ERR ] slog_start(), log_to_file specified but no log_file_path exists.\n");
 		return false;
 	}
 
-	//
-	//	if log file specified, backup existing log file and create new one
-	//
-	if (!_log_file_path.empty())
+	if (FlagOn(_log_to, log_to_file) && !_log_file_path.empty())
 	{
+		//
+		// 로그 파일명이 명시되었고, 파일의 확장자가 없는 경우 
+		// 강제로 .log 확장자를 붙여준다. (확장자 없는 파일이 그냥 싫어서)
+		// 
+		std::wstring ext;
+		if (false == get_file_extensionw(_log_file_path.c_str(), ext))
+		{
+			std::wstringstream strm;
+			strm << _log_file_path << L".log";
+			_log_file_path = strm.str();
+		}
+
+		//
+		// 이미 존재하는 로테이팅 된 로그 파일 목록을 생성 시간 순으로 생성한다.
+		//
+		if (true != enum_old_log_files())
+		{
+			return false;
+		}
+
+		//
+		//	이전에 있던 로그 파일을 로테이팅 한다. 
+		//
 		if (true != rotate_log_file(_log_file_path.c_str()))
 		{
 			return false;
 		}
 		_ASSERTE(INVALID_HANDLE_VALUE != _log_file_handle);
+
+		//
+		// 오래된 로그 파일이 있다면 삭제한다. 
+		//
+		remove_old_log_files();
 	}
-
-	//
-	// 오래된 로그 파일이 있다면 삭제한다. 
-	//
-	remove_old_log_files();
-
+	
 	_stop_logger = false;
 	_logger_thread = new boost::thread(boost::bind(&slogger::slog_thread, this));
 	return true;
@@ -643,8 +645,7 @@ void slogger::slog_stop()
 */
 void
 slogger::slog_write(
-	_In_ uint32_t level,
-	_In_ uint32_t log_to,
+	_In_ uint32_t level,	
 	_In_z_ const char* log_message
 )
 {
@@ -655,7 +656,7 @@ slogger::slog_write(
 	if (level > log_level()) return;
 
 	// enqueue log
-	plog_entry le = new log_entry(level, log_to, log_message);
+	plog_entry le = new log_entry(level, log_message);
 
 	boost::lock_guard< boost::mutex > lock(_lock);
 	_log_queue.push(le);
@@ -838,8 +839,6 @@ void slogger::remove_old_log_files()
 ///			pops log entry from log queue and writes log to output
 void slogger::slog_thread()
 {
-	_ASSERTE(INVALID_HANDLE_VALUE != _log_file_handle);
-
 	while (true != _stop_logger)
 	{
 		if (true == _log_queue.empty())
@@ -853,9 +852,8 @@ void slogger::slog_thread()
 			boost::lock_guard< boost::mutex > lock(_lock);
 			log = _log_queue.pop();
 		}
-
-
-		if (log->_log_to & log_to_con)
+		
+		if (FlagOn(_log_to, log_to_con))
 		{
 			switch (log->_log_level)
 			{
@@ -871,15 +869,15 @@ void slogger::slog_thread()
 			}
 		}
 
-
-		if (log->_log_to & log_to_ods)
+		if (FlagOn(_log_to, log_to_ods))
 		{
 			OutputDebugStringA(log->_msg.c_str());
 		}
 
-
-		if (log->_log_to & log_to_file)
+		if (FlagOn(_log_to, log_to_file))
 		{
+			_ASSERTE(INVALID_HANDLE_VALUE != _log_file_handle);
+
 			if (_log_count >= _max_log_count)
 			{
 				//
@@ -893,7 +891,7 @@ void slogger::slog_thread()
 
 				if (true != rotate_log_file(_log_file_path.c_str()))
 				{
-					if (log->_log_to & log_to_con)
+					if (FlagOn(_log_to, log_to_con))
 					{
 						write_to_console(fc_red, "[ERR ] rotate_log_file() failed.");
 					}					
@@ -935,7 +933,7 @@ void slogger::slog_thread()
 		while (true != _log_queue.empty())
 		{
 			plog_entry log = _log_queue.pop();
-			if (log->_log_to & log_to_file)
+			if (FlagOn(_log_to, log_to_file))
 			{
 				if (_log_count >= _max_log_count)
 				{
@@ -950,7 +948,7 @@ void slogger::slog_thread()
 
 					if (true != rotate_log_file(_log_file_path.c_str()))
 					{
-						if (log->_log_to & log_to_con)
+						if (FlagOn(_log_to, log_to_con))
 						{
 							write_to_console(fc_red, "[ERR ] rotate_log_file() failed.\n");
 						}
@@ -981,7 +979,7 @@ void slogger::slog_thread()
 				}
 			}
 
-			if (log->_log_to & log_to_con)
+			if (FlagOn(_log_to, log_to_con))
 			{
 				switch (log->_log_level)
 				{
@@ -997,7 +995,7 @@ void slogger::slog_thread()
 				}
 			}
 
-			if (log->_log_to & log_to_ods)
+			if (FlagOn(_log_to, log_to_ods))
 			{
 				OutputDebugStringA(log->_msg.c_str());
 			}
