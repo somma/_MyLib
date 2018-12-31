@@ -140,29 +140,22 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 		
 		do
 		{
-			FILETIME create_time={0};
-			BOOL IsWow64 = FALSE;
-			std::wstring full_path;
+			BOOL IsWow64 = FALSE; 
+			FILETIME create_time(now);
+			std::wstring full_path(_null_stringw);
 
 			//
-			// System Idle Process
+			// System Idle Process, System Process
 			//
-			if (0 == proc_entry.th32ProcessID)
+			if (0 == proc_entry.th32ProcessID || 4 == proc_entry.th32ProcessID)
 			{
-				full_path = _null_stringw;
-				create_time = now;
-			}
-			//
-			// System Process
-			//
-			else if (4 == proc_entry.th32ProcessID)
-			{
-				full_path = _null_stringw;
-				create_time = now;
+				// already initialized with default values.
+				// 
+				//full_path = _null_stringw;
+				//create_time = now;
 			}
 			else
-			{
-				
+			{				
 				HANDLE process_handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
 													FALSE,
 													proc_entry.th32ProcessID);
@@ -175,8 +168,6 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 					//	WcsToMbsEx(proc_entry.szExeFile).c_str(),
 					//	GetLastError() 
 					//log_end;
-
-					// use create time 0!
 				}
 				else
 				{
@@ -186,8 +177,6 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 							proc_entry.th32ProcessID,
 							proc_entry.szExeFile
 							log_end;
-
-						full_path = _null_stringw;
 					}
 
 					FILETIME dummy_time;
@@ -202,7 +191,6 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 							proc_entry.szExeFile,
 							GetLastError() 
 							log_end;
-						// use create time 0!
 					}
 
 #ifdef _WIN64
