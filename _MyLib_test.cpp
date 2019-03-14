@@ -25,6 +25,7 @@
 #include "Singleton.h"
 #include "FileInfoCache.h"
 #include "account_info.h"
+#include "curl_client.h"
 
 // _test_log.cpp
 extern bool test_log_rotate();
@@ -189,6 +190,8 @@ extern bool test_registry_util();
 extern bool test_read_mouted_device();
 extern bool test_set_binary_data();
 
+// _test_curl_https
+bool test_curl_https();
 
 // thread_pool.h
 bool test_thread_pool();
@@ -207,7 +210,7 @@ void run_test()
 	UINT32 _fail_count = 0;
 
 	bool ret = false;
-	assert_bool(true, test_log_rotate);
+	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_net_util);
 	//assert_bool(true, test_dns_query);
@@ -341,6 +344,8 @@ void run_test()
 	//assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
 	//assert_bool(true, test_const_position);		// 컴파일 불가 테스트
 
+	test_curl_https();
+
 
 	log_info
 		"----------------------------------------------------"
@@ -356,6 +361,31 @@ void run_test()
 	log_end
 
 	finalize_log();
+}
+
+bool test_curl_https()
+{
+	pcurl_client _curl_client = new curl_client();
+	if (nullptr == _curl_client)
+	{
+		log_err "not enought memory" log_end;
+		return false;
+	}
+
+	if (true != _curl_client->initialize())
+	{
+		log_err "curl client initialize() failed." log_end;
+		return false;
+	}
+
+	const char* url = "https://api.somma.kr:44440/api/v1100/process";
+	std::string res;
+	_curl_client->http_get(url, res);
+
+
+	_ASSERTE(_curl_client != nullptr);
+	delete _curl_client; _curl_client = nullptr;
+	return true;
 }
 
 /// @brief
