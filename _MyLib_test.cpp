@@ -1529,7 +1529,7 @@ bool test_md5_sha2()
                             NULL))
         {
             log_err 
-                "ReadFile( %ws ) failed. gle = 0x%08x", 
+                "ReadFile( %ws ) failed. gle = %u", 
                 file_path, 
                 GetLastError() 
             log_end;

@@ -568,7 +568,7 @@ FileInfoCache::file_util_get_hash(
 								NULL))
         {
             log_err
-                "ReadFile() failed. path=%ws, gle = 0x%08x",
+                "ReadFile() failed. path=%ws, gle = %u",
                 file_path,
                 GetLastError()
                 log_end;
