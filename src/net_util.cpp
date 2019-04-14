@@ -174,6 +174,12 @@ get_net_adapters(
 	//
 	//	Iterate all addresses
 	//
+	PNetAdapter adapter = nullptr;
+	ULONG subnet_mask = 0;
+	PIP_ADAPTER_UNICAST_ADDRESS unicast_addr = nullptr;
+	PIP_ADAPTER_DNS_SERVER_ADDRESS dns = nullptr;
+	PIP_ADAPTER_GATEWAY_ADDRESS gateway = nullptr;	
+
 	std::string str;
 	PIP_ADAPTER_ADDRESSES cur = address;
 	while (nullptr != cur)
@@ -193,8 +199,7 @@ get_net_adapters(
 		//
 		//	NetAdapter 객체를 생성하고, 리스트에 추가한다. 
 		//
-
-		PNetAdapter adapter = new NetAdapter();
+		adapter = new NetAdapter();
 		if (nullptr == adapter)
 		{
 			log_err "Not enough memory. " log_end;
@@ -238,8 +243,7 @@ get_net_adapters(
 		}
 
 		///	Assigned IP
-		ULONG subnet_mask;
-		PIP_ADAPTER_UNICAST_ADDRESS unicast_addr = cur->FirstUnicastAddress;
+		unicast_addr = cur->FirstUnicastAddress;
 		while (nullptr != unicast_addr)
 		{
 			if (true == SocketAddressToStr(&unicast_addr->Address, str))
@@ -283,7 +287,7 @@ get_net_adapters(
 		//}
 
 		///	DNS servers 
-		PIP_ADAPTER_DNS_SERVER_ADDRESS dns = cur->FirstDnsServerAddress;
+		dns = cur->FirstDnsServerAddress;
 		while (nullptr != dns)
 		{
 			if (true == SocketAddressToStr(&dns->Address, str))
@@ -294,7 +298,7 @@ get_net_adapters(
 		}
 
 		///	Gateway
-		PIP_ADAPTER_GATEWAY_ADDRESS gateway = cur->FirstGatewayAddress;
+		gateway = cur->FirstGatewayAddress;
 		while (nullptr != gateway)
 		{
 			if (true == SocketAddressToStr(&gateway->Address, str))

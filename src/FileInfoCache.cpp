@@ -450,11 +450,6 @@ FileInfoCache::get_flie_info(
 		//
 		_select_cache_stmt->reset();
 		
-#pragma todo("파일 정보(경로) 성능 관련 이슈")
-//	- 캐시 정보 중 path 데이터를 현재는 "string" 형태로
-//    넣고 있지만 추후(성능 이슈가 발생 하였을때) path를
-//    "hash"로 변경 하여 캐싱 및 셀렉트하여 사용한다.
-
 		//
 		// 파일 해시(md5, sha2)캐시를 읽어 온다.
 		//

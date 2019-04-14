@@ -35,7 +35,7 @@ __int64 func_a(int a, float b, int c, int d, int e)
 **/
 __int64 func_a(int a, double b, int c, int d, int e)
 {
-	return a+b+c+d+e;	
+	return (__int64)(a+b+c+d+e);	
 }
 
 

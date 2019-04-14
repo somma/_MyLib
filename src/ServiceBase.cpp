@@ -313,7 +313,7 @@ CServiceBase::CServiceBase(PWSTR pszServiceName,
 						   BOOL fCanSessionChange)
 {
     // Service name must be a valid string and cannot be NULL.
-    m_name = (pszServiceName == NULL) ? L"" : pszServiceName;
+    m_name = (pszServiceName == NULL) ? const_cast<PWSTR>(L"") : pszServiceName;
 
     m_statusHandle = NULL;
 
@@ -671,7 +671,7 @@ void CServiceBase::SetServiceStatus(DWORD dwCurrentState,
 //     EVENTLOG_INFORMATION_TYPE
 //     EVENTLOG_WARNING_TYPE
 //
-void CServiceBase::WriteEventLogEntry(PWSTR pszMessage, WORD wType)
+void CServiceBase::WriteEventLogEntry(_In_ const wchar_t* pszMessage, WORD wType)
 {
     HANDLE hEventSource = NULL;
     LPCWSTR lpszStrings[2] = { NULL, NULL };
@@ -707,7 +707,7 @@ void CServiceBase::WriteEventLogEntry(PWSTR pszMessage, WORD wType)
 //   * pszFunction - the function that gives the error
 //   * dwError - the error code
 //
-void CServiceBase::WriteErrorLogEntry(PWSTR pszFunction, DWORD dwError)
+void CServiceBase::WriteErrorLogEntry(_In_ const wchar_t* pszFunction, DWORD dwError)
 {
 	wchar_t szMessage[260];
     StringCchPrintf(szMessage, ARRAYSIZE(szMessage), L"%s failed w/err 0x%08lx", pszFunction, dwError);

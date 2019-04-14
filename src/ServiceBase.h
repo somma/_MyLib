@@ -233,11 +233,10 @@ protected:
         DWORD dwWaitHint = 0);
 
     // Log a message to the Application event log.
-    void WriteEventLogEntry(PWSTR pszMessage, WORD wType);
+    void WriteEventLogEntry(_In_ const wchar_t* pszMessage, _In_ WORD wType);
 
     // Log an error message to the Application event log.
-    void WriteErrorLogEntry(PWSTR pszFunction, 
-        DWORD dwError = GetLastError());
+    void WriteErrorLogEntry(_In_ const wchar_t* pszFunction, DWORD dwError = GetLastError());
 
 private:
 
