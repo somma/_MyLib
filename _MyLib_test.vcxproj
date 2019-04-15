@@ -146,9 +146,8 @@ echo "done." </Command>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PostBuildEvent>
-      <Command>echo "copy [$(TargetPath)] to debuggee..."
-copy $(TargetPath) x:\
-echo "done." </Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

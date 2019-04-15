@@ -26,6 +26,7 @@
 #include "FileInfoCache.h"
 #include "account_info.h"
 #include "curl_client.h"
+#include "CStream.h"
 
 // _test_log.cpp
 extern bool test_log_rotate();
@@ -192,6 +193,7 @@ extern bool test_set_binary_data();
 
 // _test_curl_https
 bool test_curl_https();
+bool test_curl_http();
 
 // thread_pool.h
 bool test_thread_pool();
@@ -336,6 +338,8 @@ void run_test()
 	//assert_bool(true, test_set_binary_data);    
 	//assert_bool(true, test_aes256);
 
+	//assert_bool(true, test_curl_https);
+	assert_bool(true, test_curl_http);
 
 	
 //
@@ -344,7 +348,6 @@ void run_test()
 	//assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
 	//assert_bool(true, test_const_position);		// 컴파일 불가 테스트
 
-	test_curl_https();
 
 
 	log_info
@@ -380,13 +383,41 @@ bool test_curl_https()
 
 	const char* url = "https://api.somma.kr:44440/api/v1100/process";
 	std::string res;
-	_curl_client->http_get(url, res);
+	_ASSERTE(true == _curl_client->http_get(url, res));
+	
+	_ASSERTE(_curl_client != nullptr);
+	delete _curl_client; _curl_client = nullptr;
+	return true;
+}
 
+bool test_curl_http()
+{
+	pcurl_client _curl_client = new curl_client();
+	if (nullptr == _curl_client)
+	{
+		log_err "not enought memory" log_end;
+		return false;
+	}
+
+	if (true != _curl_client->initialize())
+	{
+		log_err "curl client initialize() failed." log_end;
+		return false;
+	}
+
+	const char* url = "http://192.168.10.133:8000/Hello_World";
+	CMemoryStream stream;
+	_ASSERTE(true == _curl_client->http_get(url, stream));
+
+	std::vector<std::string> dumps;
+	dump_memory(0LL, (unsigned char*)(stream.GetMemory()), stream.GetSize(), dumps);	
+	std::for_each(dumps.begin(), dumps.end(),[](std::string& dump){printf("%s\n", dump.c_str());});
 
 	_ASSERTE(_curl_client != nullptr);
 	delete _curl_client; _curl_client = nullptr;
 	return true;
 }
+
 
 /// @brief
 bool test_get_drive_type()
