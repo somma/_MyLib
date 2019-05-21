@@ -7791,33 +7791,37 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 			return IT_UNKNOWN;
 		}
 
-		// check DOS file size
+		//
+		//	PE 상에 기록된 PE 파일의 사이즈와 실제 파일 사이즈를 비교
 		// 
 		DWORD dosSize = (idh->e_cp * 512);
 		if (dosSize > fileSize.QuadPart)
 		{
-			log_err "invalid file size, size=%llu",
-				fileSize.QuadPart
-				log_end;
-
-			//
-			//	Not a PE file
-			//
+			log_dbg "(not a pe) invalid file size, size=%llu", fileSize.QuadPart log_end;
 			return IT_UNKNOWN;
 		}
 
-		PIMAGE_NT_HEADERS inh = (PIMAGE_NT_HEADERS)((DWORD_PTR)idh + idh->e_lfanew);
-		if ((uintptr_t)inh >= (((uintptr_t)idh) + fileSize.QuadPart))
+		//
+		//	IMAGE_NT_HEADER 포인터가 PE 파일 영역(+/- 방향 모두)에 있는지 확인
+		//
+		#define IMAGE_DOS_SIGNATURE_SIZE 2
+		PIMAGE_NT_HEADERS inh = (PIMAGE_NT_HEADERS)((uintptr_t)idh + idh->e_lfanew);
+		if ((uintptr_t)inh < ((uintptr_t)idh + IMAGE_DOS_SIGNATURE_SIZE))
 		{
-			log_err "invalid file size (e_lfanew). file_size=%llu, inh addr=0x%p",
-				fileSize.QuadPart,
-				inh
-				log_end;
-			//
-			//	Not a PE file
-			//
+			log_dbg "(not a pe) invalid idh->e_lfanew (negative value)" log_end;
 			return IT_UNKNOWN;
 		}
+		
+		//
+		//	IMAGE_NT_HEADER 구조체가 PE 파일 범이내에 모두 있는지 확인
+		//
+		if ( (uintptr_t)inh > (uintptr_t)idh + fileSize.QuadPart ||			
+			 (uintptr_t)inh + sizeof(IMAGE_NT_HEADERS) > (uintptr_t)idh + fileSize.QuadPart )
+		{
+			log_dbg "(not a pe) inh is out of pe file." log_end;
+			return IT_UNKNOWN;
+		}
+
 		if (IMAGE_NT_SIGNATURE != inh->Signature) return IT_UNKNOWN;;
 
 		WORD subsys = inh->OptionalHeader.Subsystem;

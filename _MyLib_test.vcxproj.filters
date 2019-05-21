@@ -102,9 +102,6 @@
     <ClInclude Include="src\StopWatch.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\targetver.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\thread_pool.h">
       <Filter>src</Filter>
     </ClInclude>
