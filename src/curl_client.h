@@ -59,14 +59,13 @@ public:
 
 public:
 	bool initialize();
-	bool http_get(_In_		 const char* url,
-				  _Out_		 std::string& response);
-	bool http_post(_In_		 const char* url,
-				   _In_		 const std::string& body_data,
-				   _Out_	 std::string& response);
+	bool http_get(_In_ const char* url, _Out_ CMemoryStream& stream);
+	bool http_get(_In_ const char* url, _Out_ std::string& response);
+
+	bool http_post(_In_	const char* url, _In_ const std::string& body_data, _Out_ std::string& response);
+		
 private:
-	bool set_common_opt(_In_ const char* url,
-						_Out_ CMemoryStream& stream);
+	bool set_common_opt(_In_ const char* url, _Out_ CMemoryStream& stream);
 	bool perform();
 	void finalize();
 

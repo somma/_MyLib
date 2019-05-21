@@ -628,8 +628,6 @@ void dump_group_attributes(_In_ uint32_t group_attributes);
 /// @brief process privilege 정보 중 `attributes`을 문자열로 덤프한다.
 void dump_privilege_attributes(_In_ uint32_t privilege_attributes);
 
-#pragma todo("sid 관련코드-> windows_security.h 같은 거 하나 만들어서 이동시키자")
-
 /// @brief	user/group 정보
 ///			sid		S-1-5-18, S-1-5-21-2224222141-402476733-2427282895-1001 등
 ///			domain	NT AUTHORITY, DESKTOP-27HJ3RS 등

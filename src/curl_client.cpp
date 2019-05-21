@@ -73,9 +73,87 @@ void curl_client::finalize()
 	curl_easy_cleanup(_curl);
 }
 
-/// @brief http get 요청을 수행한다.
-/// @param url			  전송할 서버 주소
-/// @param response		  response data를 저장하기 위한 자료구조
+/// @brief	
+bool
+curl_client::http_get(
+	_In_ const char* url,
+	_Out_ CMemoryStream& stream
+)
+{
+	_ASSERTE(nullptr != url);
+	if (nullptr == url) return false;
+
+	_ASSERTE(NULL != _curl);
+	if (nullptr == url || nullptr == _curl)
+	{
+		log_err "curl_client object is not initialized." log_end;
+		return false;
+	}
+
+	// 우선 스트림을 초기화 한다. 
+	stream.ClearStream();
+
+	CURLcode curl_code = CURLE_OK;
+	if (true != set_common_opt(url, stream))
+	{
+		log_err "set_common_opt() failed." log_end;
+		return false;
+	}
+
+	const char* token = "FOO";
+	std::stringstream header_item;
+	header_item << "authorization: Bearer " << token;
+
+	bool ret = false; 
+	struct curl_slist *list = nullptr;	
+	do
+	{
+		list = curl_slist_append(list, header_item.str().c_str());
+
+		curl_code = curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, list);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		curl_code = curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYPEER, 0L);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		// perform
+		if (true != perform())
+		{
+			log_err "perform() failed." log_end;
+			break;
+		}
+
+		ret = true;
+	} while (false);
+
+
+	//  내부 자원 소멸
+	if (nullptr != list)
+	{
+		curl_slist_free_all(list);
+		list = nullptr;
+	}
+
+	return ret;
+}
+
+/// @brief	http get 요청을 수행한다.
+/// @param	url			전송할 서버 주소
+/// @param	response	response data를 저장하기 위한 자료구조
 /// @return	성공시 true, 실패시 false
 bool
 curl_client::http_get(
@@ -84,69 +162,22 @@ curl_client::http_get(
 	)
 {
 	_ASSERTE(nullptr != url);
-	_ASSERTE(NULL != _curl);
-	if (nullptr == url || nullptr == _curl)
-	{
-		return false;
-	}
+	if (nullptr == url) return false;
 
 	CMemoryStream stream;
-	CURLcode curl_code = CURLE_OK;
-
-	if (true != set_common_opt(url, stream))
+	if (true != this->http_get(url, stream))	
 	{
-		log_err "set_common_opt() failed." log_end;
+		log_err "http_get() failed. url=%s", url log_end;
 		return false;
 	}
 
-	const char* token = "FOO";
-
-	std::stringstream header_item;
-		header_item << "authorization: Bearer "
-					<< token;
-
-	struct curl_slist *list = nullptr;
-	list = curl_slist_append(list, header_item.str().c_str());
-
-	curl_code = curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, list);
-	if (CURLE_OK != curl_code)
-	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
-
-	curl_code = curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYPEER, 0L);
-	if (CURLE_OK != curl_code)
-	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
-
-	//	perform
-	if (true != perform())
-	{
-		log_err "perform() failed." log_end;
-		return false;
-	}
-
-	//	response data 에 null terminate 를 추가한다.
+	// response data 에 null terminate 를 추가하고
+	// Stream 을 string  으로 변환 후 리턴한다.
 	char nt = '\0';
 	stream.WriteToStream(&nt, sizeof(char));
-
 	response = (char*)stream.GetMemory();
-	
 	stream.ClearStream();
-	if (nullptr != list)
-	{
-		curl_slist_free_all(list);
-		list = nullptr;
-	}
+	
 	return true;
 }
 
@@ -234,7 +265,6 @@ curl_client::http_post(
 	stream.ClearStream();
 	return true;
 }
-
 
 
 /// @brief	전송을 하기위한 기본 options을 설정한다.
