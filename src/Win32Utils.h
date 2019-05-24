@@ -28,14 +28,18 @@
 
 #include "log.h"
 
+//
+//  _pointer 가 _alignment 바운더리에 있는지 확인 (fltKernel.h 에 정의되어있음)
+//	
+#define IS_ALIGNED(_pointer, _alignment) \
+	((((ULONG_PTR) (_pointer)) & ((_alignment) - 1)) == 0)
+
 
 // | size | _______data_______ | 형태의 메모리 구조
-// byte align 때문에 일부러 buf[4] 로 선언함
-// 
 typedef struct _continuous_memory
 {
     DWORD   size;   // buf size
-    CHAR    buf[4];
+    CHAR    buf[1];
 } CTM, *PCTM;
 #define CTM_SIZE( _data_size_ )   ((_data_size_) + sizeof(DWORD))
 
@@ -100,7 +104,7 @@ typedef struct _continuous_memory
 
 #define free_and_nil(p)	do{if (nullptr != p) { free(p); p = nullptr;} } while(false);
 
-#define     _pause  _getch()
+#define _pause  _getch()
 
 #define _mem_check_begin \
 	{\
@@ -166,8 +170,9 @@ typedef struct _FATTIME
 
 std::string FAT2Str(IN FATTIME& fat);
 
-uint64_t file_time_to_int(_In_ const PFILETIME file_time);
-void int_to_file_time(_In_ uint64_t file_time_int, _Out_ PFILETIME const file_time);
+__inline uint64_t file_time_to_int(_In_ const PFILETIME file_time);
+__inline void int_to_file_time(_In_ uint64_t file_time_int, _Out_ PFILETIME const file_time);
+__inline void large_int_to_file_time(_In_ const PLARGE_INTEGER large_int, _Out_ PFILETIME const file_time);
 
 void unixtime_to_filetime(_In_ uint32_t unix_time, _Out_ PFILETIME const file_time);
 

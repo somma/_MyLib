@@ -33,8 +33,6 @@ bool test_process_token()
 				user_sid->_sid_name_use
 				log_end;
 
-			//if (71944 == proc.pid()) __debugbreak();
-
 			//
 			//	groups
 			//

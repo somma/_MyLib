@@ -98,15 +98,96 @@ std::string FAT2Str(IN FATTIME& fat)
 /// @brief	FILETIME -> uint64_t
 ///	@remark	Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64*
 ///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
+///			https://devblogs.microsoft.com/oldnewthing/20040825-00/?p=38053
+/*
+	
+		typedef struct _FILETIME {
+			DWORD dwLowDateTime;
+			DWORD dwHighDateTime;
+		} FILETIME, *PFILETIME, *LPFILETIME;
 
-uint64_t file_time_to_int(_In_ const PFILETIME file_time)
+	FILETIME 구조체는 4바이트 변수 2개로 구성되어 있으므로 4 byte alignment 되어야 한다.
+	이 경우 FILETIME -> __int64 로 변환해도 문제가 발생하지는 않는다.
+
+	+----------------------------------------------------------------------------+
+
+	typedef struct _WIN32_FIND_DATAW {
+		DWORD dwFileAttributes;
+		FILETIME ftCreationTime;
+		FILETIME ftLastAccessTime;
+		FILETIME ftLastWriteTime;
+		DWORD nFileSizeHigh;
+		DWORD nFileSizeLow;
+		...
+	} WIN32_FIND_DATAW, *PWIN32_FIND_DATAW, *LPWIN32_FIND_DATAW;
+
+	WIN32_FIND_DATAW 구조체의 경우 dwFileAttributes 가 4바이트이므로, 
+		- ftCreationTime   = 0x00000004 ~ 0x0000000C 
+		- ftLastAccessTime = 0x0000000c ~ 0x00000020 
+	에 위치하게 된다. 
+
+	포인터 변수는 pointer alignment(8바이트)가 되어야 하는데, 만일 ftCreationTime 의 
+	주소(0x00000004)를 __int64_t* 타입의 포인터로 캐스팅해서 엑세스하게 되는 경우 
+	__int64_t 포인터는 pointer alignment(8바이트)가 아니라 4 byte alignment 메모리 영역에
+	접근하게 되기 때문에 alignment 를 지켜야 하는 경우 에러가 발생할 수 있다. 
+
+	커널의 메세지 디스패처에는 아래와 같은 코드들을 자주 볼 수 있다. 
+
+		if (!IS_ALIGNED(OutputBuffer, sizeof(uint64_t*))) {
+			return STATUS_DATATYPE_MISALIGNMENT;
+		}
+
+	만일 ftCreateTime 을 __uint64_t* 로 강제캐스팅해서 커널서비스 루틴을 호출했다면 
+	STATUS_DATATYPE_MISALIGNMENT 에러가 리턴될 것이다. 
+
+	+----------------------------------------------------------------------------+
+
+		typedef union _LARGE_INTEGER 
+		{
+			struct {
+				DWORD LowPart;
+				LONG HighPart;
+			} DUMMYSTRUCTNAME;
+
+			struct {
+				DWORD LowPart;
+				LONG HighPart;
+			} u;
+
+			LONGLONG QuadPart;
+		} LARGE_INTEGER;
+
+	LARGE_INTEGER, ULARGE_INTEGER 는 union 으로 정의되어있고 LONGLONG 타입 변수가 있기때문에
+	기본으로 8byte align 을 사용하기 때문에 위의 문제가 발생하지 않는다. 
+
+	참고로 LowPart, HighPart 를 가지는 동일한 구조체를 union 안에 두번 선언한 이유는 예전 코드와의 
+	호환성을 위한 것이라고 함 (이름 없는 구조체를 가지는 유니온을 지원하느냐 마는냐 뭐 그런...)
+	저렇게 유니온을 선언해 두면 아래 두가지 형태의 코드를 모두 사용할 수 있기 때문이라고 함
+	
+		LargeInteger.u.Lowpart = 0
+		LargeInteger.LowPart = 0 		
+*/
+__inline 
+uint64_t
+file_time_to_int(
+	_In_ const PFILETIME file_time
+)
 {
-	return ((LARGE_INTEGER*)file_time)->QuadPart;
+	_ASSERTE(nullptr != file_time);
+	if (nullptr == file_time) { return (uint64_t)(-1); }
+
+	LARGE_INTEGER li;
+	li.LowPart = file_time->dwLowDateTime;
+	li.HighPart = file_time->dwHighDateTime;
+	return li.QuadPart;
 }
 
 /// @brief	uint64_t -> FILETIME
 ///	@remark	Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64*
 ///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
+///			https://devblogs.microsoft.com/oldnewthing/20040825-00/?p=38053
+///	
+__inline 
 void
 int_to_file_time(
 	_In_ uint64_t file_time_int,
@@ -116,9 +197,28 @@ int_to_file_time(
 	_ASSERTE(nullptr != file_time);
 	if (nullptr == file_time) return;
 
-	file_time->dwLowDateTime = ((PLARGE_INTEGER)&file_time_int)->LowPart;
-	file_time->dwHighDateTime = ((PLARGE_INTEGER)&file_time_int)->HighPart;
+	large_int_to_file_time(reinterpret_cast<PLARGE_INTEGER>(&file_time_int), file_time);
 }
+
+/// @brief	LARGE_INTEGER -> FILETIME 으로 변환
+///			** NOTE **
+///			특별한 경우가 아니라면 large_int_to_file_time() 함수를 사용할 필요없이 
+///			`PFILETIME ft = (PFILETIME)&large_int` 형태로 바로 캐스팅해서 사용하도 문제없다. 
+///			
+__inline 
+void
+large_int_to_file_time(
+	_In_ const PLARGE_INTEGER large_int,
+	_Out_ PFILETIME const file_time
+)
+{
+	_ASSERTE(nullptr != large_int);
+	if (nullptr == large_int) return;
+
+	file_time->dwLowDateTime = large_int->LowPart;
+	file_time->dwHighDateTime = large_int->HighPart;
+}
+
 /// @brief	unixtime(DWORD) -> FILETIME
 ///	@remark	Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64*
 ///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
@@ -6446,7 +6546,7 @@ psid_info get_sid_info(_In_ PSID sid)
 		case ERROR_INVALID_SID: gles = "ERROR_INVALID_SID"; break;
 		case ERROR_INVALID_PARAMETER: gles = "ERROR_INVALID_PARAMETER"; break;
 		}
-
+		
 		if (nullptr != gles)
 		{
 			log_err "ConvertSidToStringSidW() failed. gle=%s",

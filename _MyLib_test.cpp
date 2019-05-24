@@ -206,6 +206,8 @@ bool test_aes256();
 
 bool test_trivia();
 
+bool test_alignment();
+
 void run_test()
 {
 	UINT32 _pass_count = 0;
@@ -339,8 +341,8 @@ void run_test()
 	//assert_bool(true, test_aes256);
 
 	//assert_bool(true, test_curl_https);
-	assert_bool(true, test_curl_http);
-
+	//assert_bool(true, test_curl_http);
+	assert_bool(true, test_alignment);
 	
 //
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -3358,6 +3360,36 @@ bool test_trivia()
 
 
 	return true;
+}
+
+/// @brief	STATUS_DATATYPE_MISALIGNMENT related test
+///			https://devblogs.microsoft.com/oldnewthing/20040826-00/?p=38043
+///			https://devblogs.microsoft.com/oldnewthing/20040825-00/?p=38053
+bool test_alignment()
+{
+	WIN32_FIND_DATAW data = { 0 };
+	//GetSystemTimeAsFileTime();
+	
+	log_info"\n"
+		"ftCreationTime     =0x%08x\n"
+		"ftLastAccessTime   =0x%08x\n"
+		"ftLastWriteTime    =0x%08x\n"
+		"nFileSizeHigh      =0x%08x\n",
+		(DWORD_PTR)&data.ftCreationTime - (DWORD_PTR)&data,
+		(DWORD_PTR)&data.ftLastAccessTime - (DWORD_PTR)&data,
+		(DWORD_PTR)&data.ftLastWriteTime - (DWORD_PTR)&data,
+		(DWORD_PTR)&data.nFileSizeHigh - (DWORD_PTR)&data
+		log_end;
+
+	uint64_t* p = (uint64_t*)&data.ftCreationTime;
+	log_info "0x%p, %llu, %s", 
+		p, 
+		*p, 
+		IS_ALIGNED(p, sizeof(uint64_t*)) ? "aligned" : "not aligned"
+		log_end;	
+
+	return true;
+
 }
 
 /**
