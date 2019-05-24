@@ -233,7 +233,6 @@ echo "done." </Command>
     <ClInclude Include="src\Singleton.h" />
     <ClInclude Include="src\steady_timer.h" />
     <ClInclude Include="src\StopWatch.h" />
-    <ClInclude Include="src\targetver.h" />
     <ClInclude Include="src\ThreadManager.h" />
     <ClInclude Include="src\thread_pool.h" />
     <ClInclude Include="src\Win32Utils.h" />
