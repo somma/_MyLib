@@ -238,7 +238,7 @@ void run_test()
 	//assert_bool(true, test_ppl);
 
 	//assert_bool(true, test_find_and_replace);
-	//assert_bool(true, test_file_io_helper);
+	assert_bool(true, test_file_io_helper);
 	//assert_bool(true, test_file_io_helper2);
 	
 	//assert_bool(true, test_scm_context);
@@ -342,7 +342,7 @@ void run_test()
 
 	//assert_bool(true, test_curl_https);
 	//assert_bool(true, test_curl_http);
-	assert_bool(true, test_alignment);
+	//assert_bool(true, test_alignment);
 	
 //
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -3412,6 +3412,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	if (argc == 1)
 	{
+		set_log_to(log_to_con);
+		set_log_level(log_level_info);
+
 		run_test();
 	}
 	else

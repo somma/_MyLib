@@ -11,24 +11,25 @@
 #pragma once
 
 /// @brief	MMIO 용 유틸리티 클래스.
-///			mFileView 포인터는 스레드 안정성을 보장하지 않으므로, 
+///			_file_view 포인터는 스레드 안정성을 보장하지 않으므로, 
 ///			멀티스레드 환경에서 사용하면 안됨
 typedef class FileIoHelper
 {
 private:
-	BOOL			mReadOnly;
-	HANDLE			mFileHandle;
-	uint64_t		mFileSize;
-	HANDLE			mFileMap;
-	PUCHAR			mFileView;
+	bool _do_not_close_handle;
+	bool _read_only;
+	HANDLE _file_handle;
+	uint64_t _file_size;
+	HANDLE _map_handle;
+	PUCHAR _file_view;
 public:
 	FileIoHelper();
 	~FileIoHelper();
 
 	static uint32_t GetOptimizedBlockSize();
 
-	BOOL Initialized()	{ return (INVALID_HANDLE_VALUE != mFileHandle) ? TRUE : FALSE;}
-	BOOL IsReadOnly()	{ return (TRUE == mReadOnly) ? TRUE : FALSE;}	
+	bool Initialized()	{ return (INVALID_HANDLE_VALUE != _file_handle) ? true : false;}
+	bool IsReadOnly()	{ return (true == _read_only) ? true : false;}	
 
 	bool OpenForRead(_In_ const wchar_t* file_path);
 	bool OpenForRead(_In_ const HANDLE file_handle);	
@@ -45,7 +46,7 @@ public:
 	bool ReadFromFile(_In_ uint64_t Offset, _In_ DWORD Size, _Inout_updates_bytes_(Size) PUCHAR Buffer);
 	bool WriteToFile(_In_ uint64_t Offset, _In_ DWORD Size, _In_reads_bytes_(Size) PUCHAR Buffer);
 
-	uint64_t  FileSize(){ return mFileSize; }
+	uint64_t  FileSize(){ return _file_size; }
 
 	
 

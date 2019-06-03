@@ -20,6 +20,10 @@
 #include "Wow64Util.h"
 #include <Strsafe.h>
 
+#include "md5.h"
+#include "sha2.h"
+#include "FileIoHelperClass.h"
+
 #include <set>
 #include <errno.h>
 #include <io.h>			// _setmode()
@@ -2258,6 +2262,162 @@ SaveBinaryFile(
 	}
 
 	return true;
+}
+
+/// @brief	파일의 해시를 계산한다.
+bool
+get_file_hash_by_filepath(
+	_In_ const wchar_t* file_path,
+	_Out_opt_ const std::string* md5,
+	_Out_opt_ const std::string* sha2
+)
+{
+	_ASSERTE(nullptr != file_path);
+	_ASSERTE(!(nullptr == md5 && nullptr == sha2));
+	if (nullptr == file_path || (nullptr == md5 && nullptr == sha2))
+	{
+		return false;
+	}
+
+	handle_ptr file_handle(
+		CreateFileW(file_path,
+					GENERIC_READ,
+					FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+					NULL,
+					OPEN_EXISTING,
+					FILE_ATTRIBUTE_NORMAL,
+					NULL),
+		[](HANDLE h)
+	{
+		if (INVALID_HANDLE_VALUE != h)
+		{
+			CloseHandle(h);
+		}
+	});
+
+	if (INVALID_HANDLE_VALUE == file_handle.get())
+	{
+		log_err
+			"CreateFileW() failed. path=%ws, gle = %u",
+			file_path,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	return get_file_hash_by_filehandle(file_handle.get(),
+									   md5,
+									   sha2);
+}
+
+
+/// @brief	파일의 해시를 계산한다.
+bool
+get_file_hash_by_filehandle(
+	_In_ HANDLE file_handle,
+	_Out_opt_ const std::string* md5,
+	_Out_opt_ const std::string* sha2
+)
+{
+	_ASSERTE(nullptr != file_handle);
+	_ASSERTE(!(nullptr == md5 && nullptr == sha2));
+	if (nullptr == file_handle || (nullptr == md5 && nullptr == sha2))
+	{
+		return false;
+	}
+	
+	bool ret = false;
+	MD5_CTX* ctx_md5 = nullptr;
+	sha256_ctx* ctx_sha2 = nullptr;
+	uint8_t* sha2_buf = nullptr;
+	do
+	{
+		if (nullptr != md5)
+		{
+			ctx_md5 = (MD5_CTX*)malloc(sizeof(MD5_CTX));
+			if (nullptr == ctx_md5) break;
+		}
+
+		if (nullptr != sha2)
+		{
+			ctx_sha2 = (sha256_ctx*)malloc(sizeof(sha256_ctx));
+			sha2_buf = (uint8_t*)malloc(32);
+			if (nullptr == ctx_sha2 || nullptr == sha2_buf) break;
+		}
+		
+		_ASSERTE(!(nullptr == ctx_md5 && nullptr == ctx_sha2));
+
+		/// NOTE by somma
+		/// ReadFile() 로 읽어서 해시를 구하던 코드를 FileIoHelper 를 사용해서
+		/// MMIO 로 변경했으나 성능상의 큰 이득은 없는것 같다. 
+		/// 어차피 실행 파일 사이즈가 작아서 크게 이득은 없을 듯 싶다.
+		FileIoHelper fio;
+		if (true != fio.OpenForRead(file_handle))
+		{
+			log_err "fio.OpenForRead() failed. file handle=0x%p",
+				file_handle
+				log_end;
+			break;
+		}
+
+		if (nullptr != ctx_md5) { MD5Init(ctx_md5, 0); }
+		if (nullptr != ctx_sha2) { sha256_begin(ctx_sha2); }
+
+		bool err = false;
+		uint64_t file_size = fio.FileSize();
+		uint64_t pos = 0;
+		while (pos < file_size)
+		{
+			if (err) break;
+
+			uint32_t size = (uint32_t)min(fio.GetOptimizedBlockSize(), file_size - pos);
+			uint8_t* ptr = fio.GetFilePointer(true, pos, size);
+
+			if (nullptr != ctx_md5) { MD5Update(ctx_md5, ptr, size); }
+			if (nullptr != ctx_sha2) { sha256_hash(ptr, size, ctx_sha2); }
+
+			fio.ReleaseFilePointer();
+			pos += size;
+		}
+
+		if (nullptr != ctx_md5) { MD5Final(ctx_md5); }
+		if (nullptr != ctx_sha2){ sha256_end(sha2_buf, ctx_sha2); }
+
+		//
+		//	Hash 바이너리 버퍼를 hex 문자열로 변환
+		//
+		std::string tmp;
+		if (nullptr != ctx_md5)
+		{
+			if (true != bin_to_hexa_fast(sizeof(ctx_md5->digest),
+										 ctx_md5->digest,
+										 false,
+										 (std::string&)*md5))
+			{
+				log_err "bin_to_hexa_fast() failed. " log_end;
+				break;
+			}			
+		}
+		
+		if (nullptr != ctx_sha2)
+		{
+			if (true != bin_to_hexa_fast(sizeof(sha2_buf),
+										 sha2_buf,
+										 false,
+										 (std::string&)*sha2))
+			{
+				log_err "bin_to_hexa_fast() failed. " log_end;
+				break;
+			}
+		}		
+
+		ret = true;
+	} while (false);
+
+	free_and_nil(ctx_md5);
+	free_and_nil(ctx_sha2);
+	free_and_nil(sha2_buf);
+	return ret;
 }
 
 

@@ -63,6 +63,11 @@ public:
 		_full_path(full_path), 
 		_killed(killed)
 	{
+		_ASSERTE(nullptr != process_name);
+		if (nullptr == process_name || wcslen(process_name))
+		{
+			_process_name = _null_stringw;
+		}
 	}
 
 	bool kill(_In_ DWORD exit_code, _In_ bool enable_debug_priv);

@@ -98,8 +98,8 @@ file_copy_mmio(
 /// @brief	test main
 bool test_file_io_helper()
 {
-	const wchar_t* src_file = L"c:\\dbg\\ucrtbased.dll";
-	const wchar_t* dst_file = L"c:\\dbg\\ucrtbased.dll.copy";
+	const wchar_t* src_file = L"c:\\windows\\system32\\notepad.exe";
+	const wchar_t* dst_file = L"c:\\dbg\\notepad.exe.copy";
 
 	SYSTEM_INFO si;
 	GetSystemInfo(&si);
@@ -113,7 +113,7 @@ bool test_file_io_helper()
 	}*pblock_size_test;
 
 	block_size_test blocks[] = {
-		{ 0, 1024, 0},
+		{ 0, 2, 0},
 		{ 1, si.dwAllocationGranularity, 0},
 		{ 2, si.dwAllocationGranularity * 2, 0 },
 		{ 4, si.dwAllocationGranularity * 4, 0 },

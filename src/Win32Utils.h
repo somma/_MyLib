@@ -254,7 +254,6 @@ bool get_file_position(_In_ HANDLE file_handle, _Out_ int64_t& position);
 bool set_file_position(_In_ HANDLE file_handle, _In_ int64_t distance, _Out_opt_ int64_t* new_position);
 bool set_file_size(_In_ HANDLE file_handle, _In_ int64_t new_size);
 
-
 BOOL SaveToFileAsUTF8A(
                 IN LPCWSTR FilePathDoesNotExists, 
                 IN LPCSTR NullTerminatedAsciiString
@@ -269,6 +268,7 @@ LoadFileToMemory(
 	_Out_ DWORD&  MemorySize,
 	_Outptr_ PBYTE&  Memory
 	);
+
 bool
 SaveBinaryFile(
 	_In_ const LPCWSTR  Directory,
@@ -276,6 +276,21 @@ SaveBinaryFile(
 	_In_ DWORD    Size,
 	_In_ PBYTE    Data
 	);
+
+bool 
+get_file_hash_by_filepath(
+	_In_ const wchar_t* file_path,
+	_Out_opt_ const std::string* md5,
+	_Out_opt_ const std::string* sha2
+);
+
+bool 
+get_file_hash_by_filehandle(
+	_In_ HANDLE file_handle,
+	_Out_opt_ const std::string* md5,
+	_Out_opt_ const std::string* sha2
+);
+
 
 /// 콜백 대신 람다를 사용할 수 있음
 //	if (true != find_files(root,
