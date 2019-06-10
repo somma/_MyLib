@@ -906,16 +906,14 @@ void clear_console();
     c:\windows\system32\services.exe= IMAGE_SUBSYSTEM_WINDOWS_GUI 
     
 */
-typedef enum _IMAGE_TYPE 
-{
-    IT_DLL,                     // dll, ocx file    
-    IT_EXE_GUI,                 // gui app
-    IT_EXE_CUI,                 // cui app
-	IT_EXE_BOOT,				// boot app
-    IT_NATIVE_APP,              // ntoskrnl.exe, win32k.sys, csrss.exe
-    IT_UNKNOWN                  // unknown or not executable or invalid image
-} IMAGE_TYPE;
+#define IT_UNKNOWN	0		// unknown or not executable or invalid image
+#define IT_DLL		1		// dll, ocx file    
+#define IT_EXE_GUI	2		// gui app
+#define IT_EXE_CUI	3		// cui app
+#define IT_EXE_BOOT	4		// boot app
+#define IT_NATIVE_APP	5	// ntoskrnl.exe, win32k.sys, csrss.exe
 
+typedef uint32_t IMAGE_TYPE;
 IMAGE_TYPE get_image_type(_In_ const wchar_t* path);
 IMAGE_TYPE get_image_type(_In_ HANDLE file_handle);
 LPCWSTR  image_type_to_string(IMAGE_TYPE type);

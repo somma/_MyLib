@@ -2401,7 +2401,7 @@ get_file_hash_by_filehandle(
 		
 		if (nullptr != ctx_sha2)
 		{
-			if (true != bin_to_hexa_fast(sizeof(sha2_buf),
+			if (true != bin_to_hexa_fast(32,
 										 sha2_buf,
 										 false,
 										 (std::string&)*sha2))

@@ -205,8 +205,9 @@ extern bool test_boost_thread();
 bool test_aes256();
 
 bool test_trivia();
-
 bool test_alignment();
+bool test_create_string_from_buffer();
+bool test_stop_watch();
 
 void run_test()
 {
@@ -238,7 +239,7 @@ void run_test()
 	//assert_bool(true, test_ppl);
 
 	//assert_bool(true, test_find_and_replace);
-	assert_bool(true, test_file_io_helper);
+	//assert_bool(true, test_file_io_helper);
 	//assert_bool(true, test_file_io_helper2);
 	
 	//assert_bool(true, test_scm_context);
@@ -343,6 +344,8 @@ void run_test()
 	//assert_bool(true, test_curl_https);
 	//assert_bool(true, test_curl_http);
 	//assert_bool(true, test_alignment);
+	//assert_bool(true, test_create_string_from_buffer);
+	assert_bool(true, test_stop_watch);
 	
 //
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -3389,7 +3392,95 @@ bool test_alignment()
 		log_end;	
 
 	return true;
+}
 
+/// @brief	
+bool test_create_string_from_buffer()
+{
+	//
+	//	char 배열로부터 지정된 사이즈만큼만 복사해서 string 객체 생성하기
+	//
+	char buf[128] = { 0x00 };
+	RtlCopyMemory(&buf[0], "abcd", strlen("abcd"));
+	RtlCopyMemory(&buf[16], "defg", strlen("defg"));
+
+	std::string abcde(&buf[0], strlen("abcd"));
+	std::string empty(&buf[8], _null_stringa.size() * sizeof(char));
+	std::string defg(&buf[16], strlen("abcd"));
+	log_info "%s(%u), %s(%u), %s(%u)",
+		abcde.c_str(), abcde.size(),
+		empty.c_str(), empty.size(),
+		defg.c_str(), defg.size()
+		log_end;
+
+	//
+	//
+	//
+
+	wchar_t bufw[128] = { 0x00 };
+	RtlCopyMemory(&bufw[0], L"abcd", wcslen(L"abcd") * sizeof(wchar_t));
+	RtlCopyMemory(&bufw[16], L"defg", wcslen(L"defg") * sizeof(wchar_t));
+
+	std::wstring wabcde(&bufw[0], wcslen(L"abcd"));
+	std::wstring wempty(&bufw[8], wcslen(_null_stringw.c_str()));
+	std::wstring wdefg(&bufw[16], wcslen(L"defg"));
+	log_info "%ws(%u), %ws(%u), %ws(%u)",
+		wabcde.c_str(), wabcde.size(),
+		wempty.c_str(), wempty.size(),
+		wdefg.c_str(), wdefg.size()
+		log_end;
+
+	//
+	//	std::string.length(), size()
+	//		- 문자의 count 를 리턴, 두메소드 동일
+	//
+	std::wstring tests = L"0123456789";
+	log_info "%ws, length=%u, size=%u",
+		tests.c_str(),
+		tests.length(),
+		tests.size()
+		log_end;
+
+	//
+	//	std::string.assign()
+	//
+	char* src = "0123456789";
+	std::string assignee;
+	std::string r = assignee.assign(&src[0], 4);
+	log_info
+		"[*] assignee.assign(src[0], 4)\n"
+		"	return	=%s \n"
+		"	assignee=%s",
+		r.c_str(),
+		assignee.c_str()
+		log_end;
+
+	wchar_t* wsrc = L"0123456789";
+	std::wstring wassignee;
+	std::wstring wr = wassignee.assign(&wsrc[0], 4);
+	log_info
+		"[*] assignee.assign(src[0], 4)\n"
+		"	return	=%ws \n"
+		"	assignee=%ws",
+		wr.c_str(),
+		wassignee.c_str()
+		log_end;
+
+	return true;
+}
+
+/// StopWatch 클래스 테스트
+bool test_stop_watch()
+{
+	StopWatch sw; 
+	sw.Start();
+	Sleep(1000);
+	sw.Stop();
+	log_info "%f secs, %f msecs elapsed.",
+		sw.GetDurationSecond(),
+		sw.GetDurationMilliSecond()
+		log_end;
+	return true;
 }
 
 /**
@@ -3412,7 +3503,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	if (argc == 1)
 	{
-		set_log_to(log_to_con);
+		set_log_to(log_to_ods|log_to_con);
 		set_log_level(log_level_info);
 
 		run_test();

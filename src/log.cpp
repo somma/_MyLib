@@ -248,9 +248,11 @@ uint32_t get_log_to()
 	return _log_to;
 }
 
-void set_log_to(_In_ uint32_t log_to)
+uint32_t set_log_to(_In_ uint32_t log_to)
 {
 	boost::lock_guard< boost::mutex > lock(_logger_lock);
+
+	uint32_t old = _log_to;
 
 	if (_log_to != log_to)
 	{
@@ -261,6 +263,8 @@ void set_log_to(_In_ uint32_t log_to)
 			_logger->set_log_env(_logger->log_level(), log_to);
 		}
 	}
+
+	return old;
 }
 
 

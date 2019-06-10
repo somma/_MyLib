@@ -306,10 +306,10 @@ aes_decrypt(
 	_Inout_ int* len
 	)
 {
-  /* plaintext will always be equal to or lesser than length of ciphertext*/
-  int p_len = *len, f_len = 0;
-  unsigned char *plaintext = (unsigned char *) malloc(p_len);
-  
+	/* plaintext will always be equal to or lesser than length of ciphertext*/
+	int p_len = *len, f_len = 0;
+	unsigned char *plaintext = (unsigned char *)malloc(p_len);
+	
 //  EVP_DecryptInit_ex(e, NULL, NULL, NULL, NULL);
   EVP_DecryptUpdate(e, 
 				    plaintext, 

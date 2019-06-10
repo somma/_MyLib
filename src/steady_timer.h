@@ -97,7 +97,7 @@ private:
 			//	callback »£√‚
 			//
 			_ASSERTE(true == _running);
-			_ASSERTE(nullptr != _callback);
+			_ASSERTE(true != _callback.empty());
 			if (true != _callback(_tag))
 			{
 				//

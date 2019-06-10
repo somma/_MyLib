@@ -104,7 +104,7 @@ uint32_t get_log_level();
 void set_log_level(_In_ uint32_t log_level);
 
 uint32_t get_log_to();
-void set_log_to(_In_ uint32_t log_to);
+uint32_t set_log_to(_In_ uint32_t log_to);
 
 
 
