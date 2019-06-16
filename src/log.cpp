@@ -761,7 +761,12 @@ bool slogger::enum_old_log_files()
 		<< L".*."
 		<< ext;
 		
-	bool ret = find_files(search.str().c_str(), [](DWORD_PTR tag, const wchar_t* path)->bool {
+	bool ret = \
+		find_files(search.str().c_str(), 
+				   reinterpret_cast<DWORD_PTR>(&_log_files), 
+				   false, 
+				   [](DWORD_PTR tag, const wchar_t* path)->bool 
+	{
 		_ASSERTE(0 != tag);
 		std::list<log_file_and_ctime>* files_ptr = (std::list<log_file_and_ctime>*)tag;
 
@@ -772,7 +777,7 @@ bool slogger::enum_old_log_files()
 								OPEN_EXISTING,
 								FILE_ATTRIBUTE_NORMAL,
 								NULL),
-					 [](HANDLE file_handle) { 
+					 [](HANDLE file_handle) {
 			if (INVALID_HANDLE_VALUE != file_handle)
 			{
 				CloseHandle(file_handle);
@@ -797,8 +802,7 @@ bool slogger::enum_old_log_files()
 		log_file_and_ctime lfc(path, ctime);
 		files_ptr->push_back(lfc);
 		return true;
-
-	}, (DWORD_PTR)&_log_files, false);
+	});
 
 	if (ret)
 	{

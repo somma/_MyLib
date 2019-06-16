@@ -294,14 +294,14 @@ get_file_hash_by_filehandle(
 
 /// 콜백 대신 람다를 사용할 수 있음
 //	if (true != find_files(root,
-//						   [](_In_ DWORD_PTR tag, _In_ const wchar_t* path)->bool
-//   					   {
+//							(DWORD_PTR)&file_list,
+//							true, 
+//						    [](_In_ DWORD_PTR tag, _In_ const wchar_t* path)->bool
+//   					    {
 //						       std::list<std::wstring>* files = (std::list<std::wstring>*)(tag);
 //							   files->push_back(path);
 //							   return true;
-//							},
-//							(DWORD_PTR)&file_list,
-//							true))
+//							}))
 //	{
 //		// error
 //	}
@@ -310,14 +310,16 @@ get_file_hash_by_filehandle(
 //		// success
 //	}
 //
-typedef bool (WINAPI *fnFindFilesCallback)(_In_ DWORD_PTR tag, _In_ const wchar_t* path);
+typedef boost::function<
+	bool (_In_ DWORD_PTR tag, _In_ const wchar_t* path)
+> fnFindFilesCallback;
 
 bool
 find_files(
-	_In_ const wchar_t* root, 
-	_In_ fnFindFilesCallback cb, 
+	_In_ const wchar_t* root, 	
 	_In_ DWORD_PTR tag, 
-	_In_ bool recursive = true
+	_In_ bool recursive, 
+	_In_ fnFindFilesCallback cb
 	);
 
 BOOL 

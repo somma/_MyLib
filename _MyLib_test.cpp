@@ -983,8 +983,10 @@ bool test_find_files()
 	for (int i = 0; i < sizeof(roots) / sizeof(root_and_count); ++i)
 	{
 		std::list<std::wstring> files;
-		_ASSERTE(true == find_files(roots[i].root_path, ffcb, (DWORD_PTR)&files, false));
-
+		_ASSERTE(true == find_files(roots[i].root_path, 
+									reinterpret_cast<DWORD_PTR>(&files), 
+									false, 
+									ffcb));
 		_ASSERTE(roots[i].count == files.size());
 
 		std::wstringstream strm;
@@ -2824,20 +2826,19 @@ bool test_GeneralHashFunctions2()
 {
 	std::list<std::string> _files;
 
-	if (!find_files(
-		L"c:\\windows",
-		[](_In_ DWORD_PTR tag, _In_ const wchar_t* path) 
-		{
-			char_ptr cptr(WcsToMbs(path), [](char* p) {if (nullptr != p) free(p); });
-			if (nullptr == cptr) return true;
+	if (!find_files(L"c:\\windows", 
+					reinterpret_cast<DWORD_PTR>(&_files),
+					true, 
+					[](_In_ DWORD_PTR tag, _In_ const wchar_t* path)
+	{
+		char_ptr cptr(WcsToMbs(path), [](char* p) {if (nullptr != p) free(p); });
+		if (nullptr == cptr) return true;
 
-			std::list<std::string>* files = (std::list<std::string>*)(tag);
-			files->push_back(cptr.get());
-			return true;
+		std::list<std::string>* files = (std::list<std::string>*)(tag);
+		files->push_back(cptr.get());
+		return true;
 
-		},
-		(DWORD_PTR)&_files,
-		true))
+	}))
 	{
 		return false;
 	}

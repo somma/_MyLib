@@ -2999,9 +2999,9 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 bool
 find_files(
 	_In_ const wchar_t* root,
-	_In_ fnFindFilesCallback cb,
 	_In_ DWORD_PTR tag,
-	_In_ bool recursive
+	_In_ bool recursive,
+	_In_ fnFindFilesCallback cb
 )
 {
 	_ASSERTE(NULL != root);
@@ -3089,7 +3089,7 @@ find_files(
 				if (0 != _wcsnicmp(&wfd.cFileName[0], L".", 1))
 				{
 					StringCbPrintfW(newpath, sizeof(newpath), L"%s%s%s\\*.*", drive, dir, wfd.cFileName);
-					find_files(newpath, cb, tag, recursive);
+					find_files(newpath, tag, recursive, cb);
 				}
 			}
 		}
