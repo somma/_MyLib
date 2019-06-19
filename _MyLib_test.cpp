@@ -382,7 +382,7 @@ bool test_curl_https()
 
 	std::stringstream http_header;
 	http_header << "authorization: Bearer " 
-				<< "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX25hbWUiOiJzb21tYS10aS1sYWIifQ.Igu9sIhsflV7yM_C5jQSPWx-dOymBCGDTd3f5-b3z-I";
+				<< "FOO";
 
 	if (true != _curl_client->initialize(http_header.str().c_str(), 10, 90, 0))
 	{
