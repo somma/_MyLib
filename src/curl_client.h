@@ -51,6 +51,8 @@
 //		}
 //
 
+static const char* _null_http_header_string = "";
+
 typedef class curl_client
 {
 public:
@@ -58,18 +60,25 @@ public:
 	~curl_client();
 
 public:
-	bool initialize();
+	bool initialize(_In_ const char* http_header = _null_http_header_string,
+					_In_ long connection_timeout = 10,
+					_In_ long read_timeout = 90,
+					_In_ long ssl_verifypeer = 1);
 	bool http_get(_In_ const char* url, _Out_ CMemoryStream& stream);
 	bool http_get(_In_ const char* url, _Out_ std::string& response);
 
 	bool http_post(_In_	const char* url, _In_ const std::string& body_data, _Out_ std::string& response);
 		
 private:
-	bool set_common_opt(_In_ const char* url, _Out_ CMemoryStream& stream);
+	bool set_common_opt(_In_ const char* http_header = _null_http_header_string,
+						_In_ long connection_timeout = 10,
+						_In_ long read_timeout = 90,
+						_In_ long ssl_verifypeer = 1);
 	bool perform();
 	void finalize();
 
 private:
-	CURL* _curl;
+	CURL*		_curl;
+	curl_slist* _header_items;
 
 } *pcurl_client;

@@ -341,11 +341,11 @@ void run_test()
 	//assert_bool(true, test_set_binary_data);    
 	//assert_bool(true, test_aes256);
 
-	//assert_bool(true, test_curl_https);
-	//assert_bool(true, test_curl_http);
+	assert_bool(true, test_curl_https);
+	assert_bool(true, test_curl_http);
 	//assert_bool(true, test_alignment);
 	//assert_bool(true, test_create_string_from_buffer);
-	assert_bool(true, test_stop_watch);
+	//assert_bool(true, test_stop_watch);
 	
 //
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -380,13 +380,18 @@ bool test_curl_https()
 		return false;
 	}
 
-	if (true != _curl_client->initialize())
+	std::stringstream http_header;
+	http_header << "authorization: Bearer " 
+				<< "FOO";
+
+	if (true != _curl_client->initialize(http_header.str().c_str(), 10, 90, 0))
 	{
 		log_err "curl client initialize() failed." log_end;
 		return false;
 	}
 
-	const char* url = "https://api.somma.kr:44440/api/v1100/process";
+	const char* url = "https://api.somma.kr:55550/api/v1100/host-info";
+
 	std::string res;
 	_ASSERTE(true == _curl_client->http_get(url, res));
 	
@@ -410,7 +415,7 @@ bool test_curl_http()
 		return false;
 	}
 
-	const char* url = "http://192.168.10.133:8000/Hello_World";
+	const char* url = "http://192.168.10.200:5601/app/kibana#/monster?_g=()";
 	CMemoryStream stream;
 	_ASSERTE(true == _curl_client->http_get(url, stream));
 

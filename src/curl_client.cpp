@@ -13,7 +13,8 @@
 
 /// @brief
 curl_client::curl_client() :
-	_curl(nullptr)
+	_curl(nullptr),
+	_header_items(nullptr)
 {
 }
 
@@ -53,16 +54,23 @@ http_get_write_callback(
 	return (size * nmemb);
 }
 
-/// @brief
-bool curl_client::initialize()
+bool
+curl_client::initialize(
+	_In_ const char* http_header,
+	_In_ long connection_timeout, 
+	_In_ long read_timeout,
+	_In_ long ssl_verifypeer
+	)
 {
 	//	Get a curl object
 	_curl = curl_easy_init();
 	if (nullptr == _curl)
 	{
 		log_err "curl_easy_init() failed." log_end
-		return false;
+			return false;
 	}
+
+	set_common_opt(http_header, connection_timeout, read_timeout, ssl_verifypeer);
 
 	return true;
 }
@@ -70,6 +78,10 @@ bool curl_client::initialize()
 /// @brief
 void curl_client::finalize()
 {
+	if (nullptr != _header_items)
+	{
+		curl_slist_free_all(_header_items);
+	}
 	curl_easy_cleanup(_curl);
 }
 
@@ -93,62 +105,40 @@ curl_client::http_get(
 	// 우선 스트림을 초기화 한다. 
 	stream.ClearStream();
 
-	CURLcode curl_code = CURLE_OK;
-	if (true != set_common_opt(url, stream))
+	//	Set url
+	CURLcode curl_code = curl_easy_setopt(_curl,
+										  CURLOPT_URL,
+										  url);
+	if (CURLE_OK != curl_code)
 	{
-		log_err "set_common_opt() failed." log_end;
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
 		return false;
 	}
 
-	const char* token = "FOO";
-	std::stringstream header_item;
-	header_item << "authorization: Bearer " << token;
-
-	bool ret = false; 
-	struct curl_slist *list = nullptr;	
-	do
+	//	Set receiving data
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_WRITEDATA,
+								 &stream);
+	if (CURLE_OK != curl_code)
 	{
-		list = curl_slist_append(list, header_item.str().c_str());
-
-		curl_code = curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, list);
-		if (CURLE_OK != curl_code)
-		{
-			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-				curl_code,
-				curl_easy_strerror(curl_code)
-				log_end;
-			break;
-		}
-
-		curl_code = curl_easy_setopt(_curl, CURLOPT_SSL_VERIFYPEER, 0L);
-		if (CURLE_OK != curl_code)
-		{
-			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-				curl_code,
-				curl_easy_strerror(curl_code)
-				log_end;
-			break;
-		}
-
-		// perform
-		if (true != perform())
-		{
-			log_err "perform() failed." log_end;
-			break;
-		}
-
-		ret = true;
-	} while (false);
-
-
-	//  내부 자원 소멸
-	if (nullptr != list)
-	{
-		curl_slist_free_all(list);
-		list = nullptr;
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
 	}
 
-	return ret;
+	// perform
+	if (true != perform())
+	{
+		log_err "perform() failed." log_end;
+		return false;
+	}
+
+	return true;
 }
 
 /// @brief	http get 요청을 수행한다.
@@ -165,7 +155,7 @@ curl_client::http_get(
 	if (nullptr == url) return false;
 
 	CMemoryStream stream;
-	if (true != this->http_get(url, stream))	
+	if (true != http_get(url, stream))	
 	{
 		log_err "http_get() failed. url=%s", url log_end;
 		return false;
@@ -205,10 +195,29 @@ curl_client::http_post(
 	CMemoryStream stream;
 	CURLcode curl_code = CURLE_OK;
 
-	//	Set Common Opt
-	if (true != set_common_opt(url, stream))
+	//	Set url
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_URL,
+								 url);
+	if (CURLE_OK != curl_code)
 	{
-		log_err "set_common_opt() failed." log_end;
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	//	Set receiving data
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_WRITEDATA,
+		                         &stream);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
 		return false;
 	}
 
@@ -270,100 +279,114 @@ curl_client::http_post(
 /// @brief	전송을 하기위한 기본 options을 설정한다.
 bool
 curl_client::set_common_opt(
-	_In_ const char* url,
-	_Out_ CMemoryStream &stream
+	_In_ const char* http_header,
+	_In_ long connection_timeout,
+	_In_ long read_timeout,
+	_In_ long ssl_verifypeer
 	)
 {
-	_ASSERTE(NULL != url);
-	if (NULL == url) return false;
-
 	CURLcode curl_code = CURLE_OK;
 
-	//	Set url
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_URL,
-								 url);
-	if (CURLE_OK != curl_code)
+	bool ret = false;
+	do
 	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
+		//
+		// Custom HTTP Header가 있는 경우 Header 설정을 추가한다.
+		//
+		if (strcmp(http_header, _null_http_header_string) != 0)
+		{
+			_header_items = curl_slist_append(_header_items, http_header);
+			_ASSERTE(nullptr != _header_items);
 
-	//	Set callback
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_WRITEFUNCTION,
-								 http_get_write_callback);
-	if (CURLE_OK != curl_code)
-	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
+			curl_code = curl_easy_setopt(_curl,
+										 CURLOPT_HTTPHEADER,
+										 _header_items);
+			if (CURLE_OK != curl_code)
+			{
+				log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+					curl_code,
+					curl_easy_strerror(curl_code)
+					log_end;
+				return false;
+			}
+		}
 
-	//	Set receiving data
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_WRITEDATA,
-								 &stream);
-	if (CURLE_OK != curl_code)
-	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
+		//
+		// SSL Verifyer 유무 설정
+		//
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_SSL_VERIFYPEER,
+									 ssl_verifypeer);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
 
-	// Set timeout
-	// 목적지 서버상태가 Overload 상태인지, 또는 크리티컬한 에러가 있는 상태인지에 따라 적용
-	// e.g. 설정한 시간(10초)내에 서버에서 응답이 없을 경우 강제 해제
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_CONNECTTIMEOUT,
-								 10L);
-	if(CURLE_OK != curl_code)
-	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
-	
-	// Set connect timeout
-	// 굉장히 큰파일, 또는 느린 연결 속도(네트워크속도에 좌우됨) 등에 따라 적용
-	// e.g. 설정한 시간(90초) 내에 다운로드가 완료되지 않을 경우 강제 해제
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_TIMEOUT,
-								 90L);
-	if (CURLE_OK != curl_code)
-	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
+		//	Set callback
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_WRITEFUNCTION,
+									 http_get_write_callback);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		// Set timeout
+		// 목적지 서버상태가 Overload 상태인지, 또는 크리티컬한 에러가 있는 상태인지에 따라 적용
+		// e.g. 설정한 시간(10초)내에 서버에서 응답이 없을 경우 강제 해제
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_CONNECTTIMEOUT,
+									 connection_timeout);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		// Set connect timeout
+		// 굉장히 큰파일, 또는 느린 연결 속도(네트워크속도에 좌우됨) 등에 따라 적용
+		// e.g. 설정한 시간(90초) 내에 다운로드가 완료되지 않을 경우 강제 해제
+		curl_code = curl_easy_setopt(_curl,
+									CURLOPT_TIMEOUT,
+									read_timeout);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
 
 #ifdef _DEBUG 
-	//	get verbose debug output please
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_VERBOSE,
-								 1L);
-	if (CURLE_OK != curl_code)
-	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
+		//	get verbose debug output please
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_VERBOSE,
+									 1L);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
 #endif
+		ret = true;
+	} while (false);
 
-	return true;
+	return ret;
 }
 
 /// @brief	전송을 실행하고, 문제가 없는지 확인한다.
