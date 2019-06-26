@@ -453,7 +453,7 @@ curl_client::perform(
 	}
 	http_response_code = http_code;
 
-	if (http_code != 200)
+	if (http_code != 200 && http_code != 201)
 	{
 		log_err "http request failed. response code = %u",
 			http_code
