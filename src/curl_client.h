@@ -64,17 +64,18 @@ public:
 					_In_ long connection_timeout = 10,
 					_In_ long read_timeout = 90,
 					_In_ long ssl_verifypeer = 1);
-	bool http_get(_In_ const char* url, _Out_ CMemoryStream& stream);
-	bool http_get(_In_ const char* url, _Out_ std::string& response);
+	bool http_get(_In_ const char* url, _Out_ long& http_response_code, _Out_ CMemoryStream& stream);
+	bool http_get(_In_ const char* url, _Out_ long& http_response_code, _Out_ std::string& response);
 
-	bool http_post(_In_	const char* url, _In_ const std::string& body_data, _Out_ std::string& response);
+	bool http_post(_In_ const char* url, _In_ const std::string& post_data, _Out_ long& http_response_code, _Out_ CMemoryStream& stream);
+	bool http_post(_In_	const char* url, _In_ const std::string& body_data, _Out_ long& http_response_code, _Out_ std::string& response);
 		
 private:
 	bool set_common_opt(_In_ const char* http_header = _null_http_header_string,
 						_In_ long connection_timeout = 10,
 						_In_ long read_timeout = 90,
 						_In_ long ssl_verifypeer = 1);
-	bool perform();
+	bool perform(_Out_ long& http_response_code);
 	void finalize();
 
 private:
