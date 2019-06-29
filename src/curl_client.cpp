@@ -89,6 +89,7 @@ void curl_client::finalize()
 bool
 curl_client::http_get(
 	_In_ const char* url,
+	_Out_ long& http_response_code,
 	_Out_ CMemoryStream& stream
 )
 {
@@ -132,7 +133,7 @@ curl_client::http_get(
 	}
 
 	// perform
-	if (true != perform())
+	if (true != perform(http_response_code))
 	{
 		log_err "perform() failed." log_end;
 		return false;
@@ -148,6 +149,7 @@ curl_client::http_get(
 bool
 curl_client::http_get(
 	_In_ const char* url,
+	_Out_ long& http_response_code,
 	_Out_ std::string& response
 	)
 {
@@ -155,7 +157,7 @@ curl_client::http_get(
 	if (nullptr == url) return false;
 
 	CMemoryStream stream;
-	if (true != http_get(url, stream))	
+	if (true != http_get(url, http_response_code, stream))	
 	{
 		log_err "http_get() failed. url=%s", url log_end;
 		return false;
@@ -181,6 +183,7 @@ bool
 curl_client::http_post(
 	_In_  const char* url,
 	_In_  const std::string& post_data,
+	_Out_ long& http_response_code,
 	_Out_ std::string& response
 	)
 {
@@ -193,6 +196,33 @@ curl_client::http_post(
 	}
 
 	CMemoryStream stream;
+	if (true != http_post(url, post_data, http_response_code, stream))
+	{
+		log_err "http_post() failed. url=%s", url log_end;
+		return false;
+	}
+
+	//	response data 에 null terminate 를 추가한다.
+	char nt = '\0';
+	stream.WriteToStream(&nt, sizeof(char));
+
+	response = (char*)stream.GetMemory();
+	stream.ClearStream();
+	return true;
+}
+
+///
+///
+///
+///
+bool
+curl_client::http_post(
+	_In_ const char* url,
+	_In_ const std::string& post_data,
+	_Out_ long& http_response_code,
+	_Out_ CMemoryStream& stream
+	)
+{
 	CURLcode curl_code = CURLE_OK;
 
 	//	Set url
@@ -211,7 +241,7 @@ curl_client::http_post(
 	//	Set receiving data
 	curl_code = curl_easy_setopt(_curl,
 								 CURLOPT_WRITEDATA,
-		                         &stream);
+								 &stream);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -260,21 +290,14 @@ curl_client::http_post(
 	}
 
 	//	perform
-	if (true != perform())
+	if (true != perform(http_response_code))
 	{
 		log_err "perform() failed." log_end;
 		return false;
 	}
 
-	//	response data 에 null terminate 를 추가한다.
-	char nt = '\0';
-	stream.WriteToStream(&nt, sizeof(char));
-
-	response = (char*)stream.GetMemory();
-	stream.ClearStream();
 	return true;
 }
-
 
 /// @brief	전송을 하기위한 기본 options을 설정한다.
 bool
@@ -391,7 +414,9 @@ curl_client::set_common_opt(
 
 /// @brief	전송을 실행하고, 문제가 없는지 확인한다.
 bool
-curl_client::perform()
+curl_client::perform(
+	_Out_ long& http_response_code
+	)
 {
 	CURLcode curl_code = CURLE_OK;
 
@@ -403,7 +428,10 @@ curl_client::perform()
 			curl_code,
 			curl_easy_strerror(curl_code)
 			log_end;
-
+		//
+		// 요청 실패한 경우 HTTP 응답값을 0으로 반환한다.
+		//
+		http_response_code = 0;
 		return false;
 	}
 
@@ -417,16 +445,19 @@ curl_client::perform()
 			curl_code,
 			curl_easy_strerror(curl_code)
 			log_end;
-
+		//
+		// HTTP 응답값을 가져오지 못한 경우 0으로 반환한다.
+		//
+		http_response_code = 0;
 		return false;
 	}
+	http_response_code = http_code;
 
-	if (http_code != 200)
+	if (http_code != 200 && http_code != 201)
 	{
 		log_err "http request failed. response code = %u",
 			http_code
 			log_end;
-
 		return false;
 	}
 
