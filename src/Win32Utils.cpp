@@ -5519,6 +5519,135 @@ bool	process_in_console_session(_In_ DWORD process_id)
 	}
 }
 
+/// @brief	cmdline 을 실행하는 프로세스를 생성하는 CreateProcessW 함수 wrapper
+bool 
+create_process(
+	_In_z_ const wchar_t* cmdline,
+	_In_ DWORD creation_flag,
+	_In_opt_z_ const wchar_t* current_dir,
+	_Out_ HANDLE& process_handle,
+	_Out_ DWORD& process_id)
+{
+	_ASSERTE(nullptr != cmdline);
+	if (nullptr == cmdline) return false;
+
+	// CreateProcessW 함수는 cmdline 이 쓰기 가능한 버퍼이어야 한다. 
+	// 따라서 입력으로 받은 cmdline 을 위한 버퍼를 할당하고, 복사해서
+	// 사용한다.
+	size_t buf_size = ((wcslen(cmdline) + 1) * sizeof(wchar_t));
+	wchar_ptr cmdline_buf((wchar_t*)malloc(buf_size), [](wchar_t* p)
+	{
+		if (nullptr != p) free(p);
+	});
+
+	if (!cmdline_buf)
+	{
+		log_err "No memory for cmdline. size=%u",
+			buf_size
+			log_end;
+		return false;
+	}
+
+	RtlCopyMemory(cmdline_buf.get(), cmdline, wcslen(cmdline) * sizeof(wchar_t));
+	cmdline_buf.get()[wcslen(cmdline) * sizeof(wchar_t)] = 0x00;
+
+	PROCESS_INFORMATION pi = { 0 };
+	STARTUPINFOW si = { 0 };
+	si.cb = sizeof(si);
+
+	if (!CreateProcessW(nullptr,
+						cmdline_buf.get(),
+						nullptr,
+						nullptr,
+						FALSE,
+						creation_flag,
+						nullptr,
+						nullptr != current_dir ? current_dir : nullptr,
+						&si,
+						&pi))
+	{
+		log_err "CreateProcessW() failed. cmd=%ws, gle=%u",
+			cmdline,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	process_handle = pi.hProcess;
+	process_id = pi.dwProcessId;
+
+	CloseHandle(pi.hThread);
+	return true;
+}
+
+/// @brief	프로세스를 생성하고, 종료시까지 기다린다. 
+bool 
+create_process_and_wait(
+	_In_ const wchar_t* cmdline,
+	_In_ DWORD creation_flag,
+	_In_opt_z_ const wchar_t* current_dir,
+	_In_ DWORD timeout_secs,
+	_Out_ DWORD& exit_code
+)
+{
+	HANDLE process_handle;
+	DWORD process_id;
+
+	if (!create_process(cmdline, creation_flag, current_dir, process_handle, process_id))
+	{
+		log_err "create_process() failed. cmdline=%ws", cmdline log_end;
+		return false;
+	}
+
+	//
+	//	Wait for the process
+	//
+	DWORD wr = WaitForSingleObject(process_handle, timeout_secs);
+	if (WAIT_OBJECT_0 != wr)
+	{
+		switch (wr)
+		{
+		case WAIT_ABANDONED:
+			log_err 
+				"WaitForSingleObject() failed for process. pid=%u, handle=0x%p, wr=WAIT_ABANDONED", 
+				process_id, 
+				process_handle
+				log_end;
+		case WAIT_TIMEOUT:
+			log_err "WaitForSingleObject() failed for process. pid=%u, handle=0x%p, wr=WAIT_TIMEOUT",
+				process_id,
+				process_handle
+				log_end;
+		case WAIT_FAILED:
+			log_err "WaitForSingleObject() failed for process. pid=%u, handle=0x%p, wr=WAIT_FAILED, gle=%u",
+				process_id,
+				process_handle, 
+				GetLastError()
+				log_end;
+		default:
+			_ASSERTE(!"oops! Unknown wait result code.");
+		}
+
+		//
+		//	어찌되었거나 생성된 프로세스가 정상종료되었다는 보장이 없으므로
+		//	강제 종료 시도한다. 
+		//
+		TerminateProcess(process_handle, 0xffffffff);
+	}
+
+	if (!GetExitCodeProcess(process_handle, &exit_code))
+	{
+		log_err "GetExitCodeProcess() failed. gle=%u", GetLastError() log_end;
+		exit_code = 0xffffffff;		// exit_code -1 로 간주
+	}
+
+	//
+	//	Cleanup
+	//
+	CloseHandle(process_handle);
+	return true;
+}
+
 /// @brief	active console session 에 로그인된 사용자 계정으로 프로세스를 생성한다.
 ///	@remark 이건 여러모로 위험한 함수이므로 쓰지말자. 
 bool
