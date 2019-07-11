@@ -392,8 +392,9 @@ bool test_curl_https()
 
 	const char* url = "https://api.somma.kr:55550/api/v1100/host-info";
 
+	long http_response_code = 404;
 	std::string res;
-	_ASSERTE(true == _curl_client->http_get(url, res));
+	_ASSERTE(true == _curl_client->http_get(url, http_response_code, res));
 	
 	_ASSERTE(_curl_client != nullptr);
 	delete _curl_client; _curl_client = nullptr;
@@ -416,8 +417,9 @@ bool test_curl_http()
 	}
 
 	const char* url = "http://192.168.10.200:5601/app/kibana#/monster?_g=()";
+	long http_response_code = 404;
 	CMemoryStream stream;
-	_ASSERTE(true == _curl_client->http_get(url, stream));
+	_ASSERTE(true == _curl_client->http_get(url, http_response_code, stream));
 
 	std::vector<std::string> dumps;
 	dump_memory(0LL, (unsigned char*)(stream.GetMemory()), stream.GetSize(), dumps);	
