@@ -997,17 +997,16 @@ BOOL WUGetProcessorInfo(IN OUT WU_PROCESSOR_INFO& CpuInfo);
 //
 // os version
 // 
-// widows 10 에서 (MDSN 에서 하라는대로) VersionHelpers.h 에 있는 IsWindows10OrGreater() 함수를 
-// 호출해도 false 가 떨어짐
+// widows 10 에서 (MDSN 에서 하라는대로) VersionHelpers.h 에 있는 
+// IsWindows10OrGreater() 함수를 호출해도 false 가 떨어짐
 // 괜히 쓰기도 복잡하고, 효율도 떨어져서 RtlGetVersion() wrapper 를 사용함
 // 
 // from https://indidev.net/forum/viewtopic.php?f=5&t=474 
 // 
-
 enum OSVER
 {
     // Operating System Version 
-    //  https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
+    // https://docs.microsoft.com/ko-kr/windows-hardware/drivers/ddi/content/wdm/ns-wdm-_osversioninfoexw
 
     OSV_UNDEF,
     OSV_2000,

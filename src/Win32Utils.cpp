@@ -5546,11 +5546,10 @@ create_process(
 			buf_size
 			log_end;
 		return false;
-	}
-
+	}		
 	RtlCopyMemory(cmdline_buf.get(), cmdline, wcslen(cmdline) * sizeof(wchar_t));
-	cmdline_buf.get()[wcslen(cmdline) * sizeof(wchar_t)] = 0x00;
-
+	cmdline_buf.get()[wcslen(cmdline)] = 0x0000;
+	
 	PROCESS_INFORMATION pi = { 0 };
 	STARTUPINFOW si = { 0 };
 	si.cb = sizeof(si);
@@ -5567,7 +5566,7 @@ create_process(
 						&pi))
 	{
 		log_err "CreateProcessW() failed. cmd=%ws, gle=%u",
-			cmdline,
+			cmdline_buf.get(),
 			GetLastError()
 			log_end;
 		return false;
@@ -5602,7 +5601,7 @@ create_process_and_wait(
 	//
 	//	Wait for the process
 	//
-	DWORD wr = WaitForSingleObject(process_handle, timeout_secs);
+	DWORD wr = WaitForSingleObject(process_handle, timeout_secs*1000);
 	if (WAIT_OBJECT_0 != wr)
 	{
 		switch (wr)
@@ -5613,17 +5612,20 @@ create_process_and_wait(
 				process_id, 
 				process_handle
 				log_end;
+			break;
 		case WAIT_TIMEOUT:
 			log_err "WaitForSingleObject() failed for process. pid=%u, handle=0x%p, wr=WAIT_TIMEOUT",
 				process_id,
 				process_handle
 				log_end;
+			break;
 		case WAIT_FAILED:
 			log_err "WaitForSingleObject() failed for process. pid=%u, handle=0x%p, wr=WAIT_FAILED, gle=%u",
 				process_id,
 				process_handle, 
 				GetLastError()
 				log_end;
+			break;
 		default:
 			_ASSERTE(!"oops! Unknown wait result code.");
 		}
@@ -8755,7 +8757,7 @@ const wchar_t*  osver_to_str(_In_ OSVER os)
 }
 
 /// @brief  RtlGetVersion() wrapper
-///			https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
+///			https://docs.microsoft.com/ko-kr/windows-hardware/drivers/ddi/content/wdm/ns-wdm-_osversioninfoexw
 OSVER get_os_version()
 {
 	OSVER os = OSV_UNKNOWN;
