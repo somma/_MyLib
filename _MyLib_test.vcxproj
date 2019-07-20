@@ -225,6 +225,7 @@ echo "done." </Command>
     <ClInclude Include="src\log.h" />
     <ClInclude Include="src\md5.h" />
     <ClInclude Include="src\net_util.h" />
+    <ClInclude Include="src\net_util_typedef.h" />
     <ClInclude Include="src\nt_name_conv.h" />
     <ClInclude Include="src\process_tree.h" />
     <ClInclude Include="src\Queue.h" />

@@ -34,11 +34,13 @@ extern bool test_log_rotate();
 // _test_steady_timer.cpp
 extern bool test_steady_timer();
 
+
 // _test_dns_query.cpp
 extern bool test_dns_query();
 
 // _test_net_util.cpp
-extern bool test_net_util();
+extern bool test_get_adapters();
+extern bool test_get_addr_info();
 
 // test_iphelp_api.cpp
 extern bool test_iphelp_api();
@@ -219,7 +221,8 @@ void run_test()
 	bool ret = false;
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
-	//assert_bool(true, test_net_util);
+	//assert_bool(true, test_get_adapters);
+	assert_bool(true, test_get_addr_info);	
 	//assert_bool(true, test_dns_query);
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
@@ -348,7 +351,7 @@ void run_test()
 	//assert_bool(true, test_alignment);
 	//assert_bool(true, test_create_string_from_buffer);
 	//assert_bool(true, test_stop_watch);
-	assert_bool(true, test_boost_function);
+	//assert_bool(true, test_boost_function);
 	
 //
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드

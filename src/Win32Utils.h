@@ -107,16 +107,15 @@ typedef struct _continuous_memory
 #define _pause  _getch()
 
 #define _mem_check_begin \
-	{\
-		_CrtMemState memoryState = { 0 }; \
-		_CrtMemCheckpoint(&memoryState)
+	_CrtMemState memoryState = { 0 }; \
+	_CrtMemCheckpoint(&memoryState); 
 
 #define _mem_check_break(ord) \
-	_CrtSetBreakAlloc(ord)
+	_CrtSetBreakAlloc(ord);
 
 #define _mem_check_end \
-		_CrtMemDumpAllObjectsSince(&memoryState); \
-	}
+	_CrtMemDumpAllObjectsSince(&memoryState)
+
 
 /* 
 	x64 에서는 inline asm 을 사용할 수 없으므로 호환성을 위해 제거
