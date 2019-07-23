@@ -36,7 +36,8 @@ extern bool test_steady_timer();
 
 
 // _test_dns_query.cpp
-extern bool test_dns_query();
+extern bool test_ip_to_dns();
+extern bool test_dns_to_ip();
 
 // _test_net_util.cpp
 extern bool test_get_adapters();
@@ -222,8 +223,9 @@ void run_test()
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
-	assert_bool(true, test_get_addr_info);	
-	//assert_bool(true, test_dns_query);
+	//assert_bool(true, test_get_addr_info);	
+	//assert_bool(true, test_ip_to_dns);
+	assert_bool(true, test_dns_to_ip);	
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 	//assert_bool(true, test_file_info_cache);

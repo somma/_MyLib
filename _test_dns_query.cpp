@@ -1,6 +1,6 @@
 /**
  * @file    _test_dns_query.cpp
- * @brief   
+ * @brief
  *
  * @author  Yonhgwhan, Roh (somma@somma.kr)
  * @date    2018/05/17 15:21 created.
@@ -12,8 +12,8 @@
 #include "net_util.h"
 #include "StopWatch.h"
 
-/// @brief
-bool test_dns_query()
+ /// @brief
+bool test_ip_to_dns()
 {
 	wchar_t* ips[] = {
 		L"101.79.137.130", L"101.79.211.75", L"103.105.156.85", L"103.15.158.128",
@@ -67,7 +67,7 @@ bool test_dns_query()
 	};
 
 	uint32_t log_to = get_log_to();
-	set_log_to(log_to_con|log_to_ods);
+	set_log_to(log_to_con | log_to_ods);
 
 	uint32_t succ = 0;
 	uint32_t cache = 0;
@@ -80,24 +80,24 @@ bool test_dns_query()
 
 	for (int i = 0; i < sizeof(ips) / sizeof(wchar_t*); ++i)
 	{
-		uint32_t ip_nb; 
-		_ASSERTE( true == str_to_ipv4(ips[i], ip_nb) );
+		uint32_t ip_nb;
+		_ASSERTE(true == str_to_ipv4(ips[i], ip_nb));
 
 		std::wstring dns1, dns2;
-		if (true == dns_query(ip_nb, true, dns1))
+		if (true == ip_to_dns(ip_nb, true, dns1))
 		{
 			++cache;
 			++succ;
 		}
 		else
 		{
-			if (true == dns_query(ip_nb, false, dns2))
+			if (true == ip_to_dns(ip_nb, false, dns2))
 			{
 				++wire;
 				++succ;
-			}			
+			}
 		}
-		
+
 		//log_info "ip=%ws, dns1=%ws, dns2=%ws",
 		//	ips[i],
 		//	dns1.c_str(),
@@ -105,12 +105,34 @@ bool test_dns_query()
 		//	log_end;
 	}
 	sw.Stop();
-	log_info "Done. total=%u, succ=%u, cache=%u, wire=%u, elapsed= %f", 
-		sizeof(ips) / sizeof(wchar_t*), 
-		succ, 
-		cache, 
+	log_info "Done. total=%u, succ=%u, cache=%u, wire=%u, elapsed= %f",
+		sizeof(ips) / sizeof(wchar_t*),
+		succ,
+		cache,
 		wire,
 		sw.GetDurationMilliSecond() log_end;
 	set_log_to(log_to);
+	return true;
+}
+
+
+bool test_dns_to_ip()
+{
+	_mem_check_begin
+	{
+		std::vector<uint32_t> ipz;
+		_ASSERTE(true == dns_to_ip(L"naver.com", false, ipz));
+		log_info "naver.com :" log_end;
+		for (auto ip : ipz)
+		{
+			log_info "  - %s", ipv4_to_str(ip).c_str() log_end;
+		}
+
+		ipz.clear();
+		_ASSERTE(true != dns_to_ip(L"inv.invalid.xyz", false, ipz));
+	}
+	_mem_check_end;
+
+
 	return true;
 }

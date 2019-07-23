@@ -431,7 +431,7 @@ SocketAddressToStr(
 
 */
 bool
-dns_query(
+ip_to_dns(
 	_In_ uint32_t ip_netbyte_order,
 	_In_ bool cache_only,
 	_Out_ std::wstring& domain_name
@@ -503,6 +503,71 @@ dns_query(
 		return false;
 	}
 	domain_name = dns_record->Data.PTR.pNameHost;
+
+	//
+	//	Free memory allocated for DNS records 
+	//
+	DnsRecordListFree(dns_record, DnsFreeRecordListDeep);
+	return true;
+}
+
+/// @brief	www.google.com -> 1.1.1.1 로 변환하는 함수
+bool
+dns_to_ip(
+	_In_ const wchar_t* domain_name,
+	_In_ bool cache_only,
+	_Out_ std::vector<uint32_t>& ip_list
+)
+{
+	std::string dns_query_ip;
+	PDNS_RECORD dns_record = nullptr;
+
+	DNS_STATUS status = DnsQuery_W(domain_name, 
+								   DNS_TYPE_A,
+								   (true == cache_only) ? DNS_QUERY_NO_WIRE_QUERY : (DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE),
+								   NULL,
+								   &dns_record,
+								   NULL);
+	if (ERROR_SUCCESS != status)
+	{
+		if (DNS_ERROR_RECORD_DOES_NOT_EXIST == status || DNS_ERROR_RCODE_NAME_ERROR == status)
+		{
+			//
+			//	유효하지 않은 도메인 네임
+			//
+			log_dbg "DnsQuery(cache_only=%s) failed. domain=%ws, status=%u",
+				true == cache_only ? "O" : "X",
+				domain_name,
+				status
+				log_end;
+		}
+		else
+		{
+			log_dbg "DnsQuery(cache_only=%s) failed. ip=%s, status=%u",
+				true == cache_only ? "O" : "X",
+				dns_query_ip.c_str(),
+				status
+				log_end;
+		}
+
+		return false;
+	}
+	_ASSERTE(nullptr != dns_record);
+	if (nullptr == dns_record)
+	{
+		log_err "DnsQuery(cache_only=%s) succeeded but no recored. domain=%ws",
+			true == cache_only ? "O" : "X",
+			domain_name
+			log_end;
+
+		return false;
+	}
+	
+	while(dns_record != nullptr)
+	{
+		ip_list.push_back(dns_record->Data.A.IpAddress);
+		dns_record = dns_record->pNext;
+	}
 
 	//
 	//	Free memory allocated for DNS records 
