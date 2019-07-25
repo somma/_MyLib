@@ -214,6 +214,8 @@ bool test_stop_watch();
 
 bool test_boost_function();
 
+bool test_bit_field();
+
 void run_test()
 {
 	UINT32 _pass_count = 0;
@@ -225,7 +227,7 @@ void run_test()
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);	
 	//assert_bool(true, test_ip_to_dns);
-	assert_bool(true, test_dns_to_ip);	
+	//assert_bool(true, test_dns_to_ip);	
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 	//assert_bool(true, test_file_info_cache);
@@ -354,6 +356,7 @@ void run_test()
 	//assert_bool(true, test_create_string_from_buffer);
 	//assert_bool(true, test_stop_watch);
 	//assert_bool(true, test_boost_function);
+	assert_bool(true, test_bit_field);
 	
 //
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -3518,6 +3521,45 @@ bool test_boost_function()
 	// 아무것도 초기화 안하면 empty
 	f_sum f3;
 	log_info "f3.empty()=%s", f3.empty() ? "true" : "false" log_end;
+
+	return true;
+}
+
+/// @brief	bitfield structure memory layout 확인
+bool test_bit_field()
+{
+	typedef struct _bfs
+	{
+		BYTE    a: 1;
+		BYTE    b: 1;
+		BYTE    c: 1;
+		BYTE    d: 4;
+		BYTE    e: 1;
+
+		BYTE    f: 4;
+		BYTE    g: 1;
+		BYTE    h: 1;
+		BYTE    i: 1;
+		BYTE    j: 1;
+	} bfs;
+
+	bfs v = {
+		0b0,
+		0b1,
+		0b0,
+		0b1111,
+		0b0,
+
+		0b1111,
+		0b0,
+		0b1,
+		0b0,
+		0b1
+	};
+
+	// memory layout 
+	// 0 1 1 1 1 0 1 0		1 0 1 0 1 1 1 1
+	// e ---d--- c b a      j i h g ---f---          
 
 	return true;
 }
