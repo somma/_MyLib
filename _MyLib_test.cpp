@@ -348,7 +348,7 @@ void run_test()
 	//assert_bool(true, test_alignment);
 	//assert_bool(true, test_create_string_from_buffer);
 	//assert_bool(true, test_stop_watch);
-	assert_bool(true, test_boost_function);
+	//assert_bool(true, test_boost_function);
 	
 //
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -387,11 +387,13 @@ bool test_curl_https()
 	http_header << "authorization: Bearer " 
 				<< "FOO";
 
-	if (true != _curl_client->initialize(http_header.str().c_str(), 10, 90, 0))
+	if (true != _curl_client->initialize(10, 90, 0))
 	{
 		log_err "curl client initialize() failed." log_end;
 		return false;
 	}
+
+	_curl_client->append_header("authorization", http_header.str().c_str());
 
 	const char* url = "https://api.somma.kr:55550/api/v1100/host-info";
 
@@ -432,7 +434,6 @@ bool test_curl_http()
 	delete _curl_client; _curl_client = nullptr;
 	return true;
 }
-
 
 /// @brief
 bool test_get_drive_type()

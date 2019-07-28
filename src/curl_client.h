@@ -53,6 +53,7 @@
 
 static const char* _null_http_header_string = "";
 
+
 typedef class curl_client
 {
 public:
@@ -60,26 +61,44 @@ public:
 	~curl_client();
 
 public:
-	bool initialize(_In_ const char* http_header = _null_http_header_string,
-					_In_ long connection_timeout = 10,
+	bool initialize(_In_ long connection_timeout = 10,
 					_In_ long read_timeout = 90,
 					_In_ long ssl_verifypeer = 1);
-	bool http_get(_In_ const char* url, _Out_ long& http_response_code, _Out_ CMemoryStream& stream);
-	bool http_get(_In_ const char* url, _Out_ long& http_response_code, _Out_ std::string& response);
+	
+	void set_connection_timeout(_In_ long connection_timeout) { _connection_timeout = connection_timeout; }
 
-	bool http_post(_In_ const char* url, _In_ const std::string& post_data, _Out_ long& http_response_code, _Out_ CMemoryStream& stream);
-	bool http_post(_In_	const char* url, _In_ const std::string& body_data, _Out_ long& http_response_code, _Out_ std::string& response);
+	void set_read_timeout(_In_ long read_timeout) { _read_timeout = read_timeout; }
+	
+	void set_ssl_verifypeer(_In_ long ssl_verifypeer) { _ssl_verifypeer = ssl_verifypeer; }
+
+	void append_header(_In_z_ const char* key, _In_z_ const char* value);
+
+	bool http_get(_In_z_ const char* url, _Out_ long& http_response_code, _Out_ CMemoryStream& stream);
+	bool http_get(_In_z_ const char* url, _Out_ long& http_response_code, _Out_ std::string& response);
+
+	bool http_post(_In_z_ const char* url,
+				   _In_z_ const char* data,
+				   _Out_  long& http_response_code, 
+				   _Out_  CMemoryStream& stream);
+	bool http_post(_In_z_ const char* url,
+				   _In_z_ const char* data,
+				   _Out_  long& http_response_code, 
+				   _Out_  std::string& response);
 		
 private:
-	bool set_common_opt(_In_ const char* http_header = _null_http_header_string,
-						_In_ long connection_timeout = 10,
+	bool set_common_opt(_In_ long connection_timeout = 10,
 						_In_ long read_timeout = 90,
 						_In_ long ssl_verifypeer = 1);
 	bool perform(_Out_ long& http_response_code);
 	void finalize();
 
 private:
-	CURL*		_curl;
-	curl_slist* _header_items;
+	CURL* _curl;
+	long  _connection_timeout;
+	long  _read_timeout;
+	long  _ssl_verifypeer;
+private:
+	typedef std::map<std::string, std::string> HeaderFields;
+	HeaderFields _header_fields;
 
 } *pcurl_client;
