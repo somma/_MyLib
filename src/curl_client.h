@@ -84,12 +84,23 @@ public:
 				   _In_z_ const char* data,
 				   _Out_  long& http_response_code, 
 				   _Out_  std::string& response);
+
+	bool send_file_using_post_method(_In_z_ const char* url,
+									 _In_z_ const wchar_t* target_file_path,
+									 _Out_  long& http_response_code,
+									 _Out_  CMemoryStream& stream);
+	bool send_file_using_post_method(_In_z_ const char* url,
+									 _In_z_ const wchar_t* target_file_path,
+									 _Out_  long& http_response_code,
+									 _Out_  std::string& response);
 		
 private:
 	bool set_common_opt(_In_ long connection_timeout = 10,
 						_In_ long read_timeout = 90,
 						_In_ long ssl_verifypeer = 1);
 	bool perform(_Out_ long& http_response_code);
+	bool multipart_form_send(_In_ const char* target_file_path, _Out_ long& http_response_code);
+
 	void finalize();
 
 private:
@@ -98,7 +109,6 @@ private:
 	long  _read_timeout;
 	long  _ssl_verifypeer;
 private:
-	typedef std::map<std::string, std::string> HeaderFields;
-	HeaderFields _header_fields;
-
+	typedef std::map<std::string, std::string> Fields;
+	Fields _header_fields;
 } *pcurl_client;

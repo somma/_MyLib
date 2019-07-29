@@ -226,6 +226,108 @@ curl_client::http_post(
 	return true;
 }
 
+bool
+curl_client::send_file_using_post_method(
+	_In_z_ const char* url,
+	_In_z_ const wchar_t* target_file_path,
+	_Out_  long& http_response_code,
+	_Out_  CMemoryStream& stream
+	)
+{
+	_ASSERTE(nullptr != url);
+	_ASSERTE(nullptr != target_file_path);
+	_ASSERTE(NULL != _curl);
+	if (nullptr == url || nullptr == target_file_path || nullptr == _curl)
+	{
+		return false;
+	}
+
+	if (true != is_file_existsW(target_file_path))
+	{
+		log_err "The file to be transferred does not exist. path=%ws",
+			target_file_path
+			log_end;
+		return false;
+	}
+
+	CURLcode curl_code = CURLE_OK;
+
+	//	Set url
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_URL,
+								 url);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	//	Set receiving data
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_WRITEDATA,
+								 &stream);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	//	perform
+	std::string file_path = WcsToMbsUTF8Ex(target_file_path);
+	if (true != multipart_form_send(file_path.c_str(), http_response_code))
+	{
+		log_err "perform() failed." log_end;
+		return false;
+	}
+
+	return true;
+}
+
+bool 
+curl_client::send_file_using_post_method(
+	_In_z_ const char* url,
+	_In_z_ const wchar_t* target_file_path,
+	_Out_  long& http_response_code,
+	_Out_  std::string& response)
+{
+	_ASSERTE(nullptr != url);
+	_ASSERTE(nullptr != target_file_path);
+	_ASSERTE(NULL != _curl);
+	if (nullptr == url || nullptr == target_file_path || nullptr == _curl)
+	{
+		return false;
+	}
+
+	if (true != is_file_existsW(target_file_path))
+	{
+		log_err "The file to be transferred does not exist. path=%ws",
+			target_file_path
+			log_end;
+		return false;
+	}
+
+	CMemoryStream stream;
+	if (true != send_file_using_post_method(url, target_file_path, http_response_code, stream))
+	{
+		log_err "http_post() failed. url=%s", url log_end;
+		return false;
+	}
+
+	//	response data 에 null terminate 를 추가한다.
+	char nt = '\0';
+	stream.WriteToStream(&nt, sizeof(char));
+
+	response = (char*)stream.GetMemory();
+	stream.ClearStream();
+	return true;
+}
+
 ///
 ///
 ///
@@ -439,7 +541,7 @@ curl_client::perform(
 		// 설정 완료된 HTTP Header 필드들은 정리한다.
 		_header_fields.clear();
 	}
-
+	
 	set_common_opt(_connection_timeout, _read_timeout, _ssl_verifypeer);
 
 	//	Execute
@@ -485,5 +587,110 @@ curl_client::perform(
 	// reset curl handle
 	curl_easy_reset(_curl);
 	
+	return true;
+}			
+
+bool 
+curl_client::multipart_form_send(
+	_In_ const char* target_file_path,
+	_Out_ long& http_response_code
+	)
+{
+	set_common_opt(_connection_timeout, _read_timeout, _ssl_verifypeer);
+
+	CURLcode curl_code = curl_easy_setopt(_curl, CURLOPT_NOPROGRESS, 1);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "set noprogress option failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	curl_code = curl_easy_setopt(_curl, CURLOPT_TCP_KEEPALIVE, 1L);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "set tcp keepalive option failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	curl_mime* http_multipart_form = nullptr;
+	curl_mimepart* part = nullptr;
+
+	http_multipart_form = curl_mime_init(_curl);
+	_ASSERTE(nullptr != http_multipart_form);
+
+	// set file name
+	part = curl_mime_addpart(http_multipart_form);
+	curl_mime_name(part, "file_name");
+	curl_mime_data(part, file_name_from_file_patha(target_file_path).c_str(), CURL_ZERO_TERMINATED);
+
+	part = curl_mime_addpart(http_multipart_form);
+	curl_mime_name(part, "image");
+	curl_mime_filename(part, file_name_from_file_patha(target_file_path).c_str());
+	curl_mime_type(part, "application/octect-stream");
+
+	// set file data
+	part = curl_mime_addpart(http_multipart_form);
+	curl_mime_filedata(part, target_file_path);
+
+	
+
+	curl_code = curl_easy_setopt(_curl, CURLOPT_MIMEPOST, http_multipart_form);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "set tcp keepalive option failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	//	Execute
+	curl_code = curl_easy_perform(_curl);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_perform() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		//
+		// 요청 실패한 경우 HTTP 응답값을 0으로 반환한다.
+		//
+		http_response_code = 0;
+		return false;
+	}
+
+	//	Get the last response code.
+	long http_code = 0;
+	if (CURLE_OK != curl_easy_getinfo(_curl,
+									  CURLINFO_RESPONSE_CODE,
+									  &http_code))
+	{
+		log_err "curl_easy_getinfo() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		//
+		// HTTP 응답값을 가져오지 못한 경우 0으로 반환한다.
+		//
+		http_response_code = 0;
+		return false;
+	}
+	http_response_code = http_code;
+
+
+	if (nullptr != http_multipart_form)
+	{
+		curl_mime_free(http_multipart_form); http_multipart_form = nullptr;
+	}
+
+	// reset curl handle
+	curl_easy_reset(_curl);
+
 	return true;
 }
