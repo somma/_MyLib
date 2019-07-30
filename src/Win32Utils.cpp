@@ -7,24 +7,10 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
+#include "BaseWindowsHeader.h"
 
-//	
-//	std
-//
-#include <stdio.h>
-#include <tchar.h>
 #include <random>
 
-#include "Win32Utils.h"
-#include "RegistryUtil.h"
-#include "Wow64Util.h"
-#include <Strsafe.h>
-
-#include "md5.h"
-#include "sha2.h"
-#include "FileIoHelperClass.h"
-
-#include <set>
 #include <errno.h>
 #include <io.h>			// _setmode()
 #include <fcntl.h>		// _O_U8TEXT, ...
@@ -33,13 +19,14 @@
 #include <Shellapi.h>
 #include <Shlobj.h>
 #include <Psapi.h>
-#include <guiddef.h>
 #include <sddl.h>
-
-#include "ResourceHelper.h"
-#include "gpt_partition_guid.h"
-
 #include <Objbase.h>	// CoCreateGuid()
+
+#include <TLHELP32.H>
+#include <userenv.h>
+#include <Wtsapi32.h>
+#pragma comment (lib, "userenv.lib")
+#pragma comment (lib, "Wtsapi32.lib")
 
 #pragma comment(lib, "Advapi32.lib")
 #pragma comment(lib, "Shell32.lib")
@@ -48,14 +35,15 @@
 #pragma comment(lib, "version.lib")
 #pragma comment(lib, "Ole32.lib")
 
-//
-//	create_process_as_login_user()
-// 
-#include <TLHELP32.H>
-#include <userenv.h>
-#pragma comment (lib, "userenv.lib")
-#include <Wtsapi32.h>
-#pragma comment (lib, "Wtsapi32.lib")
+#include "Win32Utils.h"
+#include "RegistryUtil.h"
+#include "Wow64Util.h"
+
+#include "md5.h"
+#include "sha2.h"
+#include "FileIoHelperClass.h"
+#include "ResourceHelper.h"
+#include "gpt_partition_guid.h"
 
 
 char _int_to_char_table[] = {

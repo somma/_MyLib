@@ -11,21 +11,9 @@
 #ifndef _win32_utils_
 #define _win32_utils_
 
-#include <inttypes.h>
-#include "boost/algorithm/string.hpp"	// to_uppper, to_lower
-
 #include <conio.h>
-#include <winioctl.h>
-#include <winsvc.h>
-
-//> reported as vs 2010 bug, ms says that will be patch this bug next major vs release, vs2012.
-//
-//1>C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\intsafe.h(171): warning C4005: 'INT16_MAX' : macro redefinition
-//1>          C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdint.h(77) : see previous definition of 'INT16_MAX'
-#pragma warning(disable:4005)
-#include <intsafe.h>
-#pragma warning(default:4005)
-
+#include "BaseWindowsHeader.h"
+#include "boost/algorithm/string.hpp"	// to_uppper, to_lower
 #include "log.h"
 
 //
