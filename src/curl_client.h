@@ -85,21 +85,29 @@ public:
 				   _Out_  long& http_response_code, 
 				   _Out_  std::string& response);
 
-	bool send_file_using_post_method(_In_z_ const char* url,
-									 _In_z_ const wchar_t* target_file_path,
-									 _Out_  long& http_response_code,
-									 _Out_  CMemoryStream& stream);
-	bool send_file_using_post_method(_In_z_ const char* url,
-									 _In_z_ const wchar_t* target_file_path,
-									 _Out_  long& http_response_code,
-									 _Out_  std::string& response);
+	//
+	// http_file_upload 함수를 사용하면, 파일 이름은 서버로 전송된다.
+	// 만약, 추가적으로 전송할 데이터가 있다면 forms를 사용한다.
+	//
+	typedef std::map<std::string, std::string> Forms;
+	bool http_file_upload(_In_z_ const char* url,
+						  _In_z_ const wchar_t* file_path,
+						  _In_   Forms& forms,
+						  _Out_  long& http_response_code,
+						  _Out_  CMemoryStream& stream);
+	bool http_file_upload(_In_z_ const char* url,
+						  _In_z_ const wchar_t* file_path,
+						  _In_   Forms& forms,
+						  _Out_  long& http_response_code,
+						  _Out_  std::string& response);
 		
 private:
 	bool set_common_opt(_In_ long connection_timeout = 10,
 						_In_ long read_timeout = 90,
 						_In_ long ssl_verifypeer = 1);
 	bool perform(_Out_ long& http_response_code);
-	bool multipart_form_send(_In_ const char* target_file_path, _Out_ long& http_response_code);
+	// multipart/form type을 request body data에 설정한 후 전송하는 함수
+	bool perform(_In_ const char* file_path, _In_   Forms& forms, _Out_ long& http_response_code);
 
 	void finalize();
 

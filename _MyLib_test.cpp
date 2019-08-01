@@ -194,6 +194,7 @@ extern bool test_set_binary_data();
 // _test_curl_https
 bool test_curl_https();
 bool test_curl_http();
+bool test_curl_http_upload();
 
 // thread_pool.h
 bool test_thread_pool();
@@ -345,6 +346,7 @@ void run_test()
 
 	//assert_bool(true, test_curl_https);
 	//assert_bool(true, test_curl_http);
+	assert_bool(true, test_curl_http_upload);
 	//assert_bool(true, test_alignment);
 	//assert_bool(true, test_create_string_from_buffer);
 	//assert_bool(true, test_stop_watch);
@@ -433,6 +435,53 @@ bool test_curl_http()
 	_ASSERTE(_curl_client != nullptr);
 	delete _curl_client; _curl_client = nullptr;
 	return true;
+}
+
+bool test_curl_http_upload()
+{
+	pcurl_client client = new curl_client();
+
+	const wchar_t* path = L"C:\\Windows\\System32\\notepad.exe";
+	const char*  url = "http://localhost:33330/upload";
+	long response_code;
+	std::string response;
+	client->initialize();
+
+	std::map<std::string, std::string> forms;
+	forms["group_guid"] = "invalid_group_guid";
+	forms["host_guid"] = "invalid_host_guid";
+	forms["full_path"] = "invalid_full_path";
+
+	bool ret = false;
+	do
+	{
+		if (true != client->http_file_upload(url, path, forms, response_code, response))
+		{
+			log_err "http_file_upload() failed. path=%ws, url=%s, status_code=%u",
+				path,
+				url,
+				response_code
+				log_end;
+			break;
+		}
+
+		ret = true;
+	} while (false);
+		
+	if (true == ret)
+	{
+		log_info "file upload success. path=%ws, url=%s, status_code=%u",
+			path,
+			url,
+			response_code
+			log_end;
+	}
+
+	if (nullptr != client)
+	{
+		delete client; client = nullptr;
+	}
+	return false;
 }
 
 /// @brief

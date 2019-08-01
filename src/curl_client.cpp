@@ -227,25 +227,26 @@ curl_client::http_post(
 }
 
 bool
-curl_client::send_file_using_post_method(
+curl_client::http_file_upload(
 	_In_z_ const char* url,
-	_In_z_ const wchar_t* target_file_path,
+	_In_z_ const wchar_t* file_path,
+	_In_   Forms& forms,
 	_Out_  long& http_response_code,
 	_Out_  CMemoryStream& stream
 	)
 {
 	_ASSERTE(nullptr != url);
-	_ASSERTE(nullptr != target_file_path);
+	_ASSERTE(nullptr != file_path);
 	_ASSERTE(NULL != _curl);
-	if (nullptr == url || nullptr == target_file_path || nullptr == _curl)
+	if (nullptr == url || nullptr == file_path || nullptr == _curl)
 	{
 		return false;
 	}
 
-	if (true != is_file_existsW(target_file_path))
+	if (true != is_file_existsW(file_path))
 	{
 		log_err "The file to be transferred does not exist. path=%ws",
-			target_file_path
+			file_path
 			log_end;
 		return false;
 	}
@@ -279,8 +280,8 @@ curl_client::send_file_using_post_method(
 	}
 
 	//	perform
-	std::string file_path = WcsToMbsUTF8Ex(target_file_path);
-	if (true != multipart_form_send(file_path.c_str(), http_response_code))
+	std::string file_path_utf8 = WcsToMbsUTF8Ex(file_path);
+	if (true != perform(file_path_utf8.c_str(), forms, http_response_code))
 	{
 		log_err "perform() failed." log_end;
 		return false;
@@ -290,30 +291,31 @@ curl_client::send_file_using_post_method(
 }
 
 bool 
-curl_client::send_file_using_post_method(
+curl_client::http_file_upload(
 	_In_z_ const char* url,
-	_In_z_ const wchar_t* target_file_path,
+	_In_z_ const wchar_t* file_path,
+	_In_   Forms& forms,
 	_Out_  long& http_response_code,
 	_Out_  std::string& response)
 {
 	_ASSERTE(nullptr != url);
-	_ASSERTE(nullptr != target_file_path);
+	_ASSERTE(nullptr != file_path);
 	_ASSERTE(NULL != _curl);
-	if (nullptr == url || nullptr == target_file_path || nullptr == _curl)
+	if (nullptr == url || nullptr == file_path || nullptr == _curl)
 	{
 		return false;
 	}
 
-	if (true != is_file_existsW(target_file_path))
+	if (true != is_file_existsW(file_path))
 	{
 		log_err "The file to be transferred does not exist. path=%ws",
-			target_file_path
+			file_path
 			log_end;
 		return false;
 	}
 
 	CMemoryStream stream;
-	if (true != send_file_using_post_method(url, target_file_path, http_response_code, stream))
+	if (true != http_file_upload(url, file_path, forms, http_response_code, stream))
 	{
 		log_err "http_post() failed. url=%s", url log_end;
 		return false;
@@ -591,8 +593,9 @@ curl_client::perform(
 }			
 
 bool 
-curl_client::multipart_form_send(
-	_In_ const char* target_file_path,
+curl_client::perform(
+	_In_ const char* file_path,
+	_In_ Forms& forms,
 	_Out_ long& http_response_code
 	)
 {
@@ -626,20 +629,16 @@ curl_client::multipart_form_send(
 
 	// set file name
 	part = curl_mime_addpart(http_multipart_form);
-	curl_mime_name(part, "file_name");
-	curl_mime_data(part, file_name_from_file_patha(target_file_path).c_str(), CURL_ZERO_TERMINATED);
-
-	part = curl_mime_addpart(http_multipart_form);
-	curl_mime_name(part, "image");
-	curl_mime_filename(part, file_name_from_file_patha(target_file_path).c_str());
+	curl_mime_name(part, "file");
+	curl_mime_filename(part, file_name_from_file_patha(file_path).c_str());
 	curl_mime_type(part, "application/octect-stream");
 
-	// set file data
-	part = curl_mime_addpart(http_multipart_form);
-	curl_mime_filedata(part, target_file_path);
-
-	
-
+	for (auto fm : forms)
+	{
+		part = curl_mime_addpart(http_multipart_form);
+		curl_mime_name(part, fm.first.c_str());
+		curl_mime_data(part, fm.second.c_str(), CURL_ZERO_TERMINATED);
+	}
 	curl_code = curl_easy_setopt(_curl, CURLOPT_MIMEPOST, http_multipart_form);
 	if (CURLE_OK != curl_code)
 	{
