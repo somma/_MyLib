@@ -11,21 +11,9 @@
 #ifndef _win32_utils_
 #define _win32_utils_
 
-#include <inttypes.h>
-#include "boost/algorithm/string.hpp"	// to_uppper, to_lower
-
 #include <conio.h>
-#include <winioctl.h>
-#include <winsvc.h>
-
-//> reported as vs 2010 bug, ms says that will be patch this bug next major vs release, vs2012.
-//
-//1>C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\intsafe.h(171): warning C4005: 'INT16_MAX' : macro redefinition
-//1>          C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdint.h(77) : see previous definition of 'INT16_MAX'
-#pragma warning(disable:4005)
-#include <intsafe.h>
-#pragma warning(default:4005)
-
+#include "BaseWindowsHeader.h"
+#include "boost/algorithm/string.hpp"	// to_uppper, to_lower
 #include "log.h"
 
 //
@@ -107,16 +95,15 @@ typedef struct _continuous_memory
 #define _pause  _getch()
 
 #define _mem_check_begin \
-	{\
-		_CrtMemState memoryState = { 0 }; \
-		_CrtMemCheckpoint(&memoryState)
+	_CrtMemState memoryState = { 0 }; \
+	_CrtMemCheckpoint(&memoryState); 
 
 #define _mem_check_break(ord) \
-	_CrtSetBreakAlloc(ord)
+	_CrtSetBreakAlloc(ord);
 
 #define _mem_check_end \
-		_CrtMemDumpAllObjectsSince(&memoryState); \
-	}
+	_CrtMemDumpAllObjectsSince(&memoryState)
+
 
 /* 
 	x64 에서는 inline asm 을 사용할 수 없으므로 호환성을 위해 제거
@@ -975,9 +962,30 @@ bool wstr_to_uint32(_In_ const wchar_t* uint32_string, _Out_ uint32_t& uint32_va
 bool wstr_to_int64(_In_ const wchar_t* int64_string, _Out_ int64_t& int64_val);
 bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ uint64_t& uint64_val);
 
-uint16_t swap_endian_16(_In_ uint16_t value);
-uint32_t swap_endian_32(_In_ uint32_t value);
-uint64_t swap_endian_64(_In_ uint64_t value);
+inline uint16_t swap_endian_16(_In_ uint16_t value)
+{
+	return (value >> 8) | (value << 8);
+}
+
+inline uint32_t swap_endian_32(_In_ uint32_t value)
+{
+	return	(value >> 24) |
+		((value << 8) & 0x00FF0000) |
+		((value >> 8) & 0x0000FF00) |
+		(value << 24);
+}
+
+inline uint64_t swap_endian_64(_In_ uint64_t value)
+{
+	return  (value >> 56) |
+		((value << 40) & 0x00FF000000000000) |
+		((value << 24) & 0x0000FF0000000000) |
+		((value << 8) & 0x000000FF00000000) |
+		((value >> 8) & 0x00000000FF000000) |
+		((value >> 24) & 0x0000000000FF0000) |
+		((value >> 40) & 0x000000000000FF00) |
+		(value << 56);
+}
 
 typedef struct WU_PROCESSOR_INFO
 {

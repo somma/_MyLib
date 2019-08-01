@@ -7,24 +7,10 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
+#include "BaseWindowsHeader.h"
 
-//	
-//	std
-//
-#include <stdio.h>
-#include <tchar.h>
 #include <random>
 
-#include "Win32Utils.h"
-#include "RegistryUtil.h"
-#include "Wow64Util.h"
-#include <Strsafe.h>
-
-#include "md5.h"
-#include "sha2.h"
-#include "FileIoHelperClass.h"
-
-#include <set>
 #include <errno.h>
 #include <io.h>			// _setmode()
 #include <fcntl.h>		// _O_U8TEXT, ...
@@ -33,13 +19,14 @@
 #include <Shellapi.h>
 #include <Shlobj.h>
 #include <Psapi.h>
-#include <guiddef.h>
 #include <sddl.h>
-
-#include "ResourceHelper.h"
-#include "gpt_partition_guid.h"
-
 #include <Objbase.h>	// CoCreateGuid()
+
+#include <TLHELP32.H>
+#include <userenv.h>
+#include <Wtsapi32.h>
+#pragma comment (lib, "userenv.lib")
+#pragma comment (lib, "Wtsapi32.lib")
 
 #pragma comment(lib, "Advapi32.lib")
 #pragma comment(lib, "Shell32.lib")
@@ -48,14 +35,15 @@
 #pragma comment(lib, "version.lib")
 #pragma comment(lib, "Ole32.lib")
 
-//
-//	create_process_as_login_user()
-// 
-#include <TLHELP32.H>
-#include <userenv.h>
-#pragma comment (lib, "userenv.lib")
-#include <Wtsapi32.h>
-#pragma comment (lib, "Wtsapi32.lib")
+#include "Win32Utils.h"
+#include "RegistryUtil.h"
+#include "Wow64Util.h"
+
+#include "md5.h"
+#include "sha2.h"
+#include "FileIoHelperClass.h"
+#include "ResourceHelper.h"
+#include "gpt_partition_guid.h"
 
 
 char _int_to_char_table[] = {
@@ -8568,40 +8556,6 @@ bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ uint64_t& uint64_va
 {
 	if (NULL == uint64_string) return false;
 	return str_to_uint64(WcsToMbsEx(uint64_string).c_str(), uint64_val);
-}
-
-/**
- * @brief
- * @param
- * @see
- * @remarks
- * @code
- * @endcode
- * @return
-**/
-UINT16 swap_endian_16(_In_ UINT16 value)
-{
-	return (value >> 8) | (value << 8);
-}
-
-UINT32 swap_endian_32(_In_ UINT32 value)
-{
-	return	(value >> 24) |
-		((value << 8) & 0x00FF0000) |
-		((value >> 8) & 0x0000FF00) |
-		(value << 24);
-}
-
-UINT64 swap_endian_64(_In_ UINT64 value)
-{
-	return  (value >> 56) |
-		((value << 40) & 0x00FF000000000000) |
-		((value << 24) & 0x0000FF0000000000) |
-		((value << 8) & 0x000000FF00000000) |
-		((value >> 8) & 0x00000000FF000000) |
-		((value >> 24) & 0x0000000000FF0000) |
-		((value >> 40) & 0x000000000000FF00) |
-		(value << 56);
 }
 
 /**

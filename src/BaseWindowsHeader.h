@@ -15,13 +15,24 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <set>
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <tchar.h>
+#include <inttypes.h>
+#include <intsafe.h>
 #include <strsafe.h>
 #include <sal.h>
+#include <winsvc.h>
+
 
 #ifdef _DEBUG
 #include <crtdbg.h>
 #endif//_DEBUG
+
+//
+//	include 순서 주의 (바꾸면 안됨)
+// 
+#include <winioctl.h>
+#include <initguid.h>

@@ -150,8 +150,9 @@ echo "done." </Command>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>echo "copy [$(TargetPath)] to debuggee..."
+copy $(TargetPath) x:\
+echo "done." </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -225,6 +226,7 @@ echo "done." </Command>
     <ClInclude Include="src\log.h" />
     <ClInclude Include="src\md5.h" />
     <ClInclude Include="src\net_util.h" />
+    <ClInclude Include="src\net_util_typedef.h" />
     <ClInclude Include="src\nt_name_conv.h" />
     <ClInclude Include="src\process_tree.h" />
     <ClInclude Include="src\Queue.h" />
