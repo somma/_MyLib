@@ -27,6 +27,7 @@
 #include "account_info.h"
 #include "curl_client.h"
 #include "CStream.h"
+#include "sched_client.h"
 
 // _test_log.cpp
 extern bool test_log_rotate();
@@ -217,6 +218,8 @@ bool test_boost_function();
 
 bool test_bit_field();
 
+bool test_sched_client();
+
 void run_test()
 {
 	UINT32 _pass_count = 0;
@@ -359,6 +362,7 @@ void run_test()
 	//assert_bool(true, test_stop_watch);
 	//assert_bool(true, test_boost_function);
 	//assert_bool(true, test_bit_field);
+	//assert_bool(true, test_sched_client);
 
 //
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드

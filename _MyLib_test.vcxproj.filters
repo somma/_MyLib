@@ -144,6 +144,9 @@
     <ClInclude Include="src\net_util_typedef.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\sched_client.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -297,6 +300,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="_test_log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sched_client.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_sched_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
