@@ -52,7 +52,7 @@ bool WmiClient::initialize()
 		// 
 		if (RPC_E_TOO_LATE != hres)
 		{
-			log_err "CoInitializeSeciruty() failed. hres=%u", hres log_end;
+			log_err "CoInitializeSecurity() failed. hres=%u", hres log_end;
 			CoUninitialize();
 			return false;
 		}

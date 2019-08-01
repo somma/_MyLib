@@ -233,6 +233,7 @@ echo "done." </Command>
     <ClInclude Include="src\rc4.h" />
     <ClInclude Include="src\RegistryUtil.h" />
     <ClInclude Include="src\ResourceHelper.h" />
+    <ClInclude Include="src\sched_client.h" />
     <ClInclude Include="src\scm_context.h" />
     <ClInclude Include="src\send_ping.h" />
     <ClInclude Include="src\sha2.h" />
@@ -268,6 +269,7 @@ echo "done." </Command>
     <ClCompile Include="src\process_tree.cpp" />
     <ClCompile Include="src\rc4.cpp" />
     <ClCompile Include="src\RegistryUtil.cpp" />
+    <ClCompile Include="src\sched_client.cpp" />
     <ClCompile Include="src\scm_context.cpp" />
     <ClCompile Include="src\sha2.cpp" />
     <ClCompile Include="src\ThreadManager.cpp" />
@@ -298,6 +300,7 @@ echo "done." </Command>
     <ClCompile Include="_test_process_token.cpp" />
     <ClCompile Include="_test_process_tree.cpp" />
     <ClCompile Include="_test_registry_util.cpp" />
+    <ClCompile Include="_test_sched_client.cpp" />
     <ClCompile Include="_test_scm.cpp" />
     <ClCompile Include="_test_std_map.cpp" />
     <ClCompile Include="_test_std_move.cpp" />
