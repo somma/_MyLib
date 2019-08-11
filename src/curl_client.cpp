@@ -14,7 +14,9 @@
 /// @brief
 curl_client::curl_client() :
 	_curl(nullptr),
-	_header_items(nullptr)
+	_connection_timeout(0),
+	_read_timeout(0),
+	_ssl_verifypeer(0)
 {
 }
 
@@ -56,7 +58,6 @@ http_get_write_callback(
 
 bool
 curl_client::initialize(
-	_In_ const char* http_header,
 	_In_ long connection_timeout, 
 	_In_ long read_timeout,
 	_In_ long ssl_verifypeer
@@ -70,19 +71,33 @@ curl_client::initialize(
 			return false;
 	}
 
-	set_common_opt(http_header, connection_timeout, read_timeout, ssl_verifypeer);
-
+	_connection_timeout = connection_timeout;
+	
+	_read_timeout = read_timeout;
+	
+	_ssl_verifypeer = ssl_verifypeer;
+	
 	return true;
 }
 
 /// @brief
 void curl_client::finalize()
 {
-	if (nullptr != _header_items)
-	{
-		curl_slist_free_all(_header_items);
-	}
 	curl_easy_cleanup(_curl);
+}
+
+/// @brief
+void
+curl_client::append_header(
+	_In_z_ const char* key, 
+	_In_z_ const char* value
+	)
+{
+	_ASSERTE(nullptr != key);
+	_ASSERTE(nullptr != value);
+	if (nullptr == key || nullptr == value) return;
+
+	_header_fields[key] = value;
 }
 
 /// @brief	
@@ -181,22 +196,126 @@ curl_client::http_get(
 ///	@return	성공시 true, 실패시 false
 bool
 curl_client::http_post(
-	_In_  const char* url,
-	_In_  const std::string& post_data,
-	_Out_ long& http_response_code,
-	_Out_ std::string& response
+	_In_z_ const char* url,
+	_In_z_ const char* data,
+	_Out_  long& http_response_code,
+	_Out_  std::string& response
 	)
 {
 	_ASSERTE(nullptr != url);
-	_ASSERTE(true != post_data.empty());
+	_ASSERTE(nullptr != data);
 	_ASSERTE(NULL != _curl);
-	if (nullptr == url || true == post_data.empty() || nullptr == _curl)
+	if (nullptr == url || nullptr == data || nullptr == _curl)
 	{
 		return false;
 	}
 
 	CMemoryStream stream;
-	if (true != http_post(url, post_data, http_response_code, stream))
+	if (true != http_post(url, data, http_response_code, stream))
+	{
+		log_err "http_post() failed. url=%s", url log_end;
+		return false;
+	}
+
+	//	response data 에 null terminate 를 추가한다.
+	char nt = '\0';
+	stream.WriteToStream(&nt, sizeof(char));
+
+	response = (char*)stream.GetMemory();
+	stream.ClearStream();
+	return true;
+}
+
+bool
+curl_client::http_file_upload(
+	_In_z_ const char* url,
+	_In_z_ const wchar_t* file_path,
+	_In_   Forms& forms,
+	_Out_  long& http_response_code,
+	_Out_  CMemoryStream& stream
+	)
+{
+	_ASSERTE(nullptr != url);
+	_ASSERTE(nullptr != file_path);
+	_ASSERTE(NULL != _curl);
+	if (nullptr == url || nullptr == file_path || nullptr == _curl)
+	{
+		return false;
+	}
+
+	if (true != is_file_existsW(file_path))
+	{
+		log_err "The file to be transferred does not exist. path=%ws",
+			file_path
+			log_end;
+		return false;
+	}
+
+	CURLcode curl_code = CURLE_OK;
+
+	//	Set url
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_URL,
+								 url);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	//	Set receiving data
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_WRITEDATA,
+								 &stream);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	//	perform
+	std::string file_path_utf8 = WcsToMbsUTF8Ex(file_path);
+	if (true != perform(file_path_utf8.c_str(), forms, http_response_code))
+	{
+		log_err "perform() failed." log_end;
+		return false;
+	}
+
+	return true;
+}
+
+bool 
+curl_client::http_file_upload(
+	_In_z_ const char* url,
+	_In_z_ const wchar_t* file_path,
+	_In_   Forms& forms,
+	_Out_  long& http_response_code,
+	_Out_  std::string& response)
+{
+	_ASSERTE(nullptr != url);
+	_ASSERTE(nullptr != file_path);
+	_ASSERTE(NULL != _curl);
+	if (nullptr == url || nullptr == file_path || nullptr == _curl)
+	{
+		return false;
+	}
+
+	if (true != is_file_existsW(file_path))
+	{
+		log_err "The file to be transferred does not exist. path=%ws",
+			file_path
+			log_end;
+		return false;
+	}
+
+	CMemoryStream stream;
+	if (true != http_file_upload(url, file_path, forms, http_response_code, stream))
 	{
 		log_err "http_post() failed. url=%s", url log_end;
 		return false;
@@ -217,8 +336,8 @@ curl_client::http_post(
 ///
 bool
 curl_client::http_post(
-	_In_ const char* url,
-	_In_ const std::string& post_data,
+	_In_z_ const char* url,
+	_In_z_ const char* data,
 	_Out_ long& http_response_code,
 	_Out_ CMemoryStream& stream
 	)
@@ -267,7 +386,7 @@ curl_client::http_post(
 	//	sending data
 	curl_code = curl_easy_setopt(_curl,
 								 CURLOPT_POSTFIELDSIZE,
-								 post_data.length());
+								 strlen(data));
 	if (CURLE_OK != curl_code)
 	{
 		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -279,7 +398,7 @@ curl_client::http_post(
 
 	curl_code = curl_easy_setopt(_curl,
 								 CURLOPT_POSTFIELDS,
-								 post_data.c_str());
+								 data);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -302,7 +421,6 @@ curl_client::http_post(
 /// @brief	전송을 하기위한 기본 options을 설정한다.
 bool
 curl_client::set_common_opt(
-	_In_ const char* http_header,
 	_In_ long connection_timeout,
 	_In_ long read_timeout,
 	_In_ long ssl_verifypeer
@@ -313,27 +431,6 @@ curl_client::set_common_opt(
 	bool ret = false;
 	do
 	{
-		//
-		// Custom HTTP Header가 있는 경우 Header 설정을 추가한다.
-		//
-		if (strcmp(http_header, _null_http_header_string) != 0)
-		{
-			_header_items = curl_slist_append(_header_items, http_header);
-			_ASSERTE(nullptr != _header_items);
-
-			curl_code = curl_easy_setopt(_curl,
-										 CURLOPT_HTTPHEADER,
-										 _header_items);
-			if (CURLE_OK != curl_code)
-			{
-				log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-					curl_code,
-					curl_easy_strerror(curl_code)
-					log_end;
-				return false;
-			}
-		}
-
 		//
 		// SSL Verifyer 유무 설정
 		//
@@ -420,6 +517,35 @@ curl_client::perform(
 {
 	CURLcode curl_code = CURLE_OK;
 
+	// Set HTTP Headers
+	curl_slist* header_list = nullptr;
+	if (true != _header_fields.empty())
+	{
+		std::string header_item;
+		for (auto hf : _header_fields)
+		{
+			header_item = hf.first;
+			header_item += ":";
+			header_item += hf.second;
+			header_list = curl_slist_append(header_list, header_item.c_str());
+		}
+
+		curl_code = curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, header_list);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "set http header failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			return false;
+		}
+
+		// 설정 완료된 HTTP Header 필드들은 정리한다.
+		_header_fields.clear();
+	}
+	
+	set_common_opt(_connection_timeout, _read_timeout, _ssl_verifypeer);
+
 	//	Execute
 	curl_code = curl_easy_perform(_curl);
 	if (CURLE_OK != curl_code)
@@ -453,13 +579,117 @@ curl_client::perform(
 	}
 	http_response_code = http_code;
 
-	if (http_code != 200 && http_code != 201)
+	// HTTP Headers 정리
+	if (nullptr != header_list)
 	{
-		log_err "http request failed. response code = %u",
-			http_code
+		curl_slist_free_all(header_list);
+		header_list = nullptr;
+	}
+
+	// reset curl handle
+	curl_easy_reset(_curl);
+	
+	return true;
+}			
+
+bool 
+curl_client::perform(
+	_In_ const char* file_path,
+	_In_ Forms& forms,
+	_Out_ long& http_response_code
+	)
+{
+	set_common_opt(_connection_timeout, _read_timeout, _ssl_verifypeer);
+
+	CURLcode curl_code = curl_easy_setopt(_curl, CURLOPT_NOPROGRESS, 1);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "set noprogress option failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
 			log_end;
 		return false;
 	}
+
+	curl_code = curl_easy_setopt(_curl, CURLOPT_TCP_KEEPALIVE, 1L);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "set tcp keepalive option failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	curl_mime* http_multipart_form = nullptr;
+	curl_mimepart* part = nullptr;
+
+	http_multipart_form = curl_mime_init(_curl);
+	_ASSERTE(nullptr != http_multipart_form);
+
+	// set file name
+	part = curl_mime_addpart(http_multipart_form);
+	curl_mime_name(part, "file");
+	curl_mime_filename(part, file_name_from_file_patha(file_path).c_str());
+	curl_mime_type(part, "application/octect-stream");
+
+	for (auto fm : forms)
+	{
+		part = curl_mime_addpart(http_multipart_form);
+		curl_mime_name(part, fm.first.c_str());
+		curl_mime_data(part, fm.second.c_str(), CURL_ZERO_TERMINATED);
+	}
+	curl_code = curl_easy_setopt(_curl, CURLOPT_MIMEPOST, http_multipart_form);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "set tcp keepalive option failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	//	Execute
+	curl_code = curl_easy_perform(_curl);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_perform() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		//
+		// 요청 실패한 경우 HTTP 응답값을 0으로 반환한다.
+		//
+		http_response_code = 0;
+		return false;
+	}
+
+	//	Get the last response code.
+	long http_code = 0;
+	if (CURLE_OK != curl_easy_getinfo(_curl,
+									  CURLINFO_RESPONSE_CODE,
+									  &http_code))
+	{
+		log_err "curl_easy_getinfo() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		//
+		// HTTP 응답값을 가져오지 못한 경우 0으로 반환한다.
+		//
+		http_response_code = 0;
+		return false;
+	}
+	http_response_code = http_code;
+
+
+	if (nullptr != http_multipart_form)
+	{
+		curl_mime_free(http_multipart_form); http_multipart_form = nullptr;
+	}
+
+	// reset curl handle
+	curl_easy_reset(_curl);
 
 	return true;
 }

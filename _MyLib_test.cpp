@@ -1,7 +1,7 @@
 /**
  * @file    Tests for MyLib
- * @brief   
- * @ref     
+ * @brief
+ * @ref
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2014/01/25 created.
  * @copyright All rights reserved by Yonghwan, Roh.
@@ -79,7 +79,7 @@ bool test_file_io_helper();
 bool test_file_io_helper2();
 
 // _test_scm.cpp
-extern bool test_scm_context();	
+extern bool test_scm_context();
 
 bool test_alignment_error_test();
 bool test_crc64();
@@ -198,6 +198,7 @@ extern bool test_set_binary_data();
 // _test_curl_https
 bool test_curl_https();
 bool test_curl_http();
+bool test_curl_http_upload();
 
 // thread_pool.h
 bool test_thread_pool();
@@ -228,9 +229,9 @@ void run_test()
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
-	//assert_bool(true, test_get_addr_info);	
+	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_ip_to_dns);
-	//assert_bool(true, test_dns_to_ip);	
+	//assert_bool(true, test_dns_to_ip);
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 	//assert_bool(true, test_file_info_cache);
@@ -238,7 +239,7 @@ void run_test()
 	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
-	//assert_bool(true, test_std_move);	
+	//assert_bool(true, test_std_move);
 	//assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);
 	//assert_bool(true, test_GeneralHashFunctions);
@@ -253,7 +254,7 @@ void run_test()
 	//assert_bool(true, test_find_and_replace);
 	//assert_bool(true, test_file_io_helper);
 	//assert_bool(true, test_file_io_helper2);
-	
+
 	//assert_bool(true, test_scm_context);
 
 	//assert_bool(true, test_regexp);
@@ -276,7 +277,7 @@ void run_test()
 
 	//assert_bool(true, test_boost_thread);
 	//assert_bool(true, test_thread_pool);
- //   
+ //
 	//assert_bool(true, test_boost_asio_timer);
 	//assert_bool(true, test_for_each);
 	//assert_bool(true, test_enum_physical_drive);
@@ -291,7 +292,7 @@ void run_test()
 	//assert_bool(true, test_to_lower_uppper_string);
 
 	//assert_bool(true, test_initialize_string);
-	
+
 	//uint32_t lt = get_log_to();
 	//set_log_to(log_to_con | lt);
 	////assert_bool(true, test_process_tree);
@@ -306,7 +307,7 @@ void run_test()
 	//assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
-	//assert_bool(true, test_cpp_class);	
+	//assert_bool(true, test_cpp_class);
 	//assert_bool(true, test_nt_name_to_dos_name);
 
 	//assert_bool(true, test_query_dos_device);
@@ -350,20 +351,22 @@ void run_test()
 
 	//assert_bool(true, test_registry_util);
 	//assert_bool(true, test_read_mouted_device);
-	//assert_bool(true, test_set_binary_data);    
+	//assert_bool(true, test_set_binary_data);
 	//assert_bool(true, test_aes256);
 
 	//assert_bool(true, test_curl_https);
 	//assert_bool(true, test_curl_http);
+	assert_bool(true, test_curl_http_upload);
 	//assert_bool(true, test_alignment);
 	//assert_bool(true, test_create_string_from_buffer);
 	//assert_bool(true, test_stop_watch);
 	//assert_bool(true, test_boost_function);
 	//assert_bool(true, test_bit_field);
-	assert_bool(true, test_sched_client);
+	//assert_bool(true, test_sched_client);
+
 //
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
-//	
+//
 	//assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
 	//assert_bool(true, test_const_position);		// 컴파일 불가 테스트
 
@@ -376,9 +379,9 @@ void run_test()
 	//_pause;
 
 	log_info
-		"total test = %u, pass = %u, fail = %u", 
-		_pass_count + _fail_count, 
-		_pass_count, 
+		"total test = %u, pass = %u, fail = %u",
+		_pass_count + _fail_count,
+		_pass_count,
 		_fail_count
 	log_end
 
@@ -395,21 +398,23 @@ bool test_curl_https()
 	}
 
 	std::stringstream http_header;
-	http_header << "authorization: Bearer " 
+	http_header << "authorization: Bearer "
 				<< "FOO";
 
-	if (true != _curl_client->initialize(http_header.str().c_str(), 10, 90, 0))
+	if (true != _curl_client->initialize(10, 90, 0))
 	{
 		log_err "curl client initialize() failed." log_end;
 		return false;
 	}
+
+	_curl_client->append_header("authorization", http_header.str().c_str());
 
 	const char* url = "https://api.somma.kr:55550/api/v1100/host-info";
 
 	long http_response_code = 404;
 	std::string res;
 	_ASSERTE(true == _curl_client->http_get(url, http_response_code, res));
-	
+
 	_ASSERTE(_curl_client != nullptr);
 	delete _curl_client; _curl_client = nullptr;
 	return true;
@@ -436,7 +441,7 @@ bool test_curl_http()
 	_ASSERTE(true == _curl_client->http_get(url, http_response_code, stream));
 
 	std::vector<std::string> dumps;
-	dump_memory(0LL, (unsigned char*)(stream.GetMemory()), stream.GetSize(), dumps);	
+	dump_memory(0LL, (unsigned char*)(stream.GetMemory()), stream.GetSize(), dumps);
 	std::for_each(dumps.begin(), dumps.end(),[](std::string& dump){printf("%s\n", dump.c_str());});
 
 	_ASSERTE(_curl_client != nullptr);
@@ -444,6 +449,52 @@ bool test_curl_http()
 	return true;
 }
 
+bool test_curl_http_upload()
+{
+	pcurl_client client = new curl_client();
+
+	const wchar_t* path = L"C:\\Windows\\System32\\notepad.exe";
+	const char*  url = "http://localhost:33330/upload";
+	long response_code;
+	std::string response;
+	client->initialize();
+
+	std::map<std::string, std::string> forms;
+	forms["group_guid"] = "invalid_group_guid";
+	forms["host_guid"] = "invalid_host_guid";
+	forms["full_path"] = "invalid_full_path";
+
+	bool ret = false;
+	do
+	{
+		if (true != client->http_file_upload(url, path, forms, response_code, response))
+		{
+			log_err "http_file_upload() failed. path=%ws, url=%s, status_code=%u",
+				path,
+				url,
+				response_code
+				log_end;
+			break;
+		}
+
+		ret = true;
+	} while (false);
+
+	if (true == ret)
+	{
+		log_info "file upload success. path=%ws, url=%s, status_code=%u",
+			path,
+			url,
+			response_code
+			log_end;
+	}
+
+	if (nullptr != client)
+	{
+		delete client; client = nullptr;
+	}
+	return false;
+}
 
 /// @brief
 bool test_get_drive_type()
@@ -473,13 +524,13 @@ bool test_find_and_replace()
     std::string src = "0123456789,Version=v4,5";
     std::string find = ",";
     std::string replace = " ";
-    
-    
+
+
     log_info "before find_and_replace, %s", src.c_str() log_end;
     std::string str_mod = find_and_replace_string_exa(src.c_str(), ",", "\\,");
     _ASSERTE(0 == str_mod.compare("0123456789\\,Version=v4\\,5"));
     log_info "after find_and_replace, %s", str_mod.c_str() log_end;
-    
+
     std::wstring srcw = L"0123456789,Version=v4,5";
     log_info "before find_and_replace, %ws", srcw.c_str() log_end;
     std::wstring str_modw = find_and_replace_string_exw(srcw.c_str(), L",", L"\\,");
@@ -491,14 +542,14 @@ bool test_find_and_replace()
 
 /**
  * @brief	 std::for_each, lambda expression
-**/ 
+**/
 
 // functor that overrides () opeator.
-struct Sum 
+struct Sum
 {
     Sum() { sum = 0; }
     void operator()(int n) { sum += n; }
- 
+
     int sum;
 };
 
@@ -511,8 +562,8 @@ bool test_for_each()
 	}
 
 	std::for_each(
-		    nums.begin(), 
-		    nums.end(), 
+		    nums.begin(),
+		    nums.end(),
 		    [](int& num)
 		    {
 			    printf("%d\n",num);
@@ -520,7 +571,7 @@ bool test_for_each()
 		    );
 
 	Sum s = std::for_each(
-		    nums.begin(), 
+		    nums.begin(),
 		    nums.end(),
 		    Sum()
 		    );
@@ -531,13 +582,13 @@ bool test_for_each()
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool test_std_string_find_and_substr()
 {
@@ -551,9 +602,9 @@ bool test_std_string_find_and_substr()
 	size_t pos = nt_name.find(nt_device_name);
 	if (std::wstring::npos == pos) return false;
 
-	std::wstring out = dos_device_name + 
+	std::wstring out = dos_device_name +
 						nt_name.substr(pos + nt_device_name.size(), nt_name.size());
-	
+
 	log_dbg
 		"\nnt_name = %ws \ndos_device_name = %ws \nnt_device_name = %ws \nresult = %ws",
 		nt_name.c_str(),
@@ -571,12 +622,12 @@ bool test_std_string_find_and_substr()
 
 /**
  * @brief	2's complement
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool test_2_complement()
 {
@@ -586,7 +637,7 @@ bool test_2_complement()
 	// 1 = 0000 0001
 	//     1111 1110 + 1 (음수를 표현하기 위해 2의 보수를 취하면...)
 	//     1111	1111		= -1 = 0xff
-	// 
+	//
 	// 2 = 0000 0010
 	//     1111 1101 + 1
 	//     1111 1110		= -2 = 0xfe
@@ -600,13 +651,13 @@ bool test_2_complement()
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool test_print_64int()
 {
@@ -619,17 +670,17 @@ bool test_print_64int()
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool test_to_lower_uppper_string()
 {
-	std::wstring str = L"ABCDEFGh1234";	
+	std::wstring str = L"ABCDEFGh1234";
 	log_dbg "str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
 	to_lower_string(str);
 	log_dbg "after to_lower, str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
@@ -641,42 +692,42 @@ bool test_to_lower_uppper_string()
 }
 
 /**
- * @brief	const 위치 / 의미 
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief	const 위치 / 의미
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 /*
 class ConstPositionTest
 {
-public:	
+public:
 	//> (const char*) msg : char* 가 const, 즉 msg 가 가리키는 데이터 변경 불가
-    char* Function1(const char* msg)  
+    char* Function1(const char* msg)
     {
         msg[0] = 't'; // error
         return m_msg;
     }
 
 	//> char* (const msg) : msg 변수가 const, 즉 msg 포인터 변수 변경 불가
-    char* Function2(char* const msg)  
-    {    
+    char* Function2(char* const msg)
+    {
         msg = m_msg; //error
         return m_msg;
     }
 
 	//> 메소드 상수화, 이 메소드는 클래스 멤버를 읽을 수는 있으나 변경 할 수는 없음
-    char* Function3(char* msg) const 
+    char* Function3(char* msg) const
     {
         m_msg = msg; //error
-        return m_msg;  
+        return m_msg;
     }
 
 	//> (const char*) : 리턴 값이 const char* 이므로 리턴 받는 변수도 const char* 이어야 함
 	//> 따라서 리턴되는 포인터가 가리키는 데이터 변경 불가
-    const char* Function4(char* msg)  
+    const char* Function4(char* msg)
     {
         m_msg = msg;
         return m_msg; //반환 받는 타입이 const가 아닐 경우 error
@@ -689,7 +740,7 @@ bool test_const_position()
 {
 	ConstPositionTest test;
 	char msg[] = "hello, const!";
- 
+
 	 test.Function1(msg);
 	 test.Function2(msg);
 	 test.Function3(msg);
@@ -700,21 +751,21 @@ bool test_const_position()
 */
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool test_initialize_string()
 {
 	std::wstring str = L"";
 	log_dbg "str = %ws", str.c_str() log_end
 
-	//> invalid null point exception 발생 
-	//> try-except 로 못 잡음... 
+	//> invalid null point exception 발생
+	//> try-except 로 못 잡음...
 	//> 초기화시 NULL 이면 "" 로 바꿔서 초기화 해야 함
 /*
 	try
@@ -726,21 +777,21 @@ bool test_initialize_string()
 	{
 		log_err "oops" log_end
 	}
-*/	
-	
+*/
+
 	return true;
 }
 
 
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool test_base64()
 {
@@ -753,11 +804,11 @@ bool test_base64()
 	std::wstring wide_str;
 	std::string utf8_str;
 	std::string base64_str;
-	
+
 	// base 64 encode
-	// 
+	//
 	// #1) multibyte -> ucs16 -> utf8 -> base64 순서로...
-	// #2) ucs16 -> utf8 -> base64 
+	// #2) ucs16 -> utf8 -> base64
 	wide_str = MbsToWcsEx(string_to_encodeA.c_str());
 	utf8_str = WcsToMbsUTF8Ex(wide_str.c_str());
 	base64_str = base64_encode((unsigned char*)utf8_str.c_str(), (int)utf8_str.size());
@@ -767,17 +818,17 @@ bool test_base64()
 	utf8_str = WcsToMbsUTF8Ex(wide_str.c_str());
 	base64_str = base64_encode((unsigned char*)utf8_str.c_str(), (int)utf8_str.size());
 	if (0 != base64_str.compare(_base64_encoded)) return false;
-	
-	// base64 decode	
+
+	// base64 decode
 	std::string f = base64_decode(_base64_encoded);
 	wide_str = Utf8MbsToWcsEx(f.c_str());
 	if (0 != wide_str.compare(string_to_encodeW.c_str())) return false;
-	
+
 	return true;
 }
 
 /**
- * @brief	
+ * @brief
 **/
 bool test_random()
 {
@@ -787,28 +838,28 @@ bool test_random()
 }
 
 /**
- * @brief	
+ * @brief
 **/
 bool test_ip_mac()
 {
 	std::wstring host_name;
 	std::vector<std::string> ip_list;
-	
+
 	log_info "representative ip v4=%s",
 		get_representative_ip_v4().c_str()
 		log_end;
-	
+
 	_ASSERTE(true == get_host_name(host_name));
 	_ASSERTE(true == get_ip_list_v4(ip_list));
-	
+
 	log_info "host_name = %ws", host_name.c_str() log_end
 	std::for_each(
-        ip_list.begin(), 
+        ip_list.begin(),
         ip_list.end(),
 		[](std::string& ip)
 		{
-			log_info "ip=%s, mac=%s", 
-				ip.c_str(), 
+			log_info "ip=%s, mac=%s",
+				ip.c_str(),
 				get_mac_by_ip_v4(ip.c_str()).c_str()
 				log_end
 		});
@@ -821,7 +872,7 @@ bool test_ip_mac()
 bool test_ip_to_str()
 {
 	const wchar_t* ip_str = L"1.2.3.4";
- 
+
     uint32_t addr = { 0 };
     if (true != str_to_ipv4(ip_str, addr)) return false;
     log_info "ip = %ws -> %lu", ip_str, addr log_end;
@@ -835,10 +886,10 @@ bool test_ip_to_str()
 }
 
 /// @brief
-bool 
+bool
 split_string(
-	_In_ const char* str, 
-	_In_ const char* seps, 
+	_In_ const char* str,
+	_In_ const char* seps,
 	_Out_ std::vector<std::string>& tokens
 	)
 {
@@ -856,7 +907,7 @@ split_string(
     {
         return false;
     }
-    
+
     char_ptr buf((char*)malloc(len + sizeof(char)), [](char* p) {
 		if (nullptr != p)
 		{
@@ -878,7 +929,7 @@ split_string(
         tokens.push_back(token);
         token = strtok_s(NULL, seps, &next_token);
     }
-	
+
     return true;
 }
 
@@ -890,7 +941,7 @@ bool test_strtok()
 
     std::vector<std::string> tokens1;
     std::vector<std::string> tokens2;
-    
+
 	//
     //	Establish string and get the first token:
 	//
@@ -935,7 +986,7 @@ bool test_find_files()
 {
 	//
 	//	테스트용 디렉토리/파일 생성
-	// 
+	//
 	{
 		if (true == is_file_existsW(L"c:\\temp\\dbg"))
 		{
@@ -1004,9 +1055,9 @@ bool test_find_files()
 	for (int i = 0; i < sizeof(roots) / sizeof(root_and_count); ++i)
 	{
 		std::list<std::wstring> files;
-		_ASSERTE(true == find_files(roots[i].root_path, 
-									reinterpret_cast<DWORD_PTR>(&files), 
-									false, 
+		_ASSERTE(true == find_files(roots[i].root_path,
+									reinterpret_cast<DWORD_PTR>(&files),
+									false,
 									ffcb));
 		_ASSERTE(roots[i].count == files.size());
 
@@ -1022,19 +1073,19 @@ bool test_find_files()
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool test_get_filepath_by_handle()
 {
 	typedef boost::shared_ptr< boost::remove_pointer<HANDLE>::type > shared_file_handle;
 	shared_file_handle file_handle(
-							open_file_to_read(L"c:\\windows\\system32\\drivers\\etc\\hosts"), 
+							open_file_to_read(L"c:\\windows\\system32\\drivers\\etc\\hosts"),
 							CloseHandle
 							);
 	if(INVALID_HANDLE_VALUE == file_handle.get()) return false;
@@ -1050,13 +1101,13 @@ bool test_get_filepath_by_handle()
 
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool test_nt_name_to_dos_name()
 {
@@ -1064,10 +1115,10 @@ bool test_nt_name_to_dos_name()
 	std::wstring dos_name;
 
 	bool ret = nt_name_to_dos_name(nt_name, dos_name);
-	if (true == ret) 
+	if (true == ret)
 	{
-		log_dbg 
-			"nt_name=%ws -> dos_name=%ws", 
+		log_dbg
+			"nt_name=%ws -> dos_name=%ws",
 			nt_name,
 			dos_name.c_str()
 		log_end
@@ -1083,13 +1134,13 @@ bool test_nt_name_to_dos_name()
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool test_query_dos_device()
 {
@@ -1097,11 +1148,11 @@ bool test_query_dos_device()
 	std::wstring nt_device;
 
 	bool ret = query_dos_device(dos_device, nt_device);
-	if (true == ret) 
+	if (true == ret)
 	{
-		log_dbg 
-			"dos_device( %S ) -> nt_device ( %S )", 
-			dos_device, 
+		log_dbg
+			"dos_device( %S ) -> nt_device ( %S )",
+			dos_device,
 			nt_device.c_str()
 		log_end
 	}
@@ -1110,13 +1161,13 @@ bool test_query_dos_device()
 }
 
 /**
-	* @brief	
-	* @param	
-	* @see		
-	* @remarks	
-	* @code		
-	* @endcode	
-	* @return	
+	* @brief
+	* @param
+	* @see
+	* @remarks
+	* @code
+	* @endcode
+	* @return
 **/
 bool test_bin_to_hex()
 {
@@ -1138,35 +1189,35 @@ bool test_bin_to_hex()
 	const char* orgal = "e8c5f9ffff6a5868a0370001e87204000033db895de4895dfc8d459850ff15fc100001";
 	const wchar_t* orgwu = L"E8C5F9FFFF6A5868A0370001E87204000033DB895DE4895DFC8D459850FF15FC100001";
 	const wchar_t* orgwl = L"e8c5f9ffff6a5868a0370001e87204000033db895de4895dfc8d459850ff15fc100001";
-	
+
 	UINT8 code[] = {
-					0xE8, 0xC5, 0xF9, 0xFF, 
-					0xFF, 0x6A, 0x58, 0x68, 
-					0xA0, 0x37, 0x00, 0x01, 
-					0xE8, 0x72, 0x04, 0x00, 
-					0x00, 0x33, 0xDB, 0x89, 
-					0x5D, 0xE4, 0x89, 0x5D, 
-					0xFC, 0x8D, 0x45, 0x98, 
-					0x50, 0xFF, 0x15, 0xFC, 
-					0x10, 0x00, 0x01		
+					0xE8, 0xC5, 0xF9, 0xFF,
+					0xFF, 0x6A, 0x58, 0x68,
+					0xA0, 0x37, 0x00, 0x01,
+					0xE8, 0x72, 0x04, 0x00,
+					0x00, 0x33, 0xDB, 0x89,
+					0x5D, 0xE4, 0x89, 0x5D,
+					0xFC, 0x8D, 0x45, 0x98,
+					0x50, 0xFF, 0x15, 0xFC,
+					0x10, 0x00, 0x01
 					};
 
 	/*std::string hexa;
-	if (true != bin_to_hexa(sizeof(code), code, true, hexa)) return false;	
+	if (true != bin_to_hexa(sizeof(code), code, true, hexa)) return false;
 	if (0 != hexa.compare(orgau)) return false;
-	
-	if (true != bin_to_hexa(sizeof(code), code, false, hexa)) return false;	
+
+	if (true != bin_to_hexa(sizeof(code), code, false, hexa)) return false;
 	if (0 != hexa.compare(orgal)) return false;
-	
+
 	std::wstring hexw;
-	if (true != bin_to_hexw(sizeof(code), code, true, hexw)) return false;	
+	if (true != bin_to_hexw(sizeof(code), code, true, hexw)) return false;
 	if (0 != hexw.compare(orgwu)) return false;
 
-	if (true != bin_to_hexw(sizeof(code), code, false, hexw)) return false;	
+	if (true != bin_to_hexw(sizeof(code), code, false, hexw)) return false;
 	if (0 != hexw.compare(orgwl)) return false;
 
 	*/
-	std::string hexa; 
+	std::string hexa;
 	std::string hexa_fast;
 	StopWatch sw; sw.Start();
 	if (true != bin_to_hexa(sizeof(code), code, true, hexa)) return false;
@@ -1233,13 +1284,13 @@ bool test_bin_to_hex()
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool test_str_to_xxx()
 {
@@ -1262,11 +1313,11 @@ bool test_str_to_xxx()
 	if (true != str_to_int32("invalid str", int32)) return false;
 	if (0 != int32) return false;
 
-	// -0 
+	// -0
 	if (true != str_to_int32("-0", int32)) return false;
 	if (0 != int32) return false;
 
-	// INT_MAX + 1 
+	// INT_MAX + 1
 	if (false != str_to_int32("2147483648", int32)) return false;
 
 	// INT_MIN -1 => (-2147483647 - 1) -1 = -2147483649
@@ -1280,23 +1331,23 @@ bool test_str_to_xxx()
 
 	if (true != str_to_uint32("101010", uint32)) return false;
 	if (101010 != uint32) return false;
-	
+
 	// -1
 	if (false != str_to_uint32("-1", uint32)) return false;
-	
+
 	// NULL
 	if (false != str_to_uint32(NULL, uint32)) return false;
 
 	// invalid str = return true & 0
 	if (true != str_to_uint32("invalid str", uint32)) return false;
 	if (0 != uint32) return false;
-			
-	// UINT_MAX + 1	
+
+	// UINT_MAX + 1
 	if (false != str_to_uint32("4294967296", uint32)) return false;
 
 
 
-	
+
 	//>
 	//> str_to_int64()
 	//>
@@ -1311,7 +1362,7 @@ bool test_str_to_xxx()
 	if (true != str_to_int64("invalid str", int64)) return false;
 	if (0 != int64) return false;
 
-	// -0 
+	// -0
 	if (true != str_to_int64("-0", int64)) return false;
 	if (0 != int64) return false;
 
@@ -1321,36 +1372,36 @@ bool test_str_to_xxx()
 	//INT64_MIN (-9223372036854775807 -1) -1 = 9223372036854775809
 	if (false != str_to_int64("-9223372036854775809", int64)) return false;
 
-	
+
 
 	//>
 	//> str_to_uint64()
 	//>
 
 	if (false != str_to_uint64("-1", uint64)) return false;
-	
+
 	// NULL
 	if (false != str_to_uint64(NULL, uint64)) return false;
 
 	// invalid str = return true & 0
 	if (true != str_to_uint64("invalid str", uint64)) return false;
 	if (0 != uint64) return false;
-		
+
 	// UINT64_MAX (0xffffffff`ffffffff) + X
 	if (false != str_to_uint64("9999999223372036854775807", uint64)) return false;
-	
+
 
 	return true;
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool test_set_get_file_position()
 {
@@ -1358,9 +1409,9 @@ bool test_set_get_file_position()
 	test_file << get_current_module_dirEx() << L"\\testfile.dat";
 	HANDLE file_handle = open_file_to_write(test_file.str().c_str());
 	if (INVALID_HANDLE_VALUE == file_handle) return false;
-	
+
 	do
-	{	
+	{
 		DWORD bytes_written = 0;
 		for (int i = 0; i < 254; ++i)
 		{
@@ -1387,7 +1438,7 @@ bool test_set_get_file_position()
 		if (true != get_file_position(file_handle, pos)) break;
 
 		if (128 != pos) break;
-		
+
 	} while (false);
 
 	CloseHandle(file_handle);
@@ -1398,20 +1449,20 @@ bool test_set_get_file_position()
 }
 
 /**
- * @brief	
+ * @brief
 **/
 bool test_get_module_path()
 {
 	std::wstring module_path;
 	if (true != get_module_path(L"ntdll.dll", module_path)) return false;
 
-	to_lower_string(module_path);	
+	to_lower_string(module_path);
 	if (0 != module_path.compare(L"c:\\windows\\system32\\ntdll.dll")) return false;
 	return true;
 }
 
 /**
- * @brief	
+ * @brief
 **/
 bool test_dump_memory()
 {
@@ -1433,11 +1484,11 @@ bool test_dump_memory()
 }
 
 /**
- * @brief	
+ * @brief
 **/
 bool test_get_environment_value()
 {
-	wchar_t* env_variables[] = 
+	wchar_t* env_variables[] =
 	{
 		L"%homepath%",
 		L"%temp%",
@@ -1448,7 +1499,7 @@ bool test_get_environment_value()
 	std::wstring env_value;
 	for(int i = 0; i < sizeof(env_variables) / sizeof(wchar_t*); ++i)
 	{
-		if (true != get_environment_value(env_variables[i], env_value)) 
+		if (true != get_environment_value(env_variables[i], env_value))
 			return false;
 		else
 			log_dbg "%ws = %ws", env_variables[i], env_value.c_str() log_end
@@ -1514,7 +1565,7 @@ bool test_get_installed_programs()
 }
 
 /**
- * @brief	
+ * @brief
 **/
 bool test_rc4_encrypt()
 {
@@ -1523,7 +1574,7 @@ bool test_rc4_encrypt()
 	uint8_t enc[1024] = {0};
 	uint8_t dec[1024] = {0};
 	rc4_state ctx={0};
-	
+
 	// encrypt
 	rc4_init(&ctx, (uint8_t*)key, (int)strlen(key));
 	rc4_crypt(&ctx, (uint8_t*)plain, enc, (int)sizeof(enc));
@@ -1549,8 +1600,8 @@ bool test_md5_sha2()
 
     const uint32_t read_buffer_size = 4096;
     uint8_t read_buffer[read_buffer_size];
-    
-    
+
+
     wchar_t* file_path = L"c:\\windows\\system32\\notepad.exe";
 
     HANDLE file_handle = CreateFileW(
@@ -1581,16 +1632,16 @@ bool test_md5_sha2()
     while (read_buffer_size == read)
     {
         if (FALSE == ::ReadFile(
-                            file_handle, 
-                            read_buffer, 
-                            read_buffer_size, 
-                            &read, 
+                            file_handle,
+                            read_buffer,
+                            read_buffer_size,
+                            &read,
                             NULL))
         {
-            log_err 
-                "ReadFile( %ws ) failed. gle = %u", 
-                file_path, 
-                GetLastError() 
+            log_err
+                "ReadFile( %ws ) failed. gle = %u",
+                file_path,
+                GetLastError()
             log_end;
             break;
         }
@@ -1603,7 +1654,7 @@ bool test_md5_sha2()
     }
 
     MD5Final(&ctx_md5);
-    
+
     sha256_end(sha2, &ctx_sha2);
     RtlCopyMemory(md5, ctx_md5.digest, sizeof(md5));
 
@@ -1618,20 +1669,20 @@ bool test_md5_sha2()
  * @brief thread_pool test
  */
 
-void work() 
+void work()
 {
 	log_info "tid = %u, running", GetCurrentThreadId() log_end;
 };
 
 struct worker
 {
-    void operator()() 
+    void operator()()
     {
 		log_info "tid = %u, running", GetCurrentThreadId() log_end;
     };
 };
 
-void more_work( int v) 
+void more_work( int v)
 {
 	log_info "tid = %u, running = %d", GetCurrentThreadId(), v log_end;
     //getchar();
@@ -1658,15 +1709,15 @@ bool test_thread_pool()
     pool.run_task( worker() );                    // Callable object.
     pool.run_task( boost::bind( more_work, 5 ) ); // Callable object.
     pool.run_task( worker() );                    // Callable object.
-		
+
 	pool.run_task([]()								// lambda
 	{
-		log_info "tid=%u",GetCurrentThreadId() log_end;		
+		log_info "tid=%u",GetCurrentThreadId() log_end;
 	});
-       
+
 
 	RunClass rc;
-	pool.run_task([&]() 
+	pool.run_task([&]()
 	{
 		if (true != rc.CalledByThread("test msg"))
 		{
@@ -1727,7 +1778,7 @@ bool test_enum_physical_drive()
                 //for (auto line : dumps)
                 //{
                 //    log_info "%s", line.c_str() log_end;
-                //}                
+                //}
                 log_info "%ws, \n%s", path.str().c_str(), dumps[dumps.size() - 2].c_str() log_end;
             }
         }
@@ -1844,11 +1895,11 @@ bool test_get_disk_volume_info()
             }
         }
     }
-    
+
     return true;
 }
 
-/// @brief 
+/// @brief
 bool test_dump_xxx()
 {
     dump_all_disk_drive_layout();
@@ -1865,13 +1916,13 @@ bool test_write_mbr_vbr()
     _pause;
 
     ///
-    /// buf 와 offset 이 512 (섹터 사이즈)로 align 되어있지 않으면 
+    /// buf 와 offset 이 512 (섹터 사이즈)로 align 되어있지 않으면
     /// Read/WriteFile 함수에서 에러 (87) 발생함
     /// 나중에 한번 확인해봐
     ///
     uint8_t buf_read[512] = { 0x00 };
     uint8_t buf_write[512] = { 0x41 };
-    
+
     std::vector<uint32_t> disk_numbers;
     bool ret = get_disk_numbers(disk_numbers);
     if (true != ret)
@@ -1917,7 +1968,7 @@ bool test_write_mbr_vbr()
             log_err "read_file_offset() failed" log_end;
         }
 
-        log_info "[*] %uth disk MBR - before write", disk_number log_end;        
+        log_info "[*] %uth disk MBR - before write", disk_number log_end;
         dump_file_offset(disk, 0, sizeof(buf_read));
 
         // #2 write mbr - write
@@ -1928,7 +1979,7 @@ bool test_write_mbr_vbr()
         }
         log_info "[*] %uth disk MBR - after write", disk_number log_end;
         dump_file_offset(disk, 0, sizeof(buf_read));
-        
+
         // #3 write mbr - restore
         if (true != write_file_offset(disk, 0, buf_read, sizeof(buf_read)))
         {
@@ -1980,7 +2031,7 @@ bool read_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint8_
     _ASSERTE(0 == offset % 512);
     _ASSERTE(0 == size % 512);
 
-    DWORD bytes_rw = 0;    
+    DWORD bytes_rw = 0;
     LARGE_INTEGER li_new_pos = { 0 };
     LARGE_INTEGER li_distance = { 0 };
     li_distance.QuadPart = offset;
@@ -2023,7 +2074,7 @@ bool write_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint8
 
     if (!WriteFile(file_handle, buf, size, &bytes_rw, NULL))
     {
-        log_err 
+        log_err
             "WriteFile() failed. gle = %u", GetLastError()
             );
         return false;
@@ -2037,7 +2088,7 @@ void dump_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint32
     uint8_t buf[512] = { 0 };
 
     _ASSERTE(size <= sizeof(buf));
- 
+
     if (true != read_file_offset(file_handle, offset, buf, size))
     {
         log_err "read_file_offset() failed." log_end;
@@ -2068,7 +2119,7 @@ bool test_rstrnicmp()
 
 bool test_device_name_from_nt_name()
 {
-    std::wstring r = device_name_from_nt_name(L"\\Device\\HarddiskVolume4\\Windows");    
+    std::wstring r = device_name_from_nt_name(L"\\Device\\HarddiskVolume4\\Windows");
     if (r.compare(L"\\Device\\HarddiskVolume4\\") != 0) return false;
     r = device_name_from_nt_name(L"\\Device\\HarddiskVolume4");
     if (r.compare(L"\\Device\\HarddiskVolume4") != 0) return false;
@@ -2084,14 +2135,14 @@ bool test_regexp()
     {
 
         // std::regexp 가 `\` 를 특수문자로 인식, 한번더 escape 하기 때문에
-        // `\device` 문자열을 매칭하기 위해서는 
-        // `\\device` 패턴을 사용해야 한다. 
-        // 
-        // c++ 에서도 `\` 를 escape 하므로 결국 `\` 문자를 매칭하기 위해서는 
-        // `\\\\device` 패턴을 사용해야 한다. 
-        // 
+        // `\device` 문자열을 매칭하기 위해서는
+        // `\\device` 패턴을 사용해야 한다.
+        //
+        // c++ 에서도 `\` 를 escape 하므로 결국 `\` 문자를 매칭하기 위해서는
+        // `\\\\device` 패턴을 사용해야 한다.
+        //
         // c++11 raw string, `LR"( )"` 을 사용하면 c++ 의 escape 를 막을 수 있으니까
-        // LR"(\\device)" 패턴을 사용해서 매칭할 수 있다. 
+        // LR"(\\device)" 패턴을 사용해서 매칭할 수 있다.
         //
         std::wstring str(L"\\device");
         std::wregex exp(L"\\\\device");   // wregex 가 `\` 를 한번씩 더 escape 하므로 `\\` 와 동일
@@ -2130,12 +2181,12 @@ bool test_regexp()
         //    {
         //        std::wcout << wsm[i] << std::endl;
         //    }
-        //}        
+        //}
     }
     catch (const std::regex_error& e)
     {
         log_err "regex_error caught: %s", e.what() log_end;
-        
+
         if (e.code() == std::regex_constants::error_brack)
         {
             log_err "The code was error_brack" log_end;
@@ -2169,23 +2220,23 @@ bool test_regexp()
                 log_info "str=%ws, match=%ws, ip=%ws", str, wcm[0].str().c_str(), wcm[1].str().c_str() log_end;
             }
         }
-    
+
     }
     catch (const std::regex_error& e)
     {
         log_err "regex_error caught: %s", e.what() log_end;
-        
+
         if (e.code() == std::regex_constants::error_brack)
         {
             log_err "The code was error_brack" log_end;
         }
     }
-    
+
     return true;
 }
 
 
-/// @brief  IcmpSendEcho 
+/// @brief  IcmpSendEcho
 bool test_ping()
 {
     for (int i = 0; i < 10; ++i)
@@ -2217,12 +2268,12 @@ bool test_NameConverter_iterate()
 			return true;
 		},
 		(ULONG_PTR)&count));
-	_ASSERTE(count > 0);	// logical driver 가 1개 이상은 반드시 있으므로 
+	_ASSERTE(count > 0);	// logical driver 가 1개 이상은 반드시 있으므로
 
 	// callback 이 false 를 리턴하면 iterate 를 중지하고, true 를 리턴한다.
 	count = 0;
 	_ASSERTE(true == nc.iterate_dos_devices(
-		[](_In_ const DosDeviceInfo* ddi, _In_ ULONG_PTR tag) 
+		[](_In_ const DosDeviceInfo* ddi, _In_ ULONG_PTR tag)
 		{
 			UNREFERENCED_PARAMETER(ddi);
 			UNREFERENCED_PARAMETER(tag);
@@ -2260,12 +2311,12 @@ bool test_NameConverter_get_canon_name()
 	//[INFO] \Device\CdRom0\temp\123.txt -> \Device\CdRom0\temp\123.txt
 
 	struct path_in_out_pair
-	{ 
+	{
 		bool ret;
 		const wchar_t* in;
 		const wchar_t* out;
-	} 
-	file_names[] = 
+	}
+	file_names[] =
 	{
 		{ true, L"\\??\\c:\\windows\\system32\\abc.exe", L"c:\\windows\\system32\\abc.exe"},
 		{ true, L"\\Systemroot\\abc.exe", L"c:\\Windows\\abc.exe"},
@@ -2274,14 +2325,14 @@ bool test_NameConverter_get_canon_name()
 		{ false, L"\\Device\\Unknown\\aaaa.exe", nullptr },
 
         // net use x: \\10.10.10.10\\dbg\\ /user:vmuser * 명령으로 x 드라이브 매핑해 두어야 정상적으로 테스트 가능
-        // 
+        //
 		{ true, L"\\Device\\Mup\\; lanmanredirector\\; x:000000000008112d\\10.10.10.10\\dbg\\", L"\\\\10.10.10.10\\dbg\\"},
 		{ false, L"x:\\", nullptr},
 		{ true, L"\\Device\\Mup\\10.10.10.10\\dbg\\", L"\\\\10.10.10.10\\dbg\\"},
 		{ true, L"\\Device\\WebDavRedirector\\192.168.0.1\\DavWWWRoot\\", L"\\\\192.168.0.1\\DavWWWRoot\\"},
 		{ true, L"\\Device\\Mup\\192.168.0.1\\", L"\\\\192.168.0.1\\"},
 		{ true, L"\\Device\\Mup\\192.168.0.1\\temp.*\\", L"\\\\192.168.0.1\\temp.*\\"},
-		{ true, L"\\Device\\Mup\\192.168.59.134\\ADMIN$\\PSEXESVC.EXE", L"\\\\192.168.59.134\\ADMIN$\\PSEXESVC.EXE"},		
+		{ true, L"\\Device\\Mup\\192.168.59.134\\ADMIN$\\PSEXESVC.EXE", L"\\\\192.168.59.134\\ADMIN$\\PSEXESVC.EXE"},
 		{ true, L"\\Device\\Mup\\; Csc\\.\\.\\", L"\\Device\\Csc\\.\\.\\"},
 		{ true, L"\\Device\\Mup\\;          WebDavRedirector\\", L"\\Device\\WebDavRedirector\\"},
 		{ true, L"\\Device\\Mup\\; WebDavRedirector\\192.168.0.1\\DavWWWRoot\\", L"\\Device\\WebDavRedirector\\192.168.0.1\\DavWWWRoot\\"},
@@ -2316,8 +2367,8 @@ bool test_NameConverter_get_canon_name()
 		_ASSERTE(ret == file_names[i].ret);
 		if (file_names[i].ret == true)
 		{
-			_ASSERTE(0 == _wcsnicmp(file_names[i].out, 
-									name.c_str(), 
+			_ASSERTE(0 == _wcsnicmp(file_names[i].out,
+									name.c_str(),
 									wcslen(file_names[i].out)));
 		}
 	}
@@ -2342,7 +2393,7 @@ bool test_NameConverter_dosname_to_devicename()
 	{
 		//
 		//	get_nt_path_by_dos_path test
-		// 
+		//
 		in_out_str in_out_pair[] = {
 			{ L"c:\\windows\\system32\\abc.exe",	L"%ws\\windows\\system32\\abc.exe" },
 			{ L"c:\\", L"%ws\\" }
@@ -2362,14 +2413,14 @@ bool test_NameConverter_dosname_to_devicename()
 			log_info "%ws -> %ws", in_out_pair[i].in, nt_path.c_str() log_end;
 		}
 	}
-	
+
 	{
 		//
 		//	get_device_name_by_drive_letter test
-		// 
+		//
 		NameConverter nc;
 		_ASSERTE(true == nc.load(false));
-		
+
 		std::wstring device_name_str;
 		_ASSERTE(true == nc.get_device_name_by_drive_letter(L"c:", device_name_str));
 		_ASSERTE(0 == device_name_str.compare(device_name));
@@ -2379,11 +2430,11 @@ bool test_NameConverter_dosname_to_devicename()
 		_ASSERTE(true != nc.get_device_name_by_drive_letter(L"c:\\", device_name_str));
 
 	}
-	
+
 	{
 		//
 		//	get_drive_letter_by_device_name test
-		// 
+		//
 		NameConverter nc;
 		_ASSERTE(true == nc.load(false));
 
@@ -2408,7 +2459,7 @@ bool test_NameConverter_dosname_to_devicename()
 		clear_str_stream_w(strm);
 		strm << L"\\Device\\not_exist\\";
 		_ASSERTE(true != nc.get_drive_letter_by_device_name(strm.str().c_str(), drive_letter));
-				
+
 		// 잘못된 device name 형식
 		_ASSERTE(true != nc.get_drive_letter_by_device_name(L"\\invalid_device", drive_letter));
 		_ASSERTE(true != nc.get_drive_letter_by_device_name(L"invalid_device", drive_letter));
@@ -2433,7 +2484,7 @@ typedef struct WIN32_FIND_DATAW_ALIGNTEST
 	_Field_z_ WCHAR  cAlternateFileName[14];
 }*PWIN32_FIND_DATAW_ALIGNTEST;
 
-///	@brief	구조체 정렬 문제 테스트 
+///	@brief	구조체 정렬 문제 테스트
 ///			https://msdn.microsoft.com/en-us/library/windows/desktop/ms724284(v=vs.85).aspx
 ///			https://blogs.msdn.microsoft.com/oldnewthing/20040825-00/?p=38053
 ///			https://msdn.microsoft.com/en-us/library/aa290049(v=vs.71).aspx
@@ -2446,38 +2497,38 @@ bool test_alignment_error_test()
 	HANDLE hSrch = FindFirstFileW(root, &wfd);
 
 	//	문제점 1
-	// 
+	//
 	//	PWIN32_FIND_DATAW 구조체는 구성하는 데이터의 사이즈가 4바이트이므로
 	//	4바이트 정렬된다. (FILE_TIME 구조체는 4바이트 두개이므로)
-	//	PWIN32_FIND_DATAW_ALIGNTEST 구조체의 경우 uint64_t 가 있으므로 8바이트 
-	//	정렬이 된다. 
+	//	PWIN32_FIND_DATAW_ALIGNTEST 구조체의 경우 uint64_t 가 있으므로 8바이트
+	//	정렬이 된다.
 	//
 	//	따라서  PWIN32_FIND_DATAW 를 PWIN32_FIND_DATAW_ALIGNTEST 로 타입캐스팅하게
 	//	되면 문제가 발생한다. DWORD dwFileAttributes 다음 4바이트가 패딩으로 인식되어
-	//	4바이트씩 밀려나게 된다. 
-	// 
+	//	4바이트씩 밀려나게 된다.
+	//
 	PWIN32_FIND_DATAW_ALIGNTEST at = (PWIN32_FIND_DATAW_ALIGNTEST)&wfd;
 	at = at;
 
 	//	문제점 2
-	// 
+	//
 	//	wfd.ftCreationTime 의 주소를 uint64_t 로 캐스팅해서 사용하기 때문에
 	//	패딩이나 정렬상의 문제는 없다. 하지만 8바이트 정렬을 사용하는 시스템의 경우(x64)
 	//	ftCreationTime 주소는 4바이트 정렬된 주소이기 때문에 8바이트를 읽기 위해
-	//	8바이트를 두번 읽어서 4바이트씩 쪼개서 합쳐야 하는경우가 발생할 수 있다. 
-	// 
-	//	0123 4567 | 789a bcde 
+	//	8바이트를 두번 읽어서 4바이트씩 쪼개서 합쳐야 하는경우가 발생할 수 있다.
+	//
+	//	0123 4567 | 789a bcde
 	//       ----   ----
 	//		  (1)   (2)
-	// 
+	//
 	//	x86 처럼 4바이트 정렬을 하는 시스템이라면 문제가 없을 수 있겠지만
 	//	x64 처럼 8바이트 정렬을 하는 시스템이라면 (1) 주소의 8바이트를 읽기 위해
-	//	두번의 읽기 연산이 필요하다. 
-	//	
+	//	두번의 읽기 연산이 필요하다.
+	//
 	//	이걸 체크해 주는 매크로가 IS_ALIGNED() 매크로임.
 	//	결국 FILE_TIME 을 uint64_t 로 캐스팅하는것은 매우 안좋은 생각이며
-	//	그래서 타입 캐스팅 하지 말고, high/low part 를 LARGE_INTEGER 에 복사한담에 
-	//	LARGE_INTEGER.QuadPart 를 통해서 연산을 하라고 하는것이다. 
+	//	그래서 타입 캐스팅 하지 말고, high/low part 를 LARGE_INTEGER 에 복사한담에
+	//	LARGE_INTEGER.QuadPart 를 통해서 연산을 하라고 하는것이다.
 	//
 	uint64_t* p = (uint64_t*)&wfd.ftCreationTime;
 	p = p;
@@ -2510,11 +2561,11 @@ bool test_file_info_cache()
 	std::wstringstream db;
 	db << get_current_module_dirEx() << L"\\file_info_cache.db";
 	{
-		FileInfoCache cache;		
+		FileInfoCache cache;
 		_ASSERTE(true == cache.initialize(db.str().c_str(), true));
 
 		//
-		//	FileInfoCache 클래스 이용	
+		//	FileInfoCache 클래스 이용
 		//
 		FileInformation fi1;
 		FileInformation fi2;
@@ -2527,7 +2578,7 @@ bool test_file_info_cache()
 	DeleteFileW(db.str().c_str());
 
 	//
-	//	FileInfoCache C api 이용	
+	//	FileInfoCache C api 이용
 	//
 	_ASSERTE(true == fi_initialize());
 	FileInformation fic1;
@@ -2544,7 +2595,7 @@ bool test_create_guid()
 	GUID guid;
 	GUID guid2;
 	_ASSERTE(true == create_guid(guid));
-	
+
 	// guid -> string -> guid
 	std::string guid_string = guid_to_string(guid);
 	_ASSERTE(string_to_guid(guid_string.c_str(), guid2));
@@ -2575,11 +2626,11 @@ bool test_singleton()
 	TestClass* o3 = test_singleton_subcall();
 	_ASSERTE(o == o2);
 	_ASSERTE(o == o3);
-	log_info "o=0x%p, o2=0x%p, o3=0x%p", 
-		o->addr(), 
-		o2->addr(), 
+	log_info "o=0x%p, o2=0x%p, o3=0x%p",
+		o->addr(),
+		o2->addr(),
 		o3->addr()
-		log_end;	
+		log_end;
 
 	Singleton<TestClass>::ReleaseInstance();
 	Singleton<TestClass>::ReleaseInstance();
@@ -2617,9 +2668,9 @@ bool test_log_xxx()
 bool test_set_security_attributes()
 {
 	//
-	//	security_attributes.txt 파일을 생성한다. 
-	// 
-	//	생성된 파일은 local system 계정으로만 접근 가능하기 때문에 그냥 삭제할 수 없다. 
+	//	security_attributes.txt 파일을 생성한다.
+	//
+	//	생성된 파일은 local system 계정으로만 접근 가능하기 때문에 그냥 삭제할 수 없다.
 	//	파일->속성->보안->고급->소유자변경 등을 통해 현재 사용자에게 필요한 권한을 주어야
 	//	한다.
 	//
@@ -2688,7 +2739,7 @@ bool test_GeneralHashFunctions()
 		"php", "xlsb", "odp", "bmp",
 		"sln", "jpg"
 	};
-	
+
 	//
 	//	GernalHashFunctions 들의 충돌여부 확인
 	//
@@ -2696,7 +2747,7 @@ bool test_GeneralHashFunctions()
 	{
 		hash_function func;
 		char* name;
-	} _functions[] = {		
+	} _functions[] = {
 		{ RSHash, "RSHash" },
 		{ JSHash, "JSHash" },
 		{ PJWHash, "PJWHash" },
@@ -2707,12 +2758,12 @@ bool test_GeneralHashFunctions()
 		{ DEKHash, "DEKHash" },
 		{ BPHash, "BPHash" },
 		{ FNVHash, "FNVHash" },
-		{ APHash, "APHash" }, 
-		{ [](char* str, unsigned int len)->unsigned int 
+		{ APHash, "APHash" },
+		{ [](char* str, unsigned int len)->unsigned int
 			{
 				UNREFERENCED_PARAMETER(len);
 				return hash_string32(str);
-			}, 
+			},
 			"hash_string32" }
 	};
 
@@ -2729,7 +2780,7 @@ bool test_GeneralHashFunctions()
 			auto entry = _tbl.find(hash);
 			if (entry == _tbl.end())
 			{
-				_tbl.insert(std::make_pair<uint32_t, char*>(std::move(hash), 
+				_tbl.insert(std::make_pair<uint32_t, char*>(std::move(hash),
 															std::move(_known_exts[j])));
 			}
 			else
@@ -2747,11 +2798,11 @@ bool test_GeneralHashFunctions()
 		log_info "func=%s, count=%u, collision=%u, time elapsed=%f msecs",
 			_functions[i].name,
 			sizeof(_known_exts) / sizeof(char*),
-			collision_count, 
+			collision_count,
 			sw.GetDurationMilliSecond()
 			log_end;
 	}
-	
+
 
 	return true;
 }
@@ -2762,14 +2813,14 @@ bool test_GeneralHashFunctions()
 std::unordered_map<std::string, std::string>  은 충분히 쓸만함
 
 
-디버그 버전에서는 std::map 이 std::unordered_map 보다 빠르지만, 
-릴리즈 버전에서는 std::unordered_map 이 확실히 빠르다. 
+디버그 버전에서는 std::map 이 std::unordered_map 보다 빠르지만,
+릴리즈 버전에서는 std::unordered_map 이 확실히 빠르다.
 
 충돌문제는 BPHash 는 충돌이 너무 많다. 몹쓸...나머지는 고만고만함
 hash_string32() 이 예상외로 쓸만함!
 
-std::unordered_map<std::string, std::string> 를 사용하면 알아서 
-충돌처리를 해줌 (collision = 0). 속도차가 2배 정도 나긴하지만 테이블의 
+std::unordered_map<std::string, std::string> 를 사용하면 알아서
+충돌처리를 해줌 (collision = 0). 속도차가 2배 정도 나긴하지만 테이블의
 카운트가 약 14만개임을 감안하면 뭐 충분히 쓸만하다 (편하고!)
 
 
@@ -2847,9 +2898,9 @@ bool test_GeneralHashFunctions2()
 {
 	std::list<std::string> _files;
 
-	if (!find_files(L"c:\\windows", 
+	if (!find_files(L"c:\\windows",
 					reinterpret_cast<DWORD_PTR>(&_files),
-					true, 
+					true,
 					[](_In_ DWORD_PTR tag, _In_ const wchar_t* path)
 	{
 		char_ptr cptr(WcsToMbs(path), [](char* p) {if (nullptr != p) free(p); });
@@ -2863,7 +2914,7 @@ bool test_GeneralHashFunctions2()
 	{
 		return false;
 	}
-	
+
 	//
 	//	GernalHashFunctions 들의 충돌여부 확인
 	//
@@ -2871,7 +2922,7 @@ bool test_GeneralHashFunctions2()
 	{
 		hash_function func;
 		char* name;
-	} _functions[] = {		
+	} _functions[] = {
 		{ RSHash, "RSHash" },
 		{ JSHash, "JSHash" },
 		{ PJWHash, "PJWHash" },
@@ -2904,12 +2955,12 @@ bool test_GeneralHashFunctions2()
 		sw.Start();
 		for (auto file : _files)
 		{
-			uint32_t hash = _functions[i].func(const_cast<char*>(file.c_str()), 
+			uint32_t hash = _functions[i].func(const_cast<char*>(file.c_str()),
 											   (uint32_t)strlen(file.c_str()));
 			auto entry = _tbl.find(hash);
 			if (entry == _tbl.end())
 			{
-				_tbl.insert(std::make_pair<uint32_t, std::string>(std::move(hash), 
+				_tbl.insert(std::make_pair<uint32_t, std::string>(std::move(hash),
 															std::move(file)));
 			}
 			else
@@ -2926,10 +2977,10 @@ bool test_GeneralHashFunctions2()
 				collision_count++;
 			}
 		}
-		sw.Stop();		
+		sw.Stop();
 		log_info "func=%s, collision=%u, time elapsed=%f msecs",
 			_functions[i].name,
-			collision_count, 
+			collision_count,
 			sw.GetDurationMilliSecond()
 			log_end;
 	}
@@ -2978,8 +3029,8 @@ bool test_GeneralHashFunctions2()
 
 	//
 	//	std::unordered_map<std::string, std::string> 사용
-	//	
-	log_info "# std::unordered_map<std::string, std::string>, file=%u", _files.size() log_end;	
+	//
+	log_info "# std::unordered_map<std::string, std::string>, file=%u", _files.size() log_end;
 	{
 		uint32_t collision_count = 0;
 		std::unordered_map<std::string, std::string> _tbl;
@@ -3008,12 +3059,12 @@ bool test_GeneralHashFunctions2()
 			}
 		}
 		sw.Stop();
-		log_info "func=std::unordeded_map, collision=%u, time elapsed=%f msecs",			
+		log_info "func=std::unordeded_map, collision=%u, time elapsed=%f msecs",
 			collision_count,
 			sw.GetDurationMilliSecond()
 			log_end;
 	}
-	
+
 	return true;
 }
 
@@ -3021,12 +3072,12 @@ bool test_get_file_extension()
 {
 	//
 	//	확장자를 가진 경로를 잘 처리하는지 확인
-	// 
+	//
 	wchar_t* file_with_ext[] = {
 		L"abc.txt",
 		L"c:\\windows\\xbadsad\\aaaa.txt",
 		L"aaaa.txt",
-		L"aaaa.doc.txt", 
+		L"aaaa.doc.txt",
 		L"\\offsymxl.txt:WofCompressedData"		// ttf
 	};
 
@@ -3040,7 +3091,7 @@ bool test_get_file_extension()
 
 	//
 	//	확장자가 없는 파일 처리 확인
-	// 	
+	//
 	wchar_t* file_without_ext[] = {
 		L"c:\\windows\\xbadsad\\aaaa",
 		L"aaaa",
@@ -3063,8 +3114,8 @@ bool test_get_file_extension()
 bool test_raii_xxx()
 {
 	//
-	//	char* 타입 lambda custom deleter 
-	// 	
+	//	char* 타입 lambda custom deleter
+	//
 	do
 	{
 		char_ptr pchar((char*)malloc(1024), [](char* p) {
@@ -3076,15 +3127,15 @@ bool test_raii_xxx()
 		if (nullptr == pchar.get()) break;
 
 		RtlFillMemory(pchar.get(), 1024, 0xcc);
-		
+
 
 		if (nullptr != pchar)
 		{
 			//
 			//	pchar = nullptr 로 설정하는 순간 deleter 가 호출됨
-			// 
+			//
 			pchar = nullptr;
-		}		
+		}
 
 		//
 		//	이미 deleter 가 호출되었으며, pchar == nullptr 임
@@ -3095,17 +3146,17 @@ bool test_raii_xxx()
 		}
 
 	} while (false);
-	
 
-	// 
+
+	//
 	//	HANDLE 타입 lambda custom deleter
-	// 
+	//
 	do
-	{		
+	{
 		handle_ptr hptr(open_file_to_read(L"c:\\windows\\system32\\notepad.exe"), [](HANDLE h) {
 			if (INVALID_HANDLE_VALUE == h) return;
 			if (NULL == h) return;
-			
+
 			CloseHandle(h);
 		});
 
@@ -3113,7 +3164,7 @@ bool test_raii_xxx()
 		{
 			break;
 		}
-		
+
 		DWORD bytes_read = 0;
 		uint8_t buf[128] = { 0 };
 		if (!ReadFile(hptr.get(), buf, sizeof(buf), &bytes_read, NULL))
@@ -3144,9 +3195,9 @@ bool test_raii_xxx()
 
 bool test_suspend_resume_process()
 {
-	// 
+	//
 	//	run notepad.exe
-	// 
+	//
 	PROCESS_INFORMATION pi = { 0 };
 	STARTUPINFOW si = { 0 };
 	if (!CreateProcessW(L"c:\\windows\\system32\\notepad.exe",
@@ -3165,25 +3216,25 @@ bool test_suspend_resume_process()
 			log_end;
 		return false;
 	}
-	
+
 
 	//
 	//	suspend notepad
-	//	
+	//
 	if (true != suspend_process_by_handle(pi.hProcess)) return false;
 	log_info "suspended..." log_end;
 	Sleep(1000);
 
-	//	
+	//
 	//	resume notepad
-	// 
+	//
 	if (true != resume_process_by_handle(pi.hProcess)) return false;
 	log_info "resumed..." log_end;
 	Sleep(1000);
 
-	// 
+	//
 	//	terminate notepd
-	// 
+	//
 	terminate_process_by_handle(pi.hProcess, 0);
 	log_info "terminated..." log_end;
 	Sleep(1000);
@@ -3205,7 +3256,7 @@ bool test_to_str()
 	return true;
 }
 
-/// 
+///
 bool test_convert_file_time()
 {
 	//   FILETIME ft1, ft2, ft3;
@@ -3222,7 +3273,7 @@ bool test_convert_file_time()
 
 	//
 	//	날짜를 월 계산해서 증가시키기 (SYSTEMTIME 을 직접 고치면 안됨)
-	// 
+	//
 	SYSTEMTIME system_time_one;
 	SYSTEMTIME system_time_two;
 
@@ -3252,10 +3303,10 @@ bool test_convert_file_time()
 
 
 	//
-	//	날짜를 월 계산해서 증가시키기 
-	//	
+	//	날짜를 월 계산해서 증가시키기
+	//
 	//	FILETIME 으로 변환한 후 값을 더해, SYSTEMTIME 으로 변환해주면 됨
-	// 
+	//
 
 	FILETIME file_time;
 	FILETIME file_time_added;
@@ -3293,12 +3344,12 @@ bool test_trivia()
 	public:
 	    aaa(bool value) : _value(value) { }
 	    virtual ~aaa() { log_info "..." log_end }
-	
+
 	    void run() { log_info "%s", _value == true ? "Ture" : "False"  log_end;}
 	protected:
 	    bool _value;
 	};
-	
+
 	class bbb : public aaa
 	{
 	public:
@@ -3306,7 +3357,7 @@ bool test_trivia()
 	    virtual ~bbb() { }
 	    void run() { log_info "%s", _value == true ? "Ture" : "False"  log_end;}
 	};
-	
+
 	class ccc : public bbb
 	{
 	public:
@@ -3327,8 +3378,8 @@ bool test_trivia()
 	set_log_format(false, false, false, false);
 
 	//
-	//	std::string 관련 
-	// 
+	//	std::string 관련
+	//
 	std::wstring wstr = L"12345";
 	log_info "wstr.size() = %u, wcslen(wstr.c_str()) = %u  (same size)",
 		wstr.size(), wcslen(wstr.c_str())
@@ -3353,7 +3404,7 @@ bool test_trivia()
 
 	//
 	//	64비트 정수 출력
-	// 
+	//
 	uint64_t t = 0xffffffff00112233;
 	log_info "0x%llx, 0x%016llx", t, t log_end;
 
@@ -3370,13 +3421,13 @@ bool test_trivia()
 		log_info "%d", v log_end;
 	}
 
-	// 
+	//
 	//	생성자/소멸자 호출
 	//
 	ccc c(true);
 	c.run();
 
-	// log :: rotate_log_file() 함수 테스트 
+	// log :: rotate_log_file() 함수 테스트
 	//for (int i=0; ; ++i)
 	//{
 	//	log_info "%d", i log_end;
@@ -3394,7 +3445,7 @@ bool test_alignment()
 {
 	WIN32_FIND_DATAW data = { 0 };
 	//GetSystemTimeAsFileTime();
-	
+
 	log_info"\n"
 		"ftCreationTime     =0x%08x\n"
 		"ftLastAccessTime   =0x%08x\n"
@@ -3407,16 +3458,16 @@ bool test_alignment()
 		log_end;
 
 	uint64_t* p = (uint64_t*)&data.ftCreationTime;
-	log_info "0x%p, %llu, %s", 
-		p, 
-		*p, 
+	log_info "0x%p, %llu, %s",
+		p,
+		*p,
 		IS_ALIGNED(p, sizeof(uint64_t*)) ? "aligned" : "not aligned"
-		log_end;	
+		log_end;
 
 	return true;
 }
 
-/// @brief	
+/// @brief
 bool test_create_string_from_buffer()
 {
 	//
@@ -3494,7 +3545,7 @@ bool test_create_string_from_buffer()
 /// StopWatch 클래스 테스트
 bool test_stop_watch()
 {
-	StopWatch sw; 
+	StopWatch sw;
 	sw.Start();
 	Sleep(1000);
 	sw.Stop();
@@ -3560,22 +3611,22 @@ bool test_bit_field()
 		0b1
 	};
 
-	// memory layout 
+	// memory layout
 	// 0 1 1 1 1 0 1 0		1 0 1 0 1 1 1 1
-	// e ---d--- c b a      j i h g ---f---          
+	// e ---d--- c b a      j i h g ---f---
 
 	return true;
 }
 
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -3598,7 +3649,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		set_log_to(log_to_con);
 		set_log_level(log_level_info);
 
-		if (argv[1][0] != L'/' || 
+		if (argv[1][0] != L'/' ||
 			argv[1][1] == L'?')
 		{
 			log_err
@@ -3612,9 +3663,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		//
 		//	mylib.exe /filetime_to_str 131618627540824506
-		//	
+		//
 		else if (argc == 3 && (0 == _wcsicmp(&argv[1][1], L"filetime_to_str")))
-		{			
+		{
 			uint64_t ftime;
 			if (true != wstr_to_uint64(argv[2], ftime))
 			{
@@ -3630,7 +3681,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				log_end;
 			return 0;
 		}
-	}	
+	}
 
 	_CrtMemDumpAllObjectsSince(&memoryState);
 	return 0;
