@@ -3562,6 +3562,30 @@ lstrnicmpa(
 	}
 }
 
+/// 두 문자열이 완전히 일치하는지 확인한다. 
+bool 
+is_same_string(
+	_In_ const wchar_t* lhs,
+	_In_ const wchar_t* rhs,
+	_In_ bool case_insensitive
+)
+{
+	_ASSERTE(nullptr != lhs);
+	_ASSERTE(nullptr != rhs);
+	if (nullptr == lhs || nullptr == rhs) return false;
+
+	size_t len = max(wcslen(lhs), wcslen(rhs));
+	if (true == case_insensitive)
+	{
+		return (0 == _wcsnicmp(lhs, rhs, len)) ? true : false;
+	}
+	else
+	{
+		return (0 == wcsncmp(lhs, rhs, len)) ? true : false;
+	}
+}
+
+
 /**
  * \brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
 			(org_string 의 앞에서부터 token 을 검색)

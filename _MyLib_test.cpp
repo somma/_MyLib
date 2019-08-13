@@ -219,6 +219,9 @@ bool test_bit_field();
 
 bool test_sched_client();
 
+// test_unique_ptr.cpp
+extern bool test_unique_ptr();
+
 void run_test()
 {
 	UINT32 _pass_count = 0;
@@ -360,7 +363,8 @@ void run_test()
 	//assert_bool(true, test_stop_watch);
 	//assert_bool(true, test_boost_function);
 	//assert_bool(true, test_bit_field);
-	assert_bool(true, test_sched_client);
+	//assert_bool(true, test_sched_client);
+	assert_bool(true, test_unique_ptr);
 //
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //	

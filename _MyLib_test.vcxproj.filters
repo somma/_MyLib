@@ -308,6 +308,9 @@
     <ClCompile Include="_test_sched_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_unique_ptr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">

@@ -419,6 +419,9 @@ bool rstrnicmpa(_In_ const char* src, _In_ const char* fnd, _In_ bool case_insen
 bool lstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd, _In_ bool case_insensitive = true);
 bool lstrnicmpa(_In_ const char* src, _In_ const char* fnd, _In_ bool case_insensitive = true);
 
+/// 두 문자열이 완전히 일치하는지 확인한다. 
+bool is_same_string(_In_ const wchar_t* lhs, _In_ const wchar_t* rhs, _In_ bool case_insensitive = true);
+
 inline void clear_str_stream_w(std::wstringstream& stream)
 {
 	stream.str(L"");
