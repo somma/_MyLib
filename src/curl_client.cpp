@@ -93,9 +93,10 @@ curl_client::append_header(
 	_In_z_ const char* value
 	)
 {
+	_ASSERTE(nullptr != _curl);
 	_ASSERTE(nullptr != key);
 	_ASSERTE(nullptr != value);
-	if (nullptr == key || nullptr == value) return;
+	if (nullptr == _curl || nullptr == key || nullptr == value) return;
 
 	_header_fields[key] = value;
 }
@@ -108,15 +109,9 @@ curl_client::http_get(
 	_Out_ CMemoryStream& stream
 )
 {
+	_ASSERTE(nullptr != _curl);
 	_ASSERTE(nullptr != url);
-	if (nullptr == url) return false;
-
-	_ASSERTE(NULL != _curl);
-	if (nullptr == url || nullptr == _curl)
-	{
-		log_err "curl_client object is not initialized." log_end;
-		return false;
-	}
+	if (nullptr == url || nullptr == _curl) return false;
 
 	// 우선 스트림을 초기화 한다. 
 	stream.ClearStream();
@@ -169,7 +164,8 @@ curl_client::http_get(
 	)
 {
 	_ASSERTE(nullptr != url);
-	if (nullptr == url) return false;
+	_ASSERTE(nullptr != _curl);
+	if (nullptr == url || nullptr == _curl) return false;
 
 	CMemoryStream stream;
 	if (true != http_get(url, http_response_code, stream))	
@@ -205,10 +201,7 @@ curl_client::http_post(
 	_ASSERTE(nullptr != url);
 	_ASSERTE(nullptr != data);
 	_ASSERTE(NULL != _curl);
-	if (nullptr == url || nullptr == data || nullptr == _curl)
-	{
-		return false;
-	}
+	if (nullptr == url || nullptr == data || nullptr == _curl) return false;
 
 	CMemoryStream stream;
 	if (true != http_post(url, data, http_response_code, stream))
@@ -238,10 +231,7 @@ curl_client::http_file_upload(
 	_ASSERTE(nullptr != url);
 	_ASSERTE(nullptr != file_path);
 	_ASSERTE(NULL != _curl);
-	if (nullptr == url || nullptr == file_path || nullptr == _curl)
-	{
-		return false;
-	}
+	if (nullptr == url || nullptr == file_path || nullptr == _curl) return false;
 
 	if (true != is_file_existsW(file_path))
 	{
@@ -301,10 +291,7 @@ curl_client::http_file_upload(
 	_ASSERTE(nullptr != url);
 	_ASSERTE(nullptr != file_path);
 	_ASSERTE(NULL != _curl);
-	if (nullptr == url || nullptr == file_path || nullptr == _curl)
-	{
-		return false;
-	}
+	if (nullptr == url || nullptr == file_path || nullptr == _curl) return false;
 
 	if (true != is_file_existsW(file_path))
 	{
@@ -629,8 +616,10 @@ curl_client::perform(
 
 	// set file name
 	part = curl_mime_addpart(http_multipart_form);
+	
 	curl_mime_name(part, "file");
 	curl_mime_filename(part, file_name_from_file_patha(file_path).c_str());
+	curl_mime_filedata(part, file_path);
 	curl_mime_type(part, "application/octect-stream");
 
 	for (auto fm : forms)
