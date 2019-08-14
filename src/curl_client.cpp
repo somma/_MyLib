@@ -84,6 +84,13 @@ curl_client::initialize(
 void curl_client::finalize()
 {
 	curl_easy_cleanup(_curl);
+
+	// curl_global_cleanup() 호출은 thread safe 하지 않기때문에
+	// 라이브러리 내에서 호출하면 알아채기 어려운 버그를 만들어낼 수 
+	// 있다. 이 함수는 application 레벨에서 종료 직전에 호출하는걸로.
+	// 아니면 어차피 application 종료되면 알아서 문제 해결됨
+	//
+	//curl_global_cleanup();
 }
 
 /// @brief
