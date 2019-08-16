@@ -5548,8 +5548,7 @@ create_process(
 	cmdline_buf.get()[wcslen(cmdline)] = 0x0000;
 	
 	PROCESS_INFORMATION pi = { 0 };
-	STARTUPINFOW si = { 0 };
-	si.cb = sizeof(si);
+	STARTUPINFOW si = { 0 }; si.cb = sizeof(si);
 
 	if (!CreateProcessW(nullptr,
 						cmdline_buf.get(),

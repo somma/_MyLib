@@ -129,7 +129,7 @@ bool test_process_tree()
 	//	run notepad.exe & kill & ...
 	// 
 	PROCESS_INFORMATION pi = { 0 };
-	STARTUPINFOW si = { 0 };
+	STARTUPINFOW si = { 0 }; si.cb = sizeof(si);
 	if (!CreateProcessW(L"c:\\windows\\system32\\notepad.exe",
 						nullptr,
 						nullptr,

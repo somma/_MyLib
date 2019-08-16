@@ -3201,7 +3201,7 @@ bool test_suspend_resume_process()
 	//	run notepad.exe
 	//
 	PROCESS_INFORMATION pi = { 0 };
-	STARTUPINFOW si = { 0 };
+	STARTUPINFOW si = { 0 }; si.cb = sizeof(si);
 	if (!CreateProcessW(L"c:\\windows\\system32\\notepad.exe",
 						nullptr,
 						nullptr,
