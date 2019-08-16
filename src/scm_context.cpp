@@ -207,10 +207,9 @@ install_fs_filter(
 	//
 	std::wstringstream sys_path;
 
-	// refac
-//#ifdef _DEBUG
-//	sys_path << bin_path;
-//#else
+#ifdef _DEBUG
+	sys_path << bin_path;
+#else
 	//
 	//	Release 버전에서는 `SERVICE_BOOT_START` 타입으로 설치한다.
 	// 
@@ -237,13 +236,11 @@ install_fs_filter(
 			log_end;
 		return false;
 	}
-//#endif//_DEBUG
+#endif//_DEBUG
 	schandle_ptr svc_handle(CreateServiceW(scm_handle.get(),
 										   service_name,
 										   service_display_name,
 										   GENERIC_READ,
-										  // (SERVICE_KERNEL_DRIVER | 
-												//SERVICE_FILE_SYSTEM_DRIVER),
 										   SERVICE_KERNEL_DRIVER,
 										   SERVICE_BOOT_START, 
 										   SERVICE_ERROR_NORMAL,
