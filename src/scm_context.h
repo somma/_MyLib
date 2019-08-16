@@ -11,70 +11,29 @@
 #include <sal.h>
 #include <string>
 
-typedef class scm_context
-{
-public:
-	scm_context(
-		_In_opt_z_ const wchar_t* bin_path,
-		_In_z_ const wchar_t* service_name, 
-		_In_z_ const wchar_t* service_display_name, 
-		_In_ bool win32_service,
-		_In_ bool uninstall_service_on_free
-		);
-	scm_context(
-		_In_opt_z_ const wchar_t* bin_path,
-		_In_z_ const wchar_t* service_name,
-		_In_z_ const wchar_t* service_display_name,
-		_In_z_ const wchar_t* altitude, 
-		_In_ uint32_t flags, 
-		_In_ bool uninstall_service_on_free
-		);
-	~scm_context();
+bool install_win32_service(_In_z_ const wchar_t* bin_path,
+						   _In_z_ const wchar_t* service_name,
+						   _In_z_ const wchar_t* service_display_name,
+						   _In_ bool auto_start);
 
-	bool install_service(_In_ bool auto_start);
-	
-	bool uninstall_service();
-	bool uninstall_service(_In_ SC_HANDLE scm_handle);
+bool install_fs_filter(_In_z_ const wchar_t* bin_path,
+					   _In_z_ const wchar_t* service_name,
+					   _In_z_ const wchar_t* service_display_name,
+					   _In_z_ const wchar_t* altitude,
+					   _In_ uint32_t fs_filter_flag);
 
-	bool start_service();
-	bool start_service(_In_ SC_HANDLE service_handle);
+bool uninstall_service(_In_ const wchar_t* service_name);
+bool start_service(_In_ const wchar_t* service_name);
+bool stop_service(_In_ const wchar_t* service_name, _In_ uint32_t wait_for_n_secs = 10);
+bool service_installed(_In_ const wchar_t* service_name);
+bool service_started(_In_ const wchar_t* service_name);
+const char* service_status_to_str(_In_ uint32_t service_status);
 
-	bool stop_service(_In_ uint32_t wait_for_n_secs = 10);
-	bool stop_service(_In_ SC_HANDLE service_handle, _In_ uint32_t wait_for_n_secs=10);
-
-	bool service_installed(_Out_ bool& installed);
-	bool service_installed(_In_ SC_HANDLE scm_handle, _Out_ bool& installed);
-
-	bool service_started(_Out_ bool& started);
-	bool service_started(_In_ SC_HANDLE service_handle, _Out_ bool& started);
-
-	bool	
-	send_command(
-		_In_ uint32_t io_code, 
-		_In_ uint32_t input_buffer_size,
-		_In_bytecount_(input_buffer_size) void* input_buffer,
-		_In_ uint32_t output_buffer_size,
-		_In_bytecount_(output_buffer_size) void* output_buffer,
-		_Out_ uint32_t* bytes_returned
-		);
-
-	const wchar_t* service_name() { return _service_name.c_str(); }
-private:
-	bool			_uninstall_service_on_free;
-	HANDLE			_driver_handle;
-	std::wstring	_bin_path;
-	std::wstring	_service_name;
-	std::wstring	_service_display_name;
-
-	uint32_t		_service_type;
-
-	bool			_is_minifilter;
-	std::wstring	_altitude;	// for minifilter
-	uint32_t		_flags;		// for minifilter
-
-	HANDLE			open_driver();
-
-private:
-	static const char* service_status_to_str(_In_ uint32_t service_status);
-} *pscm_context;
-
+HANDLE open_driver(_In_ const wchar_t* service_name);
+bool io_control(_In_ HANDLE driver_handle,
+				_In_ uint32_t io_code,
+				_In_ uint32_t input_buffer_size,
+				_In_bytecount_(input_buffer_size) void* input_buffer,
+				_In_ uint32_t output_buffer_size,
+				_In_bytecount_(output_buffer_size) void* output_buffer,
+				_Out_ uint32_t* bytes_returned);

@@ -2809,53 +2809,37 @@ bool get_system_dir(_Out_ std::wstring& system_dir)
 **/
 bool get_windows_dir(_Out_ std::wstring& windows_dir)
 {
-	wchar_t     buf[MAX_PATH] = { 0x00 };
-	uint32_t    buf_len = sizeof(buf);
-	wchar_t*    pbuf = buf;
-
-	UINT32 len = GetWindowsDirectoryW(pbuf, buf_len);
-	if (0 == len)
+	//
+	//	터미널서비스가 동작중인 경우 각 터미널 서비스 사용자는 개별 
+	//	Windows 디렉토리를 가진다. 
+	//	GetWindowsDirectory() 함수는 개별 windows 디렉토리를 리턴하고
+	//	GetSystemWindowsDirectory() 함수는 전역 windows 디렉토리르리턴한다.
+	//
+	uint32_t cc_buf = GetSystemWindowsDirectoryW(nullptr, 0);
+	if (0 == cc_buf)
 	{
-		log_err "GetWindowsDirectoryW() failed. gle=%u", GetLastError() log_end;
+		log_err 
+			"GetSystemWindowsDirectoryW() failed. gle=%u", 
+			GetLastError() 
+			log_end;
 		return false;
 	}
 
-	if (len < buf_len)
+	auto buffer = std::make_unique<wchar_t[]>(cc_buf + 1);
+	cc_buf = GetSystemWindowsDirectoryW(buffer.get(), cc_buf);
+	if (0 == cc_buf)
 	{
-		buf[len] = 0x0000;
-		windows_dir = buf;
+		log_err 
+			"GetSystemWindowsDirectoryW() failed. gle=%u", 
+			GetLastError() 
+			log_end;
+		return false;
+	}
+	else
+	{
+		windows_dir = buffer.get();
 		return true;
 	}
-	else if (len == buf_len)
-	{
-		// GetWindowsDirectoryW( ) 는 null char 를 포함하지 않는 길이를 리턴함
-		// 버퍼가 더 필요하다.
-		buf_len *= 2;
-		pbuf = (wchar_t*)malloc(buf_len);
-		if (NULL == buf)
-		{
-			log_err "not enough memory" log_end;
-			return false;
-		}
-
-		// try again
-		len = GetSystemDirectoryW(pbuf, buf_len);
-		if (0 == len)
-		{
-			log_err "GetSystemDirectoryW() failed. gle=%u", GetLastError() log_end;
-			free(pbuf);
-			return false;
-		}
-		else
-		{
-			pbuf[len] = 0x0000;
-			windows_dir = pbuf;
-			free(pbuf); pbuf = NULL;
-			return true;
-		}
-	}
-
-	return true;        // never reach here
 }
 
 /**
