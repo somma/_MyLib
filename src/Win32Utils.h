@@ -618,6 +618,10 @@ bool	process_in_console_session(_In_ DWORD process_id);
 
 bool create_process(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _Out_opt_ HANDLE& process_handle, _Out_opt_ DWORD& process_id);
 bool create_process_and_wait(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _In_ DWORD timeout_secs, _Out_ DWORD& exit_code);
+
+bool create_process_on_session(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _Out_ PROCESS_INFORMATION& pi);
+bool create_process_on_session_and_wait(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _In_ DWORD timeout_secs, _Out_ DWORD& exit_code);
+
 bool create_process_as_login_user(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _Out_ PROCESS_INFORMATION& pi);
 
 bool set_security_attributes_type1(_Out_ SECURITY_ATTRIBUTES& sa);

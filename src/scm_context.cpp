@@ -206,7 +206,7 @@ install_fs_filter(
 	//	Install Kernel driver service 
 	//
 	std::wstringstream sys_path;
-
+	DWORD start_type = SERVICE_DEMAND_START;
 #ifdef _DEBUG
 	sys_path << bin_path;
 #else
@@ -236,13 +236,14 @@ install_fs_filter(
 			log_end;
 		return false;
 	}
+	start_type = SERVICE_BOOT_START;
 #endif//_DEBUG
 	schandle_ptr svc_handle(CreateServiceW(scm_handle.get(),
 										   service_name,
 										   service_display_name,
 										   GENERIC_READ,
 										   SERVICE_KERNEL_DRIVER,
-										   SERVICE_BOOT_START, 
+										   start_type, 
 										   SERVICE_ERROR_NORMAL,
 										   sys_path.str().c_str(),
 										   L"FSFilter Activity Monitor",

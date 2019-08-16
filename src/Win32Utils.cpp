@@ -93,7 +93,7 @@ std::string FAT2Str(IN FATTIME& fat)
 ///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
 ///			https://devblogs.microsoft.com/oldnewthing/20040825-00/?p=38053
 /*
-	
+
 		typedef struct _FILETIME {
 			DWORD dwLowDateTime;
 			DWORD dwHighDateTime;
@@ -114,28 +114,28 @@ std::string FAT2Str(IN FATTIME& fat)
 		...
 	} WIN32_FIND_DATAW, *PWIN32_FIND_DATAW, *LPWIN32_FIND_DATAW;
 
-	WIN32_FIND_DATAW 구조체의 경우 dwFileAttributes 가 4바이트이므로, 
-		- ftCreationTime   = 0x00000004 ~ 0x0000000C 
-		- ftLastAccessTime = 0x0000000c ~ 0x00000020 
-	에 위치하게 된다. 
+	WIN32_FIND_DATAW 구조체의 경우 dwFileAttributes 가 4바이트이므로,
+		- ftCreationTime   = 0x00000004 ~ 0x0000000C
+		- ftLastAccessTime = 0x0000000c ~ 0x00000020
+	에 위치하게 된다.
 
-	포인터 변수는 pointer alignment(8바이트)가 되어야 하는데, 만일 ftCreationTime 의 
-	주소(0x00000004)를 __int64_t* 타입의 포인터로 캐스팅해서 엑세스하게 되는 경우 
+	포인터 변수는 pointer alignment(8바이트)가 되어야 하는데, 만일 ftCreationTime 의
+	주소(0x00000004)를 __int64_t* 타입의 포인터로 캐스팅해서 엑세스하게 되는 경우
 	__int64_t 포인터는 pointer alignment(8바이트)가 아니라 4 byte alignment 메모리 영역에
-	접근하게 되기 때문에 alignment 를 지켜야 하는 경우 에러가 발생할 수 있다. 
+	접근하게 되기 때문에 alignment 를 지켜야 하는 경우 에러가 발생할 수 있다.
 
-	커널의 메세지 디스패처에는 아래와 같은 코드들을 자주 볼 수 있다. 
+	커널의 메세지 디스패처에는 아래와 같은 코드들을 자주 볼 수 있다.
 
 		if (!IS_ALIGNED(OutputBuffer, sizeof(uint64_t*))) {
 			return STATUS_DATATYPE_MISALIGNMENT;
 		}
 
-	만일 ftCreateTime 을 __uint64_t* 로 강제캐스팅해서 커널서비스 루틴을 호출했다면 
-	STATUS_DATATYPE_MISALIGNMENT 에러가 리턴될 것이다. 
+	만일 ftCreateTime 을 __uint64_t* 로 강제캐스팅해서 커널서비스 루틴을 호출했다면
+	STATUS_DATATYPE_MISALIGNMENT 에러가 리턴될 것이다.
 
 	+----------------------------------------------------------------------------+
 
-		typedef union _LARGE_INTEGER 
+		typedef union _LARGE_INTEGER
 		{
 			struct {
 				DWORD LowPart;
@@ -151,16 +151,16 @@ std::string FAT2Str(IN FATTIME& fat)
 		} LARGE_INTEGER;
 
 	LARGE_INTEGER, ULARGE_INTEGER 는 union 으로 정의되어있고 LONGLONG 타입 변수가 있기때문에
-	기본으로 8byte align 을 사용하기 때문에 위의 문제가 발생하지 않는다. 
+	기본으로 8byte align 을 사용하기 때문에 위의 문제가 발생하지 않는다.
 
-	참고로 LowPart, HighPart 를 가지는 동일한 구조체를 union 안에 두번 선언한 이유는 예전 코드와의 
+	참고로 LowPart, HighPart 를 가지는 동일한 구조체를 union 안에 두번 선언한 이유는 예전 코드와의
 	호환성을 위한 것이라고 함 (이름 없는 구조체를 가지는 유니온을 지원하느냐 마는냐 뭐 그런...)
 	저렇게 유니온을 선언해 두면 아래 두가지 형태의 코드를 모두 사용할 수 있기 때문이라고 함
-	
+
 		LargeInteger.u.Lowpart = 0
-		LargeInteger.LowPart = 0 		
+		LargeInteger.LowPart = 0
 */
-__inline 
+__inline
 uint64_t
 file_time_to_int(
 	_In_ const PFILETIME file_time
@@ -180,7 +180,7 @@ file_time_to_int(
 ///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
 ///			https://devblogs.microsoft.com/oldnewthing/20040825-00/?p=38053
 ///	
-__inline 
+__inline
 void
 int_to_file_time(
 	_In_ uint64_t file_time_int,
@@ -198,7 +198,7 @@ int_to_file_time(
 ///			특별한 경우가 아니라면 large_int_to_file_time() 함수를 사용할 필요없이 
 ///			`PFILETIME ft = (PFILETIME)&large_int` 형태로 바로 캐스팅해서 사용하도 문제없다. 
 ///			
-__inline 
+__inline
 void
 large_int_to_file_time(
 	_In_ const PLARGE_INTEGER large_int,
@@ -2314,7 +2314,7 @@ get_file_hash_by_filehandle(
 	{
 		return false;
 	}
-	
+
 	bool ret = false;
 	MD5_CTX* ctx_md5 = nullptr;
 	sha256_ctx* ctx_sha2 = nullptr;
@@ -2333,7 +2333,7 @@ get_file_hash_by_filehandle(
 			sha2_buf = (uint8_t*)malloc(32);
 			if (nullptr == ctx_sha2 || nullptr == sha2_buf) break;
 		}
-		
+
 		_ASSERTE(!(nullptr == ctx_md5 && nullptr == ctx_sha2));
 
 		/// NOTE by somma
@@ -2370,7 +2370,7 @@ get_file_hash_by_filehandle(
 		}
 
 		if (nullptr != ctx_md5) { MD5Final(ctx_md5); }
-		if (nullptr != ctx_sha2){ sha256_end(sha2_buf, ctx_sha2); }
+		if (nullptr != ctx_sha2) { sha256_end(sha2_buf, ctx_sha2); }
 
 		//
 		//	Hash 바이너리 버퍼를 hex 문자열로 변환
@@ -2385,9 +2385,9 @@ get_file_hash_by_filehandle(
 			{
 				log_err "bin_to_hexa_fast() failed. " log_end;
 				break;
-			}			
+			}
 		}
-		
+
 		if (nullptr != ctx_sha2)
 		{
 			if (true != bin_to_hexa_fast(32,
@@ -2398,7 +2398,7 @@ get_file_hash_by_filehandle(
 				log_err "bin_to_hexa_fast() failed. " log_end;
 				break;
 			}
-		}		
+		}
 
 		ret = true;
 	} while (false);
@@ -2818,9 +2818,9 @@ bool get_windows_dir(_Out_ std::wstring& windows_dir)
 	uint32_t cc_buf = GetSystemWindowsDirectoryW(nullptr, 0);
 	if (0 == cc_buf)
 	{
-		log_err 
-			"GetSystemWindowsDirectoryW() failed. gle=%u", 
-			GetLastError() 
+		log_err
+			"GetSystemWindowsDirectoryW() failed. gle=%u",
+			GetLastError()
 			log_end;
 		return false;
 	}
@@ -2829,9 +2829,9 @@ bool get_windows_dir(_Out_ std::wstring& windows_dir)
 	cc_buf = GetSystemWindowsDirectoryW(buffer.get(), cc_buf);
 	if (0 == cc_buf)
 	{
-		log_err 
-			"GetSystemWindowsDirectoryW() failed. gle=%u", 
-			GetLastError() 
+		log_err
+			"GetSystemWindowsDirectoryW() failed. gle=%u",
+			GetLastError()
 			log_end;
 		return false;
 	}
@@ -3441,12 +3441,12 @@ std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 /// @brief  src 의 뒤에서부터 fnd 문자열을 찾는다. 
 ///         fnd 가 src 의 꽁무니와 정확히 일치하면 true, 아니면 false 리턴
 ///         - 확장자 검사같은거 할때 사용
-bool 
+bool
 rstrnicmp(
-	_In_ const wchar_t* src, 
-	_In_ const wchar_t* fnd, 
+	_In_ const wchar_t* src,
+	_In_ const wchar_t* fnd,
 	_In_ bool case_insensitive
-	)
+)
 {
 	_ASSERTE(NULL != src);
 	_ASSERTE(NULL != fnd);
@@ -3472,12 +3472,12 @@ rstrnicmp(
 	return true;
 }
 
-bool 
+bool
 rstrnicmpa(
-	_In_ const char* src, 
-	_In_ const char* fnd, 
+	_In_ const char* src,
+	_In_ const char* fnd,
 	_In_ bool case_insensitive
-	)
+)
 {
 	_ASSERTE(NULL != src);
 	_ASSERTE(NULL != fnd);
@@ -3504,12 +3504,12 @@ rstrnicmpa(
 }
 
 /// @brief  src 의 앞에서부터 fnd 문자열을 찾는다. 
-bool 
+bool
 lstrnicmp(
-	_In_ const wchar_t* src, 
-	_In_ const wchar_t* fnd, 
+	_In_ const wchar_t* src,
+	_In_ const wchar_t* fnd,
 	_In_ bool case_insensitive
-	)
+)
 {
 	_ASSERTE(NULL != src);
 	_ASSERTE(NULL != fnd);
@@ -3526,12 +3526,12 @@ lstrnicmp(
 }
 
 /// @brief  src 의 앞에서부터 fnd 문자열을 찾는다. 
-bool 
+bool
 lstrnicmpa(
-	_In_ const char* src, 
-	_In_ const char* fnd, 
+	_In_ const char* src,
+	_In_ const char* fnd,
 	_In_ bool case_insensitive
-	)
+)
 {
 	_ASSERTE(NULL != src);
 	_ASSERTE(NULL != fnd);
@@ -3548,7 +3548,7 @@ lstrnicmpa(
 }
 
 /// 두 문자열이 완전히 일치하는지 확인한다. 
-bool 
+bool
 is_same_string(
 	_In_ const wchar_t* lhs,
 	_In_ const wchar_t* rhs,
@@ -5462,7 +5462,7 @@ bool get_active_window_pid(_Out_ DWORD& pid, _Out_ DWORD& tid)
  * @endcode
  * @return
 **/
-DWORD	get_active_console_session_id()
+DWORD get_active_console_session_id()
 {
 	return WTSGetActiveConsoleSessionId();
 }
@@ -5496,7 +5496,7 @@ bool get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id)
  * @endcode
  * @return
 **/
-bool	process_in_console_session(_In_ DWORD process_id)
+bool process_in_console_session(_In_ DWORD process_id)
 {
 	DWORD console_session = get_active_console_session_id();
 	DWORD session_id = 0xffffffff;
@@ -5517,7 +5517,7 @@ bool	process_in_console_session(_In_ DWORD process_id)
 }
 
 /// @brief	cmdline 을 실행하는 프로세스를 생성하는 CreateProcessW 함수 wrapper
-bool 
+bool
 create_process(
 	_In_z_ const wchar_t* cmdline,
 	_In_ DWORD creation_flag,
@@ -5543,10 +5543,10 @@ create_process(
 			buf_size
 			log_end;
 		return false;
-	}		
+	}
 	RtlCopyMemory(cmdline_buf.get(), cmdline, wcslen(cmdline) * sizeof(wchar_t));
 	cmdline_buf.get()[wcslen(cmdline)] = 0x0000;
-	
+
 	PROCESS_INFORMATION pi = { 0 };
 	STARTUPINFOW si = { 0 }; si.cb = sizeof(si);
 
@@ -5576,7 +5576,7 @@ create_process(
 }
 
 /// @brief	프로세스를 생성하고, 종료시까지 기다린다. 
-bool 
+bool
 create_process_and_wait(
 	_In_ const wchar_t* cmdline,
 	_In_ DWORD creation_flag,
@@ -5597,15 +5597,15 @@ create_process_and_wait(
 	//
 	//	Wait for the process
 	//
-	DWORD wr = WaitForSingleObject(process_handle, timeout_secs*1000);
+	DWORD wr = WaitForSingleObject(process_handle, timeout_secs * 1000);
 	if (WAIT_OBJECT_0 != wr)
 	{
 		switch (wr)
 		{
 		case WAIT_ABANDONED:
-			log_err 
-				"WaitForSingleObject() failed for process. pid=%u, handle=0x%p, wr=WAIT_ABANDONED", 
-				process_id, 
+			log_err
+				"WaitForSingleObject() failed for process. pid=%u, handle=0x%p, wr=WAIT_ABANDONED",
+				process_id,
 				process_handle
 				log_end;
 			break;
@@ -5618,7 +5618,7 @@ create_process_and_wait(
 		case WAIT_FAILED:
 			log_err "WaitForSingleObject() failed for process. pid=%u, handle=0x%p, wr=WAIT_FAILED, gle=%u",
 				process_id,
-				process_handle, 
+				process_handle,
 				GetLastError()
 				log_end;
 			break;
@@ -5865,6 +5865,226 @@ create_process_as_login_user(
 	}
 
 	return ret;
+}
+
+
+/// @brief	특정 세션에 프로세스를 생성한다. 
+bool
+create_process_on_session(
+	_In_ uint32_t session_id,
+	_In_ const wchar_t* cmdline,
+	_Out_ PROCESS_INFORMATION& pi
+)
+{
+	_ASSERTE(0xffffffff != session_id);
+	_ASSERTE(nullptr != cmdline);
+	if (0xffffffff == session_id || nullptr == cmdline) return false;
+
+	LUID luid = { 0 };
+	TOKEN_PRIVILEGES tknold = { 0 };
+	TOKEN_PRIVILEGES tknAdj = { 0 };
+
+	HANDLE hTokenProcess = nullptr;
+	HANDLE hTokenImperson = nullptr;
+	HANDLE hTokenUser = nullptr;
+
+	LPVOID pEnvironment = nullptr;
+	DWORD dwReturnLength = 0;
+	
+	if (!OpenProcessToken(GetCurrentProcess(),
+						  TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
+						  &hTokenProcess))
+	{
+		log_err 
+			"OpenProcessToken() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	handle_ptr tpg(hTokenProcess, [](HANDLE handle) {
+		if (nullptr != handle)
+		{
+			CloseHandle(handle);
+		}
+	});
+
+	LookupPrivilegeValue(nullptr, SE_TCB_NAME, &luid);
+	tknAdj.PrivilegeCount = 1;
+	tknAdj.Privileges[0].Luid = luid;
+	tknAdj.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+	if (!AdjustTokenPrivileges(hTokenProcess,
+							   false,
+							   &tknAdj,
+							   sizeof(TOKEN_PRIVILEGES),
+							   &tknold,
+							   &dwReturnLength))
+	{
+		log_err
+			"AdjustTokenPrivileges() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	//
+	//	해당 세션에 로그인한 사용자의 토큰을 구한다. 
+	// 
+	//	WTSQueryUserToken() 을 성공적으로 호출하기 위해서는 
+	//		- Local system account 
+	//		- SE_TCB_NAME privilege 
+	//	가 활성화 되어있어야 한다.
+	//
+	if (!WTSQueryUserToken(session_id, &hTokenImperson))
+	{
+		log_err
+			"WTSQueryUserToken() failed. session id=%u, gle=%u",
+			session_id, 
+			GetLastError()
+			log_end;
+		return false;
+	}
+	handle_ptr tig(hTokenImperson, [](HANDLE handle) {
+		if (nullptr != handle)
+		{
+			CloseHandle(handle);
+		}
+	});
+
+	if (!DuplicateTokenEx(hTokenImperson,
+						  MAXIMUM_ALLOWED,
+						  nullptr,
+						  SecurityIdentification,
+						  TokenPrimary,
+						  &hTokenUser))
+	{
+		log_err
+			"DuplicateTokenEx() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+	handle_ptr tug(hTokenUser, [](HANDLE handle) {
+		if (nullptr != handle)
+		{
+			CloseHandle(handle);
+		}
+	});
+	
+	
+	STARTUPINFOW si = { 0 }; si.cb = sizeof(si);
+	si.lpDesktop = const_cast<wchar_t*>(L"winsta0\\default");
+	if (!CreateEnvironmentBlock(&pEnvironment, hTokenUser, TRUE))
+	{
+		log_err "CreateEnvironmentBlock() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	//
+	//	CreateProcessAsUserW() 함수의 command line 파라미터는 쓰기 가능한 
+	//	버퍼이어야 한다. input 의 사본을 생성해서 호출한다. 
+	//
+	auto buffer = std::make_unique<wchar_t[]>(wcslen(cmdline) + 1);
+	RtlCopyMemory(buffer.get(), cmdline, wcslen(cmdline) * sizeof(wchar_t));
+	if (!CreateProcessAsUserW(hTokenUser,
+							  buffer.get(),
+							  nullptr,
+							  nullptr,
+							  nullptr,
+							  false,
+							  CREATE_UNICODE_ENVIRONMENT,
+							  pEnvironment,
+							  nullptr,
+							  &si,
+							  &pi))
+	{
+		log_err "CreateProcessAsUserW() failed. cmd=%ws, gle=%u",
+			cmdline,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	return true;
+}
+
+/// @brief	특정 세션에 프로세스를 생성하고, 프로세스의 종료를 대기한다. 
+bool 
+create_process_on_session_and_wait(
+	_In_ uint32_t session_id,
+	_In_ const wchar_t* cmdline,
+	_In_ DWORD timeout_secs,
+	_Out_ DWORD& exit_code
+)
+{
+	_ASSERTE(0xffffffff != session_id);
+	_ASSERTE(nullptr != cmdline);
+	if (0xffffffff == session_id || nullptr == cmdline) return false;
+
+	PROCESS_INFORMATION pi = { 0 };
+	if (!create_process_on_session(session_id, cmdline, pi))
+	{
+		log_err "create_process_on_session() failed. cmd=%ws",
+			cmdline
+			log_end;
+		return false;
+	}
+
+	//
+	//	Wait for the process
+	//
+	DWORD wr = WaitForSingleObject(pi.hProcess, timeout_secs * 1000);
+	if (WAIT_OBJECT_0 != wr)
+	{
+		switch (wr)
+		{
+		case WAIT_ABANDONED:
+			log_err
+				"WaitForSingleObject() failed for process. pid=%u, handle=0x%p, wr=WAIT_ABANDONED",
+				pi.dwProcessId, 
+				pi.hProcess
+				log_end;
+			break;
+		case WAIT_TIMEOUT:
+			log_err "WaitForSingleObject() failed for process. pid=%u, handle=0x%p, wr=WAIT_TIMEOUT",
+				pi.dwProcessId,
+				pi.hProcess
+				log_end;
+			break;
+		case WAIT_FAILED:
+			log_err "WaitForSingleObject() failed for process. pid=%u, handle=0x%p, wr=WAIT_FAILED, gle=%u",
+				pi.dwProcessId,
+				pi.hProcess,
+				GetLastError()
+				log_end;
+			break;
+		default:
+			_ASSERTE(!"oops! Unknown wait result code.");
+		}
+
+		//
+		//	어찌되었거나 생성된 프로세스가 정상종료되었다는 보장이 없으므로
+		//	강제 종료 시도한다. 
+		//
+		TerminateProcess(pi.hProcess, 0xffffffff);
+	}
+
+	if (!GetExitCodeProcess(pi.hProcess, &exit_code))
+	{
+		log_err 
+			"GetExitCodeProcess() failed. gle=%u", 
+			GetLastError() 
+			log_end;
+		exit_code = 0xffffffff;		// exit_code -1 로 간주
+	}
+
+	//
+	//	Cleanup
+	//
+	CloseHandle(pi.hThread); 
+	CloseHandle(pi.hProcess);	
+	return true;	
 }
 
 /// @brief	서비스에서 생성한 커널오브젝트에 로그인 사용자 프로그램에서 
@@ -6833,7 +7053,7 @@ psid_info get_sid_info(_In_ PSID sid)
 		case ERROR_INVALID_SID: gles = "ERROR_INVALID_SID"; break;
 		case ERROR_INVALID_PARAMETER: gles = "ERROR_INVALID_PARAMETER"; break;
 		}
-		
+
 		if (nullptr != gles)
 		{
 			log_err "ConvertSidToStringSidW() failed. gle=%s",
@@ -7179,7 +7399,7 @@ bool
 get_process_privilege(
 	_In_ DWORD pid,
 	_Out_ std::list<pprivilege_info>& privileges
-	)
+)
 {
 	//
 	//	Open process handle with READ token access
@@ -7221,7 +7441,7 @@ bool
 get_process_privilege(
 	_In_ HANDLE process_query_token,
 	_Out_ std::list<pprivilege_info>& privileges
-	)
+)
 {
 	_ASSERTE(NULL != process_query_token);
 	if (NULL == process_query_token) return false;
@@ -7290,7 +7510,7 @@ bool
 get_process_integrity_level(
 	_In_ DWORD pid,
 	_Out_ DWORD& integrity_level
-	)
+)
 {
 	//
 	//	Open process handle with READ token access
@@ -7315,8 +7535,8 @@ get_process_integrity_level(
 	//
 	HANDLE th;
 	if (TRUE != OpenProcessToken(proc_handle.get(),
-		TOKEN_QUERY,
-		&th))
+								 TOKEN_QUERY,
+								 &th))
 	{
 		log_err "OpenProcessToken() failed. gle=%u",
 			GetLastError()
@@ -7332,7 +7552,7 @@ bool
 get_process_integrity_level(
 	_In_ HANDLE process_query_token,
 	_Out_ DWORD& integrity_level
-	)
+)
 {
 	_ASSERTE(NULL != process_query_token);
 	if (NULL == process_query_token) return false;
@@ -7384,7 +7604,7 @@ get_process_integrity_level(
 	PTOKEN_MANDATORY_LABEL mandatory_label = (PTOKEN_MANDATORY_LABEL)ptr.get();
 
 	integrity_level = *GetSidSubAuthority(mandatory_label->Label.Sid,
-										  ((PISID)mandatory_label->Label.Sid)->SubAuthorityCount - 1);
+		((PISID)mandatory_label->Label.Sid)->SubAuthorityCount - 1);
 
 	return true;
 }
@@ -7394,7 +7614,7 @@ bool
 get_process_token_elevation_type(
 	_In_ DWORD pid,
 	_Out_ DWORD& token_elevation_type
-	)
+)
 {
 	//
 	//	Open process handle with READ token access
@@ -7419,8 +7639,8 @@ get_process_token_elevation_type(
 	//
 	HANDLE th;
 	if (TRUE != OpenProcessToken(proc_handle.get(),
-		TOKEN_QUERY,
-		&th))
+								 TOKEN_QUERY,
+								 &th))
 	{
 		log_err "OpenProcessToken() failed. gle=%u",
 			GetLastError()
@@ -7436,7 +7656,7 @@ bool
 get_process_token_elevation_type(
 	_In_ HANDLE process_query_token,
 	_Out_ DWORD& token_elevation_type
-	)
+)
 {
 	_ASSERTE(NULL != process_query_token);
 	if (NULL == process_query_token) return false;
@@ -7456,7 +7676,7 @@ get_process_token_elevation_type(
 			log_end;
 		return false;
 	}
-	
+
 	return true;
 }
 /// @brief 프로세스 toekn elevation을 가져온다.
@@ -7464,7 +7684,7 @@ bool
 get_process_token_elevated(
 	_In_ DWORD pid,
 	_Out_ bool& token_is_elevated
-	)
+)
 {
 	//
 	//	Open process handle with READ token access
@@ -7489,18 +7709,18 @@ get_process_token_elevated(
 	//
 	HANDLE th;
 	if (TRUE != OpenProcessToken(proc_handle.get(),
-		TOKEN_QUERY,
-		&th))
+								 TOKEN_QUERY,
+								 &th))
 	{
 		log_err "OpenProcessToken() failed. gle=%u",
 			GetLastError()
 			log_end;
 		return false;
 	}
-	handle_ptr token_handle(th, 
+	handle_ptr token_handle(th,
 							[](_In_ HANDLE th) {CloseHandle(th); });
 
-	return get_process_token_elevated(token_handle.get(), 
+	return get_process_token_elevated(token_handle.get(),
 									  token_is_elevated);
 }
 
@@ -7508,7 +7728,7 @@ bool
 get_process_token_elevated(
 	_In_ HANDLE process_query_token,
 	_Out_ bool& token_is_elevated
-	)
+)
 {
 	_ASSERTE(NULL != process_query_token);
 	if (NULL == process_query_token) return false;
@@ -7517,7 +7737,7 @@ get_process_token_elevated(
 	//	Get token information
 	//
 	DWORD return_length = 0;
-	TOKEN_ELEVATION te = {0x00};
+	TOKEN_ELEVATION te = { 0x00 };
 	if (TRUE != GetTokenInformation(process_query_token,
 									TokenElevation,
 									&te,
@@ -7618,7 +7838,7 @@ get_installed_program_info(
 			return new program(sub_key_name,
 							   name.c_str(),
 							   publisher.c_str(),
-							   version.c_str(), 
+							   version.c_str(),
 							   uninstaller.c_str());
 		}
 	}
@@ -7996,7 +8216,7 @@ bool attach_console(_In_ bool create)
 			return false;
 		}
 	}
-	
+
 	return true;
 }
 
@@ -8191,19 +8411,19 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 		//
 		//	IMAGE_NT_HEADER 포인터가 PE 파일 영역(+/- 방향 모두)에 있는지 확인
 		//
-		#define IMAGE_DOS_SIGNATURE_SIZE 2
+#define IMAGE_DOS_SIGNATURE_SIZE 2
 		PIMAGE_NT_HEADERS inh = (PIMAGE_NT_HEADERS)((uintptr_t)idh + idh->e_lfanew);
 		if ((uintptr_t)inh < ((uintptr_t)idh + IMAGE_DOS_SIGNATURE_SIZE))
 		{
 			log_dbg "(not a pe) invalid idh->e_lfanew (negative value)" log_end;
 			return IT_UNKNOWN;
 		}
-		
+
 		//
 		//	IMAGE_NT_HEADER 구조체가 PE 파일 범이내에 모두 있는지 확인
 		//
-		if ( (uintptr_t)inh > (uintptr_t)idh + fileSize.QuadPart ||			
-			 (uintptr_t)inh + sizeof(IMAGE_NT_HEADERS) > (uintptr_t)idh + fileSize.QuadPart )
+		if ((uintptr_t)inh > (uintptr_t)idh + fileSize.QuadPart ||
+			(uintptr_t)inh + sizeof(IMAGE_NT_HEADERS) > (uintptr_t)idh + fileSize.QuadPart)
 		{
 			log_dbg "(not a pe) inh is out of pe file." log_end;
 			return IT_UNKNOWN;
