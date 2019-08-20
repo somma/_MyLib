@@ -5544,7 +5544,9 @@ create_process(
 			log_end;
 		return false;
 	}
-	RtlCopyMemory(cmdline_buf.get(), cmdline, wcslen(cmdline) * sizeof(wchar_t));
+	RtlCopyMemory(cmdline_buf.get(), 
+				  cmdline, 
+				  wcslen(cmdline) * sizeof(wchar_t));
 	cmdline_buf.get()[wcslen(cmdline)] = 0x0000;
 
 	PROCESS_INFORMATION pi = { 0 };
