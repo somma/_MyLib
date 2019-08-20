@@ -206,6 +206,7 @@ echo "done." </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="src\account_info.h" />
     <ClInclude Include="src\AirCrypto.h" />
     <ClInclude Include="src\AKSyncObjs.h" />
@@ -242,6 +243,7 @@ echo "done." </Command>
     <ClInclude Include="src\StopWatch.h" />
     <ClInclude Include="src\ThreadManager.h" />
     <ClInclude Include="src\thread_pool.h" />
+    <ClInclude Include="src\version.h" />
     <ClInclude Include="src\Win32Utils.h" />
     <ClInclude Include="src\wmi_client.h" />
     <ClInclude Include="src\Wow64Util.h" />
@@ -325,6 +327,9 @@ echo "done." </Command>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\CppSQLite\LICENSE" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="_MyLib_test.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
