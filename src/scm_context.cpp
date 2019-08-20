@@ -135,7 +135,7 @@ bool
 install_fs_filter(
 	_In_z_ const wchar_t* bin_path,
 	_In_z_ const wchar_t* service_name,
-	_In_z_ const wchar_t* service_display_name, 
+	_In_z_ const wchar_t* service_display_name,
 	_In_z_ const wchar_t* altitude,
 	_In_ uint32_t fs_filter_flag
 )
@@ -223,7 +223,7 @@ install_fs_filter(
 		log_err "get_windows_dir() failed. " log_end;
 		return false;
 	}
-		
+
 	sys_path
 		<< windows_dir
 		<< L"\\system32\\"
@@ -243,7 +243,7 @@ install_fs_filter(
 										   service_display_name,
 										   GENERIC_READ,
 										   SERVICE_KERNEL_DRIVER,
-										   start_type, 
+										   start_type,
 										   SERVICE_ERROR_NORMAL,
 										   sys_path.str().c_str(),
 										   L"FSFilter Activity Monitor",
@@ -634,8 +634,8 @@ start_service(
 
 	if (svc_status.dwCurrentState != SERVICE_RUNNING)
 	{
-		log_err "service start failed. status=%u",
-			svc_status.dwCurrentState
+		log_err "service start failed. status=%ws",
+			service_status_to_str(svc_status.dwCurrentState)
 			log_end;
 		return false;
 	}

@@ -11,6 +11,10 @@
 #include <sal.h>
 #include <string>
 
+//
+//	control services
+//
+
 bool install_win32_service(_In_z_ const wchar_t* bin_path,
 						   _In_z_ const wchar_t* service_name,
 						   _In_z_ const wchar_t* service_display_name,
