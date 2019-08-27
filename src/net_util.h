@@ -131,7 +131,6 @@ get_mac_by_ip_v4(
 	_In_ const char* ip_str
 );
 
-using MacAddrType = unsigned char[6];
 std::string
 mac_to_str(
 	_In_ const MacAddrType mac

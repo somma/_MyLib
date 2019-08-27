@@ -8,6 +8,8 @@
 **/
 #pragma once
 
+using MacAddrType = unsigned char[6];
+
 typedef class Ipv4Info
 {
 public:
@@ -40,7 +42,7 @@ public:
 	std::wstring friendly_name;		// Wi-Fi
 	std::string name;				// {7F158482-83C5-4C7F-B47C-4CE15F1899CA}
 	std::wstring desc;				// Marvell AVASTAR Wireless-AC Network Controller
-	unsigned char physical_address[6];
+	MacAddrType physical_address;
 
 	std::vector<PIpv4Info> ip_info_list;
 	std::vector<uint32_t> dns_list;
