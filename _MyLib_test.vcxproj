@@ -115,7 +115,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/I "./" /I "c:\work.mylib\src" /D "MYLIB_TEST"</AdditionalOptions>
+      <AdditionalOptions>/D "MYLIB_TEST" /I $(ProjectDir) /I $(ProjectDir)\src </AdditionalOptions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -137,12 +137,14 @@ echo "done." </Command>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/I "./" /I "c:\work.mylib\src" /D "MYLIB_TEST"</AdditionalOptions>
+      <AdditionalOptions>/D "MYLIB_TEST" /I $(ProjectDir) /I $(ProjectDir)\src </AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <EnablePREfast>false</EnablePREfast>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>
       </MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -163,7 +165,7 @@ echo "done." </Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/I "./" /I "c:\work.mylib\src" /D "MYLIB_TEST"</AdditionalOptions>
+      <AdditionalOptions>/D "MYLIB_TEST" /I $(ProjectDir) /I $(ProjectDir)\src </AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -188,7 +190,7 @@ echo "done." </Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/I "./" /I "c:\work.mylib\src" /D "MYLIB_TEST"</AdditionalOptions>
+      <AdditionalOptions>/D "MYLIB_TEST" /I $(ProjectDir) /I $(ProjectDir)\src </AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -237,10 +239,13 @@ echo "done." </Command>
     <ClInclude Include="src\sched_client.h" />
     <ClInclude Include="src\scm_context.h" />
     <ClInclude Include="src\send_ping.h" />
+    <ClInclude Include="src\ServiceBase.h" />
     <ClInclude Include="src\sha2.h" />
     <ClInclude Include="src\Singleton.h" />
+    <ClInclude Include="src\StatusCode.h" />
     <ClInclude Include="src\steady_timer.h" />
     <ClInclude Include="src\StopWatch.h" />
+    <ClInclude Include="src\strtk.hpp" />
     <ClInclude Include="src\ThreadManager.h" />
     <ClInclude Include="src\thread_pool.h" />
     <ClInclude Include="src\version.h" />
@@ -273,6 +278,7 @@ echo "done." </Command>
     <ClCompile Include="src\RegistryUtil.cpp" />
     <ClCompile Include="src\sched_client.cpp" />
     <ClCompile Include="src\scm_context.cpp" />
+    <ClCompile Include="src\ServiceBase.cpp" />
     <ClCompile Include="src\sha2.cpp" />
     <ClCompile Include="src\ThreadManager.cpp" />
     <ClCompile Include="src\Win32Utils.cpp" />
@@ -326,10 +332,10 @@ echo "done." </Command>
     </masm>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\CppSQLite\LICENSE" />
+    <ResourceCompile Include="_MyLib_test.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="_MyLib_test.rc" />
+    <None Include="src\CppSQLite\LICENSE" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

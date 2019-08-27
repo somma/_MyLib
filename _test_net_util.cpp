@@ -10,16 +10,18 @@
 #include "Win32Utils.h"
 #include "net_util.h"
 
+
 #include <vector>
 
-void dump_adapter(_In_ const PNetAdapter adapter)
+void dump_adapter(_In_ const PInetAdapter adapter)
 {
 
 	//
 	//	Aapter information
 	//
 	log_msg
-		"\nAdapter, friendly name=%ws, name=%s, desc=%ws, mac=%s",
+		"\nAdapter, type=%u, friendly name=%ws, name=%s, desc=%ws, mac=%s",
+		adapter->interface_type,
 		adapter->friendly_name.c_str(),
 		adapter->name.c_str(),
 		adapter->desc.c_str(),
@@ -32,7 +34,7 @@ void dump_adapter(_In_ const PNetAdapter adapter)
 	log_msg "+ Dump DNS lists" log_end;
 	for (auto& dns : adapter->dns_list)
 	{
-		log_msg "  - dns=%s", dns.c_str() log_end;
+		log_msg "  - dns=%s", ipv4_to_str(dns).c_str() log_end;
 	}
 
 	//
@@ -41,7 +43,8 @@ void dump_adapter(_In_ const PNetAdapter adapter)
 	log_msg "+ Dump gateway lists" log_end;
 	for (auto& gw : adapter->gateway_list)
 	{
-		log_msg "  - gw=%s", gw.c_str() log_end;
+		
+		log_msg "  - gw=%s", ipv4_to_str(gw).c_str() log_end;
 	}
 
 	//
@@ -52,8 +55,8 @@ void dump_adapter(_In_ const PNetAdapter adapter)
 	{
 		log_msg
 			"  - %s/%s",
-			ip->ip.c_str(),
-			ipv4_to_str(ip->subnet_mask).c_str()
+			ipv4_to_str(ip->ip).c_str(),
+			ipv4_to_str(ip->mask).c_str()
 			log_end;
 	}
 }
@@ -67,19 +70,25 @@ bool test_get_adapters()
 		set_log_to(log_to_con | log_to_ods);
 
 		init_net_util();
-		std::vector<PNetAdapter> adapters;
-		_ASSERTE(true == get_net_adapters(AF_INET, adapters));
-
-		for (auto adapter : adapters)
+		do
 		{
-			dump_adapter(adapter);
-		}
+			std::vector<PInetAdapter> adapters;
+			_ASSERTE(true == get_inet_adapters(adapters));
 
-		for (auto item : adapters)
-		{
-			delete item;
-		}
-		adapters.clear();
+			for (auto adapter : adapters)
+			{
+				dump_adapter(adapter);
+			}
+
+			for (auto item : adapters)
+			{
+				delete item;
+			}
+			adapters.clear();
+		} while (false);
+		cleanup_net_util();
+
+		
 
 		set_log_to(log_to);
 	}
