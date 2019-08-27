@@ -40,8 +40,6 @@ public:
 	std::wstring friendly_name;		// Wi-Fi
 	std::string name;				// {7F158482-83C5-4C7F-B47C-4CE15F1899CA}
 	std::wstring desc;				// Marvell AVASTAR Wireless-AC Network Controller
-// refac
-//	std::string physical_address;	// BC-83-85-2D-8A-91
 	unsigned char physical_address[6];
 
 	std::vector<PIpv4Info> ip_info_list;
