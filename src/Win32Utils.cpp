@@ -1715,6 +1715,128 @@ get_file_version(
 	return true;
 }
 
+///
+///	@brief	지정된 파일의 회사명을 수집하는 함수
+/// @return 성공		true
+///					(파일에 리소스 섹션이 없는경우에도,
+///					 company_name을 ""로 true를 return 한다.)
+/// @return 실패		false
+///
+bool
+get_file_company_name(
+	_In_ const wchar_t* file_path,
+	_Out_ std::wstring& company_name
+)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path)
+	{
+		return false;
+	}
+
+	DWORD size = GetFileVersionInfoSize(file_path,
+										0);
+	if (0 == size)
+	{
+		DWORD err = GetLastError();
+		if (ERROR_RESOURCE_DATA_NOT_FOUND == err ||
+			ERROR_RESOURCE_TYPE_NOT_FOUND == err)
+		{
+			//
+			//	파일의 리소스 섹션이 없는경우 get_file_version()는 항상 실패하게 된다.
+			//	때문에, file_version을 ""로 설정하고 true를 return 한다.
+			//
+			company_name = L"";
+			return true;
+		}
+
+		log_err "GetFileVersionInfoSize() failed, file=%ws, gle=%u",
+			file_path,
+			err
+			log_end;
+		return false;
+	}
+
+	wchar_ptr buffer((wchar_t*)malloc(size),
+					 [](_In_ wchar_t* ptr)
+	{
+		if (nullptr != ptr) free(ptr);
+	});
+	if (nullptr == buffer.get())
+	{
+		log_err "Not enough memory. malloc size=%u",
+			size
+			log_end;
+		return false;
+	}
+
+	if (TRUE != GetFileVersionInfo(file_path,
+								   0,
+								   size,
+								   buffer.get()))
+	{
+		log_err "GetFileVersionInfo() failed, file=%ws, gle=%u",
+			file_path,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	ULONG lang_code_page = get_file_versioninfo_lang_code_page(buffer.get());
+	
+	std::wstringstream query;
+	query 
+		<< L"\\StringFileInfo\\" 
+		<< std::setw(8) << std::setfill(L'0') << std::hex << lang_code_page 
+		<< L"\\CompanyName";
+
+	std::wstringstream cn;
+	UINT length;
+	LPVOID value;
+	if (TRUE != VerQueryValue(buffer.get(),
+							  query.str().c_str(),
+							  &value,
+							  &length))
+	{
+		log_err "VerQueryValue() failed. query=%ws",
+			query.str().c_str()
+			log_end;
+		return false;
+	}
+	_ASSERTE(nullptr != value);
+	company_name = reinterpret_cast<wchar_t*>(value);
+
+	return true;
+}
+
+ULONG
+get_file_versioninfo_lang_code_page(
+	_In_ PVOID version_info
+)
+{
+	_ASSERTE(nullptr != version_info);
+	if (nullptr == version_info) return 0;
+
+	PVOID buffer;
+	UINT  length;
+	if (TRUE == VerQueryValue(version_info,
+							  L"\\VarFileInfo\\Translation",
+							  &buffer,
+							  &length))
+	{
+		// Combine the language ID and code page.
+		return (*(PUSHORT)buffer << 16) + *((PUSHORT)buffer + 1);
+	}
+	else
+	{
+		//
+		// code page를 resource 정보에서 읽어 올 수 없는 경우 영어 코드 페이지를 기본으로 사용한다.
+		//
+		return (MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US) << 16) + 1252;
+	}
+}
+
+
 /**
 * @brief	파일에 포맷문자열을 쓴다.
 */

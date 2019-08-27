@@ -153,6 +153,8 @@ bool test_dump_memory();
 bool test_get_environment_value();
 bool test_get_account_infos();
 bool test_get_installed_programs();
+bool test_get_file_company_name();
+
 // rc4.cpp
 bool test_rc4_encrypt();
 
@@ -325,6 +327,7 @@ void run_test()
 	//assert_bool(true, test_get_environment_value);
 	//assert_bool(true, test_get_account_infos);
 	//assert_bool(true, test_get_installed_programs);
+	assert_bool(true, test_get_file_company_name);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
 
@@ -359,14 +362,14 @@ void run_test()
 
 	//assert_bool(true, test_curl_https);
 	//assert_bool(true, test_curl_http);
-	assert_bool(true, test_curl_http_upload);
+	//assert_bool(true, test_curl_http_upload);
 	//assert_bool(true, test_alignment);
 	//assert_bool(true, test_create_string_from_buffer);
 	//assert_bool(true, test_stop_watch);
 	//assert_bool(true, test_boost_function);
 	//assert_bool(true, test_bit_field);
 	//assert_bool(true, test_sched_client);
-	assert_bool(true, test_unique_ptr);//
+	//assert_bool(true, test_unique_ptr);//
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //
 	//assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
@@ -1562,6 +1565,21 @@ bool test_get_installed_programs()
 			log_end;
 		delete software;
 	}
+
+	return true;
+}
+
+/**
+ * @brief
+ **/
+bool test_get_file_company_name()
+{
+	std::wstring company_name;
+	_ASSERTE(true == get_file_company_name(L"C:\\Windows\\System32\\notepad.exe", company_name));
+	log_info
+		"notepad publisher=%ws",
+		company_name.c_str()
+		log_end;
 
 	return true;
 }
