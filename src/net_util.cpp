@@ -186,20 +186,11 @@ get_inet_adapters(
 
 		//	Physical address
 		//	data link layer 인터페이스가 아닌 경우 0 일 수 있다. 
-		if (cur->PhysicalAddressLength > 0)
+		if (cur->PhysicalAddressLength == 6)
 		{
-			const char* table = get_int_to_char_table(true);
-			char buf[MAX_ADAPTER_ADDRESS_LENGTH * 3] = { 0x00 };
-			ULONG buf_pos = 0;
-			for (ULONG i = 0; i < cur->PhysicalAddressLength; ++i)
-			{
-				if (buf_pos > 0) { buf[buf_pos++] = '-'; }
-
-				buf[buf_pos++] = table[cur->PhysicalAddress[i] >> 4];
-				buf[buf_pos++] = table[cur->PhysicalAddress[i] & 0xf];
-			}
-			buf[buf_pos] = 0x00;
-			adapter->physical_address = buf;
+			RtlCopyMemory(adapter->physical_address,
+						  cur->PhysicalAddress,
+						  6);
 		}
 
 		///	Assigned IP
@@ -836,10 +827,10 @@ get_mac_by_ip_v4(
 		log_err "str_to_ipv4() failed. ip=%s",
 			ip_str
 			log_end;
-		return "00:00:00:00:00:00";
+		return "00-00-00-00-00-00";
 	}
 	_ASSERTE(0xffffffff != ip);
-	if (0xffffffff == ip) return "00:00:00:00:00:00";
+	if (0xffffffff == ip) return "00-00-00-00-00-00";
 
 	//
 	//	어댑터 정보를 가져온다.
@@ -848,7 +839,7 @@ get_mac_by_ip_v4(
 	if (true != get_inet_adapters(adapters))
 	{
 		log_err "get_inet_adapters() failed." log_end;
-		return "00:00:00:00:00:00";
+		return "00-00-00-00-00-00";
 	}
 
 	//
@@ -863,7 +854,7 @@ get_mac_by_ip_v4(
 		{
 			if (ip == ip_info->ip)
 			{
-				mac = adapter->physical_address;
+				mac = mac_to_str(adapter->physical_address);
 				matched = true;
 				break;
 			}
@@ -888,7 +879,7 @@ get_mac_by_ip_v4(
 	});
 	adapters.clear();
 
-	return (true == mac.empty()) ? "00:00:00:00:00:00" : mac;
+	return (true == mac.empty()) ? "00-00-00-00-00-00" : mac;
 }
 
 /// @brief	MAC 주소를 문자열로 변환한다.
@@ -897,9 +888,9 @@ std::string mac_to_str(_In_ const MacAddrType mac)
 	char buf[(2 * 6) + 5 + 1] = { 0 };
 	if (!SUCCEEDED(StringCbPrintfA(buf,
 								   sizeof(buf),
-								   "%.2X%.2X%.2X%.2X%.2X%.2X",
-								   mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]
-	)))
+								   "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
+								   mac[0], mac[1], mac[2], 
+								   mac[3], mac[4], mac[5])))
 	{
 		return std::string("N/A");
 	}

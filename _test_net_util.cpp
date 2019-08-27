@@ -25,8 +25,8 @@ void dump_adapter(_In_ const PInetAdapter adapter)
 		adapter->friendly_name.c_str(),
 		adapter->name.c_str(),
 		adapter->desc.c_str(),
-		adapter->physical_address.c_str()
-		log_end;
+		mac_to_str(adapter->physical_address).c_str()
+		log_end;	
 
 	//
 	//	DNS list
