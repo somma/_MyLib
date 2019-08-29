@@ -639,7 +639,7 @@ start_service(
 
 	if (svc_status.dwCurrentState != SERVICE_RUNNING)
 	{
-		log_err "service start failed. status=%s"
+		log_err "service start failed. status=%s",
 			service_status_to_str(svc_status.dwCurrentState)
 			log_end;
 		return false;
