@@ -120,7 +120,7 @@ bool test_2_complement();
 bool test_print_64int();
 bool test_std_string_find_and_substr();
 bool test_to_lower_uppper_string();
-//bool test_const_position();	// ÄÄÆÄÀÏ ºÒ°¡ Å×½ºÆ®
+//bool test_const_position();	// ì»´íŒŒì¼ ë¶ˆê°€ í…ŒìŠ¤íŠ¸
 bool test_initialize_string();
 
 bool test_base64();
@@ -233,7 +233,7 @@ void run_test()
 	bool ret = false;
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
-	//assert_bool(true, test_get_adapters);
+	assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_ip_to_dns);
 	//assert_bool(true, test_dns_to_ip);
@@ -369,11 +369,11 @@ void run_test()
 	//assert_bool(true, test_boost_function);
 	//assert_bool(true, test_bit_field);
 	//assert_bool(true, test_sched_client);
-	//assert_bool(true, test_unique_ptr);//
-//	À¯´ÖÅ×½ºÆ®¿¡ Æ÷ÇÔµÇÁö ¾Ê´Â ±×³É Å×½ºÆ®¿ë ÄÚµå
+	//assert_bool(true, test_unique_ptr);
+//	ìœ ë‹›í…ŒìŠ¤íŠ¸ì— í¬í•¨ë˜ì§€ ì•ŠëŠ” ê·¸ëƒ¥ í…ŒìŠ¤íŠ¸ìš© ì½”ë“œ
 //
-	//assert_bool(true, test_write_mbr_vbr);		// È¤½Ã¶óµµ Å×½ºÆ® Áß mbr ³¯¸± ¼ö ÀÖÀ¸¹Ç·Î »©ÀÚ.
-	//assert_bool(true, test_const_position);		// ÄÄÆÄÀÏ ºÒ°¡ Å×½ºÆ®
+	//assert_bool(true, test_write_mbr_vbr);		// í˜¹ì‹œë¼ë„ í…ŒìŠ¤íŠ¸ ì¤‘ mbr ë‚ ë¦´ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ë¹¼ì.
+	//assert_bool(true, test_const_position);		// ì»´íŒŒì¼ ë¶ˆê°€ í…ŒìŠ¤íŠ¸
 
 
 
@@ -600,10 +600,10 @@ bool test_std_string_find_and_substr()
 	std::wstring nt_name(L"\\Device\\HarddiskVolume1\\Windows\\system32\\drivers");
 	std::wstring dos_device_name(L"c:");
 	std::wstring nt_device_name(L"\\Device\\HarddiskVolume1");
-	std::wstring nt_device_name2(L"\\DEVICE\\HarddiskVolume1");		// ´ë¹®ÀÚ
+	std::wstring nt_device_name2(L"\\DEVICE\\HarddiskVolume1");		// ëŒ€ë¬¸ì
 
 
-	//> ´ë¼Ò¹®ÀÚ°¡ ÀÏÄ¡ÇÏ´Â °æ¿ì string::find °¡ Á¤»ó µ¿ÀÛ ÇÔ
+	//> ëŒ€ì†Œë¬¸ìê°€ ì¼ì¹˜í•˜ëŠ” ê²½ìš° string::find ê°€ ì •ìƒ ë™ì‘ í•¨
 	size_t pos = nt_name.find(nt_device_name);
 	if (std::wstring::npos == pos) return false;
 
@@ -618,7 +618,7 @@ bool test_std_string_find_and_substr()
 		out.c_str()
 	log_end
 
-	//> ´ë¼Ò¹®ÀÚ ±¸ºĞ ¾øÀÌ find ÇÏ·Á¸é win32util::to_lower_string() È£Ãâ ÈÄ ºñ±³ÇØ¾ß ÇÔ
+	//> ëŒ€ì†Œë¬¸ì êµ¬ë¶„ ì—†ì´ find í•˜ë ¤ë©´ win32util::to_lower_string() í˜¸ì¶œ í›„ ë¹„êµí•´ì•¼ í•¨
 	pos = nt_name.find(nt_device_name2);
 	if (std::wstring::npos == pos) return true;
 
@@ -638,9 +638,9 @@ bool test_2_complement()
 {
 	int i = -1;
 
-	// °á°ú: %d = -1, %x = ffffffff
+	// ê²°ê³¼: %d = -1, %x = ffffffff
 	// 1 = 0000 0001
-	//     1111 1110 + 1 (À½¼ö¸¦ Ç¥ÇöÇÏ±â À§ÇØ 2ÀÇ º¸¼ö¸¦ ÃëÇÏ¸é...)
+	//     1111 1110 + 1 (ìŒìˆ˜ë¥¼ í‘œí˜„í•˜ê¸° ìœ„í•´ 2ì˜ ë³´ìˆ˜ë¥¼ ì·¨í•˜ë©´...)
 	//     1111	1111		= -1 = 0xff
 	//
 	// 2 = 0000 0010
@@ -697,7 +697,7 @@ bool test_to_lower_uppper_string()
 }
 
 /**
- * @brief	const À§Ä¡ / ÀÇ¹Ì
+ * @brief	const ìœ„ì¹˜ / ì˜ë¯¸
  * @param
  * @see
  * @remarks
@@ -709,33 +709,33 @@ bool test_to_lower_uppper_string()
 class ConstPositionTest
 {
 public:
-	//> (const char*) msg : char* °¡ const, Áï msg °¡ °¡¸®Å°´Â µ¥ÀÌÅÍ º¯°æ ºÒ°¡
+	//> (const char*) msg : char* ê°€ const, ì¦‰ msg ê°€ ê°€ë¦¬í‚¤ëŠ” ë°ì´í„° ë³€ê²½ ë¶ˆê°€
     char* Function1(const char* msg)
     {
         msg[0] = 't'; // error
         return m_msg;
     }
 
-	//> char* (const msg) : msg º¯¼ö°¡ const, Áï msg Æ÷ÀÎÅÍ º¯¼ö º¯°æ ºÒ°¡
+	//> char* (const msg) : msg ë³€ìˆ˜ê°€ const, ì¦‰ msg í¬ì¸í„° ë³€ìˆ˜ ë³€ê²½ ë¶ˆê°€
     char* Function2(char* const msg)
     {
         msg = m_msg; //error
         return m_msg;
     }
 
-	//> ¸Ş¼Òµå »ó¼öÈ­, ÀÌ ¸Ş¼Òµå´Â Å¬·¡½º ¸â¹ö¸¦ ÀĞÀ» ¼ö´Â ÀÖÀ¸³ª º¯°æ ÇÒ ¼ö´Â ¾øÀ½
+	//> ë©”ì†Œë“œ ìƒìˆ˜í™”, ì´ ë©”ì†Œë“œëŠ” í´ë˜ìŠ¤ ë©¤ë²„ë¥¼ ì½ì„ ìˆ˜ëŠ” ìˆìœ¼ë‚˜ ë³€ê²½ í•  ìˆ˜ëŠ” ì—†ìŒ
     char* Function3(char* msg) const
     {
         m_msg = msg; //error
         return m_msg;
     }
 
-	//> (const char*) : ¸®ÅÏ °ªÀÌ const char* ÀÌ¹Ç·Î ¸®ÅÏ ¹Ş´Â º¯¼öµµ const char* ÀÌ¾î¾ß ÇÔ
-	//> µû¶ó¼­ ¸®ÅÏµÇ´Â Æ÷ÀÎÅÍ°¡ °¡¸®Å°´Â µ¥ÀÌÅÍ º¯°æ ºÒ°¡
+	//> (const char*) : ë¦¬í„´ ê°’ì´ const char* ì´ë¯€ë¡œ ë¦¬í„´ ë°›ëŠ” ë³€ìˆ˜ë„ const char* ì´ì–´ì•¼ í•¨
+	//> ë”°ë¼ì„œ ë¦¬í„´ë˜ëŠ” í¬ì¸í„°ê°€ ê°€ë¦¬í‚¤ëŠ” ë°ì´í„° ë³€ê²½ ë¶ˆê°€
     const char* Function4(char* msg)
     {
         m_msg = msg;
-        return m_msg; //¹İÈ¯ ¹Ş´Â Å¸ÀÔÀÌ const°¡ ¾Æ´Ò °æ¿ì error
+        return m_msg; //ë°˜í™˜ ë°›ëŠ” íƒ€ì…ì´ constê°€ ì•„ë‹ ê²½ìš° error
     }
 private:
     char* m_msg;
@@ -769,9 +769,9 @@ bool test_initialize_string()
 	std::wstring str = L"";
 	log_dbg "str = %ws", str.c_str() log_end
 
-	//> invalid null point exception ¹ß»ı
-	//> try-except ·Î ¸ø ÀâÀ½...
-	//> ÃÊ±âÈ­½Ã NULL ÀÌ¸é "" ·Î ¹Ù²ã¼­ ÃÊ±âÈ­ ÇØ¾ß ÇÔ
+	//> invalid null point exception ë°œìƒ
+	//> try-except ë¡œ ëª» ì¡ìŒ...
+	//> ì´ˆê¸°í™”ì‹œ NULL ì´ë©´ "" ë¡œ ë°”ê¿”ì„œ ì´ˆê¸°í™” í•´ì•¼ í•¨
 /*
 	try
 	{
@@ -803,8 +803,8 @@ bool test_base64()
 // http://www.opinionatedgeek.com/dotnet/tools/base64encode/
 #define _base64_encoded	"64yA7ZWc66+86rWt"
 
-	std::wstring string_to_encodeW = L"´ëÇÑ¹Î±¹";
-	std::string string_to_encodeA = "´ëÇÑ¹Î±¹";
+	std::wstring string_to_encodeW = L"ëŒ€í•œë¯¼êµ­";
+	std::string string_to_encodeA = "ëŒ€í•œë¯¼êµ­";
 
 	std::wstring wide_str;
 	std::string utf8_str;
@@ -812,7 +812,7 @@ bool test_base64()
 
 	// base 64 encode
 	//
-	// #1) multibyte -> ucs16 -> utf8 -> base64 ¼ø¼­·Î...
+	// #1) multibyte -> ucs16 -> utf8 -> base64 ìˆœì„œë¡œ...
 	// #2) ucs16 -> utf8 -> base64
 	wide_str = MbsToWcsEx(string_to_encodeA.c_str());
 	utf8_str = WcsToMbsUTF8Ex(wide_str.c_str());
@@ -990,7 +990,7 @@ bool WINAPI ffcb(_In_ DWORD_PTR tag, _In_ const wchar_t* path)
 bool test_find_files()
 {
 	//
-	//	Å×½ºÆ®¿ë µğ·ºÅä¸®/ÆÄÀÏ »ı¼º
+	//	í…ŒìŠ¤íŠ¸ìš© ë””ë ‰í† ë¦¬/íŒŒì¼ ìƒì„±
 	//
 	{
 		if (true == is_file_existsW(L"c:\\temp\\dbg"))
@@ -1513,7 +1513,7 @@ bool test_get_environment_value()
 	return true;
 }
 /**
- * @brief ½Ã½ºÅÛÀÇ °èÁ¤ Á¤º¸¸¦ ÀĞ¾î ¿À´Â Å×½ºÆ®
+ * @brief ì‹œìŠ¤í…œì˜ ê³„ì • ì •ë³´ë¥¼ ì½ì–´ ì˜¤ëŠ” í…ŒìŠ¤íŠ¸
 **/
 bool test_get_account_infos()
 {
@@ -1590,7 +1590,7 @@ bool test_get_file_company_name()
 bool test_rc4_encrypt()
 {
 	const char* key = "coresecurity";
-	const char plain[] = "abcdefghijklmnop1234567890!@#$%^&*()°¡³ª´Ù¶ó¸¶¹Ù»ç¾ÆÀÚÂ÷Ä«Å¸ÆÄÇÏ";
+	const char plain[] = "abcdefghijklmnop1234567890!@#$%^&*()ê°€ë‚˜ë‹¤ë¼ë§ˆë°”ì‚¬ì•„ìì°¨ì¹´íƒ€íŒŒí•˜";
 	uint8_t enc[1024] = {0};
 	uint8_t dec[1024] = {0};
 	rc4_state ctx={0};
@@ -1936,9 +1936,9 @@ bool test_write_mbr_vbr()
     _pause;
 
     ///
-    /// buf ¿Í offset ÀÌ 512 (¼½ÅÍ »çÀÌÁî)·Î align µÇ¾îÀÖÁö ¾ÊÀ¸¸é
-    /// Read/WriteFile ÇÔ¼ö¿¡¼­ ¿¡·¯ (87) ¹ß»ıÇÔ
-    /// ³ªÁß¿¡ ÇÑ¹ø È®ÀÎÇØºÁ
+    /// buf ì™€ offset ì´ 512 (ì„¹í„° ì‚¬ì´ì¦ˆ)ë¡œ align ë˜ì–´ìˆì§€ ì•Šìœ¼ë©´
+    /// Read/WriteFile í•¨ìˆ˜ì—ì„œ ì—ëŸ¬ (87) ë°œìƒí•¨
+    /// ë‚˜ì¤‘ì— í•œë²ˆ í™•ì¸í•´ë´
     ///
     uint8_t buf_read[512] = { 0x00 };
     uint8_t buf_write[512] = { 0x41 };
@@ -2154,23 +2154,23 @@ bool test_regexp()
     try
     {
 
-        // std::regexp °¡ `\` ¸¦ Æ¯¼ö¹®ÀÚ·Î ÀÎ½Ä, ÇÑ¹ø´õ escape ÇÏ±â ¶§¹®¿¡
-        // `\device` ¹®ÀÚ¿­À» ¸ÅÄªÇÏ±â À§ÇØ¼­´Â
-        // `\\device` ÆĞÅÏÀ» »ç¿ëÇØ¾ß ÇÑ´Ù.
+        // std::regexp ê°€ `\` ë¥¼ íŠ¹ìˆ˜ë¬¸ìë¡œ ì¸ì‹, í•œë²ˆë” escape í•˜ê¸° ë•Œë¬¸ì—
+        // `\device` ë¬¸ìì—´ì„ ë§¤ì¹­í•˜ê¸° ìœ„í•´ì„œëŠ”
+        // `\\device` íŒ¨í„´ì„ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
         //
-        // c++ ¿¡¼­µµ `\` ¸¦ escape ÇÏ¹Ç·Î °á±¹ `\` ¹®ÀÚ¸¦ ¸ÅÄªÇÏ±â À§ÇØ¼­´Â
-        // `\\\\device` ÆĞÅÏÀ» »ç¿ëÇØ¾ß ÇÑ´Ù.
+        // c++ ì—ì„œë„ `\` ë¥¼ escape í•˜ë¯€ë¡œ ê²°êµ­ `\` ë¬¸ìë¥¼ ë§¤ì¹­í•˜ê¸° ìœ„í•´ì„œëŠ”
+        // `\\\\device` íŒ¨í„´ì„ ì‚¬ìš©í•´ì•¼ í•œë‹¤.
         //
-        // c++11 raw string, `LR"( )"` À» »ç¿ëÇÏ¸é c++ ÀÇ escape ¸¦ ¸·À» ¼ö ÀÖÀ¸´Ï±î
-        // LR"(\\device)" ÆĞÅÏÀ» »ç¿ëÇØ¼­ ¸ÅÄªÇÒ ¼ö ÀÖ´Ù.
+        // c++11 raw string, `LR"( )"` ì„ ì‚¬ìš©í•˜ë©´ c++ ì˜ escape ë¥¼ ë§‰ì„ ìˆ˜ ìˆìœ¼ë‹ˆê¹Œ
+        // LR"(\\device)" íŒ¨í„´ì„ ì‚¬ìš©í•´ì„œ ë§¤ì¹­í•  ìˆ˜ ìˆë‹¤.
         //
         std::wstring str(L"\\device");
-        std::wregex exp(L"\\\\device");   // wregex °¡ `\` ¸¦ ÇÑ¹ø¾¿ ´õ escape ÇÏ¹Ç·Î `\\` ¿Í µ¿ÀÏ
+        std::wregex exp(L"\\\\device");   // wregex ê°€ `\` ë¥¼ í•œë²ˆì”© ë” escape í•˜ë¯€ë¡œ `\\` ì™€ ë™ì¼
         std::wregex expr(LR"(\\device)");
 
         std::wsmatch wsm;
-        _ASSERTE(true == std::regex_match(str, wsm, exp));  // Á¤È®È÷ ÀÏÄ¡ÇÏ¸é ¸ÅÄª
-        _ASSERTE(true == std::regex_match(str, wsm, expr)); // Á¤È®È÷ ÀÏÄ¡ÇÏ¸é ¸ÅÄª
+        _ASSERTE(true == std::regex_match(str, wsm, exp));  // ì •í™•íˆ ì¼ì¹˜í•˜ë©´ ë§¤ì¹­
+        _ASSERTE(true == std::regex_match(str, wsm, expr)); // ì •í™•íˆ ì¼ì¹˜í•˜ë©´ ë§¤ì¹­
 
 
 
@@ -2181,17 +2181,17 @@ bool test_regexp()
         //{
         //    std::wstring ws(s);
         //    std::wsmatch wsm;
-        //    if (std::regex_search(ws, wsm, exp))        // sub string ¸ÅÄª
+        //    if (std::regex_search(ws, wsm, exp))        // sub string ë§¤ì¹­
         //    {
         //        for (size_t i = 0; i < wsm.size(); i++)
         //        {
-        //            std::wcout << i << "¹øÂ° : " << wsm[i] << std::endl;
+        //            std::wcout << i << "ë²ˆì§¸ : " << wsm[i] << std::endl;
         //        }
         //    }
         //}
 
         //std::wstring str(L"\\device");
-        //std::wregex exp(L"\\\\de");   // wregex °¡ `\` ¸¦ ÇÑ¹ø¾¿ ´õ escape ÇÏ¹Ç·Î `\\` ¿Í µ¿ÀÏ
+        //std::wregex exp(L"\\\\de");   // wregex ê°€ `\` ë¥¼ í•œë²ˆì”© ë” escape í•˜ë¯€ë¡œ `\\` ì™€ ë™ì¼
         //std::wregex expr(LR"(\\de)");
         //
         //std::wsmatch wsm;
@@ -2234,7 +2234,7 @@ bool test_regexp()
         for (auto str : strs)
         {
             std::wcmatch wcm;
-            if (std::regex_search(str, wcm, exp))        // sub string ¸ÅÄª
+            if (std::regex_search(str, wcm, exp))        // sub string ë§¤ì¹­
             {
                 _ASSERTE(2 == wcm.size());
                 log_info "str=%ws, match=%ws, ip=%ws", str, wcm[0].str().c_str(), wcm[1].str().c_str() log_end;
@@ -2288,9 +2288,9 @@ bool test_NameConverter_iterate()
 			return true;
 		},
 		(ULONG_PTR)&count));
-	_ASSERTE(count > 0);	// logical driver °¡ 1°³ ÀÌ»óÀº ¹İµå½Ã ÀÖÀ¸¹Ç·Î
+	_ASSERTE(count > 0);	// logical driver ê°€ 1ê°œ ì´ìƒì€ ë°˜ë“œì‹œ ìˆìœ¼ë¯€ë¡œ
 
-	// callback ÀÌ false ¸¦ ¸®ÅÏÇÏ¸é iterate ¸¦ ÁßÁöÇÏ°í, true ¸¦ ¸®ÅÏÇÑ´Ù.
+	// callback ì´ false ë¥¼ ë¦¬í„´í•˜ë©´ iterate ë¥¼ ì¤‘ì§€í•˜ê³ , true ë¥¼ ë¦¬í„´í•œë‹¤.
 	count = 0;
 	_ASSERTE(true == nc.iterate_dos_devices(
 		[](_In_ const DosDeviceInfo* ddi, _In_ ULONG_PTR tag)
@@ -2344,7 +2344,7 @@ bool test_NameConverter_get_canon_name()
 		{ true, L"\\Device\\Mup\\1.1.1.1\\abc.exe", L"\\\\1.1.1.1\\abc.exe"},
 		{ false, L"\\Device\\Unknown\\aaaa.exe", nullptr },
 
-        // net use x: \\10.10.10.10\\dbg\\ /user:vmuser * ¸í·ÉÀ¸·Î x µå¶óÀÌºê ¸ÅÇÎÇØ µÎ¾î¾ß Á¤»óÀûÀ¸·Î Å×½ºÆ® °¡´É
+        // net use x: \\10.10.10.10\\dbg\\ /user:vmuser * ëª…ë ¹ìœ¼ë¡œ x ë“œë¼ì´ë¸Œ ë§¤í•‘í•´ ë‘ì–´ì•¼ ì •ìƒì ìœ¼ë¡œ í…ŒìŠ¤íŠ¸ ê°€ëŠ¥
         //
 		{ true, L"\\Device\\Mup\\; lanmanredirector\\; x:000000000008112d\\10.10.10.10\\dbg\\", L"\\\\10.10.10.10\\dbg\\"},
 		{ false, L"x:\\", nullptr},
@@ -2357,9 +2357,9 @@ bool test_NameConverter_get_canon_name()
 		{ true, L"\\Device\\Mup\\;          WebDavRedirector\\", L"\\Device\\WebDavRedirector\\"},
 		{ true, L"\\Device\\Mup\\; WebDavRedirector\\192.168.0.1\\DavWWWRoot\\", L"\\Device\\WebDavRedirector\\192.168.0.1\\DavWWWRoot\\"},
 		{ true, L"\\Device\\Mup\\; RdpDr\\; :1\\192.168.59.134\\IPC$\\", L"\\\\192.168.59.134\\IPC$\\"},
-		{ false, L"\\Device\\Floppy0\\temp\\123.txt", nullptr },// ½Ã½ºÅÛ¿¡ ºÎÅ¹µÇÁö ¾ÊÀº µğ¹ÙÀÌ½º
-		{ false, L"\\Device\\CdRom0\\temp\\123.txt", nullptr },// ½Ã½ºÅÛ¿¡ ºÎÅ¹µÇÁö ¾ÊÀº µğ¹ÙÀÌ½º
-		{ false, L"\\Device\\HarddiskVolume100\\boot", nullptr },// ½Ã½ºÅÛ¿¡ ºÎÅ¹µÇÁö ¾ÊÀº µğ¹ÙÀÌ½º
+		{ false, L"\\Device\\Floppy0\\temp\\123.txt", nullptr },// ì‹œìŠ¤í…œì— ë¶€íƒë˜ì§€ ì•Šì€ ë””ë°”ì´ìŠ¤
+		{ false, L"\\Device\\CdRom0\\temp\\123.txt", nullptr },// ì‹œìŠ¤í…œì— ë¶€íƒë˜ì§€ ì•Šì€ ë””ë°”ì´ìŠ¤
+		{ false, L"\\Device\\HarddiskVolume100\\boot", nullptr },// ì‹œìŠ¤í…œì— ë¶€íƒë˜ì§€ ì•Šì€ ë””ë°”ì´ìŠ¤
 
 		{ true, L"\\windows\\system32\\abc.exe", L"c:\\windows\\system32\\abc.exe"},
 		{ true, L"\\Program Files\\", L"c:\\Program Files\\"},
@@ -2405,7 +2405,7 @@ bool test_NameConverter_dosname_to_devicename()
 	}*pin_out_str;
 
 	//
-	//	c: µå¶óÀÌºê(½Éº¼¸¯¸µÅ©)ÀÇ µğ¹ÙÀÌ½º ÀÌ¸§À» ¾ò¾î¿Â´Ù.
+	//	c: ë“œë¼ì´ë¸Œ(ì‹¬ë³¼ë¦­ë§í¬)ì˜ ë””ë°”ì´ìŠ¤ ì´ë¦„ì„ ì–»ì–´ì˜¨ë‹¤.
 	//
 	wchar_t device_name[MAX_PATH];
 	_ASSERTE(QueryDosDeviceW(L"C:", device_name, MAX_PATH));
@@ -2445,7 +2445,7 @@ bool test_NameConverter_dosname_to_devicename()
 		_ASSERTE(true == nc.get_device_name_by_drive_letter(L"c:", device_name_str));
 		_ASSERTE(0 == device_name_str.compare(device_name));
 
-		// Àß¸øµÈ drive letter Çü½Ä
+		// ì˜ëª»ëœ drive letter í˜•ì‹
 		_ASSERTE(true != nc.get_device_name_by_drive_letter(L"c", device_name_str));
 		_ASSERTE(true != nc.get_device_name_by_drive_letter(L"c:\\", device_name_str));
 
@@ -2458,29 +2458,29 @@ bool test_NameConverter_dosname_to_devicename()
 		NameConverter nc;
 		_ASSERTE(true == nc.load(false));
 
-		// \Device\HarddiskVolume1 Æ÷¸Ë ÀÔ·Â
+		// \Device\HarddiskVolume1 í¬ë§· ì…ë ¥
 		std::wstring drive_letter;
 		_ASSERTE(true == nc.get_drive_letter_by_device_name(device_name, drive_letter));
 		_ASSERTE(0 == _wcsnicmp(L"c:", drive_letter.c_str(), 2));
 
-		// \Device\HarddiskVolume1\ Æ÷¸Ë ÀÔ·Â
+		// \Device\HarddiskVolume1\ í¬ë§· ì…ë ¥
 		std::wstringstream strm;
 		strm << device_name << L"\\";
 		_ASSERTE(true == nc.get_drive_letter_by_device_name(strm.str().c_str(), drive_letter));
 		_ASSERTE(0 == _wcsnicmp(L"c:", drive_letter.c_str(), 2));
 
-		// \Device\HarddiskVolume1\windows\... Æ÷¸Ë ÀÔ·Â
+		// \Device\HarddiskVolume1\windows\... í¬ë§· ì…ë ¥
 		clear_str_stream_w(strm);
 		strm << device_name << L"\\windows\\system32\\aaa.txt";
 		_ASSERTE(true == nc.get_drive_letter_by_device_name(strm.str().c_str(), drive_letter));
 		_ASSERTE(0 == _wcsnicmp(L"c:", drive_letter.c_str(), 2));
 
-		// ¾ø´Â µğ¹ÙÀÌ½º (º¼·ı)
+		// ì—†ëŠ” ë””ë°”ì´ìŠ¤ (ë³¼ë¥¨)
 		clear_str_stream_w(strm);
 		strm << L"\\Device\\not_exist\\";
 		_ASSERTE(true != nc.get_drive_letter_by_device_name(strm.str().c_str(), drive_letter));
 
-		// Àß¸øµÈ device name Çü½Ä
+		// ì˜ëª»ëœ device name í˜•ì‹
 		_ASSERTE(true != nc.get_drive_letter_by_device_name(L"\\invalid_device", drive_letter));
 		_ASSERTE(true != nc.get_drive_letter_by_device_name(L"invalid_device", drive_letter));
 
@@ -2504,7 +2504,7 @@ typedef struct WIN32_FIND_DATAW_ALIGNTEST
 	_Field_z_ WCHAR  cAlternateFileName[14];
 }*PWIN32_FIND_DATAW_ALIGNTEST;
 
-///	@brief	±¸Á¶Ã¼ Á¤·Ä ¹®Á¦ Å×½ºÆ®
+///	@brief	êµ¬ì¡°ì²´ ì •ë ¬ ë¬¸ì œ í…ŒìŠ¤íŠ¸
 ///			https://msdn.microsoft.com/en-us/library/windows/desktop/ms724284(v=vs.85).aspx
 ///			https://blogs.msdn.microsoft.com/oldnewthing/20040825-00/?p=38053
 ///			https://msdn.microsoft.com/en-us/library/aa290049(v=vs.71).aspx
@@ -2516,39 +2516,39 @@ bool test_alignment_error_test()
 	WIN32_FIND_DATAW wfd = { 0 };
 	HANDLE hSrch = FindFirstFileW(root, &wfd);
 
-	//	¹®Á¦Á¡ 1
+	//	ë¬¸ì œì  1
 	//
-	//	PWIN32_FIND_DATAW ±¸Á¶Ã¼´Â ±¸¼ºÇÏ´Â µ¥ÀÌÅÍÀÇ »çÀÌÁî°¡ 4¹ÙÀÌÆ®ÀÌ¹Ç·Î
-	//	4¹ÙÀÌÆ® Á¤·ÄµÈ´Ù. (FILE_TIME ±¸Á¶Ã¼´Â 4¹ÙÀÌÆ® µÎ°³ÀÌ¹Ç·Î)
-	//	PWIN32_FIND_DATAW_ALIGNTEST ±¸Á¶Ã¼ÀÇ °æ¿ì uint64_t °¡ ÀÖÀ¸¹Ç·Î 8¹ÙÀÌÆ®
-	//	Á¤·ÄÀÌ µÈ´Ù.
+	//	PWIN32_FIND_DATAW êµ¬ì¡°ì²´ëŠ” êµ¬ì„±í•˜ëŠ” ë°ì´í„°ì˜ ì‚¬ì´ì¦ˆê°€ 4ë°”ì´íŠ¸ì´ë¯€ë¡œ
+	//	4ë°”ì´íŠ¸ ì •ë ¬ëœë‹¤. (FILE_TIME êµ¬ì¡°ì²´ëŠ” 4ë°”ì´íŠ¸ ë‘ê°œì´ë¯€ë¡œ)
+	//	PWIN32_FIND_DATAW_ALIGNTEST êµ¬ì¡°ì²´ì˜ ê²½ìš° uint64_t ê°€ ìˆìœ¼ë¯€ë¡œ 8ë°”ì´íŠ¸
+	//	ì •ë ¬ì´ ëœë‹¤.
 	//
-	//	µû¶ó¼­  PWIN32_FIND_DATAW ¸¦ PWIN32_FIND_DATAW_ALIGNTEST ·Î Å¸ÀÔÄ³½ºÆÃÇÏ°Ô
-	//	µÇ¸é ¹®Á¦°¡ ¹ß»ıÇÑ´Ù. DWORD dwFileAttributes ´ÙÀ½ 4¹ÙÀÌÆ®°¡ ÆĞµùÀ¸·Î ÀÎ½ÄµÇ¾î
-	//	4¹ÙÀÌÆ®¾¿ ¹Ğ·Á³ª°Ô µÈ´Ù.
+	//	ë”°ë¼ì„œ  PWIN32_FIND_DATAW ë¥¼ PWIN32_FIND_DATAW_ALIGNTEST ë¡œ íƒ€ì…ìºìŠ¤íŒ…í•˜ê²Œ
+	//	ë˜ë©´ ë¬¸ì œê°€ ë°œìƒí•œë‹¤. DWORD dwFileAttributes ë‹¤ìŒ 4ë°”ì´íŠ¸ê°€ íŒ¨ë”©ìœ¼ë¡œ ì¸ì‹ë˜ì–´
+	//	4ë°”ì´íŠ¸ì”© ë°€ë ¤ë‚˜ê²Œ ëœë‹¤.
 	//
 	PWIN32_FIND_DATAW_ALIGNTEST at = (PWIN32_FIND_DATAW_ALIGNTEST)&wfd;
 	at = at;
 
-	//	¹®Á¦Á¡ 2
+	//	ë¬¸ì œì  2
 	//
-	//	wfd.ftCreationTime ÀÇ ÁÖ¼Ò¸¦ uint64_t ·Î Ä³½ºÆÃÇØ¼­ »ç¿ëÇÏ±â ¶§¹®¿¡
-	//	ÆĞµùÀÌ³ª Á¤·Ä»óÀÇ ¹®Á¦´Â ¾ø´Ù. ÇÏÁö¸¸ 8¹ÙÀÌÆ® Á¤·ÄÀ» »ç¿ëÇÏ´Â ½Ã½ºÅÛÀÇ °æ¿ì(x64)
-	//	ftCreationTime ÁÖ¼Ò´Â 4¹ÙÀÌÆ® Á¤·ÄµÈ ÁÖ¼ÒÀÌ±â ¶§¹®¿¡ 8¹ÙÀÌÆ®¸¦ ÀĞ±â À§ÇØ
-	//	8¹ÙÀÌÆ®¸¦ µÎ¹ø ÀĞ¾î¼­ 4¹ÙÀÌÆ®¾¿ ÂÉ°³¼­ ÇÕÃÄ¾ß ÇÏ´Â°æ¿ì°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+	//	wfd.ftCreationTime ì˜ ì£¼ì†Œë¥¼ uint64_t ë¡œ ìºìŠ¤íŒ…í•´ì„œ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì—
+	//	íŒ¨ë”©ì´ë‚˜ ì •ë ¬ìƒì˜ ë¬¸ì œëŠ” ì—†ë‹¤. í•˜ì§€ë§Œ 8ë°”ì´íŠ¸ ì •ë ¬ì„ ì‚¬ìš©í•˜ëŠ” ì‹œìŠ¤í…œì˜ ê²½ìš°(x64)
+	//	ftCreationTime ì£¼ì†ŒëŠ” 4ë°”ì´íŠ¸ ì •ë ¬ëœ ì£¼ì†Œì´ê¸° ë•Œë¬¸ì— 8ë°”ì´íŠ¸ë¥¼ ì½ê¸° ìœ„í•´
+	//	8ë°”ì´íŠ¸ë¥¼ ë‘ë²ˆ ì½ì–´ì„œ 4ë°”ì´íŠ¸ì”© ìª¼ê°œì„œ í•©ì³ì•¼ í•˜ëŠ”ê²½ìš°ê°€ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
 	//
 	//	0123 4567 | 789a bcde
 	//       ----   ----
 	//		  (1)   (2)
 	//
-	//	x86 Ã³·³ 4¹ÙÀÌÆ® Á¤·ÄÀ» ÇÏ´Â ½Ã½ºÅÛÀÌ¶ó¸é ¹®Á¦°¡ ¾øÀ» ¼ö ÀÖ°ÚÁö¸¸
-	//	x64 Ã³·³ 8¹ÙÀÌÆ® Á¤·ÄÀ» ÇÏ´Â ½Ã½ºÅÛÀÌ¶ó¸é (1) ÁÖ¼ÒÀÇ 8¹ÙÀÌÆ®¸¦ ÀĞ±â À§ÇØ
-	//	µÎ¹øÀÇ ÀĞ±â ¿¬»êÀÌ ÇÊ¿äÇÏ´Ù.
+	//	x86 ì²˜ëŸ¼ 4ë°”ì´íŠ¸ ì •ë ¬ì„ í•˜ëŠ” ì‹œìŠ¤í…œì´ë¼ë©´ ë¬¸ì œê°€ ì—†ì„ ìˆ˜ ìˆê² ì§€ë§Œ
+	//	x64 ì²˜ëŸ¼ 8ë°”ì´íŠ¸ ì •ë ¬ì„ í•˜ëŠ” ì‹œìŠ¤í…œì´ë¼ë©´ (1) ì£¼ì†Œì˜ 8ë°”ì´íŠ¸ë¥¼ ì½ê¸° ìœ„í•´
+	//	ë‘ë²ˆì˜ ì½ê¸° ì—°ì‚°ì´ í•„ìš”í•˜ë‹¤.
 	//
-	//	ÀÌ°É Ã¼Å©ÇØ ÁÖ´Â ¸ÅÅ©·Î°¡ IS_ALIGNED() ¸ÅÅ©·ÎÀÓ.
-	//	°á±¹ FILE_TIME À» uint64_t ·Î Ä³½ºÆÃÇÏ´Â°ÍÀº ¸Å¿ì ¾ÈÁÁÀº »ı°¢ÀÌ¸ç
-	//	±×·¡¼­ Å¸ÀÔ Ä³½ºÆÃ ÇÏÁö ¸»°í, high/low part ¸¦ LARGE_INTEGER ¿¡ º¹»çÇÑ´ã¿¡
-	//	LARGE_INTEGER.QuadPart ¸¦ ÅëÇØ¼­ ¿¬»êÀ» ÇÏ¶ó°í ÇÏ´Â°ÍÀÌ´Ù.
+	//	ì´ê±¸ ì²´í¬í•´ ì£¼ëŠ” ë§¤í¬ë¡œê°€ IS_ALIGNED() ë§¤í¬ë¡œì„.
+	//	ê²°êµ­ FILE_TIME ì„ uint64_t ë¡œ ìºìŠ¤íŒ…í•˜ëŠ”ê²ƒì€ ë§¤ìš° ì•ˆì¢‹ì€ ìƒê°ì´ë©°
+	//	ê·¸ë˜ì„œ íƒ€ì… ìºìŠ¤íŒ… í•˜ì§€ ë§ê³ , high/low part ë¥¼ LARGE_INTEGER ì— ë³µì‚¬í•œë‹´ì—
+	//	LARGE_INTEGER.QuadPart ë¥¼ í†µí•´ì„œ ì—°ì‚°ì„ í•˜ë¼ê³  í•˜ëŠ”ê²ƒì´ë‹¤.
 	//
 	uint64_t* p = (uint64_t*)&wfd.ftCreationTime;
 	p = p;
@@ -2585,7 +2585,7 @@ bool test_file_info_cache()
 		_ASSERTE(true == cache.initialize(db.str().c_str(), true));
 
 		//
-		//	FileInfoCache Å¬·¡½º ÀÌ¿ë
+		//	FileInfoCache í´ë˜ìŠ¤ ì´ìš©
 		//
 		FileInformation fi1;
 		FileInformation fi2;
@@ -2598,7 +2598,7 @@ bool test_file_info_cache()
 	DeleteFileW(db.str().c_str());
 
 	//
-	//	FileInfoCache C api ÀÌ¿ë
+	//	FileInfoCache C api ì´ìš©
 	//
 	_ASSERTE(true == fi_initialize());
 	FileInformation fic1;
@@ -2688,11 +2688,11 @@ bool test_log_xxx()
 bool test_set_security_attributes()
 {
 	//
-	//	security_attributes.txt ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
+	//	security_attributes.txt íŒŒì¼ì„ ìƒì„±í•œë‹¤.
 	//
-	//	»ı¼ºµÈ ÆÄÀÏÀº local system °èÁ¤À¸·Î¸¸ Á¢±Ù °¡´ÉÇÏ±â ¶§¹®¿¡ ±×³É »èÁ¦ÇÒ ¼ö ¾ø´Ù.
-	//	ÆÄÀÏ->¼Ó¼º->º¸¾È->°í±Ş->¼ÒÀ¯ÀÚº¯°æ µîÀ» ÅëÇØ ÇöÀç »ç¿ëÀÚ¿¡°Ô ÇÊ¿äÇÑ ±ÇÇÑÀ» ÁÖ¾î¾ß
-	//	ÇÑ´Ù.
+	//	ìƒì„±ëœ íŒŒì¼ì€ local system ê³„ì •ìœ¼ë¡œë§Œ ì ‘ê·¼ ê°€ëŠ¥í•˜ê¸° ë•Œë¬¸ì— ê·¸ëƒ¥ ì‚­ì œí•  ìˆ˜ ì—†ë‹¤.
+	//	íŒŒì¼->ì†ì„±->ë³´ì•ˆ->ê³ ê¸‰->ì†Œìœ ìë³€ê²½ ë“±ì„ í†µí•´ í˜„ì¬ ì‚¬ìš©ìì—ê²Œ í•„ìš”í•œ ê¶Œí•œì„ ì£¼ì–´ì•¼
+	//	í•œë‹¤.
 	//
 	std::wstringstream file_path;
 	file_path << get_current_module_dirEx() << L"\\security_attributes.txt";
@@ -2761,7 +2761,7 @@ bool test_GeneralHashFunctions()
 	};
 
 	//
-	//	GernalHashFunctions µéÀÇ Ãæµ¹¿©ºÎ È®ÀÎ
+	//	GernalHashFunctions ë“¤ì˜ ì¶©ëŒì—¬ë¶€ í™•ì¸
 	//
 	struct functions
 	{
@@ -2805,7 +2805,7 @@ bool test_GeneralHashFunctions()
 			}
 			else
 			{
-				// Ãæµ¹
+				// ì¶©ëŒ
 				log_info "collision, prev=%s, curr=%s, hash=%u",
 					entry->second,
 					_known_exts[j],
@@ -2829,24 +2829,24 @@ bool test_GeneralHashFunctions()
 
 /*
 
-### °á·Ğ ###
-std::unordered_map<std::string, std::string>  Àº ÃæºĞÈ÷ ¾µ¸¸ÇÔ
+### ê²°ë¡  ###
+std::unordered_map<std::string, std::string>  ì€ ì¶©ë¶„íˆ ì“¸ë§Œí•¨
 
 
-µğ¹ö±× ¹öÀü¿¡¼­´Â std::map ÀÌ std::unordered_map º¸´Ù ºü¸£Áö¸¸,
-¸±¸®Áî ¹öÀü¿¡¼­´Â std::unordered_map ÀÌ È®½ÇÈ÷ ºü¸£´Ù.
+ë””ë²„ê·¸ ë²„ì „ì—ì„œëŠ” std::map ì´ std::unordered_map ë³´ë‹¤ ë¹ ë¥´ì§€ë§Œ,
+ë¦´ë¦¬ì¦ˆ ë²„ì „ì—ì„œëŠ” std::unordered_map ì´ í™•ì‹¤íˆ ë¹ ë¥´ë‹¤.
 
-Ãæµ¹¹®Á¦´Â BPHash ´Â Ãæµ¹ÀÌ ³Ê¹« ¸¹´Ù. ¸÷¾µ...³ª¸ÓÁö´Â °í¸¸°í¸¸ÇÔ
-hash_string32() ÀÌ ¿¹»ó¿Ü·Î ¾µ¸¸ÇÔ!
+ì¶©ëŒë¬¸ì œëŠ” BPHash ëŠ” ì¶©ëŒì´ ë„ˆë¬´ ë§ë‹¤. ëª¹ì“¸...ë‚˜ë¨¸ì§€ëŠ” ê³ ë§Œê³ ë§Œí•¨
+hash_string32() ì´ ì˜ˆìƒì™¸ë¡œ ì“¸ë§Œí•¨!
 
-std::unordered_map<std::string, std::string> ¸¦ »ç¿ëÇÏ¸é ¾Ë¾Æ¼­
-Ãæµ¹Ã³¸®¸¦ ÇØÁÜ (collision = 0). ¼ÓµµÂ÷°¡ 2¹è Á¤µµ ³ª±äÇÏÁö¸¸ Å×ÀÌºíÀÇ
-Ä«¿îÆ®°¡ ¾à 14¸¸°³ÀÓÀ» °¨¾ÈÇÏ¸é ¹¹ ÃæºĞÈ÷ ¾µ¸¸ÇÏ´Ù (ÆíÇÏ°í!)
-
-
+std::unordered_map<std::string, std::string> ë¥¼ ì‚¬ìš©í•˜ë©´ ì•Œì•„ì„œ
+ì¶©ëŒì²˜ë¦¬ë¥¼ í•´ì¤Œ (collision = 0). ì†ë„ì°¨ê°€ 2ë°° ì •ë„ ë‚˜ê¸´í•˜ì§€ë§Œ í…Œì´ë¸”ì˜
+ì¹´ìš´íŠ¸ê°€ ì•½ 14ë§Œê°œì„ì„ ê°ì•ˆí•˜ë©´ ë­ ì¶©ë¶„íˆ ì“¸ë§Œí•˜ë‹¤ (í¸í•˜ê³ !)
 
 
-# ¸±¸®Áî ¹öÀü
+
+
+# ë¦´ë¦¬ì¦ˆ ë²„ì „
 
 [INFO] # std::map<uint32_t, std::string>, file=145718
 [INFO] func=RSHash, collision=3, time elapsed=108.565140 msecs
@@ -2881,7 +2881,7 @@ std::unordered_map<std::string, std::string> ¸¦ »ç¿ëÇÏ¸é ¾Ë¾Æ¼­
 
 
 
-# µğ¹ö±× ¹öÀü
+# ë””ë²„ê·¸ ë²„ì „
 [INFO] # std::map<uint32_t, std::string>, file=145718
 [INFO] func=RSHash, collision=3, time elapsed=2783.447021 msecs
 [INFO] func=JSHash, collision=11, time elapsed=2711.636963 msecs
@@ -2936,7 +2936,7 @@ bool test_GeneralHashFunctions2()
 	}
 
 	//
-	//	GernalHashFunctions µéÀÇ Ãæµ¹¿©ºÎ È®ÀÎ
+	//	GernalHashFunctions ë“¤ì˜ ì¶©ëŒì—¬ë¶€ í™•ì¸
 	//
 	struct functions
 	{
@@ -2964,7 +2964,7 @@ bool test_GeneralHashFunctions2()
 
 
 	//
-	//	std::map »ç¿ë
+	//	std::map ì‚¬ìš©
 	//
 	log_info "# std::map<uint32_t, std::string>, file=%u", _files.size() log_end;
 	for (int i = 0; i < sizeof(_functions) / sizeof(functions); ++i)
@@ -2985,7 +2985,7 @@ bool test_GeneralHashFunctions2()
 			}
 			else
 			{
-				// Ãæµ¹
+				// ì¶©ëŒ
 				//if (0 == _strnicmp(_functions[i].name, "hash_string32", strlen("hash_string32")))
 				//{
 				//	log_info "collision, prev=%s, curr=%s, hash=%u",
@@ -3006,7 +3006,7 @@ bool test_GeneralHashFunctions2()
 	}
 
 	//
-	//	std::unordered_map »ç¿ë
+	//	std::unordered_map ì‚¬ìš©
 	//
 	log_info "# std::unordered_map<uint32_t, std::string>, file=%u", _files.size() log_end;
 	for (int i = 0; i < sizeof(_functions) / sizeof(functions); ++i)
@@ -3027,7 +3027,7 @@ bool test_GeneralHashFunctions2()
 			}
 			else
 			{
-				// Ãæµ¹
+				// ì¶©ëŒ
 				//if (0 == _strnicmp(_functions[i].name, "hash_string32", strlen("hash_string32")))
 				//{
 				//	log_info "collision, prev=%s, curr=%s, hash=%u",
@@ -3048,7 +3048,7 @@ bool test_GeneralHashFunctions2()
 	}
 
 	//
-	//	std::unordered_map<std::string, std::string> »ç¿ë
+	//	std::unordered_map<std::string, std::string> ì‚¬ìš©
 	//
 	log_info "# std::unordered_map<std::string, std::string>, file=%u", _files.size() log_end;
 	{
@@ -3066,7 +3066,7 @@ bool test_GeneralHashFunctions2()
 			}
 			else
 			{
-				// Ãæµ¹
+				// ì¶©ëŒ
 				//if (0 == _strnicmp(_functions[i].name, "hash_string32", strlen("hash_string32")))
 				//{
 				//	log_info "collision, prev=%s, curr=%s, hash=%u",
@@ -3091,7 +3091,7 @@ bool test_GeneralHashFunctions2()
 bool test_get_file_extension()
 {
 	//
-	//	È®ÀåÀÚ¸¦ °¡Áø °æ·Î¸¦ Àß Ã³¸®ÇÏ´ÂÁö È®ÀÎ
+	//	í™•ì¥ìë¥¼ ê°€ì§„ ê²½ë¡œë¥¼ ì˜ ì²˜ë¦¬í•˜ëŠ”ì§€ í™•ì¸
 	//
 	wchar_t* file_with_ext[] = {
 		L"abc.txt",
@@ -3110,7 +3110,7 @@ bool test_get_file_extension()
 	}
 
 	//
-	//	È®ÀåÀÚ°¡ ¾ø´Â ÆÄÀÏ Ã³¸® È®ÀÎ
+	//	í™•ì¥ìê°€ ì—†ëŠ” íŒŒì¼ ì²˜ë¦¬ í™•ì¸
 	//
 	wchar_t* file_without_ext[] = {
 		L"c:\\windows\\xbadsad\\aaaa",
@@ -3134,7 +3134,7 @@ bool test_get_file_extension()
 bool test_raii_xxx()
 {
 	//
-	//	char* Å¸ÀÔ lambda custom deleter
+	//	char* íƒ€ì… lambda custom deleter
 	//
 	do
 	{
@@ -3152,13 +3152,13 @@ bool test_raii_xxx()
 		if (nullptr != pchar)
 		{
 			//
-			//	pchar = nullptr ·Î ¼³Á¤ÇÏ´Â ¼ø°£ deleter °¡ È£ÃâµÊ
+			//	pchar = nullptr ë¡œ ì„¤ì •í•˜ëŠ” ìˆœê°„ deleter ê°€ í˜¸ì¶œë¨
 			//
 			pchar = nullptr;
 		}
 
 		//
-		//	ÀÌ¹Ì deleter °¡ È£ÃâµÇ¾úÀ¸¸ç, pchar == nullptr ÀÓ
+		//	ì´ë¯¸ deleter ê°€ í˜¸ì¶œë˜ì—ˆìœ¼ë©°, pchar == nullptr ì„
 		//
 		if (pchar == nullptr)
 		{
@@ -3169,7 +3169,7 @@ bool test_raii_xxx()
 
 
 	//
-	//	HANDLE Å¸ÀÔ lambda custom deleter
+	//	HANDLE íƒ€ì… lambda custom deleter
 	//
 	do
 	{
@@ -3292,7 +3292,7 @@ bool test_convert_file_time()
 
 
 	//
-	//	³¯Â¥¸¦ ¿ù °è»êÇØ¼­ Áõ°¡½ÃÅ°±â (SYSTEMTIME À» Á÷Á¢ °íÄ¡¸é ¾ÈµÊ)
+	//	ë‚ ì§œë¥¼ ì›” ê³„ì‚°í•´ì„œ ì¦ê°€ì‹œí‚¤ê¸° (SYSTEMTIME ì„ ì§ì ‘ ê³ ì¹˜ë©´ ì•ˆë¨)
 	//
 	SYSTEMTIME system_time_one;
 	SYSTEMTIME system_time_two;
@@ -3323,9 +3323,9 @@ bool test_convert_file_time()
 
 
 	//
-	//	³¯Â¥¸¦ ¿ù °è»êÇØ¼­ Áõ°¡½ÃÅ°±â
+	//	ë‚ ì§œë¥¼ ì›” ê³„ì‚°í•´ì„œ ì¦ê°€ì‹œí‚¤ê¸°
 	//
-	//	FILETIME À¸·Î º¯È¯ÇÑ ÈÄ °ªÀ» ´õÇØ, SYSTEMTIME À¸·Î º¯È¯ÇØÁÖ¸é µÊ
+	//	FILETIME ìœ¼ë¡œ ë³€í™˜í•œ í›„ ê°’ì„ ë”í•´, SYSTEMTIME ìœ¼ë¡œ ë³€í™˜í•´ì£¼ë©´ ë¨
 	//
 
 	FILETIME file_time;
@@ -3398,7 +3398,7 @@ bool test_trivia()
 	set_log_format(false, false, false, false);
 
 	//
-	//	std::string °ü·Ã
+	//	std::string ê´€ë ¨
 	//
 	std::wstring wstr = L"12345";
 	log_info "wstr.size() = %u, wcslen(wstr.c_str()) = %u  (same size)",
@@ -3414,7 +3414,7 @@ bool test_trivia()
 
 
 
-	// empty-string.c_str() Àº nullptr ÀÌ ¾Æ´Ï´Ù!
+	// empty-string.c_str() ì€ nullptr ì´ ì•„ë‹ˆë‹¤!
 	const wchar_t* p = nullptr;
 	p = s.c_str();
 	_ASSERTE(nullptr != p);
@@ -3423,7 +3423,7 @@ bool test_trivia()
 	_ASSERTE(true != ss.empty());
 
 	//
-	//	64ºñÆ® Á¤¼ö Ãâ·Â
+	//	64ë¹„íŠ¸ ì •ìˆ˜ ì¶œë ¥
 	//
 	uint64_t t = 0xffffffff00112233;
 	log_info "0x%llx, 0x%016llx", t, t log_end;
@@ -3431,7 +3431,7 @@ bool test_trivia()
 	uint64_t y = 0x00112233;
 	log_info "0x%llx, 0x%016llx", y, y log_end;
 
-	//	list ¼ø¼­
+	//	list ìˆœì„œ
 	std::list<int> li;
 	li.push_back(1);
 	li.push_back(2);
@@ -3442,12 +3442,12 @@ bool test_trivia()
 	}
 
 	//
-	//	»ı¼ºÀÚ/¼Ò¸êÀÚ È£Ãâ
+	//	ìƒì„±ì/ì†Œë©¸ì í˜¸ì¶œ
 	//
 	ccc c(true);
 	c.run();
 
-	// log :: rotate_log_file() ÇÔ¼ö Å×½ºÆ®
+	// log :: rotate_log_file() í•¨ìˆ˜ í…ŒìŠ¤íŠ¸
 	//for (int i=0; ; ++i)
 	//{
 	//	log_info "%d", i log_end;
@@ -3491,7 +3491,7 @@ bool test_alignment()
 bool test_create_string_from_buffer()
 {
 	//
-	//	char ¹è¿­·ÎºÎÅÍ ÁöÁ¤µÈ »çÀÌÁî¸¸Å­¸¸ º¹»çÇØ¼­ string °´Ã¼ »ı¼ºÇÏ±â
+	//	char ë°°ì—´ë¡œë¶€í„° ì§€ì •ëœ ì‚¬ì´ì¦ˆë§Œí¼ë§Œ ë³µì‚¬í•´ì„œ string ê°ì²´ ìƒì„±í•˜ê¸°
 	//
 	char buf[128] = { 0x00 };
 	RtlCopyMemory(&buf[0], "abcd", strlen("abcd"));
@@ -3525,7 +3525,7 @@ bool test_create_string_from_buffer()
 
 	//
 	//	std::string.length(), size()
-	//		- ¹®ÀÚÀÇ count ¸¦ ¸®ÅÏ, µÎ¸Ş¼Òµå µ¿ÀÏ
+	//		- ë¬¸ìì˜ count ë¥¼ ë¦¬í„´, ë‘ë©”ì†Œë“œ ë™ì¼
 	//
 	std::wstring tests = L"0123456789";
 	log_info "%ws, length=%u, size=%u",
@@ -3562,7 +3562,7 @@ bool test_create_string_from_buffer()
 	return true;
 }
 
-/// StopWatch Å¬·¡½º Å×½ºÆ®
+/// StopWatch í´ë˜ìŠ¤ í…ŒìŠ¤íŠ¸
 bool test_stop_watch()
 {
 	StopWatch sw;
@@ -3576,30 +3576,30 @@ bool test_stop_watch()
 	return true;
 }
 
-/// @brief	boost::fucntion Å×½ºÆ®
+/// @brief	boost::fucntion í…ŒìŠ¤íŠ¸
 bool test_boost_function()
 {
 	typedef boost::function<bool(int a, int b)> f_sum;
 
-	// nullptr ·Î ÃÊ±âÈ­ °¡´É?
-	//f_sum f0 = nullptr;				//<! ÄÄÆÄÀÏ¿¡·¯
+	// nullptr ë¡œ ì´ˆê¸°í™” ê°€ëŠ¥?
+	//f_sum f0 = nullptr;				//<! ì»´íŒŒì¼ì—ëŸ¬
 
-	// 0 À¸·Î´Â ÃÊ±âÈ­ °¡´É
+	// 0 ìœ¼ë¡œëŠ” ì´ˆê¸°í™” ê°€ëŠ¥
 	f_sum f1 = 0;
 	log_info "f1.empty()=%s", f1.empty() ? "true" : "false" log_end;
 
-	// ±âº» »ı¼ºÀÚ È£ÃâÇÏ¸é empty
+	// ê¸°ë³¸ ìƒì„±ì í˜¸ì¶œí•˜ë©´ empty
 	f_sum f2 = f_sum();
 	log_info "f2.empty()=%s", f2.empty() ? "true" : "false" log_end;
 
-	// ¾Æ¹«°Íµµ ÃÊ±âÈ­ ¾ÈÇÏ¸é empty
+	// ì•„ë¬´ê²ƒë„ ì´ˆê¸°í™” ì•ˆí•˜ë©´ empty
 	f_sum f3;
 	log_info "f3.empty()=%s", f3.empty() ? "true" : "false" log_end;
 
 	return true;
 }
 
-/// @brief	bitfield structure memory layout È®ÀÎ
+/// @brief	bitfield structure memory layout í™•ì¸
 bool test_bit_field()
 {
 	typedef struct _bfs

@@ -206,16 +206,17 @@ install_fs_filter(
 	//	Install Kernel driver service 
 	//
 	std::wstringstream sys_path;
-	DWORD start_type = SERVICE_DEMAND_START;
+	DWORD start_type = SERVICE_AUTO_START;
+	DWORD service_type = SERVICE_KERNEL_DRIVER;
 #ifdef _DEBUG
 	sys_path << bin_path;
 #else
 	//
 	//	Release 버전에서는 `SERVICE_BOOT_START` 타입으로 설치한다.
 	// 
-	//	StartType 을 `SERVICE_BOOT_START` 으로 지정하려면 image file 의 
-	//	경로가 반드시 system32 에 있어야하므로 드라이버 파일을 복사하고
-	//	복사된 경로의 드라이버를 서비스로 설치한다.
+	//	StartType = SERVICE_BOOT_START
+	//	으로 지정하려면 image file 의 경로가 반드시 system32 에 있어야한다.
+	//	따라서 드라이버 파일을 복사하고 복사된 경로의 드라이버를 서비스로 설치한다.
 	// 
 	std::wstring windows_dir;
 	if (!get_windows_dir(windows_dir))
@@ -236,13 +237,17 @@ install_fs_filter(
 			log_end;
 		return false;
 	}
-	start_type = SERVICE_BOOT_START;
+
+	//
+	//	SERVICE_KERNEL_DRIVER, 
+	//
+	start_type = SERVICE_BOOT_START;	
 #endif//_DEBUG
 	schandle_ptr svc_handle(CreateServiceW(scm_handle.get(),
 										   service_name,
 										   service_display_name,
 										   GENERIC_READ,
-										   SERVICE_KERNEL_DRIVER,
+										   service_type,
 										   start_type,
 										   SERVICE_ERROR_NORMAL,
 										   sys_path.str().c_str(),
@@ -539,7 +544,7 @@ start_service(
 	//
 	if (true != service_installed(service_name))
 	{
-		log_err
+		log_dbg
 			"No service installed. service=%ws",
 			service_name
 			log_end;
@@ -634,7 +639,7 @@ start_service(
 
 	if (svc_status.dwCurrentState != SERVICE_RUNNING)
 	{
-		log_err "service start failed. status=%ws",
+		log_err "service start failed. status=%s"
 			service_status_to_str(svc_status.dwCurrentState)
 			log_end;
 		return false;
@@ -669,15 +674,15 @@ stop_service(
 	}
 
 	//
-	//	설치된 서비스가 없다면 실패를 리턴한다.
+	//	설치된 서비스가 없음, 성공리턴
 	//
 	if (true != service_installed(service_name))
 	{
-		log_err
+		log_dbg
 			"No service installed. service=%ws",
 			service_name
 			log_end;
-		return false;
+		return true;
 	}
 
 	//

@@ -51,10 +51,19 @@ get_host_name(
 );
 
 bool
-get_net_adapters(
-	_In_ ULONG net_family,
-	_Out_ std::vector<PNetAdapter>& adapters
+get_inet_adapters(
+	_Out_ std::vector<PInetAdapter>& adapters
 );
+
+__inline 
+bool
+get_inet6_adapters(
+	_Out_ std::vector<PInet6Adapter>& adapters
+)
+{
+	UNREFERENCED_PARAMETER(adapters);
+	return true;
+}
 
 bool
 ip_to_dns(
@@ -122,7 +131,6 @@ get_mac_by_ip_v4(
 	_In_ const char* ip_str
 );
 
-using MacAddrType = unsigned char[6];
 std::string
 mac_to_str(
 	_In_ const MacAddrType mac

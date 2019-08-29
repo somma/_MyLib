@@ -30,6 +30,15 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\account_info.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AirCrypto.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\AKSyncObjs.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -48,10 +57,19 @@
     <ClInclude Include="src\CStream.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\curl_client.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FileInfoCache.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\FileIoHelper.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\FileIoHelperClass.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GeneralHashFunctions.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\gpt_partition_guid.h">
@@ -67,6 +85,12 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\md5.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\net_util.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\net_util_typedef.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\nt_name_conv.h">
@@ -87,10 +111,16 @@
     <ClInclude Include="src\ResourceHelper.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\sched_client.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\scm_context.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\send_ping.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ServiceBase.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\sha2.h">
@@ -99,13 +129,25 @@
     <ClInclude Include="src\Singleton.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\StatusCode.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\steady_timer.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\StopWatch.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\strtk.hpp">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\thread_pool.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\ThreadManager.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\version.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Win32Utils.h">
@@ -117,41 +159,8 @@
     <ClInclude Include="src\Wow64Util.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\GeneralHashFunctions.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AirCrypto.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\curl_client.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\FileInfoCache.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\CppSQLite\CppSQLite3.h">
       <Filter>src\CppSQLite</Filter>
-    </ClInclude>
-    <ClInclude Include="src\account_info.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\net_util.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\steady_timer.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\net_util_typedef.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\sched_client.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\version.h">
-      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -197,6 +206,51 @@
     <ClCompile Include="_test_scm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="_test_file_io_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_ppl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_aes256.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_process_tree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_std_move.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_process_token.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_iphelp_api.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_dns_query.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_net_util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_steady_timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_sched_client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_unique_ptr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\account_info.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AirCrypto.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="src\AKSyncObjs.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -209,10 +263,19 @@
     <ClCompile Include="src\CStream.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\curl_client.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FileInfoCache.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="src\FileIoHelper.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\FileIoHelperClass.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GeneralHashFunctions.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\injector.cpp">
@@ -222,6 +285,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\md5.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\net_util.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\nt_name_conv.cpp">
@@ -236,7 +302,13 @@
     <ClCompile Include="src\RegistryUtil.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\sched_client.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="src\scm_context.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ServiceBase.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\sha2.cpp">
@@ -254,68 +326,8 @@
     <ClCompile Include="src\Wow64Util.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="_test_file_io_helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GeneralHashFunctions.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="_test_ppl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="_test_aes256.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AirCrypto.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="_test_process_tree.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\curl_client.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="_test_std_move.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="_test_process_token.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\FileInfoCache.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\CppSQLite\CppSQLite3.cpp">
       <Filter>src\CppSQLite</Filter>
-    </ClCompile>
-    <ClCompile Include="src\account_info.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="test_iphelp_api.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\net_util.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="_test_dns_query.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="_test_net_util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="_test_steady_timer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="_test_log.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sched_client.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="_test_sched_client.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="test_unique_ptr.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -324,13 +336,13 @@
     </masm>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\CppSQLite\LICENSE">
-      <Filter>src\CppSQLite</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="_MyLib_test.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\CppSQLite\LICENSE">
+      <Filter>src\CppSQLite</Filter>
+    </None>
   </ItemGroup>
 </Project>

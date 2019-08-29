@@ -8,26 +8,27 @@
 **/
 #pragma once
 
-typedef class NetIpInfo
+using MacAddrType = unsigned char[6];
+
+typedef class Ipv4Info
 {
 public:
-	NetIpInfo() {}
-	virtual ~NetIpInfo() {};
-public:
-	std::string ip;
-	uint32_t subnet_mask;
+	Ipv4Info(uint32_t ip, uint32_t mask) : ip(ip), mask(mask) {};
 
-} *PNetIpInfo;
+	uint32_t ip;
+	uint32_t mask;
+
+} *PIpv4Info;
 
 
-typedef class NetAdapter
+typedef class InetAdapter
 {
 public:
-	NetAdapter()
+	InetAdapter(IFTYPE interface_type): interface_type(interface_type)
 	{
 	}
 
-	virtual ~NetAdapter()
+	virtual ~InetAdapter()
 	{
 		for (auto ip : ip_info_list)
 		{
@@ -37,13 +38,30 @@ public:
 		ip_info_list.clear();
 	}
 
+	IFTYPE interface_type;
 	std::wstring friendly_name;		// Wi-Fi
 	std::string name;				// {7F158482-83C5-4C7F-B47C-4CE15F1899CA}
 	std::wstring desc;				// Marvell AVASTAR Wireless-AC Network Controller
-	std::string physical_address;	// BC-83-85-2D-8A-91
+	MacAddrType physical_address;
 
-	std::vector<PNetIpInfo> ip_info_list;
-	std::vector<std::string> dns_list;
-	std::vector<std::string> gateway_list;
+	std::vector<PIpv4Info> ip_info_list;
+	std::vector<uint32_t> dns_list;
+	std::vector<uint32_t> gateway_list;
 
-} *PNetAdapter;
+} *PInetAdapter;
+
+
+//
+//	AF_INET6
+//
+typedef struct Ipv6Info
+{
+	uint32_t dumy;
+} *PIpv6Info;
+
+typedef class Inet6Adapter
+{
+private:
+	Inet6Adapter() {}
+	virtual ~Inet6Adapter() {}
+} *PInet6Adapter;

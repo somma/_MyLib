@@ -83,19 +83,10 @@ get_host_name(
 /// @brief	Read network adapter information
 ///	@param	net_family	AF_INET
 bool
-get_net_adapters(
-	_In_ ULONG net_family,
-	_Out_ std::vector<PNetAdapter>& adapters
+get_inet_adapters(	
+	_Out_ std::vector<PInetAdapter>& adapters
 )
 {
-	if ((net_family != AF_INET) && (net_family != AF_INET6))
-	{
-		log_err
-			"Invalid net family. Only AF_INET(2), AF_INET(23) supported."
-			log_end;
-		return false;
-	}
-
 	//
 	//	flag 가 0 일때 unicast, anycast, multicast 정보를 가져온다. 
 	//	여기에 include, exclude flag 를 조합해서 사용할 수 있게 한것 같은데, 
@@ -105,7 +96,7 @@ get_net_adapters(
 	ULONG flags = GAA_FLAG_INCLUDE_GATEWAYS;
 	ULONG size = 0;
 	PIP_ADAPTER_ADDRESSES address = nullptr;
-	ULONG ret = GetAdaptersAddresses(net_family,
+	ULONG ret = GetAdaptersAddresses(AF_INET,
 									 flags,
 									 nullptr,
 									 address,
@@ -126,7 +117,7 @@ get_net_adapters(
 	}
 	address = (PIP_ADAPTER_ADDRESSES)cptr.get();
 
-	ret = GetAdaptersAddresses(net_family,
+	ret = GetAdaptersAddresses(AF_INET,
 							   flags,
 							   nullptr,
 							   address,
@@ -142,13 +133,12 @@ get_net_adapters(
 	//
 	//	Iterate all addresses
 	//
-	PNetAdapter adapter = nullptr;
+	PInetAdapter adapter = nullptr;
 	ULONG subnet_mask = 0;
 	PIP_ADAPTER_UNICAST_ADDRESS unicast_addr = nullptr;
 	PIP_ADAPTER_DNS_SERVER_ADDRESS dns = nullptr;
 	PIP_ADAPTER_GATEWAY_ADDRESS gateway = nullptr;
 
-	std::string str;
 	PIP_ADAPTER_ADDRESSES cur = address;
 	while (nullptr != cur)
 	{
@@ -158,16 +148,18 @@ get_net_adapters(
 			goto _next;
 		}
 
-		///	현재 활성화 되어있지 않는 어댑터 정보는 수집하지 않는다. 
-		if (IfOperStatusUp != cur->OperStatus)
-		{
-			goto _next;
-		}
+		//
+		// 활성화되지 않은 인터페이스에 대한 정보도 수집한다. 
+		//
+		//if (IfOperStatusUp != cur->OperStatus)
+		//{
+		//	goto _next;
+		//}
 
 		//
-		//	NetAdapter 객체를 생성하고, 리스트에 추가한다. 
+		//	InetAdapter 객체를 생성하고, 리스트에 추가한다. 
 		//
-		adapter = new NetAdapter();
+		adapter = new InetAdapter(cur->IfType);
 		if (nullptr == adapter)
 		{
 			log_err "Not enough memory. " log_end;
@@ -194,74 +186,46 @@ get_net_adapters(
 
 		//	Physical address
 		//	data link layer 인터페이스가 아닌 경우 0 일 수 있다. 
-		if (cur->PhysicalAddressLength > 0)
+		if (cur->PhysicalAddressLength == 6)
 		{
-			const char* table = get_int_to_char_table(true);
-			char buf[MAX_ADAPTER_ADDRESS_LENGTH * 3] = { 0x00 };
-			ULONG buf_pos = 0;
-			for (ULONG i = 0; i < cur->PhysicalAddressLength; ++i)
-			{
-				if (buf_pos > 0) { buf[buf_pos++] = '-'; }
-
-				buf[buf_pos++] = table[cur->PhysicalAddress[i] >> 4];
-				buf[buf_pos++] = table[cur->PhysicalAddress[i] & 0xf];
-			}
-			buf[buf_pos] = 0x00;
-			adapter->physical_address = buf;
+			RtlCopyMemory(adapter->physical_address,
+						  cur->PhysicalAddress,
+						  6);
 		}
 
 		///	Assigned IP
 		unicast_addr = cur->FirstUnicastAddress;
 		while (nullptr != unicast_addr)
 		{
-			if (true == SocketAddressToStr(&unicast_addr->Address, str))
+			//
+			//	subnet mask
+			//	PrefixLength를 이용해서 subnet mask를 구한다.
+			//
+			_ASSERTE(AF_INET == unicast_addr->Address.lpSockaddr->sa_family);
+			if (AF_INET != unicast_addr->Address.lpSockaddr->sa_family){continue;}
+
+			if (NO_ERROR == ConvertLengthToIpv4Mask(unicast_addr->OnLinkPrefixLength, &subnet_mask))
 			{
-				//
-				//	subnet mask
-				//	PrefixLength를 이용해서 subnet mask를 구한다.
-				//
-				if (NO_ERROR == ConvertLengthToIpv4Mask(unicast_addr->OnLinkPrefixLength, &subnet_mask))
-				{
-					PNetIpInfo ip_info = new NetIpInfo;
-					ip_info->ip = str;
-					ip_info->subnet_mask = subnet_mask;
-					adapter->ip_info_list.push_back(ip_info);
-				}
+				PSOCKADDR_IN si = (PSOCKADDR_IN)unicast_addr->Address.lpSockaddr;
+				
+				adapter->ip_info_list.push_back(
+					new Ipv4Info(si->sin_addr.s_addr,subnet_mask)
+				);
 			}
 
 			unicast_addr = unicast_addr->Next;
 		}
 
-		/////	Anycast IP
-		//PIP_ADAPTER_ANYCAST_ADDRESS anycast_addr = cur->FirstAnycastAddress;
-		//while (nullptr != anycast_addr)
-		//{
-		//	if (true == SocketAddressToStr(&anycast_addr->Address, str))
-		//	{
-		//		log_info "anycst=%s", str.c_str() log_end;
-		//	}
-		//	anycast_addr = anycast_addr->Next;
-		//}
-
-		/////	Multicast IP
-		//PIP_ADAPTER_MULTICAST_ADDRESS multicast_addr = cur->FirstMulticastAddress;
-		//while (nullptr != multicast_addr)
-		//{
-		//	if (true != SocketAddressToStr(&multicast_addr->Address, str))
-		//	{
-		//		log_info "multicast=%s", str.c_str() log_end;
-		//	}
-		//	multicast_addr = multicast_addr->Next;
-		//}
-
 		///	DNS servers 
 		dns = cur->FirstDnsServerAddress;
 		while (nullptr != dns)
 		{
-			if (true == SocketAddressToStr(&dns->Address, str))
-			{
-				adapter->dns_list.push_back(str);
-			}
+			_ASSERTE(AF_INET == dns->Address.lpSockaddr->sa_family);
+			if (AF_INET != dns->Address.lpSockaddr->sa_family) { continue; }
+
+			PSOCKADDR_IN si = (PSOCKADDR_IN)dns->Address.lpSockaddr;
+			adapter->dns_list.push_back(si->sin_addr.s_addr);
+
 			dns = dns->Next;
 		}
 
@@ -269,10 +233,12 @@ get_net_adapters(
 		gateway = cur->FirstGatewayAddress;
 		while (nullptr != gateway)
 		{
-			if (true == SocketAddressToStr(&gateway->Address, str))
-			{
-				adapter->gateway_list.push_back(str);
-			}
+			_ASSERTE(AF_INET == gateway->Address.lpSockaddr->sa_family);
+			if (AF_INET != gateway->Address.lpSockaddr->sa_family) { continue; }
+
+			PSOCKADDR_IN si = (PSOCKADDR_IN)gateway->Address.lpSockaddr;
+			adapter->gateway_list.push_back(si->sin_addr.s_addr);
+
 			gateway = gateway->Next;
 		}
 
@@ -709,10 +675,10 @@ get_ip_list_v4(
 	_Out_ std::vector<std::string>& ip_list
 )
 {
-	std::vector<PNetAdapter> adapters;
-	if (true != get_net_adapters(AF_INET, adapters))
+	std::vector<PInetAdapter> adapters;
+	if (true != get_inet_adapters(adapters))
 	{
-		log_err "get_net_adapters() failed." log_end;
+		log_err "get_inet_adapters() failed." log_end;
 		return false;
 	}
 
@@ -720,8 +686,7 @@ get_ip_list_v4(
 	{
 		for (auto ip_info : adapter->ip_info_list)
 		{
-			ip_list.push_back(ip_info->ip);
-			delete ip_info;
+			ip_list.push_back(std::move(ipv4_to_str(ip_info->ip)));			
 		}
 		delete adapter;
 	}
@@ -744,10 +709,10 @@ get_broadcast_list_v4(
 	_Out_ std::vector<uint32_t>& broadcast_list
 )
 {
-	std::vector<PNetAdapter> adapters;
-	if (true != get_net_adapters(AF_INET, adapters))
+	std::vector<PInetAdapter> adapters;
+	if (true != get_inet_adapters(adapters))
 	{
-		log_err "get_net_adapters() failed." log_end;
+		log_err "get_inet_adapters() failed." log_end;
 		return false;
 	}
 
@@ -755,11 +720,7 @@ get_broadcast_list_v4(
 	{
 		for (auto ip_info : adapter->ip_info_list)
 		{
-			uint32_t ip_addr = 0;
-			if (true == str_to_ipv4(MbsToWcsEx(ip_info->ip.c_str()).c_str(), ip_addr))
-			{
-				broadcast_list.push_back(ip_addr | ~ip_info->subnet_mask);
-			}
+			broadcast_list.push_back(ip_info->ip | ~ip_info->mask);			
 		}
 		delete adapter;
 	}
@@ -786,10 +747,10 @@ get_representative_ip_v4(
 	//	3순위: 
 	//		첫번째 IP
 	// 
-	std::vector<PNetAdapter> adapters;
-	if (true != get_net_adapters(AF_INET, adapters))
+	std::vector<PInetAdapter> adapters;
+	if (true != get_inet_adapters(adapters))
 	{
-		log_err "get_net_adapters() failed." log_end;
+		log_err "get_inet_adapters() failed." log_end;
 		return "127.0.0.1";
 	}
 
@@ -806,7 +767,7 @@ get_representative_ip_v4(
 			{
 				if (true != adapter->dns_list.empty())
 				{
-					ip = adapter->ip_info_list[0]->ip;
+					ip = ipv4_to_str(adapter->ip_info_list[0]->ip);
 					break;
 				}
 			}
@@ -821,7 +782,7 @@ get_representative_ip_v4(
 			if (adapter->ip_info_list.empty()) continue;
 			if (true != adapter->gateway_list.empty())
 			{
-				ip = adapter->ip_info_list[0]->ip;
+				ip = ipv4_to_str(adapter->ip_info_list[0]->ip);
 				break;
 			}
 		}
@@ -833,7 +794,7 @@ get_representative_ip_v4(
 		for (auto adapter : adapters)
 		{
 			if (adapter->ip_info_list.empty()) continue;
-			ip = adapter->ip_info_list[0]->ip;
+			ip = ipv4_to_str(adapter->ip_info_list[0]->ip);
 			break;
 		}
 
@@ -842,7 +803,7 @@ get_representative_ip_v4(
 	//
 	//	Free
 	//	
-	std::for_each(adapters.begin(), adapters.end(), [](_In_ PNetAdapter p)
+	std::for_each(adapters.begin(), adapters.end(), [](_In_ PInetAdapter p)
 	{
 		_ASSERTE(nullptr != p);
 		delete p;
@@ -857,17 +818,28 @@ get_mac_by_ip_v4(
 	_In_ const char* ip_str
 )
 {
-	_ASSERTE(NULL != ip_str);
-	if (NULL == ip_str) return false;
+	_ASSERTE(nullptr != ip_str);
+	if (nullptr == ip_str) return false;
+
+	uint32_t ip = 0xffffffff;
+	if (true != str_to_ipv4(MbsToWcsEx(ip_str).c_str(), ip))
+	{
+		log_err "str_to_ipv4() failed. ip=%s",
+			ip_str
+			log_end;
+		return "00-00-00-00-00-00";
+	}
+	_ASSERTE(0xffffffff != ip);
+	if (0xffffffff == ip) return "00-00-00-00-00-00";
 
 	//
 	//	어댑터 정보를 가져온다.
 	//
-	std::vector<PNetAdapter> adapters;
-	if (true != get_net_adapters(AF_INET, adapters))
+	std::vector<PInetAdapter> adapters;
+	if (true != get_inet_adapters(adapters))
 	{
-		log_err "get_net_adapters() failed." log_end;
-		return "00:00:00:00:00:00";
+		log_err "get_inet_adapters() failed." log_end;
+		return "00-00-00-00-00-00";
 	}
 
 	//
@@ -880,9 +852,9 @@ get_mac_by_ip_v4(
 		if (true == adapter->ip_info_list.empty()) continue;
 		for (auto ip_info : adapter->ip_info_list)
 		{
-			if (0 == ip_info->ip.compare(ip_str))
+			if (ip == ip_info->ip)
 			{
-				mac = adapter->physical_address;
+				mac = mac_to_str(adapter->physical_address);
 				matched = true;
 				break;
 			}
@@ -894,7 +866,7 @@ get_mac_by_ip_v4(
 	//
 	//	Free
 	//
-	std::for_each(adapters.begin(), adapters.end(), [](PNetAdapter p)
+	std::for_each(adapters.begin(), adapters.end(), [](PInetAdapter p)
 	{
 		if (nullptr != p)
 		{
@@ -907,7 +879,7 @@ get_mac_by_ip_v4(
 	});
 	adapters.clear();
 
-	return (true == mac.empty()) ? "00:00:00:00:00:00" : mac;
+	return (true == mac.empty()) ? "00-00-00-00-00-00" : mac;
 }
 
 /// @brief	MAC 주소를 문자열로 변환한다.
@@ -916,9 +888,9 @@ std::string mac_to_str(_In_ const MacAddrType mac)
 	char buf[(2 * 6) + 5 + 1] = { 0 };
 	if (!SUCCEEDED(StringCbPrintfA(buf,
 								   sizeof(buf),
-								   "%.2X%.2X%.2X%.2X%.2X%.2X",
-								   mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]
-	)))
+								   "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
+								   mac[0], mac[1], mac[2], 
+								   mac[3], mac[4], mac[5])))
 	{
 		return std::string("N/A");
 	}
