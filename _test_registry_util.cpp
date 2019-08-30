@@ -130,6 +130,39 @@ bool test_set_binary_data()
     return true;
 }
 
+bool test_reg_multi_value()
+{
+	// Create key	
+	hkey_ptr reg_key(RUCreateKey(HKEY_CURRENT_USER,
+								 L"test_key",
+								 false),
+					 [](HKEY key) {
+		if (nullptr != key)
+		{
+			RUCloseKey(key);
+		}
+	});
 
+	_ASSERTE(nullptr != reg_key.get());
+
+	std::vector<std::wstring> set_vec;
+	set_vec.push_back(L"Hello");
+	set_vec.push_back(L"World");
+	_ASSERTE(true == RUSetMultiString(reg_key.get(), L"TestValue", set_vec));
+
+	std::vector<std::wstring> read_vec;
+	_ASSERTE(true == RUReadMultiString(reg_key.get(), L"TestValue", read_vec));
+
+	for (DWORD i = 0; i < set_vec.size(); ++i)
+	{
+		_ASSERTE(0 == read_vec.at(i).compare(set_vec.at(i).c_str()));
+	}
+
+	// Delete key
+	// -- key 내부의 value 들도 함께 삭제됨
+	_ASSERTE(true == RUDeleteKey(HKEY_CURRENT_USER, L"test_key", true));
+
+	return true;
+}
 
 

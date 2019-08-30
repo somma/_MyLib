@@ -196,6 +196,7 @@ extern bool test_map_insert_swap();
 extern bool test_registry_util();
 extern bool test_read_mouted_device();
 extern bool test_set_binary_data();
+extern bool test_reg_multi_value();
 
 // _test_curl_https
 bool test_curl_https();
@@ -233,7 +234,7 @@ void run_test()
 	bool ret = false;
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
-	assert_bool(true, test_get_adapters);
+	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_ip_to_dns);
 	//assert_bool(true, test_dns_to_ip);
@@ -327,7 +328,7 @@ void run_test()
 	//assert_bool(true, test_get_environment_value);
 	//assert_bool(true, test_get_account_infos);
 	//assert_bool(true, test_get_installed_programs);
-	assert_bool(true, test_get_file_company_name);
+	//assert_bool(true, test_get_file_company_name);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
 
@@ -358,6 +359,7 @@ void run_test()
 	//assert_bool(true, test_registry_util);
 	//assert_bool(true, test_read_mouted_device);
 	//assert_bool(true, test_set_binary_data);
+	assert_bool(true, test_reg_multi_value);
 	//assert_bool(true, test_aes256);
 
 	//assert_bool(true, test_curl_https);
