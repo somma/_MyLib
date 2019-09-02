@@ -299,6 +299,7 @@ echo "done." </Command>
     <ClCompile Include="_test_boost_asio_timer.cpp" />
     <ClCompile Include="_test_boost_bind.cpp" />
     <ClCompile Include="_test_boost_thread.cpp" />
+    <ClCompile Include="_test_call_by_value_container.cpp" />
     <ClCompile Include="_test_cpp_class.cpp" />
     <ClCompile Include="_test_dns_query.cpp" />
     <ClCompile Include="_test_file_io_helper.cpp" />

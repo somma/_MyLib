@@ -329,6 +329,9 @@
     <ClCompile Include="src\CppSQLite\CppSQLite3.cpp">
       <Filter>src\CppSQLite</Filter>
     </ClCompile>
+    <ClCompile Include="_test_call_by_value_container.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">

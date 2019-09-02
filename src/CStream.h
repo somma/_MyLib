@@ -136,10 +136,12 @@ public:
 	}
 
 	// 스트림으로 부터 데이터를 읽어서 버퍼에 쓴다.
-	virtual unsigned long ReadFromStream(_Out_ void *Buffer, _In_ unsigned long Count);
+	virtual unsigned long ReadFromStream(_Out_ void *Buffer, 
+										 _In_ unsigned long Count);
 
 	// 버퍼로부터 데이터를 읽어 스트림의 현재 포지션에 쓴다.
-	virtual unsigned long WriteToStream(_In_ const void *Buffer, _In_ unsigned long Count);
+	virtual unsigned long WriteToStream(_In_ const void *Buffer, 
+										_In_ unsigned long Count);
 		
 	virtual unsigned long ReadUint16FromStream(_Out_ uint16_t& value);
 	virtual unsigned long WriteUint16ToStream(_In_ uint16_t value);
