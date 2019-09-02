@@ -13,6 +13,7 @@
 #include <crtdbg.h>
 #include "log.h"
 #include "RegistryUtil.h"
+#include "CStream.h"
 
 
 #define NO_SHLWAPI_STRFCNS
@@ -313,61 +314,47 @@ RUSetExpandString(
 ///			¹®ÀÚ¿­ 4. L"World"
 ///
 ///			buffer = L"Welcome\0to\0Hello\0World\0\0"
-
 bool
 RUSetMultiString(
 	_In_ HKEY key_handle,
 	_In_ const wchar_t* value_name,
-	_In_ std::vector<std::wstring> value
+	_In_ std::vector<std::wstring>& values
 	)
 {
 	_ASSERTE(nullptr != key_handle);
 	_ASSERTE(nullptr != value_name);
-	_ASSERTE(true != value.empty());
-	if (nullptr == key_handle || nullptr == value_name || true == value.empty()) return false;
-
-	DWORD cbValue = 0;
-	size_t size = value.size();
-	for (DWORD i = 0; i < size; ++i)
+	_ASSERTE(true != values.empty());
+	if (nullptr == key_handle ||
+		nullptr == value_name ||
+		true == values.empty())
 	{
-		cbValue += (DWORD)((value.at(i).size() * sizeof(wchar_t)) + sizeof(wchar_t));
-	}
-	cbValue += sizeof(wchar_t);
-
-	uint8_t* buffer = (uint8_t*)malloc(cbValue);
-	if (nullptr == buffer)
-	{
-		cbValue = 0;
 		return false;
 	}
-	RtlZeroMemory(buffer, cbValue);
 
-	size_t pos = 0;
-	for (DWORD i = 0; i < size; ++i)
+	uint16_t null_term = 0;
+	CMemoryStream strm;
+	for (auto& value : values)
 	{
-		size_t cb = value.at(i).size();
-		RtlMoveMemory(buffer + pos, value.at(i).c_str(), cb * sizeof(wchar_t));
-		pos += (cb * sizeof(wchar_t) + sizeof(wchar_t));
+		strm.WriteToStream(value.c_str(), value.size() * sizeof(wchar_t));
+		strm.WriteToStream(&null_term, sizeof(uint16_t));
 	}
+	strm.WriteToStream(&null_term, sizeof(uint16_t));
 
 	DWORD ret = RegSetValueExW(key_handle,
 							   value_name,
 							   NULL,
 							   REG_MULTI_SZ,
-							   (LPBYTE)buffer,
-							   cbValue);
-
+							   (LPBYTE)strm.GetMemory(),
+							   strm.GetSize());
 	if (ERROR_SUCCESS != ret)
 	{
 		//log_err "RegSetValueExW(%ws) failed, ret = %u",
 		//	value_name,
 		//	ret
 		//	log_end;
-		free(buffer); buffer = nullptr;
 		return false;
 	}
 
-	free(buffer); buffer = nullptr;
 	return true;
 }
 
@@ -383,49 +370,63 @@ RUReadMultiString(
 	_ASSERTE(nullptr != value_name);
 	if (nullptr == key_handle || nullptr == value_name) return false;
 
-	DWORD type;
+	DWORD type = REG_NONE;
 	DWORD cbValue = 0;
 	DWORD ret = RegQueryValueExW(key_handle,
 								 value_name,
-								 NULL,
+								 nullptr,
 								 &type,
-								 NULL,
+								 nullptr,
 								 &cbValue);
 
 	if (ERROR_SUCCESS != ret)
 	{
-		/*log_err "RegQueryValueExW(%ws) failed. ret = %u",
-			value_name,
-			ret
-			log_end;*/
+		//log_err "RegQueryValueExW(%ws) failed. ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
 		return false;
 	}
 
 	_ASSERTE(REG_MULTI_SZ == type);
-	if (REG_MULTI_SZ != type) return false;
-
-	uint8_t* buffer = (uint8_t*)malloc(cbValue);
-	if (nullptr == buffer)
+	if (REG_MULTI_SZ != type)
 	{
-		cbValue = 0;
+		log_err
+			"Type of requested value is not REG_MULTI_SZ. value=%ws",
+			value_name
+			log_end;
 		return false;
 	}
+
+	char_ptr ptr((char*)malloc(cbValue),
+				 [](char* p) {
+		free_and_nil(p);
+	});
+	if (nullptr == ptr.get())
+	{
+		log_err "No resources for value. value=%ws, size=%u",
+			value_name, 
+			cbValue
+			log_end;
+		return false;
+	}
+
+	uint8_t* buffer = (uint8_t*)ptr.get();
 	RtlZeroMemory(buffer, cbValue);
 
 	ret = RegQueryValueExW(key_handle,
 						   value_name,
-						   NULL,
-						   NULL,
+						   nullptr,
+						   nullptr,
 						   buffer,
 						   &cbValue);
 
 	if (ERROR_SUCCESS != ret)
 	{
-		/*log_err "RegQueryValueExW(%ws) failed. ret = %u",
-			value_name,
-			ret
-			log_end;*/
-		free(buffer); buffer = nullptr;
+		//log_err "RegQueryValueExW(%ws) failed. ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
 		return false;
 	}
 
@@ -452,7 +453,6 @@ RUReadMultiString(
 		pos += sizeof(wchar_t);
 	}
 
-	free(buffer); buffer = nullptr;
 	return true;
 }
 

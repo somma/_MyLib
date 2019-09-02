@@ -80,14 +80,14 @@ bool
 RUSetMultiString(
 	_In_ HKEY key_handle,
 	_In_ const wchar_t* value_name,
-	_In_ std::vector<std::wstring> value
+	_In_ std::vector<std::wstring>& values
 	);
 
 bool
 RUReadMultiString(
 	_In_ HKEY key_handle,
 	_In_ const wchar_t* value_name,
-	_Out_ std::vector<std::wstring>& value
+	_Out_ std::vector<std::wstring>& values
 	);
 
 uint8_t* 
