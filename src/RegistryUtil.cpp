@@ -335,7 +335,7 @@ RUSetMultiString(
 	CMemoryStream strm;
 	for (auto& value : values)
 	{
-		strm.WriteToStream(value.c_str(), value.size() * sizeof(wchar_t));
+		strm.WriteToStream(value.c_str(), (unsigned long)value.size() * sizeof(wchar_t));
 		strm.WriteToStream(&null_term, sizeof(uint16_t));
 	}
 	strm.WriteToStream(&null_term, sizeof(uint16_t));
