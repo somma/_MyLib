@@ -13,6 +13,7 @@
 #include <crtdbg.h>
 #include "log.h"
 #include "RegistryUtil.h"
+#include "CStream.h"
 
 
 #define NO_SHLWAPI_STRFCNS
@@ -300,6 +301,159 @@ RUSetExpandString(
     }
 
     return true;
+}
+
+///	@brief Multi_SZ type의 레지스트리 value를 생성한다.
+///
+///			Multi_SZ는 여러개의 문자열을 저장하는데 문자열을 구분할때 '\' null terminator가 들어간다.
+///			그리고 항상 마지막 null terminator는 2개가 와야한다.
+
+///			문자열 1. L"Welcome"
+///			문자열 2. L"to"
+///			문자열 3. L"Hello"
+///			문자열 4. L"World"
+///
+///			buffer = L"Welcome\0to\0Hello\0World\0\0"
+bool
+RUSetMultiString(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
+	_In_ std::vector<std::wstring>& values
+	)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != value_name);
+	_ASSERTE(true != values.empty());
+	if (nullptr == key_handle ||
+		nullptr == value_name ||
+		true == values.empty())
+	{
+		return false;
+	}
+
+	uint16_t null_term = 0;
+	CMemoryStream strm;
+	for (auto& value : values)
+	{
+		strm.WriteToStream(value.c_str(), value.size() * sizeof(wchar_t));
+		strm.WriteToStream(&null_term, sizeof(uint16_t));
+	}
+	strm.WriteToStream(&null_term, sizeof(uint16_t));
+
+	DWORD ret = RegSetValueExW(key_handle,
+							   value_name,
+							   NULL,
+							   REG_MULTI_SZ,
+							   (LPBYTE)strm.GetMemory(),
+							   strm.GetSize());
+	if (ERROR_SUCCESS != ret)
+	{
+		//log_err "RegSetValueExW(%ws) failed, ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
+		return false;
+	}
+
+	return true;
+}
+
+///	@brief Multi_SZ type의 레지스트리 value값을 읽는다.
+bool
+RUReadMultiString(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
+	_Out_ std::vector<std::wstring>& value
+	)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle || nullptr == value_name) return false;
+
+	DWORD type = REG_NONE;
+	DWORD cbValue = 0;
+	DWORD ret = RegQueryValueExW(key_handle,
+								 value_name,
+								 nullptr,
+								 &type,
+								 nullptr,
+								 &cbValue);
+
+	if (ERROR_SUCCESS != ret)
+	{
+		//log_err "RegQueryValueExW(%ws) failed. ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
+		return false;
+	}
+
+	_ASSERTE(REG_MULTI_SZ == type);
+	if (REG_MULTI_SZ != type)
+	{
+		log_err
+			"Type of requested value is not REG_MULTI_SZ. value=%ws",
+			value_name
+			log_end;
+		return false;
+	}
+
+	char_ptr ptr((char*)malloc(cbValue),
+				 [](char* p) {
+		free_and_nil(p);
+	});
+	if (nullptr == ptr.get())
+	{
+		log_err "No resources for value. value=%ws, size=%u",
+			value_name, 
+			cbValue
+			log_end;
+		return false;
+	}
+
+	uint8_t* buffer = (uint8_t*)ptr.get();
+	RtlZeroMemory(buffer, cbValue);
+
+	ret = RegQueryValueExW(key_handle,
+						   value_name,
+						   nullptr,
+						   nullptr,
+						   buffer,
+						   &cbValue);
+
+	if (ERROR_SUCCESS != ret)
+	{
+		//log_err "RegQueryValueExW(%ws) failed. ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
+		return false;
+	}
+
+	//
+	// buffer = L"Welcome\0to\0Hello\0World\0\0"
+	//
+	// 1. L"\0\0"을 먼저 비교하여 마지막인지 체크하고 wstring값을 vector에 복사한다.
+	// 2. L"\0" null terminator를 찾으면 wstring값을 vector에 복사한다.
+
+	size_t str_pos = 0;
+	size_t pos = 0;
+	while (pos < cbValue)
+	{
+		if (0 == wmemcmp((wchar_t*)(buffer + pos), L"\0\0", 2))
+		{
+			value.push_back((wchar_t*)(buffer + str_pos));
+			break;
+		}
+		if (buffer[pos] == L'\0')
+		{
+			value.push_back((wchar_t*)(buffer + str_pos));
+			str_pos = pos + sizeof(wchar_t);
+		}
+		pos += sizeof(wchar_t);
+	}
+
+	return true;
 }
 
 /// @remark	value 사이즈 제한에 관한 정보는 링크 참조
