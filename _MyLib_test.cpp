@@ -893,11 +893,14 @@ bool test_ip_to_str()
     inaddr.S_un.S_addr = 0x0100007f;
     log_info "ip = %lu -> %s", inaddr.S_un.S_addr, ipv4_to_str(inaddr).c_str() log_end;
 
+	const wchar_t* str_LLMSR = L"224.0.0.252";
 	uint32_t ip_llmnr = 0;
-	_ASSERTE(true == str_to_ipv4(L"224.0.0.252", ip_llmnr));
+	_ASSERTE(true == str_to_ipv4(str_LLMSR, ip_llmnr));
 	uint16_t port_llmnr = 5355;
-	log_info "ip=%ws, port=0x%04x", 
-		ip_llmnr, 
+	log_info "ip=%ws -> 0x%08x, port=%u(0x%04x) -> 0x%04x", 
+		str_LLMSR,
+		ip_llmnr,
+		port_llmnr, port_llmnr, 
 		swap_endian_16(port_llmnr) 
 		log_end;
     return true;
