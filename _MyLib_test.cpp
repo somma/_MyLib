@@ -233,7 +233,7 @@ void run_test()
 	bool ret = false;
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
-	assert_bool(true, test_get_adapters);
+	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_ip_to_dns);
 	//assert_bool(true, test_dns_to_ip);
@@ -309,7 +309,7 @@ void run_test()
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
 	//assert_bool(true, test_ip_mac);
-	//assert_bool(true, test_ip_to_str);
+	assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
 	//assert_bool(true, test_cpp_class);
@@ -327,7 +327,7 @@ void run_test()
 	//assert_bool(true, test_get_environment_value);
 	//assert_bool(true, test_get_account_infos);
 	//assert_bool(true, test_get_installed_programs);
-	assert_bool(true, test_get_file_company_name);
+	//assert_bool(true, test_get_file_company_name);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
 
@@ -882,11 +882,18 @@ bool test_ip_to_str()
     if (true != str_to_ipv4(ip_str, addr)) return false;
     log_info "ip = %ws -> %lu", ip_str, addr log_end;
     log_info "ip = %lu -> %s", addr, ipv4_to_str(addr).c_str() log_end;
-
-
+	
 	in_addr inaddr;
     inaddr.S_un.S_addr = 0x0100007f;
     log_info "ip = %lu -> %s", inaddr.S_un.S_addr, ipv4_to_str(inaddr).c_str() log_end;
+
+	uint32_t ip_llmnr = 0;
+	_ASSERTE(true == str_to_ipv4(L"224.0.0.252", ip_llmnr));
+	uint16_t port_llmnr = 5355;
+	log_info "ip=%ws, port=0x%04x", 
+		ip_llmnr, 
+		swap_endian_16(port_llmnr) 
+		log_end;
     return true;
 }
 
