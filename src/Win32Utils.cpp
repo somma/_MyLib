@@ -5699,7 +5699,8 @@ create_process(
 	return true;
 }
 
-/// @brief	프로세스를 생성하고, 종료시까지 기다린다. 
+/// @brief	프로세스를 생성하고, 종료시까지 기다린다. 만약 timeout_secs가 INFINITE(0xFFFFFFFF)일 경우
+///			종료될때까지 무한정 기다린다.
 bool
 create_process_and_wait(
 	_In_ const wchar_t* cmdline,
@@ -5721,7 +5722,7 @@ create_process_and_wait(
 	//
 	//	Wait for the process
 	//
-	DWORD wr = WaitForSingleObject(process_handle, timeout_secs * 1000);
+	DWORD wr = WaitForSingleObject(process_handle, timeout_secs == -1 ? INFINITE : timeout_secs * 1000);
 	if (WAIT_OBJECT_0 != wr)
 	{
 		switch (wr)
