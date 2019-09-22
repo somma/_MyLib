@@ -576,6 +576,9 @@ find_and_replace_string_exw(
     _In_ const wchar_t* replace
     );
 
+std::string generate_random_string(_In_ const size_t length);
+
+
 
 /******************************************************************************
  * RAII (Resource Acquisition Is Initialization ), raii
