@@ -46,7 +46,7 @@ http_get_write_callback(
 	if (NULL == ptr || NULL == userdata) return 0;
 
 	UINT32 DataSizeToWrite = (UINT32)(size * nmemb);
-	CStream* stream = (CStream*)userdata;
+	CMemoryStream* stream = (CMemoryStream*)userdata;
 
 	if (-1 == stream->WriteToStream(ptr, DataSizeToWrite))
 	{
