@@ -39,7 +39,7 @@ void func_call_by_value(std::vector<Widget> wlist)
 {
 	for (Widget w : wlist)
 	{
-		//w = w;
+		w = w;
 	}
 }
 
@@ -47,7 +47,7 @@ void func_call_by_ref(std::vector<Widget>& wlist)
 {
 	for (Widget& w : wlist)
 	{
-		//w = w;
+		w = w;
 	}
 }
 

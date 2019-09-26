@@ -154,6 +154,7 @@ bool test_get_environment_value();
 bool test_get_account_infos();
 bool test_get_installed_programs();
 bool test_get_file_company_name();
+bool test_generate_random_string();
 
 // rc4.cpp
 bool test_rc4_encrypt();
@@ -313,7 +314,7 @@ void run_test()
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
 	//assert_bool(true, test_ip_mac);
-	assert_bool(true, test_ip_to_str);
+	//assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
 	//assert_bool(true, test_cpp_class);
@@ -332,6 +333,7 @@ void run_test()
 	//assert_bool(true, test_get_account_infos);
 	//assert_bool(true, test_get_installed_programs);
 	//assert_bool(true, test_get_file_company_name);
+	assert_bool(true, test_generate_random_string);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
 
@@ -1596,6 +1598,24 @@ bool test_get_file_company_name()
 		"notepad publisher=%ws",
 		company_name.c_str()
 		log_end;
+
+	return true;
+}
+
+/// @brief	
+bool test_generate_random_string()
+{
+	_mem_check_begin
+	{
+		for (int i = 0; i < 12; ++i)
+		{
+			size_t len = (size_t)get_random_int(4, 64);
+			std::string rs = generate_random_string(len);
+			_ASSERTE(rs.size() == len);
+			log_info "random string=%s", rs.c_str() log_end;
+		}
+	}
+	_mem_check_end;
 
 	return true;
 }

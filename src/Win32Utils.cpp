@@ -4347,6 +4347,28 @@ find_and_replace_string_exw(
 		return _null_stringw;
 }
 
+/// @brief	랜덤한 문자열 생성하기 
+std::string generate_random_string(_In_ const size_t length)
+{
+	static const char alphanum[] =
+		"0123456789"
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz"
+		" !\"#$%&'()*+,-./"
+		":;<=>?@"
+		"[\\]^_`"
+		"{|}~";
+
+	std::stringstream strm;
+	for (int i = 0; i < length; ++i) 
+	{
+		strm << alphanum[rand() % (sizeof(alphanum) - 1)];
+	}
+
+	return strm.str();
+}
+
+
 /**
 * @brief	현재 디렉토리를 리턴하는 함수 (e.g. c:\debug )
 * @param

@@ -14,17 +14,13 @@
 #include "CStream.h"
 #include <strsafe.h>
 
-/**	-----------------------------------------------------------------------
-	\brief	
-
-	\param	
-	\return	
-	\code
-	
-	\endcode		
--------------------------------------------------------------------------*/
+/// @brief	
 #define MAX_UNSIGNED_LONG	0xFFFFFFFF	
-unsigned long CStream::ChangeCursor(_In_ const unsigned long offset, _In_ unsigned long from)
+unsigned long 
+CMemoryStream::ChangeCursor(
+	_In_ const unsigned long offset, 
+	_In_ unsigned long from
+)
 {
 	_ASSERTE(0 <= offset);
 	_ASSERTE(0 <= from);
@@ -59,15 +55,7 @@ unsigned long CStream::ChangeCursor(_In_ const unsigned long offset, _In_ unsign
 };
 
 
-/**	-----------------------------------------------------------------------
-	\brief	memory stream 의 크기를 변경한다.
-
-	\param	
-	\return	
-	\code
-	
-	\endcode		
--------------------------------------------------------------------------*/
+/// @brief	memory stream 의 크기를 변경한다.
 unsigned long CMemoryStream::SetSize(_In_ unsigned long newSize)
 {
 	unsigned long oldPosition = GetCurrentCusor();
@@ -86,7 +74,11 @@ unsigned long CMemoryStream::SetSize(_In_ unsigned long newSize)
 			// m_pMemory 는 변경되지 않음. 
 			// 
 			char log[512]={0};
-			StringCbPrintfA(log, sizeof(log), "%s(), can not reallocate memory, new memory size=%u bytes", __FUNCTION__, newSize);
+			StringCbPrintfA(log, 
+							sizeof(log), 
+							"%s(), can not reallocate memory, new memory size=%u bytes", 
+							__FUNCTION__, 
+							newSize);
 			OutputDebugStringA(log);
 			return MAX_UNSIGNED_LONG;
 		}
@@ -127,7 +119,7 @@ unsigned long CMemoryStream::ReadFromStream(_Out_ void *Buffer, _In_ unsigned lo
 		{
 			if (ret > Count) ret = Count;
 
-			memmove(Buffer, (char *)(DWORD_PTR(m_pMemory) + m_pos), ret);
+			RtlCopyMemory(Buffer, (char *)(DWORD_PTR(m_pMemory) + m_pos), ret);
 			ChangeCursor(ret, m_pos);
 			return ret;
 		}
@@ -162,7 +154,7 @@ unsigned long CMemoryStream::WriteToStream(const void *Buffer, unsigned long Cou
 				}
 			}
 
-			memmove(&m_pMemory[m_pos], Buffer, Count);
+			RtlCopyMemory(&m_pMemory[m_pos], Buffer, Count);
 			this->m_pos = pos;
 			return Count;
 		}	  
@@ -173,30 +165,30 @@ unsigned long CMemoryStream::WriteToStream(const void *Buffer, unsigned long Cou
 
 
 
-/// @brief	
-unsigned long CMemoryStream::ReadUint16FromStream(_Out_ uint16_t& value)
-{
-	return ReadFromStream((void*)&value, sizeof(uint16_t));
-}
-
-/// @brief	
-unsigned long CMemoryStream::WriteUint16ToStream(_In_ uint16_t value)
-{
-	return WriteToStream(&value, sizeof(uint16_t));
-}
-
-
-/// @brief	
-unsigned long CMemoryStream::ReadUint32FromStream(_Out_ uint32_t& value)
-{
-	return ReadFromStream((void*)&value, sizeof(uint32_t));
-}
-
-/// @brief	
-unsigned long CMemoryStream::WriteUint32ToStream(_In_ uint32_t value)
-{
-	return WriteToStream(&value, sizeof(uint32_t));
-}
-
+///// @brief	
+//unsigned long CMemoryStream::ReadUint16FromStream(_Out_ uint16_t& value)
+//{
+//	return ReadFromStream((void*)&value, sizeof(uint16_t));
+//}
+//
+///// @brief	
+//unsigned long CMemoryStream::WriteUint16ToStream(_In_ uint16_t value)
+//{
+//	return WriteToStream(&value, sizeof(uint16_t));
+//}
+//
+//
+///// @brief	
+//unsigned long CMemoryStream::ReadUint32FromStream(_Out_ uint32_t& value)
+//{
+//	return ReadFromStream((void*)&value, sizeof(uint32_t));
+//}
+//
+///// @brief	
+//unsigned long CMemoryStream::WriteUint32ToStream(_In_ uint32_t value)
+//{
+//	return WriteToStream(&value, sizeof(uint32_t));
+//}
+//
 
 

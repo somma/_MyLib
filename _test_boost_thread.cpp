@@ -13,8 +13,6 @@ boost::mutex io_mutex;
 class buffer
 {
 public:
-    typedef boost::mutex::scoped_lock scoped_lock;
-
     buffer() :p(0), c(0), full(0)
     {
     }
@@ -24,7 +22,10 @@ public:
 
     void put(int m)
     {
-        scoped_lock lock(mutex);
+
+		// boost::condition 은 unique_lock 을 사용해야 하기 때문에 scoped_lock 을 사용
+		// boost::mutex::sclped_lock 은 unique_lock 의 typedef 임
+		boost::mutex::scoped_lock lock(mutex);
         if (full == _buf_size)
         {
             {
@@ -47,7 +48,7 @@ public:
 
     int get()
     {
-        scoped_lock lock(mutex);
+		boost::mutex::scoped_lock lock(mutex);
 
         if (full == 0)
         {
@@ -112,6 +113,13 @@ void count(int id)
     }
 }
 
+
+
+
+
+
+
+
 /// @brief
 buffer buf;
 
@@ -139,6 +147,10 @@ void reader()
         }
     }
 }
+
+
+
+
 
 
 class ConditionNotifyBeforeWait
