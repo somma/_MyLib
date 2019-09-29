@@ -1200,7 +1200,7 @@ bool dump_all_disk_drive_layout()
 
 	DWORD bytes_returned = 0;
 
-	for (auto disk_number : disk_numbers)
+	for (const auto& disk_number : disk_numbers)
 	{
 		std::wstringstream path;
 		path << L"\\\\.\\PhysicalDrive" << disk_number;
@@ -1335,7 +1335,7 @@ bool dump_all_disk_drive_layout()
 							{
 								std::vector<std::string> dumps;
 								dump_memory(0, buf, sizeof(buf), dumps);
-								for (auto line : dumps)
+								for (const auto& line : dumps)
 								{
 									log_info "%s", line.c_str() log_end;
 								}
@@ -1363,7 +1363,7 @@ bool dump_all_disk_drive_layout()
 								log_info
 									"[*] dump VBR (disk offset 0x%llx)", pi->StartingOffset.QuadPart
 									log_end
-									for (auto line : dumps)
+									for (const auto& line : dumps)
 									{
 										log_info "%s", line.c_str() log_end;
 									}
@@ -1514,7 +1514,7 @@ bool dump_boot_area()
 		{
 			std::vector<std::string> dumps;
 			dump_memory(0, buf, sizeof(buf), dumps);
-			for (auto line : dumps)
+			for (const auto& line : dumps)
 			{
 				log_info "%s", line.c_str() log_end;
 			}
@@ -2835,7 +2835,7 @@ image_path_by_pid(
 		if (NULL == name) return false;
 
 		ret = QueryFullProcessImageNameW(process_handle.get(),
-			(win32_format == true) ? 0 : PROCESS_NAME_NATIVE,
+			                             (win32_format == true) ? 0 : PROCESS_NAME_NATIVE,
 										 name,
 										 &name_len);
 		if (ret > 0)
