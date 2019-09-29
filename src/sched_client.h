@@ -23,11 +23,19 @@ public:
 	bool initialize();
 	void finalize();
 	
+	bool initialized();
+
 	bool create(_In_ const wchar_t* task_name);
 	bool easy_create(_In_ const wchar_t* task_name,
 					 _In_ const wchar_t* execute_path,
 					 _In_ const wchar_t* arguments,
 					 _In_ uint32_t interval);
+	
+	bool get_exec_actions(_In_ const wchar_t* local,
+						  _In_ const wchar_t* task_name,
+						  _Out_ std::vector<std::wstring>& action_list);
+
+	bool set_folder(_In_ const wchar_t* folder);
 
 	bool set_author(_In_ const wchar_t* author);
 	
@@ -50,6 +58,7 @@ public:
 
 	bool is_task_existW(_In_ const wchar_t* task_name);
 	void clear();
+
 private:
 	bool _initialized;
 	std::wstring _task_name;

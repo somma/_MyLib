@@ -25,6 +25,11 @@ SchedClient::~SchedClient()
 bool
 SchedClient::initialize()
 {
+	if (true == _initialized)
+	{
+		return true;
+	}
+
 	// #1, init COM
 	HRESULT hres = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
@@ -93,20 +98,6 @@ SchedClient::initialize()
 		return false;
 	}
 
-	// #5 Get the root task folder.
-	hres = _svc->GetFolder(_bstr_t(L"\\"),
-						   &_folder);
-
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_svc->GetFolder() failed. hres=%u", hres log_end;
-		_svc->Release();
-		_svc = nullptr;
-
-		CoUninitialize();
-		return false;
-	}
-
 	_initialized = true;
 	return true;
 }
@@ -114,15 +105,17 @@ SchedClient::initialize()
 void SchedClient::finalize()
 {
 	if (true != _initialized) return;
-		
-	_ASSERTE(nullptr != _svc);
-	_ASSERTE(nullptr != _folder);
-		
-	_svc->Release();
-	_svc = nullptr;
-	_folder->Release();
-	_folder = nullptr;
-
+	
+	if (nullptr != _svc)
+	{
+		_svc->Release();
+		_svc = nullptr;
+	}
+	if (nullptr != _folder)
+	{
+		_folder->Release();
+		_folder = nullptr;
+	}
 	if (nullptr != _definition)
 	{
 		_definition->Release();
@@ -172,6 +165,12 @@ void SchedClient::finalize()
 	CoUninitialize();
 
 	_initialized = false;
+}
+
+bool
+SchedClient::initialized()
+{
+	return _initialized;
 }
 
 /// @breif	SchedClient::create는 작업스케줄러에 등록할 task 이름을 입력받아 task를 생성한다.
@@ -231,6 +230,19 @@ bool SchedClient::easy_create(_In_ const wchar_t* task_name,
 	if (nullptr == execute_path) return false;
 	if (0 > interval && 24 < interval) return false;
 
+	HRESULT hres = _svc->GetFolder(_bstr_t(L"\\"),
+								   &_folder);
+
+	if (!SUCCEEDED(hres))
+	{
+		log_err "_svc->GetFolder() failed. hres=%u", hres log_end;
+		_svc->Release();
+		_svc = nullptr;
+
+		CoUninitialize();
+		return false;
+	}
+
 	if (true != create(task_name))
 	{
 		log_err "task create() failed." log_end;
@@ -264,6 +276,147 @@ bool SchedClient::easy_create(_In_ const wchar_t* task_name,
 	if (true != save(TASK_CREATE_OR_UPDATE))
 	{
 		log_err "task save() failed." log_end;
+		return false;
+	}
+
+	return true;
+}
+
+/// @brief	등록된 task의 실행 파일들의 경로를 구한다.
+bool
+SchedClient::get_exec_actions(
+	_In_ const wchar_t* local,
+	_In_ const wchar_t* task_name,
+	_Out_ std::vector<std::wstring>& action_list
+)
+{
+	_ASSERTE(nullptr != local || nullptr != task_name);
+	if (nullptr == local || nullptr == task_name) return false;
+
+	ITaskFolder*		folder = nullptr;
+	IRegisteredTask*	registered_task = nullptr;
+	ITaskDefinition*	definition = nullptr;
+	IActionCollection*	action_collection = nullptr;
+	long task_action_count = 0;
+
+	bool ret = false;
+	do
+	{
+		HRESULT hres = _svc->GetFolder(_bstr_t(local),
+									   &folder);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "_svc->GetFolder() failed. hres=%u, folder=%ws",
+				hres,
+				local
+				log_end;
+			break;
+		}
+
+		hres = folder->GetTask(_bstr_t(task_name),
+							   &registered_task);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "folder->GetTask() failed. hres=%u, task_name=%ws",
+				hres,
+				task_name
+				log_end;
+			break;
+		}
+
+		hres = registered_task->get_Definition(&definition);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "registered_task->get_Definition() failed. hres=%u",
+				hres
+				log_end;
+			break;
+		}
+
+		hres = definition->get_Actions(&action_collection);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "definition->get_actions() failed. hres=%u",
+				hres
+				log_end;
+			break;
+		}
+
+		hres = action_collection->get_Count(&task_action_count);
+		if (!SUCCEEDED(hres) || task_action_count < 1)
+		{
+			log_err "action_collection->get_count() failed. hres=%u",
+				hres
+				log_end;
+			return false;
+		}
+
+		for (int i = 1; i <= task_action_count; ++i)
+		{
+			IAction*		action = nullptr;
+			IExecAction*	exec_action = nullptr;
+
+			hres = action_collection->get_Item(i, &action);
+
+			if (!SUCCEEDED(hres))
+			{
+				log_err "action_collection->get_item() failed. hres=%u",
+					hres
+					log_end;
+				continue;
+			}
+
+			hres = action->QueryInterface(IID_IExecAction, (PVOID*)&exec_action);
+			if (!SUCCEEDED(hres))
+			{
+				log_err "action->QueryInterface() failed. hres=%u", hres log_end;
+				action->Release();
+				continue;
+			}
+			BSTR path;
+			hres = exec_action->get_Path(&path);
+
+			if (!SUCCEEDED(hres))
+			{
+				log_err "action->get_path() failed. hres=%u", hres log_end;
+				action->Release();
+				exec_action->Release();
+				continue;
+			}
+			_bstr_t action_path;
+			action_path.Assign(path);
+			action_list.push_back((LPCWSTR)(action_path));
+			ret = true;
+
+			::SysFreeString(path);
+			action->Release();
+			exec_action->Release();
+		}
+	} while (false);
+	
+	if (nullptr != folder) folder->Release();
+	if (nullptr != registered_task) registered_task->Release();
+	if (nullptr != definition) definition->Release();
+	if (nullptr != action_collection) action_collection->Release();
+	
+	return ret;
+}
+
+/// @brief	task를 생성할 local 위치를 설정
+bool
+SchedClient::set_folder(
+	_In_ const wchar_t* folder
+)
+{
+	_ASSERTE(nullptr != folder);
+	if (nullptr == folder) return false;
+
+	HRESULT hres = _svc->GetFolder(_bstr_t(folder),
+								   &_folder);
+
+	if (!SUCCEEDED(hres))
+	{
+		log_err "_svc->GetFolder() failed. hres=%u", hres log_end;
 		return false;
 	}
 
@@ -592,20 +745,29 @@ SchedClient::is_task_existW(_In_ const wchar_t* task_name)
 	HRESULT hres = _folder->GetTask(_bstr_t(task_name),
 									&_registered_task);
 	if (!SUCCEEDED(hres))
+	{
 		return false;
+	}
 	else
+	{
 		_registered_task->Release();
 		return true;
+	}
 }
 
 void SchedClient::clear()
 {
+	if (nullptr != _folder)
+	{
+		_folder->Release();
+		_folder = nullptr;
+	}
 	if (nullptr != _definition)
 	{
 		_definition->Release();
 		_definition = nullptr;
 	}
-	if (NULL != _registration_info)
+	if (nullptr != _registration_info)
 	{
 		_registration_info->Release();
 		_registration_info = nullptr;
