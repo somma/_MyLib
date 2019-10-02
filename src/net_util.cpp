@@ -682,9 +682,9 @@ get_ip_list_v4(
 		return false;
 	}
 
-	for (auto adapter : adapters)
+	for (const auto& adapter : adapters)
 	{
-		for (auto ip_info : adapter->ip_info_list)
+		for (const auto& ip_info : adapter->ip_info_list)
 		{
 			ip_list.push_back(std::move(ipv4_to_str(ip_info->ip)));			
 		}
@@ -716,9 +716,9 @@ get_broadcast_list_v4(
 		return false;
 	}
 
-	for (auto adapter : adapters)
+	for (const auto& adapter : adapters)
 	{
-		for (auto ip_info : adapter->ip_info_list)
+		for (const auto& ip_info : adapter->ip_info_list)
 		{
 			broadcast_list.push_back(ip_info->ip | ~ip_info->mask);			
 		}
@@ -760,7 +760,7 @@ get_representative_ip_v4(
 		//
 		//	1순위 찾기
 		//
-		for (auto adapter : adapters)
+		for (const auto& adapter : adapters)
 		{
 			if (adapter->ip_info_list.empty()) continue;
 			if (true != adapter->gateway_list.empty())
@@ -777,7 +777,7 @@ get_representative_ip_v4(
 		//
 		//	2순위 찾기
 		//
-		for (auto adapter : adapters)
+		for (const auto& adapter : adapters)
 		{
 			if (adapter->ip_info_list.empty()) continue;
 			if (true != adapter->gateway_list.empty())
@@ -791,7 +791,7 @@ get_representative_ip_v4(
 		//
 		//	3순위
 		//
-		for (auto adapter : adapters)
+		for (const auto& adapter : adapters)
 		{
 			if (adapter->ip_info_list.empty()) continue;
 			ip = ipv4_to_str(adapter->ip_info_list[0]->ip);
@@ -847,10 +847,10 @@ get_mac_by_ip_v4(
 	//
 	bool matched = false;
 	std::string mac;
-	for (auto adapter : adapters)
+	for (const auto& adapter : adapters)
 	{
 		if (true == adapter->ip_info_list.empty()) continue;
-		for (auto ip_info : adapter->ip_info_list)
+		for (const auto& ip_info : adapter->ip_info_list)
 		{
 			if (ip == ip_info->ip)
 			{
@@ -870,7 +870,7 @@ get_mac_by_ip_v4(
 	{
 		if (nullptr != p)
 		{
-			for (auto ip_info : p->ip_info_list)
+			for (const auto& ip_info : p->ip_info_list)
 			{
 				delete ip_info;
 			}

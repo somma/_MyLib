@@ -516,7 +516,7 @@ curl_client::perform(
 	if (true != _header_fields.empty())
 	{
 		std::string header_item;
-		for (auto hf : _header_fields)
+		for (const auto& hf : _header_fields)
 		{
 			header_item = hf.first;
 			header_item += ":";
@@ -629,7 +629,7 @@ curl_client::perform(
 	curl_mime_filedata(part, file_path);
 	curl_mime_type(part, "application/octect-stream");
 
-	for (auto fm : forms)
+	for (const auto& fm : forms)
 	{
 		part = curl_mime_addpart(http_multipart_form);
 		curl_mime_name(part, fm.first.c_str());

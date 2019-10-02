@@ -30,7 +30,7 @@ public:
 
 	virtual ~InetAdapter()
 	{
-		for (auto ip : ip_info_list)
+		for (const auto& ip : ip_info_list)
 		{
 			_ASSERTE(nullptr != ip);
 			delete ip;

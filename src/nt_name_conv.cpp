@@ -220,7 +220,7 @@ NameConverter::is_removable_drive(
 	}
 
 	boost::lock_guard<boost::mutex> lock(_lock);
-	for (auto drive_info : _dos_devices)
+	for (const auto& drive_info : _dos_devices)
 	{
 		if (0 != _wcsnicmp(drive_info._device_name.c_str(),
 						   nt_name,
@@ -247,7 +247,7 @@ NameConverter::is_network_path(
 	if (NULL == nt_name) return false;
 
 	boost::lock_guard<boost::mutex> lock(_lock);
-	for (auto mup_device : _mup_devices)
+	for (const auto& mup_device : _mup_devices)
 	{
 		if (0 != _wcsnicmp(mup_device.c_str(),
 						   nt_name,
@@ -275,7 +275,7 @@ NameConverter::iterate_dos_devices(
 	if (nullptr == callback) return false;
 
 	boost::lock_guard<boost::mutex> lock(_lock);
-	for (auto ddi : _dos_devices)
+	for (const auto& ddi : _dos_devices)
 	{
 		if (!callback(&ddi, tag))
 		{
@@ -315,7 +315,7 @@ NameConverter::get_nt_path_by_dos_path(
 	std::wstringstream out_path;
 	{
 		boost::lock_guard<boost::mutex> lock(_lock);
-		for (auto& ddi : _dos_devices)
+		for (const auto& ddi : _dos_devices)
 		{
 			//
 			//	`c:` 두 글자만 비교
@@ -370,7 +370,7 @@ NameConverter::get_device_name_by_drive_letter(
 	bool found = false;	
 	{
 		boost::lock_guard<boost::mutex> lock(_lock);
-		for (auto& ddi : _dos_devices)
+		for (const auto& ddi : _dos_devices)
 		{
 			//
 			//	`c:` 두 글자만 비교
@@ -445,7 +445,7 @@ NameConverter::get_drive_letter_by_device_name(
 
 	bool found = false;
 	boost::lock_guard<boost::mutex> lock(_lock);
-	for (auto& ddi : _dos_devices)
+	for (const auto& ddi : _dos_devices)
 	{
 		if (0 != _wcsnicmp(ddi._device_name.c_str(), device_name, compare_count))
 		{
@@ -555,7 +555,7 @@ NameConverter::resolve_device_prefix(
 	//
 	//	#1, is this a dos device?
 	// 	
-    for (auto dos_device : _dos_devices)
+    for (const auto& dos_device : _dos_devices)
     {
 		// 
         //	\Device\HarddiskVolume1, \Device\HarddiskVolume11 이 매칭되지 않도록
@@ -599,7 +599,7 @@ NameConverter::resolve_device_prefix(
 	//				ex)	\Device\Mup\; RdpDr\; :1\192.168.59.134\IPC$\	-> \\192.168.59.134\IPC$\
 	//				ex)	\Device\Mup\; RdpDr\; :xxxx\192.168.59.134\IPC$\-> \\192.168.59.134\IPC$\
 	//
-	for (auto mup_device : _mup_devices)
+	for (const auto& mup_device : _mup_devices)
 	{
 		if (0 != revised_file_name.find(mup_device))
 		{
@@ -815,7 +815,7 @@ bool NameConverter::update_mup_device_prefixes()
         return false;
     }
 
-    for (auto provider : providers)
+    for (const auto& provider : providers)
     {
         std::wstring device_name;
         std::wstringstream key;
