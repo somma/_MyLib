@@ -240,7 +240,7 @@ void run_test()
 	UINT32 _fail_count = 0;
 
 	bool ret = false;
-	//assert_bool(true, test_cstream);
+	assert_bool(true, test_cstream);
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
@@ -382,7 +382,7 @@ void run_test()
 	//assert_bool(true, test_bit_field);
 	//assert_bool(true, test_sched_client);
 	//assert_bool(true, test_unique_ptr);
-	assert_bool(true, test_unique_ptr_assign);
+	//assert_bool(true, test_unique_ptr_assign);
 	
 	//assert_bool(true, test_callby_value_container);
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드

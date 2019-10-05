@@ -69,9 +69,10 @@ public:
 	}
 
 	// 메모리 버퍼의 사이즈(할당된)를 리턴한다.
-	unsigned long GetSize() { return m_size; };
+	unsigned long GetCapacity() { return m_size; }
 
-	// 현재 스트림의 포지션을 리턴한다.
+	// 현재 스트림의 포지션을 리턴한다 (현재 사용된 메모리 버퍼의 크기)
+	unsigned long GetSize() { return GetPos(); };
 	unsigned long GetPos() { return m_pos; };
 		
 	// 메모리 버퍼 포인터를 리턴한다.
