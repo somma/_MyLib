@@ -332,6 +332,9 @@
     <ClCompile Include="_test_call_by_value_container.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_CSteream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">

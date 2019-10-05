@@ -18,6 +18,8 @@
 #include <stdint.h>
 #include <crtdbg.h>
 
+#define _max_ulong	0xFFFFFFFF	
+
 //
 // 메모리 스트림 클래스 
 //
@@ -44,6 +46,19 @@ public:
 		}
 	}
 
+	// 메모리 버퍼를 size 만큼 미리 할당해둔다.
+	// 메모리 버퍼가 이미 할당되었고, 사용중인 스트림에 대해서는 
+	// Reserve() 를 호출 할 수 없다. 
+	bool Reserve(_In_ uint32_t size)
+	{
+		if (m_size > 0 || m_pos > 0 || nullptr != m_pMemory)
+		{
+			return false;
+		}
+
+		return (_max_ulong == SetSize(size) ? false : true);
+	}
+
 	// 스트림이 사용한 자원을 소멸한다. 
 	void ClearStream(void)
 	{
@@ -55,6 +70,9 @@ public:
 
 	// 메모리 버퍼의 사이즈(할당된)를 리턴한다.
 	unsigned long GetSize() { return m_size; };
+
+	// 현재 스트림의 포지션을 리턴한다.
+	unsigned long GetPos() { return m_pos; };
 		
 	// 메모리 버퍼 포인터를 리턴한다.
 	const void *GetMemory() { return m_pMemory; };

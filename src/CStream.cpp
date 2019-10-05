@@ -15,7 +15,6 @@
 #include <strsafe.h>
 
 /// @brief	
-#define MAX_UNSIGNED_LONG	0xFFFFFFFF	
 unsigned long 
 CMemoryStream::ChangeCursor(
 	_In_ const unsigned long offset, 
@@ -25,20 +24,20 @@ CMemoryStream::ChangeCursor(
 	_ASSERTE(0 <= offset);
 	_ASSERTE(0 <= from);
 	_ASSERTE(m_pos >= from);
-	_ASSERTE(MAX_UNSIGNED_LONG >= from); 
-	_ASSERTE(MAX_UNSIGNED_LONG >= offset); 
-	_ASSERTE(MAX_UNSIGNED_LONG >= from + offset);
+	_ASSERTE(_max_ulong >= from); 
+	_ASSERTE(_max_ulong >= offset); 
+	_ASSERTE(_max_ulong >= from + offset);
 
 	if (	
 			!(0 <= offset) ||
 			!(0 <= from) ||
 			!(m_pos >= from) ||
-			!(MAX_UNSIGNED_LONG >= from) ||
-			!(MAX_UNSIGNED_LONG >= offset) || 
-			!(MAX_UNSIGNED_LONG >= from + offset)
+			!(_max_ulong >= from) ||
+			!(_max_ulong >= offset) || 
+			!(_max_ulong >= from + offset)
 		)
 	{
-		return MAX_UNSIGNED_LONG;
+		return _max_ulong;
 	}
 
 	unsigned long newPosition = from + offset;		
@@ -80,7 +79,7 @@ unsigned long CMemoryStream::SetSize(_In_ unsigned long newSize)
 							__FUNCTION__, 
 							newSize);
 			OutputDebugStringA(log);
-			return MAX_UNSIGNED_LONG;
+			return _max_ulong;
 		}
 		
 		m_pMemory = ptr;
@@ -148,9 +147,9 @@ unsigned long CMemoryStream::WriteToStream(const void *Buffer, unsigned long Cou
 		{
 			if (pos > m_size)
 			{
-				if (MAX_UNSIGNED_LONG == SetSize(pos))
+				if (_max_ulong == SetSize(pos))
 				{
-					return MAX_UNSIGNED_LONG;
+					return _max_ulong;
 				}
 			}
 
