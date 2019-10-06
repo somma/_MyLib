@@ -11,13 +11,8 @@
  * 22/03/2007			Noh Yong Hwan		birth
 **---------------------------------------------------------------------------*/
 #pragma once
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <sal.h>
-#include <stdint.h>
-#include <crtdbg.h>
-
+#include "BaseWindowsHeader.h"
+#include "log.h"
 
 //
 // 메모리 스트림 클래스 
@@ -29,10 +24,15 @@ private:
 	char *m_pMemory;	
 	size_t m_size;
 	size_t m_pos;
+
 	DWORD _page_size;
 
+	bool _read_only;
+
 public:
-	CMemoryStream();	
+	CMemoryStream();
+	CMemoryStream(size_t size, const char* const read_only_ptr);
+	
 	virtual ~CMemoryStream();
 	
 	bool Reserve(_In_ size_t size);
@@ -80,6 +80,12 @@ public:
 	/// @brief	스트림에 integer type 값을 쓰고, 성공시 true 를 리턴한다.
 	template <typename int_type> bool WriteInt(const int_type value)
 	{
+		if (_read_only)
+		{
+			log_err "Never call on read only mode stream." log_end;
+			return 0;
+		}
+
 		if (sizeof(value) != WriteToStream((const void*)&value, sizeof(value)))
 		{
 			return false;
@@ -100,13 +106,16 @@ private:
 /// @brief	스트림이 사용한 자원을 소멸한다. 
 inline void CMemoryStream::ClearStream(void)
 {	
-	if (nullptr != m_pMemory)
+	if (!_read_only && nullptr != m_pMemory)
 	{
 		free(m_pMemory);
-		m_pMemory = nullptr;
 	}
+
+	_capacity = 0;
+	m_pMemory = nullptr;
 	m_size = 0;
 	m_pos = 0;
+	_read_only = false;
 }
 
 /// @brief	스트림의 포지션을 이동한다. 

@@ -31,6 +31,7 @@
 
 // test_CStream.cpp
 extern bool test_cstream();
+extern bool test_cstream_read_only();
 
 // _test_log.cpp
 extern bool test_log_rotate();
@@ -241,6 +242,7 @@ void run_test()
 
 	bool ret = false;
 	assert_bool(true, test_cstream);
+	assert_bool(true, test_cstream_read_only);
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
@@ -311,7 +313,7 @@ void run_test()
 	//uint32_t lt = get_log_to();
 	//set_log_to(log_to_con | lt);
 	////assert_bool(true, test_process_tree);
-	assert_bool(true, test_iterate_process_tree);
+	//assert_bool(true, test_iterate_process_tree);
 	//set_log_to(lt);
 
 	//assert_bool(true, test_image_path_by_pid);
@@ -461,7 +463,7 @@ bool test_curl_http()
 	_ASSERTE(true == _curl_client->http_get(url, http_response_code, stream));
 
 	std::vector<std::string> dumps;
-	dump_memory(0LL, (unsigned char*)(stream.GetMemory()), stream.GetSize(), dumps);
+	dump_memory(0LL, (unsigned char*)(stream.GetMemory()), (UINT32)stream.GetSize(), dumps);
 	std::for_each(dumps.begin(), dumps.end(),[](std::string& dump){printf("%s\n", dump.c_str());});
 
 	_ASSERTE(_curl_client != nullptr);

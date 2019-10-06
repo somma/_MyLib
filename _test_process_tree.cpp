@@ -49,12 +49,19 @@ bool test_iterate_process_tree()
 
 	/// top_level_proces 와 그 자식 프로세스들을 부모->자식 순으로 iterate 한다. 
 	size_t count = 0;
-	for (auto top_level_proc : top_level_procs)
+	for (auto& top_level_proc: top_level_procs)
 	{
-		log_info "\n\n" log_end;
-		proc_tree.iterate_process_tree(*top_level_proc, [&](_In_ process& process_info)->bool 
+		log_info 
+			"processes tree under pid=%u, name=%ws, path=%ws", 
+			top_level_proc->pid(), 
+			top_level_proc->process_name(), 
+			top_level_proc->process_path()
+			log_end;
+
+		proc_tree.iterate_process_tree(*top_level_proc, 
+									   [&](_In_ process& process_info)->bool 
 		{
-			log_info "pid = %u, name = %ws, path = %ws",
+			log_info "    pid = %u, name = %ws, path = %ws",
 				process_info.pid(),
 				process_info.process_name(),
 				process_info.process_path()

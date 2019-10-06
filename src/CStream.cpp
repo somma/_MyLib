@@ -12,16 +12,17 @@
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
 #include "CStream.h"
-#include <strsafe.h>
+
 
 /// @brief	Constructor
-CMemoryStream::CMemoryStream() 
+CMemoryStream::CMemoryStream()
 	:
 	_capacity(0),
-	m_pMemory(nullptr), 
-	m_size(0), 
-	m_pos(0), 
-	_page_size(0)
+	m_pMemory(nullptr),
+	m_size(0),
+	m_pos(0),
+	_page_size(0),
+	_read_only(false)
 {
 	SYSTEM_INFO si = { 0 };
 	GetSystemInfo(&si);
@@ -34,11 +35,34 @@ CMemoryStream::CMemoryStream()
 	}
 }
 
+CMemoryStream::CMemoryStream(size_t size, const char* const read_only_ptr)
+	:
+	_capacity(size),
+	m_pMemory(const_cast<char*>(read_only_ptr)),
+	m_size(size),
+	m_pos(0),
+	_page_size(4096),// read_only 모드에서는 필요없어서, 기본값으로 설정
+	_read_only(true)
+{
+}
+
+/// @brief	Destructor
+CMemoryStream::~CMemoryStream()
+{
+	ClearStream();
+}
+
 /// @brief	메모리 버퍼를 size 만큼 미리 할당해둔다.
 ///			메모리 버퍼가 이미 할당되었고, 사용중인 스트림에 대해서는 
 ///			Reserve() 를 호출 할 수 없다. 
 bool CMemoryStream::Reserve(_In_ size_t size)
 {
+	if (_read_only)
+	{
+		log_err "Never call on read only mode stream." log_end;
+		return 0;
+	}
+	
 	_ASSERTE(0 == _capacity);
 	if (_capacity > 0 || m_size > 0 || m_pos > 0 || nullptr != m_pMemory)
 	{
@@ -46,12 +70,6 @@ bool CMemoryStream::Reserve(_In_ size_t size)
 	}
 
 	return (IncreseSize(size) >= size ? true : false);
-}
-
-/// @brief	Destructor
-CMemoryStream::~CMemoryStream()
-{
-	ClearStream();
 }
 
 /// @brief	내부 버퍼의 의 크기 newSize 로 키운다. 
@@ -62,6 +80,12 @@ CMemoryStream::IncreseSize(
 	_In_ size_t newSize
 )
 {
+	if (_read_only)
+	{
+		log_err "Never call on read only mode stream." log_end;
+		return 0;
+	}
+
 	if (0 == newSize)
 	{
 		if (nullptr == m_pMemory)
@@ -99,13 +123,10 @@ CMemoryStream::IncreseSize(
 		if (nullptr == ptr)
 		{
 			// 메모리 부족, m_pMemory 는 변경되지 않음. 
-			char log[512]={0};
-			StringCbPrintfA(log, 
-							sizeof(log), 
-							"%s(), can not reallocate memory, new memory size=%u bytes", 
-							__FUNCTION__, 
-							newSize);
-			OutputDebugStringA(log);
+			log_err
+				"No resources for stream. req size=%u",
+				new_size
+				log_end;
 			return 0;
 		}
 		else
@@ -155,6 +176,12 @@ CMemoryStream::WriteToStream(
 	size_t size
 )
 {
+	if (_read_only)
+	{
+		log_err "Never call on read only mode stream." log_end;
+		return 0;
+	}
+
 	_ASSERTE(nullptr != Buffer);
 	_ASSERTE(size > 0);
 	if (nullptr == Buffer || size == 0 || (size_t)(-1) == size)

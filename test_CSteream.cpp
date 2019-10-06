@@ -78,3 +78,59 @@ bool test_cstream()
 	return true;
 }
 
+
+
+bool test_cstream_read_only()
+{
+	_mem_check_begin
+	{
+		CMemoryStream strm(1024, (const char* const)GetModuleHandleW(nullptr));
+
+		// 스트림이 할당되었으므로 SetPos 가능
+		_ASSERTE(strm.SetPos(1024));
+		_ASSERTE(!strm.SetPos(1024 + 1));
+		_ASSERTE(strm.SetPos(0));
+
+		_ASSERTE(true != strm.Reserve(1024));
+		_ASSERTE(strm.GetCapacity() == 1024);
+		_ASSERTE(0 == strm.GetPos());
+		_ASSERTE(strm.GetSize() == 1024);
+
+		//
+		//	문자열 쓰기 실패
+		//
+		const char* test_string = "0123456789";
+		size_t size = strlen(test_string) * sizeof(char);
+
+		_ASSERTE(!strm.WriteInt<size_t>(size));
+		_ASSERTE(size != strm.WriteToStream(test_string, size));
+
+		//
+		//	정수형 쓰기/읽기 실패 
+		//
+		_ASSERTE(!strm.WriteInt<uint8_t>(0x11));
+		_ASSERTE(!strm.WriteInt<uint16_t>(0x1122));
+		_ASSERTE(!strm.WriteInt<uint32_t>(0x11223344));
+		_ASSERTE(!strm.WriteInt<uint64_t>(0x1122334411223344));
+
+		//
+		//	읽기 & 검증
+		//
+		_ASSERTE(strm.SetPos(0));
+
+		_ASSERTE(strm.ReadInt<uint8_t>() > 0);
+		_ASSERTE(strm.ReadInt<uint16_t>() > 0);
+		_ASSERTE(strm.ReadInt<uint32_t>() > 0);
+		_ASSERTE(strm.ReadInt<uint64_t>() > 0);
+
+
+		strm.ClearStream();
+		_ASSERTE(0 == strm.GetPos());
+		_ASSERTE(0 == strm.GetSize());
+		_ASSERTE(0 == strm.GetCapacity());
+		_ASSERTE(nullptr == strm.GetMemory());
+	}
+	_mem_check_end;
+
+	return true;
+}

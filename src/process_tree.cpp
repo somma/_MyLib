@@ -26,13 +26,14 @@ process::process()
 }
 
 /// @brief	Destructor
-process::process(_In_ const wchar_t* process_name,
-		_In_ DWORD ppid,
-		_In_ DWORD pid,
-		_In_ uint64_t creation_time,
-		_In_ bool is_wow64,
-		_In_ std::wstring& full_path,
-		_In_ bool killed)
+process::process(
+	_In_ const wchar_t* process_name,
+	_In_ DWORD ppid,
+	_In_ DWORD pid,
+	_In_ uint64_t creation_time,
+	_In_ bool is_wow64,
+	_In_ std::wstring& full_path,
+	_In_ bool killed)
 	:
 	_process_name(process_name),
 	_ppid(ppid),
@@ -43,9 +44,9 @@ process::process(_In_ const wchar_t* process_name,
 	_killed(killed)
 {
 	_ASSERTE(nullptr != process_name);
-	if (nullptr == process_name || wcslen(process_name))
+	if (nullptr == process_name || 0 == wcslen(process_name))
 	{
-		_process_name = _null_stringw;
+		_process_name = L"N/A";
 	}
 }
 
@@ -204,7 +205,7 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 					//	proc_entry.th32ProcessID, 
 					//	WcsToMbsEx(proc_entry.szExeFile).c_str(),
 					//	GetLastError() 
-					//log_end;
+					//log_end;					
 				}
 				else
 				{
