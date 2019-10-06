@@ -138,7 +138,6 @@ public:
 			}
 			catch (...)
 			{
-				__debugbreak();
 				Sleep(1000);
 				continue;
 			}

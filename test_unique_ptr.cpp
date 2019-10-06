@@ -54,3 +54,37 @@ bool test_unique_ptr()
 
 	return true;
 }
+
+
+bool test_unique_ptr_assign()
+{
+	_mem_check_begin
+	{
+		std::unique_ptr<char[]> y = std::make_unique<char[]>(1024);
+		std::unique_ptr<char[]> x = std::make_unique<char[]>(512);
+
+		// unique_ptr 은 복사가 안됨
+		// std::move 를 해야 함
+		y = std::move(x);
+			// y 에 이미 할당되어있던 메모리는 x 를 이동할때 소멸 됨
+			// x 포이터는 y 로 이동되었고, y 소멸시 해제 됌
+
+		
+		//
+		//	동일한 테스트............
+		//	소멸자 호출이 정상적으로 되는지 확인
+		//
+
+		std::unique_ptr<Foo> yyyy = std::make_unique<Foo>("yyyy");
+		std::unique_ptr<Foo> xxxx = std::make_unique<Foo>("xxxx");
+
+		// unique_ptr 은 복사가 안됨
+		// std::move 를 해야 함
+		yyyy = std::move(xxxx);
+		// y 에 이미 할당되어있던 메모리는 x 를 이동할때 소멸 됨
+		// x 포이터는 y 로 이동되었고, y 소멸시 해제 됌
+	}
+	_mem_check_end;
+
+	return true;	
+}

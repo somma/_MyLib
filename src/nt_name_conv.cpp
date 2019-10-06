@@ -83,6 +83,8 @@ NameConverter::get_canon_name(
     _ASSERTE(NULL != file_name);
 	if (NULL == file_name) return false;
 
+	if (!load(false)) return false;
+
     uint32_t cch_file_name = (uint32_t)wcslen(file_name);
     uint32_t cch_canon_file = 0;
     
@@ -197,6 +199,8 @@ NameConverter::is_removable_drive(
 	_ASSERTE(NULL != nt_name);
 	if (NULL == nt_name) return false;
 
+	if (!load(false)) return false;
+
 	//
 	//	비교할 문자열 길이를 계산
 	//	input: \Device\HarddiskVolume4\
@@ -246,6 +250,8 @@ NameConverter::is_network_path(
 	_ASSERTE(NULL != nt_name);
 	if (NULL == nt_name) return false;
 
+	if (!load(false)) return false;
+
 	boost::lock_guard<boost::mutex> lock(_lock);
 	for (const auto& mup_device : _mup_devices)
 	{
@@ -274,6 +280,8 @@ NameConverter::iterate_dos_devices(
 	_ASSERTE(nullptr != callback);
 	if (nullptr == callback) return false;
 
+	if (!load(false)) return false;
+
 	boost::lock_guard<boost::mutex> lock(_lock);
 	for (const auto& ddi : _dos_devices)
 	{
@@ -299,6 +307,8 @@ NameConverter::get_nt_path_by_dos_path(
 {
 	_ASSERTE(dos_path);
 	if (nullptr == dos_path) return false;
+
+	if (!load(false)) return false;
 
 	// 
 	// dos_path 는 최소한 `c:\` 형식이어야 한다. 
@@ -356,6 +366,8 @@ NameConverter::get_device_name_by_drive_letter(
 	_ASSERTE(nullptr != drive_letter);
 	if (nullptr == drive_letter) return false;
 	
+	if (!load(false)) return false;
+
 	// 
 	// drive_letter 는 반드시 `c:` 형식이어야 한다. 
 	// 
@@ -416,6 +428,8 @@ NameConverter::get_drive_letter_by_device_name(
 	_ASSERTE(nullptr != device_name);
 	if (nullptr == device_name) return false;
 	
+	if (!load(false)) return false;
+
 	// 
 	//	device name 을 정규화한다.
 	// 

@@ -22,10 +22,10 @@
 **/
 static boost::mutex     _logger_lock;
 static slogger*		    _logger = nullptr;
-static bool				_show_current_time = false;
+static bool				_show_current_time = true;
 static bool			    _show_process_name = true;
 static bool			    _show_pid_tid = true;
-static bool			    _show_function_name = false;
+static bool			    _show_function_name = true;
 
 static uint32_t         _log_mask = log_mask_all;
 #ifdef _DEBUG

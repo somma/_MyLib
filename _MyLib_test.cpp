@@ -29,6 +29,10 @@
 #include "CStream.h"
 #include "sched_client.h"
 
+// test_CStream.cpp
+extern bool test_cstream();
+extern bool test_cstream_read_only();
+
 // _test_log.cpp
 extern bool test_log_rotate();
 
@@ -155,6 +159,7 @@ bool test_get_account_infos();
 bool test_get_installed_programs();
 bool test_get_file_company_name();
 bool test_generate_random_string();
+bool test_bit_check_set_clear();
 
 // rc4.cpp
 bool test_rc4_encrypt();
@@ -226,6 +231,7 @@ bool test_sched_client();
 
 // test_unique_ptr.cpp
 extern bool test_unique_ptr();
+extern bool test_unique_ptr_assign();
 
 // _test_call_by_value_container.cpp
 extern bool test_callby_value_container();
@@ -236,6 +242,8 @@ void run_test()
 	UINT32 _fail_count = 0;
 
 	bool ret = false;
+	assert_bool(true, test_cstream);
+	assert_bool(true, test_cstream_read_only);
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
@@ -334,6 +342,7 @@ void run_test()
 	//assert_bool(true, test_get_installed_programs);
 	//assert_bool(true, test_get_file_company_name);
 	assert_bool(true, test_generate_random_string);
+	assert_bool(true, test_bit_check_set_clear);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
 
@@ -364,7 +373,7 @@ void run_test()
 	//assert_bool(true, test_registry_util);
 	//assert_bool(true, test_read_mouted_device);
 	//assert_bool(true, test_set_binary_data);
-	assert_bool(true, test_reg_multi_value);
+	//assert_bool(true, test_reg_multi_value);
 	//assert_bool(true, test_aes256);
 
 	//assert_bool(true, test_curl_https);
@@ -377,6 +386,8 @@ void run_test()
 	//assert_bool(true, test_bit_field);
 	//assert_bool(true, test_sched_client);
 	//assert_bool(true, test_unique_ptr);
+	//assert_bool(true, test_unique_ptr_assign);
+	
 	//assert_bool(true, test_callby_value_container);
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //
@@ -454,7 +465,7 @@ bool test_curl_http()
 	_ASSERTE(true == _curl_client->http_get(url, http_response_code, stream));
 
 	std::vector<std::string> dumps;
-	dump_memory(0LL, (unsigned char*)(stream.GetMemory()), stream.GetSize(), dumps);
+	dump_memory(0LL, (unsigned char*)(stream.GetMemory()), (UINT32)stream.GetSize(), dumps);
 	std::for_each(dumps.begin(), dumps.end(),[](std::string& dump){printf("%s\n", dump.c_str());});
 
 	_ASSERTE(_curl_client != nullptr);
@@ -1607,15 +1618,83 @@ bool test_generate_random_string()
 {
 	_mem_check_begin
 	{
-		for (int i = 0; i < 12; ++i)
 		{
-			size_t len = (size_t)get_random_int(4, 64);
-			std::string rs = generate_random_string(len);
-			_ASSERTE(rs.size() == len);
-			log_info "random string=%s", rs.c_str() log_end;
+			for (int i = 0; i < 12; ++i)
+			{
+				size_t len = (size_t)get_random_int(4, 64);
+				std::string rs = generate_random_string(len);
+				_ASSERTE(rs.size() == len);
+				log_info "random string=%s", rs.c_str() log_end;
+			}
 		}
+		
+		{
+			for (int i = 0; i < 12; ++i)
+			{
+				size_t len = (size_t)get_random_int(4, 64);
+				std::wstring wrs = generate_random_stringw(len);
+				_ASSERTE(wrs.size() == len);
+				log_info "random string=%ws", wrs.c_str() log_end;
+			}
+		}
+
 	}
 	_mem_check_end;
+
+	return true;
+}
+
+/// @brief	
+bool test_bit_check_set_clear()
+{
+	// hex: AF7
+	// bin: 0000 0000 0000 0000 0000 1010 1111 0111
+	const uint32_t cv = 0xaf7;
+
+	uint32_t v = cv;
+
+	// 최 하위 비트 Clear
+	// hex: AF6
+	// bin: 0000 0000 0000 0000 0000 1010 1111 0110
+	//                                            ^
+	_clear_bit(v, 0);
+	_ASSERTE(!_check_bit(v, 0));
+	_ASSERTE(v == 0xaf6);
+
+
+	// 최 상위 비트 Set
+	// hex: 80000AF6
+	// dec: 35574
+	// bin: 1000 0000 0000 0000 0000 1010 1111 0110
+	//      ^
+	_set_bit(v, 31);
+	_ASSERTE(_check_bit(v, 31));
+	_ASSERTE(v == 0x80000AF6);
+
+	// 16 번째 비트 Set
+	// hex: 80010AF6
+	// bin: 1000 0000 0000 0001 0000 1010 1111 0110
+	//                        ^        
+	_set_bit(v, 16);
+	_ASSERTE(_check_bit(v, 16));
+	_ASSERTE(v == 0x80010AF6);
+
+	// 16 번째 비트 Clear
+	// hex: 80000AF6
+	// bin: 1000 0000 0000 0000 0000 1010 1111 0110
+	//                        ^        
+	_clear_bit(v, 16);
+	_ASSERTE(!_check_bit(v, 16));
+	_ASSERTE(v == 0x80000AF6);
+
+
+	// 최 상위 비트 Clear
+	// hex: AF6
+	// bin: 0000 0000 0000 0000 0000 1010 1111 0110
+	//      ^        
+	_clear_bit(v, 31);
+	_ASSERTE(!_check_bit(v, 31));
+	_ASSERTE(v == 0xAF6);
 
 	return true;
 }

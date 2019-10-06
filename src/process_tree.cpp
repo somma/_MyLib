@@ -12,6 +12,44 @@
 #include <windows.h>
 #include "process_tree.h"
 
+/// @brief	Constructor
+process::process()
+	:
+	_process_name(L""),
+	_ppid(0),
+	_pid(0),
+	_creation_time(0),
+	_is_wow64(false),
+	_full_path(L""),
+	_killed(false)
+{
+}
+
+/// @brief	Destructor
+process::process(
+	_In_ const wchar_t* process_name,
+	_In_ DWORD ppid,
+	_In_ DWORD pid,
+	_In_ uint64_t creation_time,
+	_In_ bool is_wow64,
+	_In_ std::wstring& full_path,
+	_In_ bool killed)
+	:
+	_process_name(process_name),
+	_ppid(ppid),
+	_pid(pid),
+	_creation_time(creation_time),
+	_is_wow64(is_wow64),
+	_full_path(full_path),
+	_killed(killed)
+{
+	_ASSERTE(nullptr != process_name);
+	if (nullptr == process_name || 0 == wcslen(process_name))
+	{
+		_process_name = L"N/A";
+	}
+}
+
 /**
  * @brief	
  * @param	
@@ -167,7 +205,7 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 					//	proc_entry.th32ProcessID, 
 					//	WcsToMbsEx(proc_entry.szExeFile).c_str(),
 					//	GetLastError() 
-					//log_end;
+					//log_end;					
 				}
 				else
 				{
@@ -349,61 +387,56 @@ const wchar_t* cprocess_tree::get_parent_name(_In_ DWORD pid)
 }
 
 /// @brief	모든 process 를 iterate 한다. 
-///			callback 에서 false 를 리턴(iterate 중지/취소) 하거나
-///			유효하지 않는 파라미터 입력시 false 를 리턴한다.
-bool 
+///			callback 에서 false 를 리턴하면 iterate 를 중지한다.
+void 
 cprocess_tree::iterate_process(
-	_In_ fnproc_tree_callback callback, 
-	_In_ DWORD_PTR callback_tag
+	_In_ on_proc_walk callback
 	)
 {
 	_ASSERTE(NULL != callback);		
-	if (NULL == callback) return false;
+	if (NULL == callback) return;
 	
 	process_map::iterator its = _proc_map.begin();
 	process_map::iterator ite= _proc_map.end();
 	for(; its != ite; ++its)
 	{
-		if (true != callback(its->second, callback_tag))
+		if (true != callback(its->second))
 		{
-			return false;
+			return;
 		}
 	}
-	return true;
 }
 
 /// @brief	지정된 process tree 를 iterate 한다. 
 ///			callback 에서 false 를 리턴(iterate 중지/취소) 하거나,
 ///			지정된 프로세스를 찾을 수 없거나,
-///			유효하지 않는 파라미터 입력시 false 를 리턴한다.
-bool
+///			유효하지 않는 파라미터 입력시 iterate 를 중지한다.
+void
 cprocess_tree::iterate_process_tree(
 	_In_ DWORD root_pid, 
-	_In_ fnproc_tree_callback callback, 
-	_In_ DWORD_PTR callback_tag
+	_In_ on_proc_walk callback
 	)
 {
 	_ASSERTE(NULL != callback);		
-	if (NULL == callback) return false;
+	if (NULL == callback) return;
 
-	process_map::iterator it = _proc_map.find(root_pid);
-	if (it == _proc_map.end()) return false;
+	process_map::const_iterator it = _proc_map.find(root_pid);
+	if (it == _proc_map.end()) return;
 
 	process root = it->second;
-	return iterate_process_tree(root, callback, callback_tag);
+	return iterate_process_tree(root, callback);
 }
 
 /// @brief	process map 을 순회하면서 콜백함수를 호출한다. 
 ///			콜백함수가 false 를 리턴하면 순회를 즉시 멈춘다.
-bool
+void
 cprocess_tree::iterate_process_tree(
 	_In_ process& root, 
-	_In_ fnproc_tree_callback callback, 
-	_In_ DWORD_PTR callback_tag
+	_In_ on_proc_walk callback
 	)
 {
 	// parent first
-	if (true != callback(root, callback_tag)) return false;
+	if (true != callback(root)) return;
 
 	//
 	//	pid == 0 인 프로세스라면 recursive call 을 하지 않는다. 
@@ -418,7 +451,7 @@ cprocess_tree::iterate_process_tree(
 	//	
 	if (0 == root.pid())
 	{
-		return true;
+		return;
 	}
 
 	// childs
@@ -437,16 +470,9 @@ cprocess_tree::iterate_process_tree(
 		if ( its->second.ppid() == root.pid() && 
 			 its->second.creation_time() >= root.creation_time())
 		{
-			if (true != iterate_process_tree(its->second,
-											 callback,
-											 callback_tag))
-			{
-				return false;
-			}
+			iterate_process_tree(its->second, callback);
 		}
 	}
-
-	return true;
 }
 
 /**

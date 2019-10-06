@@ -11,12 +11,8 @@
  * 22/03/2007			Noh Yong Hwan		birth
 **---------------------------------------------------------------------------*/
 #pragma once
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <sal.h>
-#include <stdint.h>
-#include <crtdbg.h>
+#include "BaseWindowsHeader.h"
+#include "log.h"
 
 //
 // 메모리 스트림 클래스 
@@ -24,81 +20,118 @@
 typedef class CMemoryStream
 {
 private:
-	char *m_pMemory;
-	unsigned long m_size;
-	unsigned long m_pos; 
+	size_t _capacity; 
+	char *m_pMemory;	
+	size_t m_size;
+	size_t m_pos;
+
+	DWORD _page_size;
+
+	bool _read_only;
 
 public:
-	CMemoryStream():m_pMemory(nullptr), m_size(0ll), m_pos(0ll)
-	{
-	}
+	CMemoryStream();
+	CMemoryStream(size_t size, const char* const read_only_ptr);
 	
-	virtual ~CMemoryStream()			
+	virtual ~CMemoryStream();
+	
+	bool Reserve(_In_ size_t size);
+	void ClearStream(void);
+
+	// 스트림 버퍼의 할당된 사이즈 (데이터 + 여유공간)
+	size_t GetCapacity() { return _capacity; }
+
+	// 스트림의 사이즈 (스트림 버퍼내 할당된 데이터의 크기)
+	size_t GetSize() { return m_size; };
+
+	// 스트림의 포지션을 리턴한다.
+	size_t GetPos() { return m_pos; };
+
+	// 스트림의 포지션을 이동한다. 
+	bool SetPos(_In_ size_t new_pos);
+		
+	// 스트림 버퍼 포인터를 리턴한다.
+	const char* GetMemory() { return m_pMemory; };
+	
+	// `size` 만큼 `Buffer` 에 복사하고, 스트림 포지션을 size 만큼 이동
+	size_t ReadFromStream(_Out_ char* const Buffer, _In_ const size_t size);
+
+	// 스트림의 현재 포지션 포인터를 리턴하고, 스트림 포지션을 size 만큼 이동한다.
+	size_t RefFromStream(_Out_ const char*& Buffer, _In_ size_t size);
+
+	// 버퍼로부터 데이터를 읽어 스트림의 현재 포지션에 쓴다.
+	size_t WriteToStream(_In_ const char* Buffer, _In_ size_t size);
+
+	/// @brief	스트림으로부터 integer type 값을 읽고, 읽은 값을 리턴한다.
+	///
+	///			참고.
+	///			에러가 발생한 경우와 실제 값이 0 인 경우가 구분이 안되는데, 
+	///			스트림 읽기의 경우 에러가 없다고 간주한다. 
+	template <typename int_type> int_type ReadInt()
 	{
-		if (nullptr != m_pMemory)
+		int_type value;
+		if (sizeof(value) != ReadFromStream((char*)&value, sizeof(value)))
 		{
-			if (0 != SetSize(0))
-			{
-				_ASSERTE(!"SetSize() error");				
-			}
+			return 0;
+		}
+		else
+		{
+			return value;
 		}
 	}
 
-	// 스트림이 사용한 자원을 소멸한다. 
-	void ClearStream(void)
+	/// @brief	스트림에 integer type 값을 쓰고, 성공시 true 를 리턴한다.
+	template <typename int_type> bool WriteInt(const int_type value)
 	{
-		if (0 != SetSize(0))
+		if (_read_only)
 		{
-			_ASSERTE(!"SetSize() error");			
-		}		
-	}
+			log_err "Never call on read only mode stream." log_end;
+			return 0;
+		}
 
-	// 메모리 버퍼의 사이즈(할당된)를 리턴한다.
-	unsigned long GetSize() { return m_size; };
-		
-	// 메모리 버퍼 포인터를 리턴한다.
-	const void *GetMemory() { return m_pMemory; };
-	
-	// ByteToRead 만큼 읽을 수 있는지 검사
-	bool CanReadFromStream(_In_ unsigned long ByteToRead)
-	{
-		if (m_pos + ByteToRead > m_size)
+		if (sizeof(value) != WriteToStream((const char*)&value, sizeof(value)))
+		{
 			return false;
+		}
 		else
+		{
 			return true;
+		}
 	}
-
-	// 스트림으로 부터 데이터를 읽어서 버퍼에 쓴다.
-	unsigned long ReadFromStream(_Out_ void *Buffer, _In_ unsigned long Count);
-
-	// 버퍼로부터 데이터를 읽어 스트림의 현재 포지션에 쓴다.
-	unsigned long WriteToStream(_In_ const void *Buffer, _In_ unsigned long Count);		
-private:
-	
-	unsigned long SetSize(_In_ unsigned long newSize);
-
-	unsigned long GetCurrentCusor() { return m_pos; };
-	unsigned long ChangeCursor(_In_ const unsigned long offset, _In_ unsigned long from);
-	
-	// ChangeCursor() method 만이 setPos() 를 호출하며 모든 유효성 검사는 
-	// ChangeCursor() method 내에서 수행한다. 
-	unsigned long setPos(_In_ const unsigned long newPosition)
-	{
-		m_pos = newPosition;
-		return m_pos;
-	}
-	
-	// 스트림 버퍼를 이미 할당된 메모리 버퍼로 할당한다. 
-	void SetStreamBuffer(_In_ void* Buffer, _In_ unsigned long BufferSize)
-	{
-		ClearStream();
-
-		m_pos = 0;
-		m_size = BufferSize;
-		m_pMemory = (char*)Buffer;
-	}
+private:	
+	size_t IncreseSize(_In_ size_t newSize);
 
 } *PMemoryStream;
 
 
 
+
+/// @brief	스트림이 사용한 자원을 소멸한다. 
+inline void CMemoryStream::ClearStream(void)
+{	
+	if (!_read_only && nullptr != m_pMemory)
+	{
+		free(m_pMemory);
+	}
+
+	_capacity = 0;
+	m_pMemory = nullptr;
+	m_size = 0;
+	m_pos = 0;
+	_read_only = false;
+}
+
+/// @brief	스트림의 포지션을 이동한다. 
+///			스트림이 유효하고, 요청한 위치가 스트림 범위내인 경우 이동이 가능하다. 
+inline bool CMemoryStream::SetPos(_In_ size_t new_pos)
+{
+	if (m_size > 0 && m_size >= new_pos)
+	{
+		m_pos = new_pos;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}

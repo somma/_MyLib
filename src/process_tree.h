@@ -35,50 +35,33 @@
 typedef class process
 {
 public:
-	process()
-		:
-		_process_name(L""), 
-		_ppid(0), 
-		_pid(0), 
-		_creation_time(0), 
-		_is_wow64(false),
-		_full_path(L""), 
-		_killed(false)
-	{
-	}
-
-	process(_In_ const wchar_t* process_name, 
-			_In_ DWORD ppid, 
-			_In_ DWORD pid, 
-			_In_ uint64_t creation_time, 
+	process();
+	process(_In_ const wchar_t* process_name,
+			_In_ DWORD ppid,
+			_In_ DWORD pid,
+			_In_ uint64_t creation_time,
 			_In_ bool is_wow64,
-			_In_ std::wstring& full_path, 
-			_In_ bool killed) 
-		:	
-		_process_name(process_name), 
-		_ppid(ppid), 
-		_pid(pid), 
-		_creation_time(creation_time), 
-		_is_wow64(is_wow64),
-		_full_path(full_path), 
-		_killed(killed)
-	{
-		_ASSERTE(nullptr != process_name);
-		if (nullptr == process_name || wcslen(process_name))
-		{
-			_process_name = _null_stringw;
-		}
-	}
+			_In_ std::wstring& full_path,
+			_In_ bool killed);
+	virtual ~process() {}
 
 	bool kill(_In_ DWORD exit_code, _In_ bool enable_debug_priv);
 	bool suspend() { /* not implemented yet */ return true; }
 	bool resume()  { /* not implemented yet */ return true; }
 
-	const wchar_t*	process_name() const { return _process_name.c_str(); }
-    const wchar_t*  process_path() const { return _full_path.c_str(); }
+	const wchar_t*	process_name() const 
+	{ 
+		return _process_name.empty() ? L"N/A" : _process_name.c_str();
+	}
+
+    const wchar_t*  process_path() const 
+	{ 
+		return _full_path.empty() ? process_name() : _full_path.c_str();
+	}
+
 	DWORD			ppid() const { return _ppid; }
 	DWORD			pid() const { return _pid; }
-	uint64_t		creation_time() const { return _creation_time; }
+	uint64_t		creation_time() const { return _creation_time; }	
 	bool			is_wow64() const { return _is_wow64; }
 	bool			killed() { return _killed; }
 
@@ -96,8 +79,7 @@ private:
  * @brief	place holder for running processes
 **/
 typedef std::map< DWORD, process >	process_map;
-typedef boost::function<bool(_In_ process& process_info, _In_ DWORD_PTR callback_tag)> fnproc_tree_callback;
-
+typedef boost::function<bool(_In_ process& process_info)> on_proc_walk;
 
 class cprocess_tree
 {
@@ -118,9 +100,9 @@ public:
 	DWORD get_parent_pid(_In_ DWORD pid);
 	const wchar_t* get_parent_name(_In_ DWORD pid);
 
-	bool iterate_process(_In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag);
-	bool iterate_process_tree(_In_ DWORD root_pid, _In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag);
-	bool iterate_process_tree(_In_ process& root, _In_ fnproc_tree_callback callback, _In_ DWORD_PTR callback_tag);
+	void iterate_process(_In_ on_proc_walk callback);
+	void iterate_process_tree(_In_ DWORD root_pid, _In_ on_proc_walk callback);
+	void iterate_process_tree(_In_ process& root, _In_ on_proc_walk callback);
 
 	void print_process_tree(_In_ DWORD root_pid);
 	void print_process_tree(_In_ const wchar_t* root_process_name);

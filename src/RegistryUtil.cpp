@@ -335,17 +335,17 @@ RUSetMultiString(
 	CMemoryStream strm;
 	for (const auto& value : values)
 	{
-		strm.WriteToStream(value.c_str(), (unsigned long)value.size() * sizeof(wchar_t));
-		strm.WriteToStream(&null_term, sizeof(uint16_t));
+		strm.WriteToStream((char*)value.c_str(), (unsigned long)value.size() * sizeof(wchar_t));
+		strm.WriteToStream((char*)&null_term, sizeof(uint16_t));
 	}
-	strm.WriteToStream(&null_term, sizeof(uint16_t));
+	strm.WriteToStream((char*)&null_term, sizeof(uint16_t));
 
 	DWORD ret = RegSetValueExW(key_handle,
 							   value_name,
 							   NULL,
 							   REG_MULTI_SZ,
 							   (LPBYTE)strm.GetMemory(),
-							   strm.GetSize());
+							   (DWORD)strm.GetSize());
 	if (ERROR_SUCCESS != ret)
 	{
 		//log_err "RegSetValueExW(%ws) failed, ret = %u",

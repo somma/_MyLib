@@ -6,10 +6,8 @@ bool test_process_token()
 {
 	cprocess_tree proc_tree;
 	_ASSERTE(true == proc_tree.build_process_tree(true));
-	proc_tree.iterate_process([](_In_ process& proc, _In_ DWORD_PTR tag)->bool
+	proc_tree.iterate_process([](_In_ process& proc)->bool
 	{
-		UNREFERENCED_PARAMETER(tag);
-
 		//
 		//	user
 		//
@@ -93,7 +91,7 @@ bool test_process_token()
 		}
 		delete user_sid; user_sid = nullptr;
 		return true;		
-	}, 0);
+	});
 
 
 	return true;

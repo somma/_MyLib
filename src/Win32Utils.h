@@ -39,8 +39,11 @@ typedef struct _continuous_memory
 #define _LOW_PART(_int64_value_)     (UINT32)((_int64_value_) & 0x00000000FFFFFFFF)
 
 
-/// @brief  val 변수의 pos 번째 비트가 1 이면 1 아니면 0
+/// @brief  val 의 pos 번째 비트를 check/set/clear 
+///			pos 는 0 부터 63 까지
 #define _check_bit(val, pos)  (val & (1 << pos))
+#define _set_bit(val, pos) (val |= (1 << pos))
+#define _clear_bit(val, pos) (val &= ~(1 << pos))
 
 /// @brief	from ntifs.h
 #ifndef FlagOn
@@ -577,7 +580,7 @@ find_and_replace_string_exw(
     );
 
 std::string generate_random_string(_In_ const size_t length);
-
+std::wstring generate_random_stringw(_In_ const size_t length);
 
 
 /******************************************************************************
