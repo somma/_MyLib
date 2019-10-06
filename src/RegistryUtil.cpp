@@ -345,7 +345,7 @@ RUSetMultiString(
 							   NULL,
 							   REG_MULTI_SZ,
 							   (LPBYTE)strm.GetMemory(),
-							   strm.GetSize());
+							   (DWORD)strm.GetSize());
 	if (ERROR_SUCCESS != ret)
 	{
 		//log_err "RegSetValueExW(%ws) failed, ret = %u",

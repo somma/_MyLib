@@ -139,13 +139,13 @@ CMemoryStream::IncreseSize(
 	return _capacity;
 }
 
-/// @brief	스트림으로 부터 데이터를 읽어서 버퍼에 쓴다.
-///			성공시 읽은 바이트 수 리턴 (스트림이 size 보다 작은 경우 포함)
+/// @brief	`size` 만큼 `Buffer` 에 복사하고, 스트림 포지션을 size 만큼 이동
+///	@return	성공시 읽은 바이트 수 리턴 (스트림이 size 보다 작은 경우 포함)
 ///			실패시 0 리턴
 size_t 
 CMemoryStream::ReadFromStream(
-	_Out_ void *Buffer, 
-	_In_ size_t size
+	_Out_ void* const Buffer, 
+	_In_ const size_t size
 )
 {
 	_ASSERTE(nullptr != Buffer);
@@ -158,7 +158,9 @@ CMemoryStream::ReadFromStream(
 		{
 			if (cb_read > size) cb_read = size;
 		
-			RtlCopyMemory(Buffer, (char *)(DWORD_PTR(m_pMemory) + m_pos), cb_read);
+			RtlCopyMemory(Buffer, 
+						  (char *)(DWORD_PTR(m_pMemory) + m_pos), 
+						  cb_read);
 			m_pos += cb_read;
 			return cb_read;
 		}
@@ -166,6 +168,33 @@ CMemoryStream::ReadFromStream(
 
 	return 0;
 }
+
+/// @brief	`Buffer` 에 현재 스트림의 포인터를 리턴하고, `size` 만큼 스트림 
+///			포지션을 이동
+/// @return	성공시 읽은 바이트 수 리턴 (스트림이 size 보다 작은 경우 포함)
+///			실패시 0 리턴
+size_t
+CMemoryStream::RefFromStream(
+	_Out_ const void*& Buffer,
+	_In_ const size_t size
+)
+{
+	if ((m_pos >= 0) && (size >= 0))
+	{
+		size_t cb_read = m_size - m_pos;
+		if (cb_read > 0)
+		{
+			if (cb_read > size) cb_read = size;
+
+			Buffer = &m_pMemory[m_pos];
+			m_pos += cb_read;
+			return cb_read;
+		}
+	}
+
+	return 0;
+}
+
 
 /// @brief	버퍼로부터 데이터를 읽어 스트림의 현재 포지션에 쓴다.
 ///			성공시 Write 한 바이트 수

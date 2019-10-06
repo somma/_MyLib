@@ -53,8 +53,11 @@ public:
 	// 스트림 버퍼 포인터를 리턴한다.
 	const void *GetMemory() { return m_pMemory; };
 	
-	// 스트림으로 부터 데이터를 읽어서 버퍼에 쓴다.	
-	size_t ReadFromStream(_Out_ void *Buffer, _In_ size_t size);
+	// `size` 만큼 `Buffer` 에 복사하고, 스트림 포지션을 size 만큼 이동
+	size_t ReadFromStream(_Out_ void* const Buffer, _In_ const size_t size);
+
+	// 스트림의 현재 포지션 포인터를 리턴하고, 스트림 포지션을 size 만큼 이동한다.
+	size_t RefFromStream(_Out_ const void*& Buffer, _In_ size_t size);
 
 	// 버퍼로부터 데이터를 읽어 스트림의 현재 포지션에 쓴다.
 	size_t WriteToStream(_In_ const void *Buffer, _In_ size_t size);

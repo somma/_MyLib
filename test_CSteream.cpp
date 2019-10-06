@@ -50,21 +50,48 @@ bool test_cstream()
 		_ASSERTE(false == strm.SetPos(strm.GetPos() + 1));
 
 		//
-		//	읽기 & 검증
+		//	읽기 & 검증 (참조, 읽기)
 		//
-		_ASSERTE(strm.SetPos(0));		
+		{
+			_ASSERTE(strm.SetPos(0));
+			size = strm.ReadInt<size_t>();
 
-		size = strm.ReadInt<size_t>();
-		auto ptr = std::make_unique<char[]>(size);
-		_ASSERTE(ptr);
-		_ASSERTE(size >= strm.ReadFromStream(ptr.get(), size));
-		std::string s(ptr.get(), size);
-		log_info "read from stream=%s", s.c_str() log_end;
+			//	스트림 문자열 참조
+			pos = strm.GetPos();
 
-		_ASSERTE(0x11 == strm.ReadInt<uint8_t>()); 
-		_ASSERTE(0x1122 == strm.ReadInt<uint16_t>());
-		_ASSERTE(0x11223344 == strm.ReadInt<uint32_t>());		
-		_ASSERTE(0x1122334411223344 == strm.ReadInt<uint64_t>());
+			const void* p = nullptr;
+			_ASSERTE(size >= strm.RefFromStream(p, size));
+			_ASSERTE(strm.GetPos() > pos);
+
+			std::string s_ref((char*)p, size);
+			log_info "ref from stream=%s", s_ref.c_str() log_end;
+
+			_ASSERTE(0x11 == strm.ReadInt<uint8_t>());
+			_ASSERTE(0x1122 == strm.ReadInt<uint16_t>());
+			_ASSERTE(0x11223344 == strm.ReadInt<uint32_t>());
+			_ASSERTE(0x1122334411223344 == strm.ReadInt<uint64_t>());
+		}
+
+		//
+		//	읽기 & 검증 (복사, 읽기)
+		//
+		{
+			_ASSERTE(strm.SetPos(0));
+			size = strm.ReadInt<size_t>();
+
+			auto ptr = std::make_unique<char[]>(size);
+			_ASSERTE(ptr);
+			_ASSERTE(size >= strm.ReadFromStream(ptr.get(), size));
+			std::string s(ptr.get(), size);
+			log_info "read from stream=%s", s.c_str() log_end;
+
+			_ASSERTE(0x11 == strm.ReadInt<uint8_t>());
+			_ASSERTE(0x1122 == strm.ReadInt<uint16_t>());
+			_ASSERTE(0x11223344 == strm.ReadInt<uint32_t>());
+			_ASSERTE(0x1122334411223344 == strm.ReadInt<uint64_t>());
+		}
+
+		
 		
 
 		strm.ClearStream();
