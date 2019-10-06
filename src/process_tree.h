@@ -49,8 +49,16 @@ public:
 	bool suspend() { /* not implemented yet */ return true; }
 	bool resume()  { /* not implemented yet */ return true; }
 
-	const wchar_t*	process_name() const { return _process_name.c_str(); }
-    const wchar_t*  process_path() const { return _full_path.c_str(); }
+	const wchar_t*	process_name() const 
+	{ 
+		return _process_name.empty() ? L"N/A" : _process_name.c_str();
+	}
+
+    const wchar_t*  process_path() const 
+	{ 
+		return _full_path.empty() ? process_name() : _full_path.c_str();
+	}
+
 	DWORD			ppid() const { return _ppid; }
 	DWORD			pid() const { return _pid; }
 	uint64_t		creation_time() const { return _creation_time; }	

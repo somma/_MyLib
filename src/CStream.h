@@ -51,7 +51,7 @@ public:
 	bool SetPos(_In_ size_t new_pos);
 		
 	// 스트림 버퍼 포인터를 리턴한다.
-	const void *GetMemory() { return m_pMemory; };
+	const char* GetMemory() { return m_pMemory; };
 	
 	// `size` 만큼 `Buffer` 에 복사하고, 스트림 포지션을 size 만큼 이동
 	size_t ReadFromStream(_Out_ char* const Buffer, _In_ const size_t size);
