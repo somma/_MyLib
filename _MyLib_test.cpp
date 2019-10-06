@@ -159,6 +159,7 @@ bool test_get_account_infos();
 bool test_get_installed_programs();
 bool test_get_file_company_name();
 bool test_generate_random_string();
+bool test_bit_check_set_clear();
 
 // rc4.cpp
 bool test_rc4_encrypt();
@@ -340,7 +341,8 @@ void run_test()
 	//assert_bool(true, test_get_account_infos);
 	//assert_bool(true, test_get_installed_programs);
 	//assert_bool(true, test_get_file_company_name);
-	//assert_bool(true, test_generate_random_string);
+	assert_bool(true, test_generate_random_string);
+	assert_bool(true, test_bit_check_set_clear);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
 
@@ -1616,15 +1618,83 @@ bool test_generate_random_string()
 {
 	_mem_check_begin
 	{
-		for (int i = 0; i < 12; ++i)
 		{
-			size_t len = (size_t)get_random_int(4, 64);
-			std::string rs = generate_random_string(len);
-			_ASSERTE(rs.size() == len);
-			log_info "random string=%s", rs.c_str() log_end;
+			for (int i = 0; i < 12; ++i)
+			{
+				size_t len = (size_t)get_random_int(4, 64);
+				std::string rs = generate_random_string(len);
+				_ASSERTE(rs.size() == len);
+				log_info "random string=%s", rs.c_str() log_end;
+			}
 		}
+		
+		{
+			for (int i = 0; i < 12; ++i)
+			{
+				size_t len = (size_t)get_random_int(4, 64);
+				std::wstring wrs = generate_random_stringw(len);
+				_ASSERTE(wrs.size() == len);
+				log_info "random string=%ws", wrs.c_str() log_end;
+			}
+		}
+
 	}
 	_mem_check_end;
+
+	return true;
+}
+
+/// @brief	
+bool test_bit_check_set_clear()
+{
+	// hex: AF7
+	// bin: 0000 0000 0000 0000 0000 1010 1111 0111
+	const uint32_t cv = 0xaf7;
+
+	uint32_t v = cv;
+
+	// 최 하위 비트 Clear
+	// hex: AF6
+	// bin: 0000 0000 0000 0000 0000 1010 1111 0110
+	//                                            ^
+	_clear_bit(v, 0);
+	_ASSERTE(!_check_bit(v, 0));
+	_ASSERTE(v == 0xaf6);
+
+
+	// 최 상위 비트 Set
+	// hex: 80000AF6
+	// dec: 35574
+	// bin: 1000 0000 0000 0000 0000 1010 1111 0110
+	//      ^
+	_set_bit(v, 31);
+	_ASSERTE(_check_bit(v, 31));
+	_ASSERTE(v == 0x80000AF6);
+
+	// 16 번째 비트 Set
+	// hex: 80010AF6
+	// bin: 1000 0000 0000 0001 0000 1010 1111 0110
+	//                        ^        
+	_set_bit(v, 16);
+	_ASSERTE(_check_bit(v, 16));
+	_ASSERTE(v == 0x80010AF6);
+
+	// 16 번째 비트 Clear
+	// hex: 80000AF6
+	// bin: 1000 0000 0000 0000 0000 1010 1111 0110
+	//                        ^        
+	_clear_bit(v, 16);
+	_ASSERTE(!_check_bit(v, 16));
+	_ASSERTE(v == 0x80000AF6);
+
+
+	// 최 상위 비트 Clear
+	// hex: AF6
+	// bin: 0000 0000 0000 0000 0000 1010 1111 0110
+	//      ^        
+	_clear_bit(v, 31);
+	_ASSERTE(!_check_bit(v, 31));
+	_ASSERTE(v == 0xAF6);
 
 	return true;
 }

@@ -4368,6 +4368,28 @@ std::string generate_random_string(_In_ const size_t length)
 	return strm.str();
 }
 
+std::wstring generate_random_stringw(_In_ const size_t length)
+{
+	static const wchar_t alphanumw[] =
+		L"0123456789"
+		L"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		L"abcdefghijklmnopqrstuvwxyz"
+		L" !\"#$%&'()*+,-./"
+		L":;<=>?@"
+		L"[\\]^_`"
+		L"{|}~";
+
+	std::wstringstream strm;
+	for (int i = 0; i < length; ++i)
+	{
+		wchar_t w = alphanumw[rand() % ((sizeof(alphanumw) / sizeof(wchar_t)) - 1)];
+		strm << w;
+	}
+
+	return strm.str();
+}
+
+
 
 /**
 * @brief	현재 디렉토리를 리턴하는 함수 (e.g. c:\debug )

@@ -100,9 +100,9 @@ public:
 	DWORD get_parent_pid(_In_ DWORD pid);
 	const wchar_t* get_parent_name(_In_ DWORD pid);
 
-	bool iterate_process(_In_ on_proc_walk callback);
-	bool iterate_process_tree(_In_ DWORD root_pid, _In_ on_proc_walk callback);
-	bool iterate_process_tree(_In_ process& root, _In_ on_proc_walk callback);
+	void iterate_process(_In_ on_proc_walk callback);
+	void iterate_process_tree(_In_ DWORD root_pid, _In_ on_proc_walk callback);
+	void iterate_process_tree(_In_ process& root, _In_ on_proc_walk callback);
 
 	void print_process_tree(_In_ DWORD root_pid);
 	void print_process_tree(_In_ const wchar_t* root_process_name);
