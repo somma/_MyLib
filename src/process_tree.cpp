@@ -12,6 +12,43 @@
 #include <windows.h>
 #include "process_tree.h"
 
+/// @brief	Constructor
+process::process()
+	:
+	_process_name(L""),
+	_ppid(0),
+	_pid(0),
+	_creation_time(0),
+	_is_wow64(false),
+	_full_path(L""),
+	_killed(false)
+{
+}
+
+/// @brief	Destructor
+process::process(_In_ const wchar_t* process_name,
+		_In_ DWORD ppid,
+		_In_ DWORD pid,
+		_In_ uint64_t creation_time,
+		_In_ bool is_wow64,
+		_In_ std::wstring& full_path,
+		_In_ bool killed)
+	:
+	_process_name(process_name),
+	_ppid(ppid),
+	_pid(pid),
+	_creation_time(creation_time),
+	_is_wow64(is_wow64),
+	_full_path(full_path),
+	_killed(killed)
+{
+	_ASSERTE(nullptr != process_name);
+	if (nullptr == process_name || wcslen(process_name))
+	{
+		_process_name = _null_stringw;
+	}
+}
+
 /**
  * @brief	
  * @param	

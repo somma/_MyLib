@@ -35,40 +35,15 @@
 typedef class process
 {
 public:
-	process()
-		:
-		_process_name(L""), 
-		_ppid(0), 
-		_pid(0), 
-		_creation_time(0), 
-		_is_wow64(false),
-		_full_path(L""), 
-		_killed(false)
-	{
-	}
-
-	process(_In_ const wchar_t* process_name, 
-			_In_ DWORD ppid, 
-			_In_ DWORD pid, 
-			_In_ uint64_t creation_time, 
+	process();
+	process(_In_ const wchar_t* process_name,
+			_In_ DWORD ppid,
+			_In_ DWORD pid,
+			_In_ uint64_t creation_time,
 			_In_ bool is_wow64,
-			_In_ std::wstring& full_path, 
-			_In_ bool killed) 
-		:	
-		_process_name(process_name), 
-		_ppid(ppid), 
-		_pid(pid), 
-		_creation_time(creation_time), 
-		_is_wow64(is_wow64),
-		_full_path(full_path), 
-		_killed(killed)
-	{
-		_ASSERTE(nullptr != process_name);
-		if (nullptr == process_name || wcslen(process_name))
-		{
-			_process_name = _null_stringw;
-		}
-	}
+			_In_ std::wstring& full_path,
+			_In_ bool killed);
+	virtual ~process() {}
 
 	bool kill(_In_ DWORD exit_code, _In_ bool enable_debug_priv);
 	bool suspend() { /* not implemented yet */ return true; }
@@ -78,7 +53,7 @@ public:
     const wchar_t*  process_path() const { return _full_path.c_str(); }
 	DWORD			ppid() const { return _ppid; }
 	DWORD			pid() const { return _pid; }
-	uint64_t		creation_time() const { return _creation_time; }
+	uint64_t		creation_time() const { return _creation_time; }	
 	bool			is_wow64() const { return _is_wow64; }
 	bool			killed() { return _killed; }
 
