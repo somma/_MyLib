@@ -30,10 +30,11 @@ bool create_remove_task(_In_ const wchar_t* task_name,
 		return false;
 	}
 
-	if (true != sched_client.easy_create(task_name,
-										 execute_path,
-										 arguments,
-										 interval))
+	if (true != sched_client.create_daily_task(task_name,
+											   execute_path,
+											   L"\\",
+											   arguments,
+											   interval))
 	{
 		log_err "SchedClient::easy_create() failed." log_end;
 		return false;
@@ -43,7 +44,8 @@ bool create_remove_task(_In_ const wchar_t* task_name,
 		task_name 
 		log_end;
 
-	if (true != sched_client.remove(task_name))
+	if (true != sched_client.remove_task(task_name,
+										 L"\\"))
 	{
 		log_err "SchedClient::remove() falied. task_name=%ws",
 			task_name

@@ -1,5 +1,5 @@
 /**
- * @file    sched_client.h
+ * @file    sched_client.cpp
  * @brief	This module contains a functions that create task scheduler.
  *
  * @author  JaeHyeon, Park (jaehyeon@somma.kr)
@@ -10,10 +10,7 @@
 #include "sched_client.h"
 
 SchedClient::SchedClient()
-	:_initialized(false), _task_name(_null_stringw), _svc(nullptr), _folder(nullptr),
-	_definition(nullptr), _registration_info(nullptr), _trigger_collection(nullptr),
-	_trigger(nullptr),_daily_trigger(nullptr),_repetition(nullptr),
-	_action_collection(nullptr), _exec_action(nullptr), _action(nullptr)
+	:_initialized(false), _svc(nullptr)
 {
 }
 
@@ -22,6 +19,7 @@ SchedClient::~SchedClient()
 	finalize();
 }
 
+///	@brief COM object intialize
 bool
 SchedClient::initialize()
 {
@@ -111,56 +109,6 @@ void SchedClient::finalize()
 		_svc->Release();
 		_svc = nullptr;
 	}
-	if (nullptr != _folder)
-	{
-		_folder->Release();
-		_folder = nullptr;
-	}
-	if (nullptr != _definition)
-	{
-		_definition->Release();
-		_definition = nullptr;
-	}
-	if (nullptr != _registration_info)
-	{
-		_registration_info->Release();
-		_registration_info = nullptr;
-	}
-	if (nullptr != _trigger_collection)
-	{
-		_trigger_collection->Release();
-		_trigger_collection = nullptr;
-	}
-	if (nullptr != _trigger)
-	{
-		_trigger->Release();
-		_trigger = nullptr;
-	}
-	if (nullptr != _daily_trigger)
-	{
-		_daily_trigger->Release();
-		_daily_trigger = nullptr;
-	}
-	if (nullptr != _repetition)
-	{
-		_repetition->Release();
-		_repetition = nullptr;
-	}
-	if (nullptr != _action_collection)
-	{
-		_action_collection->Release();
-		_action_collection = nullptr;
-	}
-	if (nullptr != _exec_action)
-	{
-		_exec_action->Release();
-		_exec_action = nullptr;
-	}
-	if(nullptr != _action)
-	{
-		_action->Release();
-		_action = nullptr;
-	}
 
 	CoUninitialize();
 
@@ -173,152 +121,263 @@ SchedClient::initialized()
 	return _initialized;
 }
 
-/// @breif	SchedClient::create는 작업스케줄러에 등록할 task 이름을 입력받아 task를 생성한다.
-///			task를 생성하더라도 SchedClient::save를 호출하지 않으면 작업 스케줄러에	등록 되지 
-///			않으므로 세부 작업(author, trigger, execute) 후 SchedClient::save를 호출하여 
-///			작업 스케줄러에 등록한다.
+///	@brief	작업 스케줄러에 등록할 folder_name,과 task_name로 daily task를 생성하고 
+///			주기적으로 실행시킬 파일의 경로를 등록한다.
 bool
-SchedClient::create(_In_ const wchar_t* task_name)
+SchedClient::create_daily_task(
+	_In_ const wchar_t* task_name,
+	_In_ const wchar_t* execute_path,
+	_In_ const wchar_t* arguments,
+	_In_opt_ const wchar_t* folder_name,
+	_In_opt_ short day_interval,
+	_In_opt_ const wchar_t* task_interval,
+	_In_opt_ const wchar_t* task_duration
+)
 {
 	_ASSERTE(true == _initialized);
 	if (true != _initialized) return false;
 
-	_ASSERTE(nullptr != task_name);
-	if (nullptr == task_name) return false;
+	_ASSERTE(nullptr != task_name || nullptr != execute_path);
+	if (nullptr == task_name || nullptr == execute_path) return false;
 
-	_task_name = task_name;
+	ITaskFolder*		folder = nullptr;
+	ITaskDefinition*	definition = nullptr;
+	IRegistrationInfo*	registration_info = nullptr;
+	ITriggerCollection*	trigger_collection = nullptr;
+	IRegisteredTask*	registered_task = nullptr;
+
+	HRESULT hres = S_FALSE;
+	bool ret = false;
 	
-	HRESULT hres = _svc->NewTask(0, &_definition);
-	if (!SUCCEEDED(hres))
+	do
 	{
-		log_err "_svc->NewTask() failed. hres=%u", hres log_end;
-		return false;
-	}
+		if (true != get_folder_info(folder_name, &folder))
+		{
+			//log_err "get_folder_info() failed. folder=%ws" log_end;
+			break;
+		}
 
-	hres = _definition->get_RegistrationInfo(&_registration_info);
-	if (!SUCCEEDED(hres))
+		hres = _svc->NewTask(0, &definition);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "_svc->newTask() failed. hres=%u", hres log_end;
+			break;
+		}
+
+		hres = definition->get_RegistrationInfo(&registration_info);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "definition->get_RegistrationInfo() failed. hres=%u", hres log_end;
+			break;
+		}
+
+		hres = definition->get_Triggers(&trigger_collection);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "definition->get_Triggers() failed. hres=%u", hres log_end;
+			break;
+		}
+
+		if (true != make_daily_trigger(trigger_collection, day_interval, task_interval, task_duration))
+		{
+			log_err "make_daily_trigger() failed." log_end;
+			break;
+		}
+
+		if (true != make_actions(definition, execute_path, arguments))
+		{
+			log_err "make_actions() failed. execute_path=%ws, arguments=%ws",
+				execute_path,
+				arguments
+				log_end;
+			break;
+		}
+
+		hres = folder->RegisterTaskDefinition(_bstr_t(task_name),
+											  definition,
+											  _default_task_create_flag,
+											  _variant_t(_system_level_task_logon_user),
+											  _variant_t(),
+											  _default_task_logon_type,
+											  _variant_t(L""),
+											  &registered_task);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "_folder->RegisterTaskDefinition() failed. hres=%u", hres log_end;
+			break;
+		}
+		ret = true;
+	} while (false);
+
+	if (folder != nullptr)
 	{
-		log_err "_definition->get_RegistrationInfo() failed. hres=%u", hres log_end;
-		return false;
+		folder->Release(); folder = nullptr;
 	}
-
-	hres = _definition->get_Triggers(&_trigger_collection);
-	if (!SUCCEEDED(hres))
+	if (definition != nullptr)
 	{
-		log_err "_definition->get_RegistrationInfo() failed. hres=%u", hres log_end;
-		return false;
+		definition->Release(); definition = nullptr;
 	}
-
-	return true;
+	if (registration_info != nullptr)
+	{
+		registration_info->Release(); registration_info = nullptr;
+	}
+	if (trigger_collection != nullptr)
+	{
+		trigger_collection->Release(); trigger_collection = nullptr;
+	}
+	if (registered_task != nullptr)
+	{
+		registered_task->Release(); registered_task = nullptr;
+	}
+	
+	return ret;
 }
 
-///	@brief
-bool SchedClient::easy_create(_In_ const wchar_t* task_name,
-							  _In_ const wchar_t* execute_path,
-							  _In_ const wchar_t* arguments,
-							  _In_ uint32_t interval
-	)
+///	@brief task를 삭제한다.
+bool
+SchedClient::remove_task(
+	_In_ const wchar_t* task_name,
+	_In_opt_ const wchar_t* folder_name
+)
+{
+	_ASSERTE(true == _initialized);
+	if (true != _initialized) return false;
+
+	_ASSERTE(nullptr != task_name || nullptr != folder_name);
+	if (nullptr == task_name || nullptr == folder_name) return false;
+
+	ITaskFolder* folder = nullptr;
+
+	HRESULT hres = S_FALSE;
+	bool ret = false;
+	do
+	{
+		if (true != get_folder_info(folder_name, &folder))
+		{
+			//log_err "get_folder_info() failed. folder=%ws" log_end;
+			break;
+		}
+		hres = folder->DeleteTask(_bstr_t(task_name), 0);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "folder->DeleteTask() failed. hres=%u", hres log_end;
+			break;
+		}
+		ret = true;
+	} while (false);
+
+	if (nullptr != folder)
+	{
+		folder->Release(); folder = nullptr;
+	}
+	return ret;
+}
+
+///	@brief task를 활성화 하거나 비활성화 한다.
+bool 
+SchedClient::change_task_status(
+	_In_ const wchar_t* task_name,
+	_In_opt_ bool enabled_task,
+	_In_opt_ const wchar_t* folder_name
+)
+{
+	_ASSERTE(true == _initialized);
+	if (true != _initialized) return false;
+
+	_ASSERTE(nullptr != task_name || nullptr != folder_name);
+	if (nullptr == task_name || nullptr == folder_name) return false;
+
+	//
+	// put_Enabled는 VARIANT_BOOL 타입을 파라미터로 받는데 VARIANT_BOOL은 -1이 참,
+	// 0이 거짓이다. 그래서 task를 enabled하게 바꿀려면 enabled_task를 -1,
+	// task를 disabled하게 바꿀려면 0으로 매개변수를 넘겨주면 된다. 이외의 값들은 InValied한 값이다.
+	//
+
+	IRegisteredTask* registered_task = nullptr;
+
+	HRESULT hres = S_FALSE;
+	bool ret = false;
+	do
+	{
+		if (true != get_task_register_info(task_name,
+										   &registered_task,
+										   folder_name))
+		{
+			//log_err "get_task_register_info() failed." log_end;
+			break;
+		}
+
+		hres = registered_task->put_Enabled(enabled_task);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "_rigistered_task->put_Enabled() failed. hres=%u", hres log_end;
+			break;
+		}
+		ret = true;
+	} while (false);
+
+	if (nullptr != registered_task)
+	{
+		registered_task->Release(); registered_task = nullptr;
+	}
+	
+	return ret;
+}
+
+///	@brief	태스크가 등록되어있는지 확인한다.
+bool
+SchedClient::is_task_existW(
+	_In_ const wchar_t* task_name,
+	_In_opt_ const wchar_t* folder_name
+)
 {
 	_ASSERTE(true == _initialized);
 	if (true != _initialized) return false;
 
 	_ASSERTE(nullptr != task_name);
-	_ASSERTE(nullptr != execute_path);
-	_ASSERTE(0 < interval && 24 >= interval);
-
 	if (nullptr == task_name) return false;
-	if (nullptr == execute_path) return false;
-	if (0 > interval && 24 < interval) return false;
 
-	HRESULT hres = _svc->GetFolder(_bstr_t(L"\\"),
-								   &_folder);
+	IRegisteredTask*	registered_task = nullptr;
 
-	if (!SUCCEEDED(hres))
+	if (true != get_task_register_info(task_name,
+									   &registered_task, 
+									   folder_name))
 	{
-		log_err "_svc->GetFolder() failed. hres=%u", hres log_end;
-		_svc->Release();
-		_svc = nullptr;
-
-		CoUninitialize();
 		return false;
 	}
-
-	if (true != create(task_name))
+	if (nullptr != registered_task)
 	{
-		log_err "task create() failed." log_end;
-		return false;
+		registered_task->Release(); registered_task = nullptr;
 	}
-
-	if (true != set_trigger_daily(nullptr,
-								  nullptr,
-								  1,
-								  true))
-	{
-		log_err "task set_trigger_daily() failed. " log_end;
-		return false;
-	}
-
-	std::wstringstream time;
-	time << L"PT" << interval << L"H";
-
-	if (true != set_daily_repet(time.str().c_str(), L"PT24H"))
-	{
-		log_err "task set_daily_repet() failed." log_end;
-		return false;
-	}
-
-	if (true != set_execute(execute_path,arguments))
-	{
-		log_err " task set_execute() failed." log_end;
-		return false;
-	}
-
-	if (true != save(TASK_CREATE_OR_UPDATE))
-	{
-		log_err "task save() failed." log_end;
-		return false;
-	}
-
 	return true;
 }
 
 /// @brief	등록된 task의 실행 파일들의 경로를 구한다.
 bool
-SchedClient::get_exec_actions(
-	_In_ const wchar_t* local,
+SchedClient::get_task_action_exec_programs(
 	_In_ const wchar_t* task_name,
-	_Out_ std::vector<std::wstring>& action_list
+	_Out_ std::vector<std::wstring>& task_exec_path,
+	_In_opt_ const wchar_t* folder_name
 )
 {
-	_ASSERTE(nullptr != local || nullptr != task_name);
-	if (nullptr == local || nullptr == task_name) return false;
+	_ASSERTE(true == _initialized);
+	if (true != _initialized) return false;
 
-	ITaskFolder*		folder = nullptr;
+	_ASSERTE(nullptr != folder_name || nullptr != task_name);
+	if (nullptr == folder_name || nullptr == task_name) return false;
+
 	IRegisteredTask*	registered_task = nullptr;
 	ITaskDefinition*	definition = nullptr;
 	IActionCollection*	action_collection = nullptr;
-	long task_action_count = 0;
 
+	HRESULT hres = S_FALSE;
 	bool ret = false;
 	do
 	{
-		HRESULT hres = _svc->GetFolder(_bstr_t(local),
-									   &folder);
-		if (!SUCCEEDED(hres))
+		if (true != get_task_register_info(task_name, &registered_task, folder_name))
 		{
-			log_err "_svc->GetFolder() failed. hres=%u, folder=%ws",
-				hres,
-				local
-				log_end;
-			break;
-		}
-
-		hres = folder->GetTask(_bstr_t(task_name),
-							   &registered_task);
-		if (!SUCCEEDED(hres))
-		{
-			log_err "folder->GetTask() failed. hres=%u, task_name=%ws",
-				hres,
+			log_err "get_task_register_info() failed. folder_name=%ws, task_name=%ws",
+				folder_name,
 				task_name
 				log_end;
 			break;
@@ -341,14 +400,14 @@ SchedClient::get_exec_actions(
 				log_end;
 			break;
 		}
-
+		long task_action_count = 0;
 		hres = action_collection->get_Count(&task_action_count);
 		if (!SUCCEEDED(hres) || task_action_count < 1)
 		{
 			log_err "action_collection->get_count() failed. hres=%u",
 				hres
 				log_end;
-			return false;
+			break;
 		}
 
 		for (int i = 1; i <= task_action_count; ++i)
@@ -385,7 +444,7 @@ SchedClient::get_exec_actions(
 			}
 			_bstr_t action_path;
 			action_path.Assign(path);
-			action_list.push_back((LPCWSTR)(action_path));
+			task_exec_path.push_back((LPCWSTR)(action_path));
 			ret = true;
 
 			::SysFreeString(path);
@@ -393,418 +452,264 @@ SchedClient::get_exec_actions(
 			exec_action->Release();
 		}
 	} while (false);
-	
-	if (nullptr != folder) folder->Release();
-	if (nullptr != registered_task) registered_task->Release();
-	if (nullptr != definition) definition->Release();
-	if (nullptr != action_collection) action_collection->Release();
-	
+
+	if (nullptr != registered_task)
+	{
+		registered_task->Release(); registered_task = nullptr;
+	}
+	if (nullptr != definition)
+	{
+		definition->Release(); definition = nullptr;
+	}
+	if (nullptr != action_collection)
+	{
+		action_collection->Release(); action_collection = nullptr;
+	}
+
 	return ret;
-}
-
-/// @brief	task를 생성할 local 위치를 설정
-bool
-SchedClient::set_folder(
-	_In_ const wchar_t* folder
-)
-{
-	_ASSERTE(nullptr != folder);
-	if (nullptr == folder) return false;
-
-	HRESULT hres = _svc->GetFolder(_bstr_t(folder),
-								   &_folder);
-
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_svc->GetFolder() failed. hres=%u", hres log_end;
-		return false;
-	}
-
-	return true;
-}
-/// @brief	SchedClinet::set_author는 task를 생성한 자의 이름을 설정
-bool
-SchedClient::set_author(
-	_In_ const wchar_t* author
-	)
-{
-	_ASSERTE(true == _initialized);
-	if (true != _initialized) return false;
-	
-	_ASSERTE(nullptr != author);
-	if (nullptr == author) return false;
-
-	HRESULT hres = _registration_info->put_Author(_bstr_t(author));
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_registraioninfo->put_Author() failed. hres=%u", hres log_end;
-		return false;
-	}
-
-	return true;
 }
 
 /// @brief	task에 daily 트리거를 등록, start_time과 end_time은 "YYYY-MM-DDTHH-MM-SS"과
 ///			같은 포멧 형식을 따른다.
-///			start_time이 nullptr 경우 task 등록시간은 localtime으로 등록하게 되고 
-///			end_time이 nullptr 경우에 expire가 비활성화되어 task가 무기한으로 동작하게 된다.
+///			day_interval
 bool
-SchedClient::set_trigger_daily(
-	_In_ const wchar_t* start_time,
-	_In_ const wchar_t* end_time,
-	_In_ short days_interval,
-	_In_ bool enabled
-	)
-{
-	_ASSERTE(true == _initialized);	
-	if (true != _initialized) return false;
-
-	if (0 > days_interval || 31 < days_interval) return false;
-
-	HRESULT hres = _trigger_collection->Create(TASK_TRIGGER_DAILY, &_trigger);
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_triggercollection->create() failed. hres=%u", hres log_end;
-		return false;
-	}
-
-	hres = _trigger->QueryInterface(IID_IDailyTrigger,
-		                            (PVOID *)&_daily_trigger);
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_trigger->QueryInterface() failed. hres=%u", hres log_end;
-		return false;
-	}
-
-	std::wstring start_boundary;
-	if (nullptr == start_time)
-	{
-		start_boundary = MbsToWcsEx(time_now_to_str2().c_str());
-	}
-	else
-	{
-		start_boundary = start_time;
-	}
-
-	hres = _daily_trigger->put_StartBoundary(_bstr_t(start_boundary.c_str()));
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_dayilytrigger->put_StartBoundary() failed. hres=%u", hres log_end;
-		return false;
-	}
-
-	if (nullptr != end_time)
-	{
-		hres = _daily_trigger->put_EndBoundary(_bstr_t(end_time));
-		if (!SUCCEEDED(hres))
-		{
-			log_err "_dailytrigger->put_EndBoundary() failed. hres=%u", hres log_end;
-			return false;
-		}
-	}
-
-	hres = _daily_trigger->put_DaysInterval(days_interval);
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_dailytrigger->put_DaysInterval() failed. hres=%u", hres log_end;
-		return false;
-	}
-
-	hres = _daily_trigger->put_Enabled(enabled);
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_dailytrigger->put_enabled() failed. hres=%u", hres log_end;
-		return false;
-	}
-	return true;
-}
-
-///	@brief	daily 트리거에서 반복 작업을 등록한다. interval과 duration은 "PT00{H,M}" 포멧을 가지고
-///			1H는 1시간, 1M은 1분을 나타낸다. interval과 duration이 nullptr일 경우 기본값으로 
-///			interval은 1시간 , duration은 24시간으로 설정 된다.
-bool
-SchedClient::set_daily_repet(
-	_In_ const wchar_t* interval,
-	_In_ const wchar_t* duration
-	)
-{
-	_ASSERTE(true == _initialized);
-	if (true != _initialized) return false;
-	
-	_ASSERTE(nullptr != interval);
-	_ASSERTE(nullptr != duration);
-	if (nullptr == interval) return false;
-	if (nullptr == duration) return false;
-
-	HRESULT hres = _daily_trigger->get_Repetition(&_repetition);
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_dailytrigger->get_Repetition() fialed. hres=%u", hres log_end;
-		return false;
-	}
-	
-	hres = _repetition->put_Duration(_bstr_t(duration));
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_dailytrigger->put_Duration() fialed. hres=%u", hres log_end;
-		return false;
-	}
-
-	hres = _repetition->put_Interval(_bstr_t(interval));
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_dailytrigger->put_Interval() fialed. hres=%u", hres log_end;
-		return false;
-	}
-
-	return true;
-}
-
-///	@brief	작업스케줄러의 트리거가 작동할때 실행 될 파일의 경로를 설정한다.
-bool
-SchedClient::set_execute(_In_ const wchar_t* execute_path,
-						 _In_ const wchar_t* arguments)
+SchedClient::make_daily_trigger(
+	_In_ ITriggerCollection* trigger_collection,
+	_In_opt_ short day_interval,
+	_In_opt_ const wchar_t* task_interval,
+	_In_opt_ const wchar_t* task_duration
+)
 {
 	_ASSERTE(true == _initialized);
 	if (true != _initialized) return false;
 
-	_ASSERTE(nullptr != execute_path);
-	if (nullptr == execute_path) return false;
+	_ASSERTE(nullptr != trigger_collection);
+	if (nullptr == trigger_collection) return false;
+	
+	ITrigger*			trigger = nullptr;
+	IDailyTrigger*		daily_trigger = nullptr;
+	IRepetitionPattern*	repetition = nullptr;
 
-	HRESULT hres = _definition->get_Actions(&_action_collection);
-	if (!SUCCEEDED(hres))
+	HRESULT hres = S_FALSE;
+	bool ret = false;
+	do
 	{
-		log_err "_definition->get_Actions() failed. hres=%u", hres log_end;
-		return false;
-	}
-
-	hres = _action_collection->Create(TASK_ACTION_EXEC, &_action);
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_actioncollection->Create() failed. hres=%u", hres log_end;
-		return false;
-	}
-
-	hres = _action->QueryInterface(IID_IExecAction, (PVOID*)&_exec_action);
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_action->QueryInterface() failed. hres=%u", hres log_end;
-		return false;
-	}
-
-	hres = _exec_action->put_Path(_bstr_t(execute_path));
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_exec_action->put_Path() failed. hres=%u", hres log_end;
-		return false;
-	}
-
-	if ( nullptr != arguments)
-	{
-		hres = _exec_action->put_Arguments(_bstr_t(arguments));
+		hres = trigger_collection->Create(TASK_TRIGGER_DAILY, &trigger);
 		if (!SUCCEEDED(hres))
 		{
-			log_err "_exec_action->put_Arguments() failed. hres=%u", hres log_end;
-			return false;
+			log_err "triggercollection->create() failed. hres=%u", hres log_end;
+			break;
 		}
+
+		hres = trigger->QueryInterface(IID_IDailyTrigger, (PVOID *)&daily_trigger);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "trigger->QueryInterface() failed. hres=%u", hres log_end;
+			break;
+		}
+
+		std::wstring start_boundary = MbsToWcsEx(time_now_to_str2().c_str());
+		hres = daily_trigger->put_StartBoundary(_bstr_t(start_boundary.c_str()));
+		if (!SUCCEEDED(hres))
+		{
+			log_err "dayilytrigger->put_StartBoundary() failed. hres=%u", hres log_end;
+			break;
+		}
+
+		hres = daily_trigger->put_DaysInterval(day_interval);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "dailytrigger->put_DaysInterval() failed. hres=%u", hres log_end;
+			break;
+		}
+
+		hres = daily_trigger->put_Enabled(true);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "dailytrigger->put_enabled() failed. hres=%u", hres log_end;
+			break;
+		}
+
+		hres = daily_trigger->get_Repetition(&repetition);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "dailytrigger->get_Repetition() fialed. hres=%u", hres log_end;
+			break;
+		}
+
+		// interval과 duration은 "PT00{H,M}" 포멧을 가지고 1H는 1시간, 1M은 1분을 나타낸다.
+		// interval은 기본값으로 30분 , duration은 기본값으로 24시간으로 설정 된다.
+		hres = repetition->put_Duration(_bstr_t(task_duration));
+		if (!SUCCEEDED(hres))
+		{
+			log_err "dailytrigger->put_Duration() fialed. hres=%u", hres log_end;
+			break;
+		}
+
+		hres = repetition->put_Interval(_bstr_t(task_interval));
+		if (!SUCCEEDED(hres))
+		{
+			log_err "dailytrigger->put_Interval() fialed. hres=%u", hres log_end;
+			break;
+		}
+		ret = true;
+	} while (false);
+
+	if (nullptr != trigger)
+	{
+		trigger->Release(); trigger = nullptr;
 	}
-	
+	if (nullptr != daily_trigger)
+	{
+		daily_trigger->Release(); daily_trigger = nullptr;
+	}
+	if (nullptr != repetition)
+	{
+		repetition->Release(); repetition = nullptr;
+	}
+	return ret;
+}
+
+///	@brief
+bool
+SchedClient::make_actions(
+	_In_ ITaskDefinition* definition,
+	_In_ const wchar_t* execute_path,
+	_In_ const wchar_t* arguments
+)
+{
+	_ASSERTE(true == _initialized);
+	if (true != _initialized) return false;
+
+	_ASSERTE(nullptr != definition || nullptr != execute_path);
+	if (nullptr == definition || nullptr == execute_path) return false;
+
+	IActionCollection*	action_collection = nullptr;
+	IExecAction*		exec_action = nullptr;
+	IAction*			action = nullptr;
+
+	HRESULT hres = S_FALSE;
+	bool ret = false;
+	do
+	{
+		hres = definition->get_Actions(&action_collection);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "definition->get_Actions() failed. hres=%u", hres log_end;
+			break;
+		}
+
+		hres = action_collection->Create(TASK_ACTION_EXEC, &action);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "actioncollection->Create() failed. hres=%u", hres log_end;
+			break;
+		}
+
+		hres = action->QueryInterface(IID_IExecAction, (PVOID*)&exec_action);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "action->QueryInterface() failed. hres=%u", hres log_end;
+			break;
+		}
+
+		hres = exec_action->put_Path(_bstr_t(execute_path));
+		if (!SUCCEEDED(hres))
+		{
+			log_err "exec_action->put_Path() failed. hres=%u", hres log_end;
+			break;
+		}
+
+		if (nullptr != arguments)
+		{
+			hres = exec_action->put_Arguments(_bstr_t(arguments));
+			if (!SUCCEEDED(hres))
+			{
+				log_err "_exec_action->put_Arguments() failed. hres=%u", hres log_end;
+				break;
+			}
+		}
+		ret = true;
+	} while (false);
+
+	if (nullptr != action_collection)
+	{
+		action_collection->Release(); action_collection = nullptr;
+	}
+	if (nullptr != exec_action)
+	{
+		exec_action->Release(); exec_action = nullptr;
+	}
+	if (nullptr != action)
+	{
+		action->Release(); action = nullptr;
+	}
+		
+	return ret;
+}
+
+///	@brief
+bool
+SchedClient::get_folder_info(
+	_In_ const wchar_t* folder_name,
+	_Out_ ITaskFolder** folder
+)
+{
+	_ASSERTE(nullptr != folder_name);
+	if (nullptr == folder_name) return false;
+
+	HRESULT hres = S_FALSE;
+	hres = _svc->GetFolder(_bstr_t(folder_name), folder);
+	if (!SUCCEEDED(hres))
+	{
+		log_err "_svc->GetFolder() failed. hres=%u, folder=%ws",
+			hres,
+			folder_name
+			log_end;
+		return false;
+	}
+
 	return true;
 }
 
 ///	@brief
 bool
-SchedClient::save(_In_ TASK_CREATION flag)
+SchedClient::get_task_register_info(
+	_In_ const wchar_t* task_name,
+	_Out_ IRegisteredTask** registered_task,
+	_In_opt_ const wchar_t* folder_name
+)
 {
-	_ASSERTE(true == _initialized);
-	if (true != _initialized) return false;
+	_ASSERTE(nullptr != folder_name || nullptr != task_name);
+	if (nullptr == folder_name || nullptr == task_name) return false;
+
+	ITaskFolder* folder = nullptr;
 	
-	IRegisteredTask* _registered_task = nullptr;
-
-	HRESULT hres = _folder->RegisterTaskDefinition(_bstr_t(_task_name.c_str()),
-												   _definition,
-												   flag,
-												   _variant_t(L"SYSTEM"),
-												   _variant_t(),
-												   TASK_LOGON_INTERACTIVE_TOKEN,
-												   _variant_t(L""),
-												   &_registered_task);
-	clear();
-	if (!SUCCEEDED(hres))
+	HRESULT hres = S_FALSE;
+	bool ret = false;
+	do
 	{
-		log_err "_folder->RegisterTaskDefinition() failed. hres=%u", hres log_end;
-		return false;
-	}
-	_registered_task->Release();
-	_registered_task = nullptr;
+		if (true != get_folder_info(folder_name, &folder))
+		{
+			//log_err "get_folder_info() failed. folder=%ws" log_end;
+			break;
+		}
 
-	return true;
-}
+		hres = folder->GetTask(_bstr_t(task_name), registered_task);
+		if (!SUCCEEDED(hres))
+		{
+			log_err "folder->GetTask() failed. hres=%u, task_name=%ws",
+				hres,
+				task_name
+				log_end;
+			break;
+		}
+		ret = true;
+	} while (false);
 
-///	@brief
-bool
-SchedClient::remove(_In_ const wchar_t* task_name)
-{
-	_ASSERTE(true == _initialized);
-	if (true != _initialized) return false;
-
-	_ASSERTE(nullptr != task_name);
-	if (nullptr == task_name) return false;
-
-	HRESULT hres = _folder->DeleteTask(_bstr_t(task_name), 0);
-	if (!SUCCEEDED(hres))
+	if (nullptr != folder)
 	{
-		log_err "_folder->DeleteTask() failed. hres=%u", hres log_end;
-		return false;
+		folder->Release(); folder = nullptr;
 	}
-
-	return true;
-}
-
-bool
-SchedClient::enabled(_In_ const wchar_t* task_name)
-{
-	_ASSERTE(true == _initialized);
-	if (true != _initialized) return false;
-
-	_ASSERTE(nullptr != task_name);
-	if (nullptr == task_name) return false;
-
-	IRegisteredTask* _registered_task = nullptr;
-	HRESULT hres = _folder->GetTask(_bstr_t(task_name),
-									&_registered_task);
-
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_folder->GetTask() failed. hres=%u", hres log_end;
-		return false;
-	}
-	//
-	// put_Enabled는 VARIANT_BOOL 타입을 파라미터로 받는데 VARIANT_BOOL은 -1이 참,
-	// 0이 거짓이다. 그래서 task를 enabled하게 바꿀려면 -1, task를 disabled하게 바꿀려면
-	// 0으로 매개변수를 넘겨주면 된다.
-	//
-	_registered_task->put_Enabled(-1);
-
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_rigistered_task->put_Enabled() failed. hres=%u", hres log_end;
-		return false;
-	}
-	_registered_task->Release();
-	_registered_task = nullptr;
-
-	return true;
-}
-
-bool
-SchedClient::disabled(_In_ const wchar_t* task_name)
-{
-	_ASSERTE(true == _initialized);
-	if (true != _initialized) return false;
-
-	_ASSERTE(nullptr != task_name);
-	if (nullptr == task_name) return false;
-
-	IRegisteredTask* _registered_task = nullptr;
-	HRESULT hres = _folder->GetTask(_bstr_t(task_name),
-									&_registered_task);
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_folder->GetTask() failed. hres=%u", hres log_end;
-		return false;
-	}
-	//
-	// put_Enabled는 VARIANT_BOOL 타입을 파라미터로 받는데 VARIANT_BOOL은 -1이 참,
-	// 0이 거짓이다. 그래서 task를 enabled하게 바꿀려면 -1, task를 disabled하게 바꿀려면
-	// 0으로 매개변수를 넘겨주면 된다.
-	//
-	_registered_task->put_Enabled(0);
-
-	if (!SUCCEEDED(hres))
-	{
-		log_err "_rigistered_task->put_Enabled() failed. hres=%u", hres log_end;
-		return false;
-	}
-	_registered_task->Release();
-	_registered_task = nullptr;
-
-	return true;
-}
-
-bool
-SchedClient::is_task_existW(_In_ const wchar_t* task_name)
-{
-	_ASSERTE(true == _initialized);
-	if (true != _initialized) return false;
-
-	_ASSERTE(nullptr != task_name);
-	if (nullptr == task_name) return false;
-
-	IRegisteredTask* _registered_task = nullptr;
-	HRESULT hres = _folder->GetTask(_bstr_t(task_name),
-									&_registered_task);
-	if (!SUCCEEDED(hres))
-	{
-		return false;
-	}
-	else
-	{
-		_registered_task->Release();
-		return true;
-	}
-}
-
-void SchedClient::clear()
-{
-	if (nullptr != _folder)
-	{
-		_folder->Release();
-		_folder = nullptr;
-	}
-	if (nullptr != _definition)
-	{
-		_definition->Release();
-		_definition = nullptr;
-	}
-	if (nullptr != _registration_info)
-	{
-		_registration_info->Release();
-		_registration_info = nullptr;
-	}
-	if (nullptr != _trigger_collection)
-	{
-		_trigger_collection->Release();
-		_trigger_collection = nullptr;
-	}
-	if (nullptr != _trigger)
-	{
-		_trigger->Release();
-		_trigger = nullptr;
-	}
-	if (nullptr != _daily_trigger)
-	{
-		_daily_trigger->Release();
-		_daily_trigger = nullptr;
-	}
-	if (nullptr != _repetition)
-	{
-		_repetition->Release();
-		_repetition = nullptr;
-	}
-	if (nullptr != _action_collection)
-	{
-		_action_collection->Release();
-		_action_collection = nullptr;
-	}
-	if (nullptr != _exec_action)
-	{
-		_exec_action->Release();
-		_exec_action = nullptr;
-	}
-	if (nullptr != _action)
-	{
-		_action->Release();
-		_action = nullptr;
-	}
+	return ret;
 }
