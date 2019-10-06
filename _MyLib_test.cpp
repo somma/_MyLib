@@ -311,7 +311,7 @@ void run_test()
 	//uint32_t lt = get_log_to();
 	//set_log_to(log_to_con | lt);
 	////assert_bool(true, test_process_tree);
-	//assert_bool(true, test_iterate_process_tree);
+	assert_bool(true, test_iterate_process_tree);
 	//set_log_to(lt);
 
 	//assert_bool(true, test_image_path_by_pid);

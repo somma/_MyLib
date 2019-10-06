@@ -18,10 +18,9 @@
 			cmd.exe -> procexp.exe -> procexp64.exe(자동으로 만들어짐) -> notepad.exe
 			순서로 프로세스를 생성해 두고 해야 한다. 
 **/
-bool proc_tree_callback(_In_ process& process_info, _In_ DWORD_PTR callback_tag)
+bool proc_tree_callback(_In_ process& process_info)
 {
-    UNREFERENCED_PARAMETER(callback_tag);
-	log_info "pid = %u, name = %ws, path = %ws", 
+    log_info "pid = %u, name = %ws, path = %ws", 
 		process_info.pid(), 
 		process_info.process_name(),
 		process_info.process_path()
@@ -37,9 +36,8 @@ bool test_iterate_process_tree()
 
 	///	부모 프로세스가 없는 프로세스 목록을 먼저 생성한다. 
 	std::vector<pprocess> top_level_procs;
-	proc_tree.iterate_process([&](_In_ process& process_info, _In_ DWORD_PTR callback_tag)->bool
+	proc_tree.iterate_process([&](_In_ process& process_info)->bool
 	{
-		UNREFERENCED_PARAMETER(callback_tag);
 		const process* p = proc_tree.get_parent(process_info);
 		if (nullptr == p)
 		{
@@ -47,16 +45,15 @@ bool test_iterate_process_tree()
 		}
 
 		return true;
-	}, 0);
+	});
 
 	/// top_level_proces 와 그 자식 프로세스들을 부모->자식 순으로 iterate 한다. 
 	size_t count = 0;
 	for (auto top_level_proc : top_level_procs)
 	{
 		log_info "\n\n" log_end;
-		proc_tree.iterate_process_tree(*top_level_proc, [&](_In_ process& process_info, _In_ DWORD_PTR callback_tag)->bool 
+		proc_tree.iterate_process_tree(*top_level_proc, [&](_In_ process& process_info)->bool 
 		{
-			UNREFERENCED_PARAMETER(callback_tag);
 			log_info "pid = %u, name = %ws, path = %ws",
 				process_info.pid(),
 				process_info.process_name(),
@@ -65,7 +62,7 @@ bool test_iterate_process_tree()
 
 			count++;
 			return true;
-		}, 0);
+		});
 	}
 	_ASSERTE(proc_tree.size() == count);
 	return true;
@@ -77,27 +74,24 @@ bool test_process_tree()
 	if (!proc_tree.build_process_tree(true)) return false;
 
 	// 프로세스 열거 테스트 (by callback)
-	proc_tree.iterate_process(proc_tree_callback, 0);
-	proc_tree.iterate_process_tree(proc_tree.find_process(L"cmd.exe"), proc_tree_callback, 0);
+	proc_tree.iterate_process(proc_tree_callback);
+	proc_tree.iterate_process_tree(proc_tree.find_process(L"cmd.exe"), proc_tree_callback);
 
 	// 프로세스 열거 테스트 (by lambda)
-	proc_tree.iterate_process([](_In_ process& process_info, _In_ DWORD_PTR callback_tag)->bool 
+	proc_tree.iterate_process([](_In_ process& process_info)->bool 
 	{
-		UNREFERENCED_PARAMETER(callback_tag);
 		log_info "pid = %u, name = %ws, path = %ws",
 			process_info.pid(),
 			process_info.process_name(),
 			process_info.process_path()
 			log_end
 			return true;
-	},
-	0);
+	});
 
 	// 프로세스 열거 테스트 (by boost::function, lambda with capture)
 	int count = 0;
-	boost::function<bool(_In_ process& process_info, _In_ DWORD_PTR callback_tag)> callback = [&count](_In_ process& process_info, _In_ DWORD_PTR callback_tag)->bool
+	auto callback = [&count](_In_ process& process_info)->bool
 	{
-		UNREFERENCED_PARAMETER(callback_tag);
 		log_info "pid = %u, name = %ws, path = %ws",
 			process_info.pid(),
 			process_info.process_name(),
@@ -106,14 +100,13 @@ bool test_process_tree()
 		++count;
 		return true;
 	};
-	proc_tree.iterate_process(callback, 0);
+	proc_tree.iterate_process(callback);
 	_ASSERTE(count > 0);
 
 	// 프로세스 열거 테스트 (by lambda with capture local variable)
 	count = 0;
-	proc_tree.iterate_process([&count](_In_ process& process_info, _In_ DWORD_PTR callback_tag)->bool
+	proc_tree.iterate_process([&count](_In_ process& process_info)->bool
 	{
-		UNREFERENCED_PARAMETER(callback_tag);
 		log_info "pid = %u, name = %ws, path = %ws",
 			process_info.pid(),
 			process_info.process_name(),
@@ -121,8 +114,7 @@ bool test_process_tree()
 			log_end;
 		count++;
 		return true;
-	},
-	0);
+	});
 	_ASSERTE(count > 0);
 
 	// 

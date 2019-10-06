@@ -353,8 +353,7 @@ const wchar_t* cprocess_tree::get_parent_name(_In_ DWORD pid)
 ///			유효하지 않는 파라미터 입력시 false 를 리턴한다.
 bool 
 cprocess_tree::iterate_process(
-	_In_ fnproc_tree_callback callback, 
-	_In_ DWORD_PTR callback_tag
+	_In_ on_proc_walk callback
 	)
 {
 	_ASSERTE(NULL != callback);		
@@ -364,7 +363,7 @@ cprocess_tree::iterate_process(
 	process_map::iterator ite= _proc_map.end();
 	for(; its != ite; ++its)
 	{
-		if (true != callback(its->second, callback_tag))
+		if (true != callback(its->second))
 		{
 			return false;
 		}
@@ -379,18 +378,17 @@ cprocess_tree::iterate_process(
 bool
 cprocess_tree::iterate_process_tree(
 	_In_ DWORD root_pid, 
-	_In_ fnproc_tree_callback callback, 
-	_In_ DWORD_PTR callback_tag
+	_In_ on_proc_walk callback
 	)
 {
 	_ASSERTE(NULL != callback);		
 	if (NULL == callback) return false;
 
-	process_map::iterator it = _proc_map.find(root_pid);
+	process_map::const_iterator it = _proc_map.find(root_pid);
 	if (it == _proc_map.end()) return false;
 
 	process root = it->second;
-	return iterate_process_tree(root, callback, callback_tag);
+	return iterate_process_tree(root, callback);
 }
 
 /// @brief	process map 을 순회하면서 콜백함수를 호출한다. 
@@ -398,12 +396,11 @@ cprocess_tree::iterate_process_tree(
 bool
 cprocess_tree::iterate_process_tree(
 	_In_ process& root, 
-	_In_ fnproc_tree_callback callback, 
-	_In_ DWORD_PTR callback_tag
+	_In_ on_proc_walk callback
 	)
 {
 	// parent first
-	if (true != callback(root, callback_tag)) return false;
+	if (true != callback(root)) return false;
 
 	//
 	//	pid == 0 인 프로세스라면 recursive call 을 하지 않는다. 
@@ -438,8 +435,7 @@ cprocess_tree::iterate_process_tree(
 			 its->second.creation_time() >= root.creation_time())
 		{
 			if (true != iterate_process_tree(its->second,
-											 callback,
-											 callback_tag))
+											 callback))
 			{
 				return false;
 			}
