@@ -59,7 +59,7 @@ bool test_cstream()
 			//	스트림 문자열 참조
 			pos = strm.GetPos();
 
-			const void* p = nullptr;
+			const char* p = nullptr;
 			_ASSERTE(size >= strm.RefFromStream(p, size));
 			_ASSERTE(strm.GetPos() > pos);
 

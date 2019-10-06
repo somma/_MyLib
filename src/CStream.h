@@ -54,13 +54,13 @@ public:
 	const void *GetMemory() { return m_pMemory; };
 	
 	// `size` 만큼 `Buffer` 에 복사하고, 스트림 포지션을 size 만큼 이동
-	size_t ReadFromStream(_Out_ void* const Buffer, _In_ const size_t size);
+	size_t ReadFromStream(_Out_ char* const Buffer, _In_ const size_t size);
 
 	// 스트림의 현재 포지션 포인터를 리턴하고, 스트림 포지션을 size 만큼 이동한다.
-	size_t RefFromStream(_Out_ const void*& Buffer, _In_ size_t size);
+	size_t RefFromStream(_Out_ const char*& Buffer, _In_ size_t size);
 
 	// 버퍼로부터 데이터를 읽어 스트림의 현재 포지션에 쓴다.
-	size_t WriteToStream(_In_ const void *Buffer, _In_ size_t size);
+	size_t WriteToStream(_In_ const char* Buffer, _In_ size_t size);
 
 	/// @brief	스트림으로부터 integer type 값을 읽고, 읽은 값을 리턴한다.
 	///
@@ -70,7 +70,7 @@ public:
 	template <typename int_type> int_type ReadInt()
 	{
 		int_type value;
-		if (sizeof(value) != ReadFromStream((void*)&value, sizeof(value)))
+		if (sizeof(value) != ReadFromStream((char*)&value, sizeof(value)))
 		{
 			return 0;
 		}
@@ -89,7 +89,7 @@ public:
 			return 0;
 		}
 
-		if (sizeof(value) != WriteToStream((const void*)&value, sizeof(value)))
+		if (sizeof(value) != WriteToStream((const char*)&value, sizeof(value)))
 		{
 			return false;
 		}

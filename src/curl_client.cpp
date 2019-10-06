@@ -48,7 +48,7 @@ http_get_write_callback(
 	UINT32 DataSizeToWrite = (UINT32)(size * nmemb);
 	CMemoryStream* stream = (CMemoryStream*)userdata;
 
-	if (-1 == stream->WriteToStream(ptr, DataSizeToWrite))
+	if (-1 == stream->WriteToStream((char*)ptr, DataSizeToWrite))
 	{
 		log_err "Can not write to memory stream" log_end;
 		return 0;

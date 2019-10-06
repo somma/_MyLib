@@ -140,59 +140,80 @@ CMemoryStream::IncreseSize(
 }
 
 /// @brief	`size` 만큼 `Buffer` 에 복사하고, 스트림 포지션을 size 만큼 이동
-///	@return	성공시 읽은 바이트 수 리턴 (스트림이 size 보다 작은 경우 포함)
-///			실패시 0 리턴
+/// @return	성공시 `size` 를 리턴하고, 스트림의 읽기 가능한 영역이 `size` 보다 
+///			작으면 0 (에러)을 리턴
 size_t 
 CMemoryStream::ReadFromStream(
-	_Out_ void* const Buffer, 
+	_Out_ char* const Buffer, 
 	_In_ const size_t size
 )
 {
-	_ASSERTE(nullptr != Buffer);
-	if (nullptr == Buffer) return 0;
-
-	if ( (m_pos >= 0) && (size >= 0) )	
+	_ASSERTE(size > 0);
+	_ASSERTE(size <= m_size);
+	if (size == 0 || size > m_size)
 	{
-		size_t cb_read = m_size - m_pos;
-		if (cb_read > 0)
-		{
-			if (cb_read > size) cb_read = size;
-		
-			RtlCopyMemory(Buffer, 
-						  (char *)(DWORD_PTR(m_pMemory) + m_pos), 
-						  cb_read);
-			m_pos += cb_read;
-			return cb_read;
-		}
+		log_err
+			"Invalid parameter. =%zu, m_size=%zu",
+			size,
+			m_size
+			log_end;
+		return 0;
 	}
-
-	return 0;
+	
+	size_t cb_can_read = m_size - m_pos;
+	if (size > cb_can_read)
+	{
+		log_err
+			"Invalid request. available=%zu, size=%zu",
+			cb_can_read,
+			size
+			log_end;
+		return 0;
+	}
+		
+	RtlCopyMemory(Buffer, 
+		          (char *)(DWORD_PTR(m_pMemory) + m_pos), 
+				  size);
+	m_pos += size;
+	return size;
 }
 
 /// @brief	`Buffer` 에 현재 스트림의 포인터를 리턴하고, `size` 만큼 스트림 
 ///			포지션을 이동
-/// @return	성공시 읽은 바이트 수 리턴 (스트림이 size 보다 작은 경우 포함)
-///			실패시 0 리턴
+/// @return	성공시 `size` 를 리턴하고, 스트림의 읽기 가능한 영역이 `size` 보다 
+///			작으면 0 (에러)을 리턴
 size_t
 CMemoryStream::RefFromStream(
-	_Out_ const void*& Buffer,
+	_Out_ const char*& Buffer,
 	_In_ const size_t size
 )
 {
-	if ((m_pos >= 0) && (size >= 0))
+	_ASSERTE(size > 0);
+	_ASSERTE(size <= m_size);
+	if (size == 0 || size > m_size)
 	{
-		size_t cb_read = m_size - m_pos;
-		if (cb_read > 0)
-		{
-			if (cb_read > size) cb_read = size;
-
-			Buffer = &m_pMemory[m_pos];
-			m_pos += cb_read;
-			return cb_read;
-		}
+		log_err
+			"Invalid parameter. =%zu, m_size=%zu",
+			size,
+			m_size
+			log_end;
+		return 0;
 	}
 
-	return 0;
+	size_t cb_can_read = m_size - m_pos;
+	if (size > cb_can_read)
+	{
+		log_err
+			"Invalid request. available=%zu, size=%zu",
+			cb_can_read,
+			size
+			log_end;
+		return 0;
+	}
+
+	Buffer = &m_pMemory[m_pos];
+	m_pos += size;
+	return size;
 }
 
 
@@ -201,7 +222,7 @@ CMemoryStream::RefFromStream(
 ///			실패시 0
 size_t 
 CMemoryStream::WriteToStream(
-	const void *Buffer, 
+	const char* Buffer, 
 	size_t size
 )
 {
