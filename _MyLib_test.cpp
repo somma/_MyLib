@@ -232,6 +232,9 @@ bool test_sched_client();
 // test_unique_ptr.cpp
 extern bool test_unique_ptr();
 extern bool test_unique_ptr_assign();
+extern bool test_unique_ptr_list();
+extern bool test_unique_ptr_list_remove();
+
 
 // _test_call_by_value_container.cpp
 extern bool test_callby_value_container();
@@ -385,8 +388,10 @@ void run_test()
 	//assert_bool(true, test_boost_function);
 	//assert_bool(true, test_bit_field);
 	//assert_bool(true, test_sched_client);
-	//assert_bool(true, test_unique_ptr);
-	//assert_bool(true, test_unique_ptr_assign);
+	assert_bool(true, test_unique_ptr);
+	assert_bool(true, test_unique_ptr_assign);
+	assert_bool(true, test_unique_ptr_list);
+	assert_bool(true, test_unique_ptr_list_remove);
 	
 	//assert_bool(true, test_callby_value_container);
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드

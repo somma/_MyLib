@@ -88,3 +88,69 @@ bool test_unique_ptr_assign()
 
 	return true;	
 }
+
+bool test_unique_ptr_list()
+{
+	_mem_check_begin
+	{
+		//
+		//	std::list<std::unique_ptr<Obj>> objs 형태의 사용
+		//
+		std::list<std::unique_ptr<Foo>> fooz;
+
+		for (int i = 0; i < 4; ++i)
+		{
+			fooz.push_back(std::make_unique<Foo>(std::to_string(i).c_str()));
+		}
+
+		// 얘는 호출 안해도 그만...
+		fooz.clear();
+
+		//
+		//	No leaks
+		//
+
+	}
+	_mem_check_end;
+
+	return true;
+}
+
+bool test_unique_ptr_list_remove()
+{
+	_mem_check_begin
+	{
+		//
+		//	std::list<std::unique_ptr<Obj>> objs 형태에서 아이템  삭제하기
+		//
+		std::list<std::unique_ptr<Foo>> fooz;
+
+		for (int i = 0; i < 4; ++i)
+		{
+			fooz.push_back(std::make_unique<Foo>(std::to_string(i).c_str()));
+		}
+
+		for (auto& foo : fooz)		
+		{
+			if (foo->foo_str == "2")
+			{
+				//
+				//	remove 해서 foo 를 날리는 순간 unique_ptr 의 소멸자가 
+				//	호출되어 정상적으로 메모리는 해제된다.
+				//
+				fooz.remove(foo);
+				break;
+			}
+		}
+
+		_ASSERTE(3 == fooz.size());
+
+		//
+		//	No leaks
+		//
+
+	}
+	_mem_check_end;
+
+	return true;
+}
