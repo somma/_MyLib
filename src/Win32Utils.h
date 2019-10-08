@@ -635,6 +635,7 @@ bool create_process_as_login_user(_In_ uint32_t session_id, _In_ const wchar_t* 
 bool set_security_attributes_type1(_Out_ SECURITY_ATTRIBUTES& sa);
 bool set_security_attributes_type2(_Out_ SECURITY_ATTRIBUTES& sa);
 
+bool is_process_alive(_In_ const DWORD peer_pid, _In_ const bool set_debug_priv);
 bool suspend_process_by_pid(_In_ DWORD pid);
 bool resume_process_by_pid(_In_ DWORD pid);
 bool terminate_process_by_pid(_In_ DWORD pid, _In_ DWORD exit_code);
