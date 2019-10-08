@@ -193,7 +193,7 @@ bool boost_bind4()
 	//
 	//	free resources
 	// 
-	for (auto aa : vA)
+	for (auto& aa : vA)
 	{
 		delete aa;
 	}

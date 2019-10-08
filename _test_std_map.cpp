@@ -373,7 +373,7 @@ bool test_std_unordered_map_object()
     _ASSERTE(0 == mymap.erase(10000000));
     
     // clear the rest of all
-    for (auto litem : mymap)
+    for (auto& litem : mymap)
     {
         delete litem.second;
     }
@@ -389,7 +389,7 @@ bool test_std_unordered_map_object()
 
     mymap[0] = new MyC(0);
     mymap[1] = new MyC(1);
-    for (auto itemx : mymap)
+    for (auto& itemx : mymap)
     {
         itemx.second->dump();
     }
@@ -397,7 +397,7 @@ bool test_std_unordered_map_object()
     std::cout << "add MyC(2), using []" << std::endl;    
     mymap[2] = new MyC(2);
 
-    for (auto itemx : mymap)
+    for (auto& itemx : mymap)
     {
         itemx.second->dump();
     }
@@ -416,7 +416,7 @@ bool test_std_unordered_map_object()
 
     
     // clear the rest of all
-    for (auto litem : mymap)
+    for (auto& litem : mymap)
     {
         delete litem.second;
     }
@@ -484,7 +484,7 @@ bool test_unorded_map_test_move()
 
 
 		// free all rsrc.
-		for (auto item : um)
+		for (auto& item : um)
 		{
 			//PSomeClassList ln = item.second;
 			auto ln = item.second;
@@ -540,7 +540,7 @@ bool test_map_insert_swap()
 	// 
 	//	리소스 정리
 	//
-	for (auto entry : str_map)
+	for (auto& entry : str_map)
 	{
 		delete entry.second;
 	}

@@ -78,8 +78,9 @@ private:
 /**
  * @brief	place holder for running processes
 **/
+#pragma todo("process_map -> unique_ptr 로 변경하기")
 typedef std::map< DWORD, process >	process_map;
-typedef boost::function<bool(_In_ process& process_info)> on_proc_walk;
+typedef boost::function<bool(_In_ const process& process_info)> on_proc_walk;
 
 class cprocess_tree
 {
@@ -95,14 +96,14 @@ public:
 	const wchar_t* get_process_path(_In_ DWORD pid);
 	uint64_t get_process_time(_In_ DWORD pid);
 
-	const process* get_parent(_In_ process& process);
+	const process* get_parent(_In_ const process& process);
 	const process* get_parent(_In_ DWORD pid);
 	DWORD get_parent_pid(_In_ DWORD pid);
 	const wchar_t* get_parent_name(_In_ DWORD pid);
 
 	void iterate_process(_In_ on_proc_walk callback);
 	void iterate_process_tree(_In_ DWORD root_pid, _In_ on_proc_walk callback);
-	void iterate_process_tree(_In_ process& root, _In_ on_proc_walk callback);
+	void iterate_process_tree(_In_ const process& root, _In_ on_proc_walk callback);
 
 	void print_process_tree(_In_ DWORD root_pid);
 	void print_process_tree(_In_ const wchar_t* root_process_name);
@@ -113,7 +114,7 @@ public:
 	bool kill_process_tree(_In_ DWORD root_pid, _In_ bool enable_debug_priv);
 private:
 	void add_process(_In_ DWORD ppid, _In_ DWORD pid, _In_ FILETIME& creation_time, _In_ BOOL is_wow64, _In_ const wchar_t* process_name, _In_ std::wstring& full_path);
-	void print_process_tree(_In_ process& p, _In_ DWORD& depth);
+	void print_process_tree(_In_ const process& p, _In_ DWORD& depth);
 	void kill_process_tree(_In_ process& root, _In_ bool enable_debug_priv);
 private:
 	process_map _proc_map;

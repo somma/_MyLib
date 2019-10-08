@@ -35,7 +35,7 @@ bool test_for()
 	for (int i = 0; i < 3; ++i)
 	{		
 		std::vector<int>& a = q.front();
-		for (auto v : a)
+		for (auto& v : a)
 		{
 			log_info "tid=%u, %u",
 				GetCurrentThreadId(),
@@ -69,7 +69,7 @@ bool test_ppl_parallel_for()
 		q.unsafe_end(),
 		[&q](std::vector<int>& a)
 		{			
-			for (auto x : a)
+			for (auto& x : a)
 			{
 				log_info "tid=%u, %u",
 					GetCurrentThreadId(),

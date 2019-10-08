@@ -803,7 +803,9 @@ get_representative_ip_v4(
 	//
 	//	Free
 	//	
-	std::for_each(adapters.begin(), adapters.end(), [](_In_ PInetAdapter p)
+	std::for_each(adapters.cbegin(), 
+				  adapters.cend(), 
+				  [](_In_ const PInetAdapter& p)
 	{
 		_ASSERTE(nullptr != p);
 		delete p;
@@ -866,7 +868,9 @@ get_mac_by_ip_v4(
 	//
 	//	Free
 	//
-	std::for_each(adapters.begin(), adapters.end(), [](PInetAdapter p)
+	std::for_each(adapters.cbegin(), 
+				  adapters.cend(), 
+				  [](const PInetAdapter& p)
 	{
 		if (nullptr != p)
 		{

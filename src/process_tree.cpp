@@ -278,14 +278,12 @@ DWORD cprocess_tree::find_process(_In_ const wchar_t* process_name)
 	_ASSERTE(NULL != process_name);
 	if (NULL == process_name) return false;
 
-	process_map::iterator it = _proc_map.begin();
-	process_map::iterator ite = _proc_map.end();
-	for(; it != ite; ++it)
-	{
-        if (rstrnicmp(it->second.process_name(), process_name))
+	for (const auto& process : _proc_map)
+	{		
+		if (rstrnicmp(process.second.process_name(), process_name))
 		{
 			// found
-			return it->second.pid();
+			return process.second.pid();
 		}
 	}
 
@@ -341,7 +339,7 @@ const wchar_t* cprocess_tree::get_process_path(_In_ DWORD pid)
  }
 
  /// @brief	부모 프로세스 객체를 리턴한다.
- const process* cprocess_tree::get_parent(_In_ process& process)
+ const process* cprocess_tree::get_parent(_In_ const process& process)
  {
 	 if (process.pid() == _idle_proc_pid || process.pid() == _system_proc_pid) return nullptr;
 
@@ -396,15 +394,14 @@ cprocess_tree::iterate_process(
 	_ASSERTE(NULL != callback);		
 	if (NULL == callback) return;
 	
-	process_map::iterator its = _proc_map.begin();
-	process_map::iterator ite= _proc_map.end();
-	for(; its != ite; ++its)
+	for (auto& process : _proc_map)
 	{
-		if (true != callback(its->second))
+		if (true != callback(process.second))
 		{
 			return;
 		}
 	}
+
 }
 
 /// @brief	지정된 process tree 를 iterate 한다. 
@@ -431,7 +428,7 @@ cprocess_tree::iterate_process_tree(
 ///			콜백함수가 false 를 리턴하면 순회를 즉시 멈춘다.
 void
 cprocess_tree::iterate_process_tree(
-	_In_ process& root, 
+	_In_ const process& root, 
 	_In_ on_proc_walk callback
 	)
 {
@@ -455,8 +452,8 @@ cprocess_tree::iterate_process_tree(
 	}
 
 	// childs
-	process_map::iterator its = _proc_map.begin();
-	process_map::iterator ite= _proc_map.end();
+	process_map::const_iterator its = _proc_map.begin();
+	process_map::const_iterator ite= _proc_map.end();
 	for(; its != ite; ++its)
 	{
 		//	ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, 
@@ -621,7 +618,7 @@ cprocess_tree::add_process(
  * @endcode	
  * @return	
 **/
-void cprocess_tree::print_process_tree(_In_ process& p, _In_ DWORD& depth)
+void cprocess_tree::print_process_tree(_In_ const process& p, _In_ DWORD& depth)
 {
 	std::stringstream prefix;
 	for(DWORD i = 0; i < depth; ++i)
@@ -637,8 +634,8 @@ void cprocess_tree::print_process_tree(_In_ process& p, _In_ DWORD& depth)
 	log_end;
 
 	// p._pid 를 ppid 로 갖는 item 을 찾자
-	process_map::iterator it = _proc_map.begin();
-	process_map::iterator ite= _proc_map.end();
+	process_map::const_iterator it = _proc_map.begin();
+	process_map::const_iterator ite= _proc_map.end();
 	for(; it != ite; ++it)
 	{
 		// ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, ppid 를 할당받은 경우가 
@@ -669,8 +666,8 @@ void cprocess_tree::print_process_tree(_In_ process& p, _In_ DWORD& depth)
 void cprocess_tree::kill_process_tree(_In_ process& root, _In_ bool enable_debug_priv)
 {
 	// terminate child processes first if exists.
-	process_map::iterator its = _proc_map.begin();
-	process_map::iterator ite= _proc_map.end();
+	process_map::const_iterator its = _proc_map.begin();
+	process_map::const_iterator ite= _proc_map.end();
 	for(; its != ite; ++its)
 	{
 		// ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, ppid 를 할당받은 경우가 
@@ -680,7 +677,7 @@ void cprocess_tree::kill_process_tree(_In_ process& root, _In_ bool enable_debug
 		if ( its->second.ppid() == root.pid() && 
 			 its->second.creation_time() >= root.creation_time())
 		{
-			kill_process_tree(its->second, enable_debug_priv);
+			kill_process_tree(const_cast<process&>(its->second), enable_debug_priv);
 		}
 	}
 

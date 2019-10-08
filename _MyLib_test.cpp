@@ -316,8 +316,8 @@ void run_test()
 
 	//uint32_t lt = get_log_to();
 	//set_log_to(log_to_con | lt);
-	////assert_bool(true, test_process_tree);
-	//assert_bool(true, test_iterate_process_tree);
+	//assert_bool(true, test_process_tree);
+	assert_bool(true, test_iterate_process_tree);
 	//set_log_to(lt);
 
 	//assert_bool(true, test_image_path_by_pid);
@@ -991,7 +991,7 @@ bool test_strtok()
     }
 
 	log_info "tokens1 : %s\n", string1 log_end;
-    for (auto token: tokens1)
+    for (auto& token: tokens1)
     {
 		log_info "\t%s", token.c_str() log_end;
     }
@@ -999,7 +999,7 @@ bool test_strtok()
 
 
 	log_info "tokens2 : %s\n", string2 log_end;
-    for (auto token : tokens2)
+    for (auto& token : tokens2)
     {
 		log_info "\t%s", token.c_str() log_end;
     }
@@ -1101,7 +1101,7 @@ bool test_find_files()
 		_ASSERTE(roots[i].count == files.size());
 
 		std::wstringstream strm;
-		for (auto file: files)
+		for (const auto& file: files)
 		{
 			strm << file << std::endl;
 		}
@@ -1556,7 +1556,7 @@ bool test_get_account_infos()
 
 	_ASSERTE(1 < accounts.size());
 
-	for (auto account : accounts)
+	for (auto& account : accounts)
 	{
 		FILETIME logon_filetime;
 		unixtime_to_filetime(account->last_logon_timestamp(), &logon_filetime);
@@ -1588,7 +1588,7 @@ bool test_get_installed_programs()
 	std::list<pprogram> softwares;
 	_ASSERTE(true == get_installed_programs(softwares));
 
-	for (auto software : softwares)
+	for (auto& software : softwares)
 	{
 		log_info
 			"product code: %ws, name(%ws)-vender(%ws)-version(%ws)",
@@ -1891,7 +1891,7 @@ bool test_enum_physical_drive()
 
     DWORD bytes_returned = 0;
 
-    for (auto disk_number : disk_numbers)
+    for (auto& disk_number : disk_numbers)
     {
         std::wstringstream path;
         path << L"\\\\.\\PhysicalDrive" << disk_number;
@@ -1945,7 +1945,7 @@ bool test_get_disk_volume_info()
         return false;
 
 
-    for (auto disk_number : disk_numbers)
+    for (auto& disk_number : disk_numbers)
     {
         uint8_t buf[512] = { 0x00 };
         DWORD bytes_returned = 0;
@@ -1999,14 +1999,14 @@ bool test_get_disk_volume_info()
             std::vector<std::string> dump;
             dump_memory(0, buf, sizeof(buf), dump);
             log_info "[*] MBR" log_end
-            for (auto line : dump)
+            for (auto& line : dump)
             {
                 log_info "%s", line.c_str() log_end
             }
         }
 
         // dump VBRs
-        for (auto vbr_info : dvi._vbrs)
+        for (auto& vbr_info : dvi._vbrs)
         {
             if (true != vbr_info.recognized) { continue; }
 
@@ -2028,7 +2028,7 @@ bool test_get_disk_volume_info()
                 log_info "[*] VBR" log_end
                 std::vector<std::string> dump;
                 dump_memory(0, buf, sizeof(buf), dump);
-                for (auto line : dump)
+                for (auto& line : dump)
                 {
                     log_info "%s", line.c_str() log_end
                 }
@@ -2071,7 +2071,7 @@ bool test_write_mbr_vbr()
         return false;
     }
 
-    for (auto disk_number : disk_numbers)
+    for (auto& disk_number : disk_numbers)
     {
         disk_volume_info dvi(disk_number);
 
@@ -2129,7 +2129,7 @@ bool test_write_mbr_vbr()
 
         // dump VBRs
         uint32_t ix = 0;
-        for (auto vbr_info : dvi._vbrs)
+        for (auto& vbr_info : dvi._vbrs)
         {
             if (true != vbr_info.recognized) { continue; }
 
@@ -2242,7 +2242,7 @@ void dump_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint32
         return;
     }
 
-    for (auto line : dump)
+    for (auto& line : dump)
     {
         log_info "%s", line.c_str() log_end
     }
@@ -2297,7 +2297,7 @@ bool test_regexp()
         //wchar_t* r = LR"(\\device\\mup\\(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))";
         //std::wregex exp(r, std::regex_constants::ECMAScript | std::regex_constants::icase);
 
-        //for (auto s : strs)
+        //for (auto& s : strs)
         //{
         //    std::wstring ws(s);
         //    std::wsmatch wsm;
@@ -2351,7 +2351,7 @@ bool test_regexp()
     {
         wchar_t* r = LR"(\\device\\mup\\(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))";
         std::wregex exp(r, std::regex_constants::ECMAScript | std::regex_constants::icase);
-        for (auto str : strs)
+        for (auto& str : strs)
         {
             std::wcmatch wcm;
             if (std::regex_search(str, wcm, exp))        // sub string 매칭
@@ -3093,7 +3093,7 @@ bool test_GeneralHashFunctions2()
 		std::map<uint32_t, std::string> _tbl;
 		StopWatch sw;
 		sw.Start();
-		for (auto file : _files)
+		for (auto& file : _files)
 		{
 			uint32_t hash = _functions[i].func(const_cast<char*>(file.c_str()),
 											   (uint32_t)strlen(file.c_str()));
@@ -3135,7 +3135,7 @@ bool test_GeneralHashFunctions2()
 		std::unordered_map<uint32_t, std::string> _tbl;
 		StopWatch sw;
 		sw.Start();
-		for (auto file : _files)
+		for (auto& file : _files)
 		{
 			uint32_t hash = _functions[i].func(const_cast<char*>(file.c_str()),
 				(uint32_t)strlen(file.c_str()));
@@ -3176,7 +3176,7 @@ bool test_GeneralHashFunctions2()
 		std::unordered_map<std::string, std::string> _tbl;
 		StopWatch sw;
 		sw.Start();
-		for (auto file : _files)
+		for (auto& file : _files)
 		{
 			auto entry = _tbl.find(file);
 			if (entry == _tbl.end())
@@ -3322,7 +3322,7 @@ bool test_raii_xxx()
 			break;
 		}
 
-		for (auto dump : dumps)
+		for (auto& dump : dumps)
 		{
 			log_info "%s", dump.c_str() log_end;
 		}
@@ -3556,7 +3556,7 @@ bool test_trivia()
 	li.push_back(1);
 	li.push_back(2);
 	li.push_back(3);
-	for (auto v : li)
+	for (auto& v : li)
 	{
 		log_info "%d", v log_end;
 	}

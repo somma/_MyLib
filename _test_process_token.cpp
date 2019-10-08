@@ -6,7 +6,7 @@ bool test_process_token()
 {
 	cprocess_tree proc_tree;
 	_ASSERTE(true == proc_tree.build_process_tree(true));
-	proc_tree.iterate_process([](_In_ process& proc)->bool
+	proc_tree.iterate_process([](_In_ const process& proc)->bool
 	{
 		//
 		//	user
@@ -44,7 +44,7 @@ bool test_process_token()
 			}
 			else
 			{
-				for (auto group_sid : groups)
+				for (auto& group_sid : groups)
 				{
 					std::wstringstream strm;
 					if (true != group_sid->_sid_info->_domain.empty())
@@ -78,7 +78,7 @@ bool test_process_token()
 			}
 			else
 			{
-				for (auto privilege : privileges)
+				for (auto& privilege : privileges)
 				{
 					std::wstringstream strm;
 					strm << L"privilege=" << privilege->_name;

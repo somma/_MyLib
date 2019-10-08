@@ -18,7 +18,7 @@
 			cmd.exe -> procexp.exe -> procexp64.exe(자동으로 만들어짐) -> notepad.exe
 			순서로 프로세스를 생성해 두고 해야 한다. 
 **/
-bool proc_tree_callback(_In_ process& process_info)
+bool proc_tree_callback(_In_ const process& process_info)
 {
     log_info "pid = %u, name = %ws, path = %ws", 
 		process_info.pid(), 
@@ -36,12 +36,12 @@ bool test_iterate_process_tree()
 
 	///	부모 프로세스가 없는 프로세스 목록을 먼저 생성한다. 
 	std::vector<pprocess> top_level_procs;
-	proc_tree.iterate_process([&](_In_ process& process_info)->bool
+	proc_tree.iterate_process([&](_In_ const process& process_info)->bool
 	{
 		const process* p = proc_tree.get_parent(process_info);
 		if (nullptr == p)
 		{
-			top_level_procs.push_back(&process_info);
+			top_level_procs.push_back(const_cast<pprocess>(&process_info));
 		}
 
 		return true;
@@ -59,7 +59,7 @@ bool test_iterate_process_tree()
 			log_end;
 
 		proc_tree.iterate_process_tree(*top_level_proc, 
-									   [&](_In_ process& process_info)->bool 
+									   [&](_In_ const process& process_info)->bool 
 		{
 			log_info "    pid = %u, name = %ws, path = %ws",
 				process_info.pid(),
@@ -85,7 +85,7 @@ bool test_process_tree()
 	proc_tree.iterate_process_tree(proc_tree.find_process(L"cmd.exe"), proc_tree_callback);
 
 	// 프로세스 열거 테스트 (by lambda)
-	proc_tree.iterate_process([](_In_ process& process_info)->bool 
+	proc_tree.iterate_process([](_In_ const process& process_info)->bool 
 	{
 		log_info "pid = %u, name = %ws, path = %ws",
 			process_info.pid(),
@@ -97,7 +97,7 @@ bool test_process_tree()
 
 	// 프로세스 열거 테스트 (by boost::function, lambda with capture)
 	int count = 0;
-	auto callback = [&count](_In_ process& process_info)->bool
+	auto callback = [&count](_In_ const process& process_info)->bool
 	{
 		log_info "pid = %u, name = %ws, path = %ws",
 			process_info.pid(),
@@ -112,7 +112,7 @@ bool test_process_tree()
 
 	// 프로세스 열거 테스트 (by lambda with capture local variable)
 	count = 0;
-	proc_tree.iterate_process([&count](_In_ process& process_info)->bool
+	proc_tree.iterate_process([&count](_In_ const process& process_info)->bool
 	{
 		log_info "pid = %u, name = %ws, path = %ws",
 			process_info.pid(),

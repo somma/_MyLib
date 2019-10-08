@@ -75,12 +75,12 @@ bool test_get_adapters()
 			std::vector<PInetAdapter> adapters;
 			_ASSERTE(true == get_inet_adapters(adapters));
 
-			for (auto adapter : adapters)
+			for (auto& adapter : adapters)
 			{
 				dump_adapter(adapter);
 			}
 
-			for (auto item : adapters)
+			for (auto& item : adapters)
 			{
 				delete item;
 			}
@@ -119,12 +119,12 @@ bool test_get_addr_info()
 										   &ipv6_list));
 
 			log_info "host=%ws", host_names[i] log_end;
-			for (auto ip4 : ipv4_list)
+			for (auto& ip4 : ipv4_list)
 			{
 				log_info "  ipv4=%s", ipv4_to_str(ip4).c_str() log_end;
 			}
 
-			for (auto ip6 : ipv6_list)
+			for (auto& ip6 : ipv6_list)
 			{
 				log_info "  ipv6=%s", ipv6_to_str(ip6).c_str() log_end;
 			}

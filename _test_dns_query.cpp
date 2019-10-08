@@ -123,7 +123,7 @@ bool test_dns_to_ip()
 		std::vector<uint32_t> ipz;
 		_ASSERTE(true == dns_to_ip(L"naver.com", false, ipz));
 		log_info "naver.com :" log_end;
-		for (auto ip : ipz)
+		for (auto& ip : ipz)
 		{
 			log_info "  - %s", ipv4_to_str(ip).c_str() log_end;
 		}

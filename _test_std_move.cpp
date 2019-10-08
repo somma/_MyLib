@@ -59,7 +59,7 @@ bool test_std_move()
 		recs.push_back(rec{ i, i + 1, i + 2 });
 	}
 
-	for (auto rec : recs)
+	for (auto& rec : recs)
 	{
 		log_info "a=%d, b=%d, c=%d",
 			rec.a,
