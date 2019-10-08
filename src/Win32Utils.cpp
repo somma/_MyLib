@@ -5450,12 +5450,14 @@ BOOL GetTimeStringW(IN std::wstring& TimeString)
 bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 {
 	//
-	//    set_privilege(SE_DEBUG_NAME, true) 호출 후 set_privilege(SE_DEBUG_NAME, false) 를 
-	//    호출하면 set_privilege(SE_DEBUG_NAME, false) 호출 이후의 OpenProcess() 가 종종
-	//    권한이 있음에도 불구하고, 실패하는 경우가 발생한다. 
-	//    정확한 원인 분석은 해보지 않아서 잘 모르겠음. 나중에 시간나면 한번...
-	//    일단 set_privilege(SE_DEBUG_NAME, false) 를 호출하지 않도록 하게 하기 위해
-	//    예외코드만 추가해 둠
+	//	set_privilege(SE_DEBUG_NAME, true) 호출 후 
+	//	set_privilege(SE_DEBUG_NAME, false) 를 호출하면 
+	//	set_privilege(SE_DEBUG_NAME, false) 호출 이후의 
+	//	OpenProcess() 가 종종 권한이 있음에도 불구하고, 실패하는 경우가 발생한다. 
+	//
+	//  정확한 원인 분석은 해보지 않아서 잘 모르겠음. 나중에 시간나면 한번...
+	//  일단 set_privilege(SE_DEBUG_NAME, false) 를 호출하지 않도록 하게 하기 위해
+	//  예외코드만 추가해 둠
 	//
 	_ASSERTE(true == enable);
 	if (true != enable) return false;
@@ -6377,6 +6379,56 @@ bool set_security_attributes_type2(_Out_ SECURITY_ATTRIBUTES& sa)
 	}
 
 	return true;
+}
+
+/// @brief	Peer 프로세스가 살아있으면 true 를리턴하고, 그렇지 않으면 false 를 리턴
+bool 
+is_process_alive(
+	_In_ const DWORD peer_pid,
+	_In_ const bool set_debug_priv
+)
+{
+	bool alive = false;
+	do
+	{
+		if (true == set_debug_priv)
+		{
+			set_privilege(SE_DEBUG_NAME, true);
+		}
+
+		handle_ptr proc_handle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
+										   FALSE,
+										   peer_pid),
+							   [](HANDLE handle)
+		{
+			if (handle != nullptr) { CloseHandle(handle); }
+		});
+
+		if (!proc_handle)
+		{
+			//
+			//	이미 종료되어, 핸들을 열수가 없음
+			//
+			break;
+		}
+
+		DWORD exit_code;
+		if (!GetExitCodeProcess(proc_handle.get(), &exit_code))
+		{
+			//
+			//	종료된 프로세스로 간주
+			//
+			break;
+		}
+
+		if (STILL_ACTIVE == exit_code)
+		{
+			alive = true;
+		}
+
+	} while (false);
+
+	return alive;
 }
 
 /// @brief	Suspend process
