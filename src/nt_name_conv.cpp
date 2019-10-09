@@ -20,24 +20,30 @@ bool NameConverter::load(_In_ bool force_reload)
 	boost::lock_guard<boost::mutex> lock(_lock);
 	if (true == _loaded && true != force_reload) return true;
 		
-	if (true != load_env_values())
+	do
 	{
-		log_err "load_env_values() failed. " log_end;
-		return false;
-	}
+		if (true != load_env_values())
+		{
+			log_err "load_env_values() failed. " log_end;
+			return false;
+		}
 
-	if (true != update_dos_device_prefixes())
-	{
-		log_err "update_dos_device_prefixes() failed." log_end;
-		return false;
-	}
+		if (true != update_dos_device_prefixes())
+		{
+			log_err "update_dos_device_prefixes() failed." log_end;
+			return false;
+		}
 
-	if (true != update_mup_device_prefixes())
-	{
-		log_err "update_mup_device_prefixes() failed." log_end;
-		return false;
-	}
-    return true;
+		if (true != update_mup_device_prefixes())
+		{
+			log_err "update_mup_device_prefixes() failed." log_end;
+			return false;
+		}
+
+		_loaded = true;
+	} while (false);
+		
+	return _loaded;
 }
 
 /// @brief  nt path name 을 dos path name 으로 변환한다. 
@@ -226,14 +232,14 @@ NameConverter::is_removable_drive(
 	boost::lock_guard<boost::mutex> lock(_lock);
 	for (const auto& drive_info : _dos_devices)
 	{
-		if (0 != _wcsnicmp(drive_info._device_name.c_str(),
+		if (0 != _wcsnicmp(drive_info->_device_name.c_str(),
 						   nt_name,
 						   cmp_count))
 		{
 			continue;
 		}
 
-		return DRIVE_REMOVABLE == drive_info._drive_type ? true : false;
+		return DRIVE_REMOVABLE == drive_info->_drive_type ? true : false;
 	}
 
 	return false;
@@ -285,7 +291,7 @@ NameConverter::iterate_dos_devices(
 	boost::lock_guard<boost::mutex> lock(_lock);
 	for (const auto& ddi : _dos_devices)
 	{
-		if (!callback(&ddi, tag))
+		if (!callback(ddi.get(), tag))
 		{
 			log_dbg "Iterate canceled." log_end;
 			return true;
@@ -330,9 +336,9 @@ NameConverter::get_nt_path_by_dos_path(
 			//
 			//	`c:` 두 글자만 비교
 			// 
-			if (0 == _wcsnicmp(ddi._logical_drive.c_str(), dos_path, 2))
+			if (0 == _wcsnicmp(ddi->_logical_drive.c_str(), dos_path, 2))
 			{
-				out_path << ddi._device_name;
+				out_path << ddi->_device_name;
 				found = true;
 				break;
 			}
@@ -387,13 +393,14 @@ NameConverter::get_device_name_by_drive_letter(
 			//
 			//	`c:` 두 글자만 비교
 			// 
-			if (0 == _wcsnicmp(ddi._logical_drive.c_str(), drive_letter, 2))
+			if (0 == _wcsnicmp(ddi->_logical_drive.c_str(), drive_letter, 2))
 			{
 				//
 				//	ddi._device_name 은 항상 `\` 종료되기 때문에 마지막 `\` 문자를
 				//	제거해서 리턴한다. 
 				//
-				device_name = ddi._device_name.substr(0, ddi._device_name.size() - 1);
+				device_name = ddi->_device_name.substr(0, 
+													   ddi->_device_name.size() - 1);
 				found = true;
 				break;
 			}
@@ -461,7 +468,7 @@ NameConverter::get_drive_letter_by_device_name(
 	boost::lock_guard<boost::mutex> lock(_lock);
 	for (const auto& ddi : _dos_devices)
 	{
-		if (0 != _wcsnicmp(ddi._device_name.c_str(), device_name, compare_count))
+		if (0 != _wcsnicmp(ddi->_device_name.c_str(), device_name, compare_count))
 		{
 			continue;
 		}
@@ -473,17 +480,17 @@ NameConverter::get_drive_letter_by_device_name(
 		// 
 		if (back_slash_count == 2)
 		{
-			if (ddi._device_name[compare_count+1] != L'\\')
+			if (ddi->_device_name[compare_count+1] != L'\\')
 			{
 				found = true;
-				drive_letter = ddi._logical_drive;
+				drive_letter = ddi->_logical_drive;
 				break;
 			}
 		}
 		else
 		{
 			found = true;
-			drive_letter = ddi._logical_drive;
+			drive_letter = ddi->_logical_drive;
 			break;
 		}
 	}
@@ -576,25 +583,25 @@ NameConverter::resolve_device_prefix(
         //	dos_device._device_name 필드는 `\Device\HarddiskVolume1\` 처럼 `\` 로 끝난다.
 		//
 
-		std::wstring smal_dn = dos_device._device_name;
+		std::wstring smal_dn = dos_device->_device_name;
 		to_lower_string(smal_dn);
 
         size_t pos = small_rfn.find(smal_dn);
         if (pos == 0)
         {
-            if (DRIVE_REMOTE == dos_device._drive_type)
+            if (DRIVE_REMOTE == dos_device->_drive_type)
             {
-                resolved_file_name = dos_device._network_name;
+                resolved_file_name = dos_device->_network_name;
                 resolved_file_name += L"\\";
-                resolved_file_name += revised_file_name.substr(dos_device._device_name.size(),
+                resolved_file_name += revised_file_name.substr(dos_device->_device_name.size(),
 															   revised_file_name.size());
 
             }
             else
             {
-                resolved_file_name = dos_device._logical_drive;
+                resolved_file_name = dos_device->_logical_drive;
                 resolved_file_name += L"\\";
-                resolved_file_name += revised_file_name.substr(dos_device._device_name.size(),
+                resolved_file_name += revised_file_name.substr(dos_device->_device_name.size(),
 															   revised_file_name.size());
             }
 
@@ -700,8 +707,7 @@ bool NameConverter::load_env_values()
 		to_lower_string(value);
 		_system_root = value;
 	}
-
-
+	
 	return true;
 }
 
@@ -709,7 +715,10 @@ bool NameConverter::load_env_values()
 /// @brief  
 bool NameConverter::update_dos_device_prefixes()
 {
-	this->_dos_devices.clear();
+	//
+	//	Clear first
+	//
+	_dos_devices.clear();
 
 	// 시스템에 매핑되어있는 드라이브 목록을 구한다. 
 	// 
@@ -725,7 +734,10 @@ bool NameConverter::update_dos_device_prefixes()
     DWORD length = GetLogicalDriveStringsW(128, drive_string);
     if (0 == length)
     {
-        log_err "GetLogicalDriveStringsW(), gle = %u", GetLastError() log_end;
+        log_err 
+			"GetLogicalDriveStringsW(), gle=%u", 
+			GetLastError() 
+			log_end;
         return false;
     }
 
@@ -738,10 +750,14 @@ bool NameConverter::update_dos_device_prefixes()
         dos_device_name[2] = 0x0000;	// `c:` 형태로 만듬
                                         // floppy 는 무시한다. 안그러면 메세지 박스 떠서 
 										// 뭐 준비가 안되었느니 어쩌느니 함.
-        if (dos_device_name[0] == 'A' || dos_device_name[0] == 'a') { continue; }
+        if (dos_device_name[0] == 'A' || dos_device_name[0] == 'a') 
+		{ 
+			continue; 
+		}
 
 		std::wstring nt_device;
-        if (true != query_dos_device(dos_device_name, nt_device))
+        if (true != query_dos_device(dos_device_name, 
+									 nt_device))
         {
             log_err
                 "query_dos_device( dos_device_name = %s )",
@@ -759,26 +775,34 @@ bool NameConverter::update_dos_device_prefixes()
         if (DRIVE_REMOTE == drive_type)
         {
             DWORD cch_rmt = 0;
-            wchar_t* rmt = NULL;
-
-            DWORD ret = WNetGetConnection(dos_device_name, NULL, &cch_rmt);
+            wchar_t* rmt = nullptr;
+            DWORD ret = WNetGetConnection(dos_device_name, 
+										  nullptr, 
+										  &cch_rmt);
             if (ERROR_MORE_DATA == ret)
             {
-                rmt = (wchar_t*)malloc((cch_rmt + 1) * sizeof(wchar_t));
-                if (NULL != rmt)
+				rmt = (wchar_t*)malloc((cch_rmt + 1) * sizeof(wchar_t));
+				if (nullptr != rmt)
                 {
-                    if (NO_ERROR == WNetGetConnection(dos_device_name, rmt, &cch_rmt))
+                    if (NO_ERROR == WNetGetConnection(dos_device_name, 
+													  rmt, 
+													  &cch_rmt))
                     {
                         network_name = rmt;
-						free(rmt);
                     }
+
+					free(rmt);
                 }
             }
         }
 
         // _drive_table 에 등록한다. 
-        DosDeviceInfo ddi(dos_device_name, nt_device.c_str(), drive_type, network_name.c_str());
-        _dos_devices.push_back(ddi);
+		_dos_devices.push_back(
+			std::make_unique<DosDeviceInfo>(dos_device_name,
+											nt_device.c_str(),
+											drive_type,
+											network_name.c_str())
+		);
     }
 
     return true;
@@ -788,31 +812,44 @@ bool NameConverter::update_dos_device_prefixes()
 ///         https://msdn.microsoft.com/windows/hardware/drivers/ifs/support-for-unc-naming-and-mup
 bool NameConverter::update_mup_device_prefixes()
 {
-    // #1, HKLM\System\CurrentControlSet\Control\NetworkProvider\Order :: ProviderOrder (REG_SZ) 값을 읽는다. 
+	//
+	//	Clear first
+	//
+	_mup_devices.clear();
+
+	const wchar_t* order_key =
+		L"System\\CurrentControlSet\\Control"
+		L"\\NetworkProvider\\Order";
+    
+	// #1, HKLM\System\CurrentControlSet\Control\NetworkProvider\Order 
+	//		::ProviderOrder (REG_SZ) 값을 읽는다. 
     std::wstring provider_order;
-	HKEY key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
-								L"System\\CurrentControlSet\\Control\\NetworkProvider\\Order",
-								true);
-	if (nullptr == key_handle)
 	{
-		log_err "RUOpenKey() failed. key=%ws",
-			L"System\\CurrentControlSet\\Control\\NetworkProvider\\Order"
-			log_end;
-		return false;
-	}
-	
-    if (!RUReadString(key_handle, 
-					  L"ProviderOrder",
-					  provider_order))
-    {
-        log_err "RUReadString( value=ProviderOrder ) failed." log_end;
+		hkey_ptr key_ptr(RUOpenKey(HKEY_LOCAL_MACHINE,
+								   order_key,
+								   true),
+							[](HKEY key)
+		{
+			if (nullptr != key) { RUCloseKey(key); }
+		});
+		if (!key_ptr)
+		{
+			log_err "RUOpenKey() failed. key=%ws",
+				L"System\\CurrentControlSet\\Control\\NetworkProvider\\Order"
+				log_end;
+			return false;
+		}
 
-		RUCloseKey(key_handle);
-        return false;
-    }
-	RUCloseKey(key_handle);
-
-
+		if (!RUReadString(key_ptr.get(),
+						  L"ProviderOrder",
+						  provider_order))
+		{
+			log_err
+				"RUReadString( value=ProviderOrder ) failed."
+				log_end;
+			return false;
+		}
+	}	
 
     _mup_devices.push_back(L"\\Device\\Mup");       // default mup device
 
@@ -820,12 +857,18 @@ bool NameConverter::update_mup_device_prefixes()
     // 
     //  provider_order = RDPNP, LanmanWorkstation, webclient
     // 
-    //  HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\[provider]\NetworkProvider :: DeviceName (REG_SZ)
+    //  HKLM\SYSTEM\CurrentControlSet\Services\[provider]\NetworkProvider 
+	//		:: DeviceName (REG_SZ)
     // 
     std::vector<std::wstring> providers;
-    if (!split_stringw(provider_order.c_str(), L",", providers))
+    if (!split_stringw(provider_order.c_str(), 
+					   L",", 
+					   providers))
     {
-        log_err "split_stringw( provider_order=%ws ) failed.", provider_order.c_str() log_end;
+        log_err 
+			"split_stringw( provider_order=%ws ) failed.", 
+			provider_order.c_str() 
+			log_end;
         return false;
     }
 
@@ -833,30 +876,33 @@ bool NameConverter::update_mup_device_prefixes()
     {
         std::wstring device_name;
         std::wstringstream key;
-        key << L"SYSTEM\\CurrentControlSet\\Services\\" << provider << L"\\NetworkProvider";
+        key << L"SYSTEM\\CurrentControlSet\\Services\\" 
+			<< provider 
+			<< L"\\NetworkProvider";
 
-		key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
-							   key.str().c_str(),
-							   true);
-		if (nullptr == key_handle)
+		hkey_ptr key_ptr(RUOpenKey(HKEY_LOCAL_MACHINE,
+								   key.str().c_str(),
+								   true),
+						 [](HKEY key) 
 		{
-			log_err "RUOpenKey() failed. key=%ws",
+			if (nullptr != key) { RUCloseKey(key); }
+		});
+		if (!key_ptr)
+		{
+			log_err 
+				"RUOpenKey() failed. key=%ws",
 				key.str().c_str()				
 				log_end;
 			continue;
 		}
 
-        if (!RUReadString(key_handle, 
-						  L"DeviceName",
-						  device_name))
+        if (!RUReadString(key_ptr.get(), L"DeviceName", device_name))
         {
             log_err "RUReadString( DeviceName ) failed." log_end;
-
-			RUCloseKey(key_handle);
             continue;
         }
 
-        this->_mup_devices.push_back(device_name);
+        _mup_devices.push_back(device_name);
     }
 	
     return true;

@@ -19,7 +19,7 @@
 #define _device_path	L"\\Device\\"
 
 
-class DosDeviceInfo
+typedef class DosDeviceInfo
 {
 public:
     DosDeviceInfo(_In_ const wchar_t* logical_drive,
@@ -48,17 +48,28 @@ public:
     std::wstring    _network_name;  // _drive_type == DRIVE_REMOTE 인 경우 네트워크 리소스 이름
                                     // e.x) \\192.168.153.129\share\
 
-};
+} *PDosDeviceInfo;
 
 /// @brief	iterate callback, callback 함수가 false 를 리턴하면 iterate 를 중지한다. 
-typedef bool(*iterate_dos_device_callback)(_In_ const DosDeviceInfo* ddi, _In_ ULONG_PTR tag);
+typedef bool(*iterate_dos_device_callback)(_In_ const DosDeviceInfo* ddi, 
+										   _In_ ULONG_PTR tag);
 
 /// @brief  
 typedef class NameConverter
 {
 public:
 	NameConverter():_loaded(false) {}
-    ~NameConverter() {}
+    virtual ~NameConverter() 
+	{
+		if (_loaded)
+		{
+			//
+			//
+			//
+		}
+		_dos_devices.clear();
+		_mup_devices.clear();
+	}
 
 	bool load(_In_ bool force_reload);
 
@@ -93,7 +104,7 @@ private:
 
 	/// 
 
-    std::list<DosDeviceInfo> _dos_devices;
+    std::list<std::unique_ptr<DosDeviceInfo>> _dos_devices;
     std::list<std::wstring> _mup_devices;
 
     bool resolve_device_prefix(_In_ const wchar_t* file_name, _Out_ std::wstring& resolved_file_name);
