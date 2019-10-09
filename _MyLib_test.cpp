@@ -215,6 +215,9 @@ bool test_thread_pool();
 // _test_boost_thread.cpp
 extern bool test_boost_thread();
 
+// _test_std_thread.cpp
+extern bool test_std_thread_with_lambda();
+
 //_test_aes256.cpp
 bool test_aes256();
 
@@ -245,8 +248,8 @@ void run_test()
 	UINT32 _fail_count = 0;
 
 	bool ret = false;
-	assert_bool(true, test_cstream);
-	assert_bool(true, test_cstream_read_only);
+	//assert_bool(true, test_cstream);
+	//assert_bool(true, test_cstream_read_only);
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
@@ -296,8 +299,10 @@ void run_test()
 	//assert_bool(true, test_get_drive_type);
 	//assert_bool(true, test_os_version);
 
-	//assert_bool(true, test_boost_thread);
 	//assert_bool(true, test_thread_pool);
+	//assert_bool(true, test_boost_thread);
+	assert_bool(true, test_std_thread_with_lambda);
+	
  //
 	//assert_bool(true, test_boost_asio_timer);
 	//assert_bool(true, test_for_each);
@@ -317,7 +322,7 @@ void run_test()
 	//uint32_t lt = get_log_to();
 	//set_log_to(log_to_con | lt);
 	//assert_bool(true, test_process_tree);
-	assert_bool(true, test_iterate_process_tree);
+	//assert_bool(true, test_iterate_process_tree);
 	//set_log_to(lt);
 
 	//assert_bool(true, test_image_path_by_pid);
@@ -344,8 +349,8 @@ void run_test()
 	//assert_bool(true, test_get_account_infos);
 	//assert_bool(true, test_get_installed_programs);
 	//assert_bool(true, test_get_file_company_name);
-	assert_bool(true, test_generate_random_string);
-	assert_bool(true, test_bit_check_set_clear);
+	//assert_bool(true, test_generate_random_string);
+	//assert_bool(true, test_bit_check_set_clear);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
 
@@ -388,10 +393,10 @@ void run_test()
 	//assert_bool(true, test_boost_function);
 	//assert_bool(true, test_bit_field);
 	//assert_bool(true, test_sched_client);
-	assert_bool(true, test_unique_ptr);
-	assert_bool(true, test_unique_ptr_assign);
-	assert_bool(true, test_unique_ptr_list);
-	assert_bool(true, test_unique_ptr_list_remove);
+	//assert_bool(true, test_unique_ptr);
+	//assert_bool(true, test_unique_ptr_assign);
+	//assert_bool(true, test_unique_ptr_list);
+	//assert_bool(true, test_unique_ptr_list_remove);
 	
 	//assert_bool(true, test_callby_value_container);
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드

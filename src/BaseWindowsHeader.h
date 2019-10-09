@@ -16,6 +16,8 @@
 #include <vector>
 #include <sstream>
 #include <set>
+#include <thread>
+#include <memory>
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
