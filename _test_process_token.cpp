@@ -6,25 +6,25 @@ bool test_process_token()
 {
 	cprocess_tree proc_tree;
 	_ASSERTE(true == proc_tree.build_process_tree(true));
-	proc_tree.iterate_process([](_In_ const process& proc)->bool
+	proc_tree.iterate_process([](_In_ const process* const proc)->bool
 	{
 		//
 		//	user
 		//
 		psid_info user_sid =nullptr;
-		user_sid = get_process_user(proc.pid());
+		user_sid = get_process_user(proc->pid());
 		if (nullptr == user_sid)
 		{
 			log_err "get_process_user() failed. pid=%u, image=%ws",
-				proc.pid(),
-				proc.process_name()
+				proc->pid(),
+				proc->process_name()
 				log_end;
 		}
 		else
 		{
 			log_info "== user, pid=%u, image=%ws, %ws\\%ws, sid=%ws, use=%u",
-				proc.pid(),
-				proc.process_name(),
+				proc->pid(),
+				proc->process_name(),
 				user_sid->_domain.c_str(),
 				user_sid->_name.c_str(),
 				user_sid->_sid.c_str(),
@@ -35,11 +35,11 @@ bool test_process_token()
 			//	groups
 			//
 			std::list<pgroup_sid_info> groups;
-			if (true != get_process_group(proc.pid(), groups))
+			if (true != get_process_group(proc->pid(), groups))
 			{
 				log_err "get_process_group() failed. pid=%u, image=%ws",
-					proc.pid(),
-					proc.process_name()
+					proc->pid(),
+					proc->process_name()
 					log_end;
 			}
 			else
@@ -69,11 +69,11 @@ bool test_process_token()
 			// privilege
 			//
 			std::list<pprivilege_info> privileges;
-			if (true != get_process_privilege(proc.pid(), privileges))
+			if (true != get_process_privilege(proc->pid(), privileges))
 			{
 				log_err "get_process_privilege() failed. pid=%u, image=%ws",
-					proc.pid(),
-					proc.process_name()
+					proc->pid(),
+					proc->process_name()
 					log_end;
 			}
 			else

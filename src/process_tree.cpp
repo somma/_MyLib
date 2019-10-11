@@ -51,17 +51,17 @@ process::process(
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool process::kill(_In_ DWORD exit_code, _In_ bool enable_debug_priv)
 {
-	_ASSERTE(true != _killed);	
+	_ASSERTE(true != _killed);
 	if (true == _killed) return true;
 
 	//
@@ -116,16 +116,49 @@ bool process::kill(_In_ DWORD exit_code, _In_ bool enable_debug_priv)
 	return (true == _killed) ? true : false;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+/// @brief	Destructor
+cprocess_tree::~cprocess_tree()
+{
+	clear_process_tree();
+}
+
+/// @brief	
+void cprocess_tree::clear_process_tree()
+{
+	for (auto& entry : _proc_map)
+	{
+		_ASSERTE(entry.second);
+		if (nullptr != entry.second)
+		{
+			delete entry.second;
+		}
+	}
+	_proc_map.clear();
+}
+
+
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
-bool 
+bool
 cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 {
 	//
@@ -145,13 +178,13 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 			// 하고 함수를 빠져 나가지 않는 이유는 `SeDebugPrivilege`
 			// 권한이 없다고 해서 프로세스 정보를 수집 못하는게 아니기 떄문이다.
 			//
-			
+
 		}
 	}
 
-	_proc_map.clear();
+	clear_process_tree();
 
-	PROCESSENTRY32W proc_entry = {0};
+	PROCESSENTRY32W proc_entry = { 0 };
 	HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (snap == INVALID_HANDLE_VALUE)
 	{
@@ -160,7 +193,7 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 	}
 
 #pragma warning(disable: 4127)
-    do
+	do
 	{
 		proc_entry.dwSize = sizeof(PROCESSENTRY32W);
 		if (!Process32First(snap, &proc_entry))
@@ -175,10 +208,10 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 		//
 		FILETIME now;
 		GetSystemTimeAsFileTime(&now);
-		
+
 		do
 		{
-			BOOL IsWow64 = FALSE; 
+			BOOL IsWow64 = FALSE;
 			FILETIME create_time(now);
 			std::wstring full_path(_null_stringw);
 
@@ -193,7 +226,7 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 				//create_time = now;
 			}
 			else
-			{				
+			{
 				HANDLE process_handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
 													FALSE,
 													proc_entry.th32ProcessID);
@@ -224,10 +257,10 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 										 &dummy_time,
 										 &dummy_time))
 					{
-						log_err "GetProcessTimes() failed, pid=%u, process=%ws, gle = %u", 
+						log_err "GetProcessTimes() failed, pid=%u, process=%ws, gle = %u",
 							proc_entry.th32ProcessID,
 							proc_entry.szExeFile,
-							GetLastError() 
+							GetLastError()
 							log_end;
 					}
 
@@ -249,11 +282,11 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 				}
 			}
 
-			add_process(proc_entry.th32ParentProcessID, 
-						proc_entry.th32ProcessID, 
-						create_time, 
+			add_process(proc_entry.th32ParentProcessID,
+						proc_entry.th32ProcessID,
+						create_time,
 						IsWow64,
-						proc_entry.szExeFile, 
+						proc_entry.szExeFile,
 						full_path);
 		} while (Process32Next(snap, &proc_entry));
 
@@ -265,13 +298,13 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 DWORD cprocess_tree::find_process(_In_ const wchar_t* process_name)
 {
@@ -279,11 +312,11 @@ DWORD cprocess_tree::find_process(_In_ const wchar_t* process_name)
 	if (NULL == process_name) return false;
 
 	for (const auto& process : _proc_map)
-	{		
-		if (rstrnicmp(process.second.process_name(), process_name))
+	{
+		if (rstrnicmp(process.second->process_name(), process_name))
 		{
 			// found
-			return process.second.pid();
+			return process.second->pid();
 		}
 	}
 
@@ -293,10 +326,10 @@ DWORD cprocess_tree::find_process(_In_ const wchar_t* process_name)
 const process* cprocess_tree::get_process(_In_ DWORD pid)
 {
 	auto p = _proc_map.find(pid);
-	if (_proc_map.end() == p) 
+	if (_proc_map.end() == p)
 		return nullptr;
 	else
-		return &(p->second);
+		return p->second;
 }
 
 const wchar_t* cprocess_tree::get_process_name(_In_ DWORD pid)
@@ -325,59 +358,66 @@ const wchar_t* cprocess_tree::get_process_path(_In_ DWORD pid)
 	}
 }
 
- uint64_t cprocess_tree::get_process_time(DWORD pid)
- {
-	 const process* p = get_process(pid);
-	 if (nullptr != p)
-	 {
-		 return p->creation_time();
-	 }
-	 else
-	 {
-		 return 0;
-	 }	 
- }
+uint64_t cprocess_tree::get_process_time(DWORD pid)
+{
+	const process* p = get_process(pid);
+	if (nullptr != p)
+	{
+		return p->creation_time();
+	}
+	else
+	{
+		return 0;
+	}
+}
 
- /// @brief	부모 프로세스 객체를 리턴한다.
- const process* cprocess_tree::get_parent(_In_ const process& process)
- {
-	 if (process.pid() == _idle_proc_pid || process.pid() == _system_proc_pid) return nullptr;
+/// @brief	부모 프로세스 객체를 리턴한다.
+const 
+process* 
+cprocess_tree::get_parent(
+	_In_ const process* const process
+)
+{
+	if (process->pid() == _idle_proc_pid || process->pid() == _system_proc_pid)
+	{
+		return nullptr;
+	}
 
-	 auto p = _proc_map.find(process.ppid());
-	 if (p == _proc_map.end()) return nullptr;
+	auto p = _proc_map.find(process->ppid());
+	if (p == _proc_map.end()) return nullptr;
 
-	 if (p->second.creation_time() <= process.creation_time())
-	 {
-		 return &(p->second);
-	 }
-	 else
-	 {
-		 return nullptr;
-	 }
- }
+	if (p->second->creation_time() <= process->creation_time())
+	{
+		return p->second;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
 
-const process* cprocess_tree::get_parent(_In_ DWORD pid)
+const process* cprocess_tree::get_parent(_In_ DWORD pid) 
 {
 	const process* me = get_process(pid);
 	if (nullptr == me) return nullptr;
 
-	return get_parent(*const_cast<process*>(me));
+	return get_parent(me);
 }
 
- /// @brief
+/// @brief
 DWORD cprocess_tree::get_parent_pid(_In_ DWORD pid)
 {
 	const process* p = get_parent(pid);
 	if (nullptr == p) return 0xffffffff;
-	
-	return p->ppid();	
+
+	return p->ppid();
 }
 
 /// @brief 
 const wchar_t* cprocess_tree::get_parent_name(_In_ DWORD pid)
 {
 	if (0 == pid || 4 == pid) return nullptr;
-	
+
 	const process* p = get_parent(pid);
 	if (nullptr == p) return nullptr;
 
@@ -386,14 +426,14 @@ const wchar_t* cprocess_tree::get_parent_name(_In_ DWORD pid)
 
 /// @brief	모든 process 를 iterate 한다. 
 ///			callback 에서 false 를 리턴하면 iterate 를 중지한다.
-void 
+void
 cprocess_tree::iterate_process(
 	_In_ on_proc_walk callback
-	)
+)
 {
-	_ASSERTE(NULL != callback);		
+	_ASSERTE(NULL != callback);
 	if (NULL == callback) return;
-	
+
 	for (auto& process : _proc_map)
 	{
 		if (true != callback(process.second))
@@ -410,17 +450,17 @@ cprocess_tree::iterate_process(
 ///			유효하지 않는 파라미터 입력시 iterate 를 중지한다.
 void
 cprocess_tree::iterate_process_tree(
-	_In_ DWORD root_pid, 
+	_In_ DWORD root_pid,
 	_In_ on_proc_walk callback
-	)
+)
 {
-	_ASSERTE(NULL != callback);		
+	_ASSERTE(NULL != callback);
 	if (NULL == callback) return;
 
 	process_map::const_iterator it = _proc_map.find(root_pid);
 	if (it == _proc_map.end()) return;
 
-	process root = it->second;
+	const pprocess root = it->second;
 	return iterate_process_tree(root, callback);
 }
 
@@ -428,9 +468,9 @@ cprocess_tree::iterate_process_tree(
 ///			콜백함수가 false 를 리턴하면 순회를 즉시 멈춘다.
 void
 cprocess_tree::iterate_process_tree(
-	_In_ const process& root, 
+	_In_ const process* const root,
 	_In_ on_proc_walk callback
-	)
+)
 {
 	// parent first
 	if (true != callback(root)) return;
@@ -446,15 +486,15 @@ cprocess_tree::iterate_process_tree(
 	//	pid, ppid, create time 등이 모두 0 이다. 
 	//	[System Process] 의 자식 프로세스는 없으므로 recursive call 을 하지 않는다.
 	//	
-	if (0 == root.pid())
+	if (0 == root->pid())
 	{
 		return;
 	}
 
 	// childs
 	process_map::const_iterator its = _proc_map.begin();
-	process_map::const_iterator ite= _proc_map.end();
-	for(; its != ite; ++its)
+	process_map::const_iterator ite = _proc_map.end();
+	for (; its != ite; ++its)
 	{
 		//	ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, 
 		//	ppid 를 할당받은 경우가 발생할 수 있다. 
@@ -464,8 +504,8 @@ cprocess_tree::iterate_process_tree(
 		//	수정: Jang, Hyowon (jang.hw73@gmail.com)
 		//	생성시간이 동일한 경우 print되지 않는 프로세스가 존재하기 때문에(ex. creation_time == 0) 
 		//	생성시간의 값이 더 크거나 같은 값으로 해야 한다.
-		if ( its->second.ppid() == root.pid() && 
-			 its->second.creation_time() >= root.creation_time())
+		if (its->second->ppid() == root->pid() &&
+			its->second->creation_time() >= root->creation_time())
 		{
 			iterate_process_tree(its->second, callback);
 		}
@@ -473,13 +513,13 @@ cprocess_tree::iterate_process_tree(
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 void cprocess_tree::print_process_tree(_In_ DWORD root_pid)
 {
@@ -493,13 +533,13 @@ void cprocess_tree::print_process_tree(_In_ DWORD root_pid)
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 void cprocess_tree::print_process_tree(_In_ const wchar_t* root_process_name)
 {
@@ -514,13 +554,60 @@ void cprocess_tree::print_process_tree(_In_ const wchar_t* root_process_name)
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
+**/
+void
+cprocess_tree::print_process_tree(
+	_In_ const process* const p,
+	_In_ DWORD& depth
+)
+{
+	std::stringstream prefix;
+	for (DWORD i = 0; i < depth; ++i)
+	{
+		prefix << "+";
+	}
+
+	log_info
+		"%spid = %u (ppid = %u), %ws ",
+		prefix.str().c_str(),
+		p->pid(),
+		p->ppid(),
+		p->process_name()
+		log_end;
+
+	// p._pid 를 ppid 로 갖는 item 을 찾자
+	process_map::const_iterator it = _proc_map.begin();
+	process_map::const_iterator ite = _proc_map.end();
+	for (; it != ite; ++it)
+	{
+		// ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, ppid 를 할당받은 경우가 
+		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다.
+		// 수정: Jang, Hyowon (jang.hw73@gmail.com)
+		// 생성시간이 동일한 경우 print되지 않는 프로세스가 존재하기 때문에(ex. creation_time == 0) 생성시간의 값이 더 크거나 같은 값으로 해야 한다.
+		if (it->second->ppid() == p->pid() &&
+			(uint64_t)it->second->creation_time() >= (uint64_t)p->creation_time())
+		{
+			print_process_tree(it->second, ++depth);
+			--depth;
+		}
+	}
+}
+
+/**
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool cprocess_tree::kill_process(_In_ DWORD pid, _In_ bool enable_debug_priv)
 {
@@ -528,160 +615,129 @@ bool cprocess_tree::kill_process(_In_ DWORD pid, _In_ bool enable_debug_priv)
 
 	process_map::iterator it = _proc_map.find(pid);
 	if (it == _proc_map.end()) return true;
-	process prcs = it->second;
-
-	return prcs.kill(0, enable_debug_priv);
+	process* const prcs = it->second;
+	return prcs->kill(0, enable_debug_priv);
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
 bool cprocess_tree::kill_process(_In_ const wchar_t* process_name, _In_ bool enable_debug_priv)
 {
 	_ASSERTE(NULL != process_name);
 	if (NULL == process_name) return false;
-	
+
 	DWORD pid = find_process(process_name);
 	return kill_process(pid, enable_debug_priv);
 }
 
 /**
- * @brief	root_pid 와 그 자식 프로세스를 모두 종료한다. 
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief	root_pid 와 그 자식 프로세스를 모두 종료한다.
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
-bool cprocess_tree::kill_process_tree(_In_ DWORD root_pid, _In_ bool enable_debug_priv)
+bool
+cprocess_tree::kill_process_tree(
+	_In_ DWORD root_pid,
+	_In_ bool enable_debug_priv
+)
 {
 	if (root_pid == 0 || root_pid == 4) return false;
 
 	process_map::iterator it = _proc_map.find(root_pid);
 	if (it == _proc_map.end()) return true;
-	process root = it->second;
+	process* const root = it->second;
 
 	// check process is already killed.
-	if (true == root.killed()) 
+	if (true == root->killed())
 	{
-		log_info "already killed. pid = %u, %ws", root.pid(), root.process_name() log_end;
+		log_info
+			"already killed. pid = %u, %ws",
+			root->pid(),
+			root->process_name()
+			log_end;
 		return true;
 	}
 
 	// kill process tree include root.
-	kill_process_tree(root, enable_debug_priv);	
+	kill_process_tree(root, enable_debug_priv);
 	return true;
 }
 
 /**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @brief
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
-void 
+void
 cprocess_tree::add_process(
-	_In_ DWORD ppid, 
-	_In_ DWORD pid, 
-	_In_ FILETIME& creation_time, 
-	_In_ BOOL is_wow64, 
-	_In_ const wchar_t* process_name, 
-    _In_ std::wstring& full_path
-	)
+	_In_ DWORD ppid,
+	_In_ DWORD pid,
+	_In_ FILETIME& creation_time,
+	_In_ BOOL is_wow64,
+	_In_ const wchar_t* process_name,
+	_In_ std::wstring& full_path
+)
 {
-	process p(process_name, 
-			  ppid, 
-			  pid, 
-			  *(uint64_t*)&creation_time, 
-			  (is_wow64 ? true : false),
-			  full_path, 
-			  false);
-	_proc_map.insert( std::make_pair(pid, p) );
-}
-
-/**
- * @brief	
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
-**/
-void cprocess_tree::print_process_tree(_In_ const process& p, _In_ DWORD& depth)
-{
-	std::stringstream prefix;
-	for(DWORD i = 0; i < depth; ++i)
-	{
-		prefix << "+";
-	}
-
-	log_info 
-		"%spid = %u (ppid = %u), %ws ", prefix.str().c_str(), 
-		p.pid(), 
-		p.ppid(), 
-		p.process_name() 
-	log_end;
-
-	// p._pid 를 ppid 로 갖는 item 을 찾자
-	process_map::const_iterator it = _proc_map.begin();
-	process_map::const_iterator ite= _proc_map.end();
-	for(; it != ite; ++it)
-	{
-		// ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, ppid 를 할당받은 경우가 
-		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다.
-		// 수정: Jang, Hyowon (jang.hw73@gmail.com)
-		// 생성시간이 동일한 경우 print되지 않는 프로세스가 존재하기 때문에(ex. creation_time == 0) 생성시간의 값이 더 크거나 같은 값으로 해야 한다.
-		if ( it->second.ppid() == p.pid() && 
-			(uint64_t)it->second.creation_time() >= (uint64_t)p.creation_time())
-		{
-			print_process_tree(it->second, ++depth);
-			--depth;
-		}			
-	}
+	pprocess p = new process(process_name,
+							 ppid,
+							 pid,
+							 *(uint64_t*)&creation_time,
+							 (is_wow64 ? true : false),
+							 full_path,
+							 false);
+	_proc_map.insert(std::make_pair(pid, p));
 }
 
 /**
  * @brief	자식의 자식의 자식까지... 재귀적으로 죽이고, 나도 죽는다. :-)
- 
-			중간에 권한 문제라든지 뭔가 문제가 있는 프로세스가 있을 수도 있다. 
+
+			중간에 권한 문제라든지 뭔가 문제가 있는 프로세스가 있을 수도 있다.
 			못죽이는 놈은 냅두고, 죽일 수 있는 놈은 다 죽이려고, 리턴값을 void 로 했음
- * @param	
- * @see		
- * @remarks	
- * @code		
- * @endcode	
- * @return	
+ * @param
+ * @see
+ * @remarks
+ * @code
+ * @endcode
+ * @return
 **/
-void cprocess_tree::kill_process_tree(_In_ process& root, _In_ bool enable_debug_priv)
+void
+cprocess_tree::kill_process_tree(
+	_In_ process* const root,
+	_In_ bool enable_debug_priv
+)
 {
 	// terminate child processes first if exists.
 	process_map::const_iterator its = _proc_map.begin();
-	process_map::const_iterator ite= _proc_map.end();
-	for(; its != ite; ++its)
+	process_map::const_iterator ite = _proc_map.end();
+	for (; its != ite; ++its)
 	{
 		// ppid 의 값은 동일하지만 ppid 프로세스는 이미 종료되고, 새로운 프로세스가 생성되고, ppid 를 할당받은 경우가 
 		// 발생할 수 있다. 따라서 ppid 값이 동일한 경우 ppid 를 가진 프로세스의 생성 시간이 pid 의 생성시간 값이 더 커야 한다.
 		// 수정: Jang, Hyowon (jang.hw73@gmail.com)
 		// 생성시간이 동일한 경우 print되지 않는 프로세스가 존재하기 때문에(ex. creation_time == 0) 생성시간의 값이 더 크거나 같은 값으로 해야 한다.
-		if ( its->second.ppid() == root.pid() && 
-			 its->second.creation_time() >= root.creation_time())
+		if (its->second->ppid() == root->pid() &&
+			its->second->creation_time() >= root->creation_time())
 		{
-			kill_process_tree(const_cast<process&>(its->second), enable_debug_priv);
+			kill_process_tree(its->second, enable_debug_priv);
 		}
 	}
 
 	// terminate parent process
-	root.kill(0, enable_debug_priv);
+	root->kill(0, enable_debug_priv);
 }
 
