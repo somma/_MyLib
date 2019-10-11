@@ -63,7 +63,7 @@ public:
 	DWORD			pid() const { return _pid; }
 	uint64_t		creation_time() const { return _creation_time; }	
 	bool			is_wow64() const { return _is_wow64; }
-	bool			killed() { return _killed; }
+	bool			killed() const { return _killed; }
 
 private:
 	std::wstring	_process_name;
@@ -75,18 +75,20 @@ private:
 	bool			_killed;
 } *pprocess;
 
+
 /**
  * @brief	place holder for running processes
 **/
-#pragma todo("process_map -> unique_ptr 로 변경하기")
-typedef std::map< DWORD, process >	process_map;
-typedef boost::function<bool(_In_ const process& process_info)> on_proc_walk;
+using process_map = std::map<DWORD, pprocess>;
+using on_proc_walk = boost::function<bool(_In_ const process* const process_info)>;
 
 class cprocess_tree
 {
 public:
+	virtual ~cprocess_tree();
+
 	size_t size() const { return _proc_map.size(); }
-	bool clear_process_tree() { _proc_map.clear(); }
+	void clear_process_tree();
 	bool build_process_tree(_In_ bool enable_debug_priv);
 
 	DWORD find_process(_In_ const wchar_t* process_name);
@@ -96,14 +98,14 @@ public:
 	const wchar_t* get_process_path(_In_ DWORD pid);
 	uint64_t get_process_time(_In_ DWORD pid);
 
-	const process* get_parent(_In_ const process& process);
+	const process* get_parent(_In_ const process* const process);
 	const process* get_parent(_In_ DWORD pid);
 	DWORD get_parent_pid(_In_ DWORD pid);
 	const wchar_t* get_parent_name(_In_ DWORD pid);
 
 	void iterate_process(_In_ on_proc_walk callback);
 	void iterate_process_tree(_In_ DWORD root_pid, _In_ on_proc_walk callback);
-	void iterate_process_tree(_In_ const process& root, _In_ on_proc_walk callback);
+	void iterate_process_tree(_In_ const process* const root, _In_ on_proc_walk callback);
 
 	void print_process_tree(_In_ DWORD root_pid);
 	void print_process_tree(_In_ const wchar_t* root_process_name);
@@ -114,8 +116,8 @@ public:
 	bool kill_process_tree(_In_ DWORD root_pid, _In_ bool enable_debug_priv);
 private:
 	void add_process(_In_ DWORD ppid, _In_ DWORD pid, _In_ FILETIME& creation_time, _In_ BOOL is_wow64, _In_ const wchar_t* process_name, _In_ std::wstring& full_path);
-	void print_process_tree(_In_ const process& p, _In_ DWORD& depth);
-	void kill_process_tree(_In_ process& root, _In_ bool enable_debug_priv);
+	void print_process_tree(_In_ const process* const p, _In_ DWORD& depth);
+	void kill_process_tree(_In_ process* const root, _In_ bool enable_debug_priv);
 private:
 	process_map _proc_map;
 };
