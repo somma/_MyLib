@@ -60,6 +60,9 @@ bool test_unique_ptr_assign()
 {
 	_mem_check_begin
 	{
+		std::unique_ptr<char[]> empty_ptr = nullptr;	
+		_ASSERTE(empty_ptr.get() == nullptr);
+
 		std::unique_ptr<char[]> y = std::make_unique<char[]>(1024);
 		std::unique_ptr<char[]> x = std::make_unique<char[]>(512);
 
@@ -154,3 +157,4 @@ bool test_unique_ptr_list_remove()
 
 	return true;
 }
+
