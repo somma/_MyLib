@@ -39,7 +39,6 @@ extern bool test_log_rotate();
 // _test_steady_timer.cpp
 extern bool test_steady_timer();
 
-
 // _test_dns_query.cpp
 extern bool test_ip_to_dns();
 extern bool test_dns_to_ip();
@@ -51,14 +50,8 @@ extern bool test_get_addr_info();
 // test_iphelp_api.cpp
 extern bool test_iphelp_api();
 
-bool test_create_guid();
-bool test_file_info_cache();
-
 // _test_process_token.cpp
 extern bool test_process_token();
-
-bool test_is_executable_file_w();
-bool test_singleton();
 
 // _test_std_move.cpp
 bool test_std_move();
@@ -219,18 +212,10 @@ extern bool test_boost_thread();
 extern bool test_std_thread_with_lambda();
 
 //_test_aes256.cpp
-bool test_aes256();
+extern bool test_aes256();
 
-bool test_trivia();
-bool test_alignment();
-bool test_create_string_from_buffer();
-bool test_stop_watch();
-
-bool test_boost_function();
-
-bool test_bit_field();
-
-bool test_sched_client();
+// _test_sched_client.cpp
+extern bool test_sched_client();
 
 // test_unique_ptr.cpp
 extern bool test_unique_ptr();
@@ -238,9 +223,22 @@ extern bool test_unique_ptr_assign();
 extern bool test_unique_ptr_list();
 extern bool test_unique_ptr_list_remove();
 
-
 // _test_call_by_value_container.cpp
 extern bool test_callby_value_container();
+
+
+bool test_create_guid();
+bool test_file_info_cache();
+bool test_is_executable_file_w();
+bool test_singleton();
+bool test_trivia();
+bool test_alignment();
+bool test_create_string_from_buffer();
+bool test_stop_watch();
+bool test_bit_field();
+bool test_interlock_operation();
+bool test_auto_manual_reset_event();
+
 
 void run_test()
 {
@@ -301,10 +299,9 @@ void run_test()
 
 	//assert_bool(true, test_thread_pool);
 	//assert_bool(true, test_boost_thread);
-	assert_bool(true, test_std_thread_with_lambda);
+	//assert_bool(true, test_std_thread_with_lambda);
 	
- //
-	//assert_bool(true, test_boost_asio_timer);
+ 	//assert_bool(true, test_boost_asio_timer);
 	//assert_bool(true, test_for_each);
 	//assert_bool(true, test_enum_physical_drive);
 	//assert_bool(true, test_get_disk_volume_info);
@@ -319,10 +316,10 @@ void run_test()
 
 	//assert_bool(true, test_initialize_string);
 
-	assert_bool(true, test_process_tree);
-	assert_bool(true, test_iterate_process_tree);	
-	assert_bool(true, test_image_path_by_pid);
-	assert_bool(true, test_get_process_creation_time);
+	//assert_bool(true, test_process_tree);
+	//assert_bool(true, test_iterate_process_tree);	
+	//assert_bool(true, test_image_path_by_pid);
+	//assert_bool(true, test_get_process_creation_time);
 
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
@@ -363,6 +360,7 @@ void run_test()
 	//assert_bool(true, boost_bind3);
 	//assert_bool(true, boost_bind4);
 	//assert_bool(true, boost_bind5);
+	//assert_bool(true, test_boost_function);
 
 	//assert_bool(true, test_std_map);
 	//assert_bool(true, test_map_plus_algorithm_1);
@@ -387,13 +385,14 @@ void run_test()
 	//assert_bool(true, test_alignment);
 	//assert_bool(true, test_create_string_from_buffer);
 	//assert_bool(true, test_stop_watch);
-	//assert_bool(true, test_boost_function);
 	//assert_bool(true, test_bit_field);
 	//assert_bool(true, test_sched_client);
-	assert_bool(true, test_unique_ptr);
-	assert_bool(true, test_unique_ptr_assign);
-	assert_bool(true, test_unique_ptr_list);
-	assert_bool(true, test_unique_ptr_list_remove);
+	//assert_bool(true, test_interlock_operation);
+	assert_bool(true, test_auto_manual_reset_event);
+	//assert_bool(true, test_unique_ptr);
+	//assert_bool(true, test_unique_ptr_assign);
+	//assert_bool(true, test_unique_ptr_list);
+	//assert_bool(true, test_unique_ptr_list_remove);
 	
 	//assert_bool(true, test_callby_value_container);
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -3681,6 +3680,8 @@ bool test_create_string_from_buffer()
 		wassignee.c_str()
 		log_end;
 
+	std::string create(&src[0], 4);
+	_ASSERTE(0 == create.compare("0123"));
 	return true;
 }
 
@@ -3695,29 +3696,6 @@ bool test_stop_watch()
 		sw.GetDurationSecond(),
 		sw.GetDurationMilliSecond()
 		log_end;
-	return true;
-}
-
-/// @brief	boost::fucntion 테스트
-bool test_boost_function()
-{
-	typedef boost::function<bool(int a, int b)> f_sum;
-
-	// nullptr 로 초기화 가능?
-	//f_sum f0 = nullptr;				//<! 컴파일에러
-
-	// 0 으로는 초기화 가능
-	f_sum f1 = 0;
-	log_info "f1.empty()=%s", f1.empty() ? "true" : "false" log_end;
-
-	// 기본 생성자 호출하면 empty
-	f_sum f2 = f_sum();
-	log_info "f2.empty()=%s", f2.empty() ? "true" : "false" log_end;
-
-	// 아무것도 초기화 안하면 empty
-	f_sum f3;
-	log_info "f3.empty()=%s", f3.empty() ? "true" : "false" log_end;
-
 	return true;
 }
 
@@ -3760,6 +3738,76 @@ bool test_bit_field()
 	return true;
 }
 
+/// @brief	
+bool test_interlock_operation()
+{
+	const int64_t v_true = 1LL;
+	const int64_t v_false = 0LL;
+	int64_t v_value = v_false;
+
+	//
+	//	v_value 가 특정 값인지 검사
+	//
+	//	value == InterlockedCompareExchange64(&dest, value, value) 라면 같은 값
+	//	value != InterlockedCompareExchange64(&dest, value, value) 라면 다른 값
+	//
+	if (v_false == InterlockedCompareExchange64(&v_value, v_false, v_false))
+	{
+		log_info "value is %lld", v_false log_end;
+	}
+
+	if (v_true != InterlockedCompareExchange64(&v_value, v_true, v_true))
+	{
+		log_info "value is not %lld", v_true log_end;
+	}
+	
+	//
+	//	특정 값이라면 다른 값으로 변경
+	//
+	int64_t prev = InterlockedCompareExchange64(&v_value, v_true, v_false);
+	_ASSERTE(prev == v_false);
+	_ASSERTE(v_value == v_true);
+	log_info "value chagned. 0x%016x -> 0x%016x", prev, v_value log_end;
+
+	return true;
+}
+
+/// @brief	Auto/Manual Reset event 테스트
+bool test_auto_manual_reset_event()
+{
+	//
+	//	Auto reset event 에 ResetEvent() 를 호출하면 
+	//	Signal -> Non signal 로 변하는지 확인하기
+	//
+
+	//	Auto reset event 생성
+	HANDLE hevent = CreateEventW(nullptr, 
+								 FALSE,		// Auto reset event
+								 FALSE,		// Non-signal state
+								 L"AutoResetEvent");
+	_ASSERTE(nullptr != hevent);
+
+	//	Non-signal state 이므로 timeout 이 발생
+	DWORD wr = WaitForSingleObject(hevent, 100);
+	_ASSERTE(wr == WAIT_TIMEOUT);
+
+	//	Signal state 로 변경
+	//	WaitForSingleObject() 에 의해 Non-Signal state 로 자동 변환됨
+	SetEvent(hevent);
+	wr = WaitForSingleObject(hevent, 100);
+	_ASSERTE(wr == WAIT_OBJECT_0);
+
+
+	//	Signal state 로 변경
+	//	ResetEvent() 에 의해서 다시 Non-signal state 로 변환
+	//	Wait 함수는 timeout 발생
+	SetEvent(hevent);
+	ResetEvent(hevent);
+	wr = WaitForSingleObject(hevent, 100);
+	_ASSERTE(wr == WAIT_TIMEOUT);
+
+	return true;
+}
 
 /**
  * @brief
