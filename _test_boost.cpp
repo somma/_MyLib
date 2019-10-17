@@ -245,3 +245,26 @@ bool boost_hash()
 {
     return true;
 }
+
+/// @brief	boost::fucntion 테스트
+bool test_boost_function()
+{
+	typedef boost::function<bool(int a, int b)> f_sum;
+
+	// nullptr 로 초기화 가능?
+	//f_sum f0 = nullptr;				//<! 컴파일에러
+
+	// 0 으로는 초기화 가능
+	f_sum f1 = 0;
+	log_info "f1.empty()=%s", f1.empty() ? "true" : "false" log_end;
+
+	// 기본 생성자 호출하면 empty
+	f_sum f2 = f_sum();
+	log_info "f2.empty()=%s", f2.empty() ? "true" : "false" log_end;
+
+	// 아무것도 초기화 안하면 empty
+	f_sum f3;
+	log_info "f3.empty()=%s", f3.empty() ? "true" : "false" log_end;
+
+	return true;
+}
