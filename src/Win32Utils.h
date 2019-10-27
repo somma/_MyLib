@@ -416,6 +416,12 @@ std::string WcsToMbsEx(_In_ const wchar_t *wcs);
 std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs);
 std::wstring Utf8MbsToWcsEx(_In_ const char* utf8);
 
+__inline std::wstring MbsToWcsEx(_In_ const std::string& mbs) { return MbsToWcsEx(mbs.c_str()); }
+__inline std::string WcsToMbsEx(_In_ const std::wstring& wcs) { return WcsToMbsEx(wcs.c_str()); }
+__inline std::string WcsToMbsUTF8Ex(_In_ const std::wstring& wcs) { return WcsToMbsUTF8Ex(wcs.c_str()); }
+__inline std::wstring Utf8MbsToWcsEx(_In_ const std::string& utf8) { return Utf8MbsToWcsEx(utf8.c_str()); }
+
+
 /// @brief  src 의 뒤에서부터 fnd 문자열을 찾는다. 
 ///         fnd 가 src 의 꽁무니와 정확히 일치하면 true, 아니면 false 리턴
 ///         - 확장자 검사같은거 할때 사용
