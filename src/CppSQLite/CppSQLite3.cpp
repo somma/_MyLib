@@ -1276,19 +1276,20 @@ void CppSQLite3DB::open(const char* utf8_file, bool read_only, bool memory_mode)
 ///		   파일로 저장 또는 파일에 저장된 내용을 가져올 때 사용한다.
 void CppSQLite3DB::load_or_save(const wchar_t* const szFile, bool is_save)
 {
-	_ASSERTE(true == in_memory_mode);
 	if (true != in_memory_mode) return;
 
 	if (is_save)
 	{
 		if (true == is_file_existsW(szFile))
 		{
-			DeleteFileW(szFile);
-			log_err "DeleteFileW( %ws ) failed. gle = %u",
-				szFile,
-				GetLastError()
-				log_end;
-			return;
+			if (!DeleteFileW(szFile))
+			{
+				log_err "DeleteFileW() failed. file=%ws, gle=%u",
+					szFile,
+					GetLastError()
+					log_end;
+				return;
+			}
 		}
 	}
 	else
@@ -1299,21 +1300,26 @@ void CppSQLite3DB::load_or_save(const wchar_t* const szFile, bool is_save)
 		}
 	}
 
-	sqlite3* pFileDB;
-	int nRet = sqlite3_open16(szFile, &pFileDB);
-	if (nRet != SQLITE_OK)
-	{
-		log_err "file db open failed. path=%ws, is_save=%s",
-			szFile,
-			is_save == true ? "O" : "X"
-			log_end;
-		return;
-	}
-	_ASSERTE(nullptr != pFileDB);
-
+	sqlite3* pFileDB = nullptr;
+	sqlite3_backup* pDBBackup = nullptr;
 	do
 	{
-		sqlite3_backup* pDBBackup = nullptr;
+		//
+		//	Open file DB
+		//
+		int nRet = sqlite3_open16(szFile, &pFileDB);
+		if (nRet != SQLITE_OK)
+		{
+			log_err "sqlite3_open16() failed. path=%ws, is_save=%s",
+				szFile,
+				is_save == true ? "O" : "X"
+				log_end;
+			break;
+		}
+
+		//
+		//	Open online backup
+		//
 		if (true == is_save)
 		{
 			pDBBackup = sqlite3_backup_init(pFileDB, "main", mpDB, "main");
@@ -1322,29 +1328,38 @@ void CppSQLite3DB::load_or_save(const wchar_t* const szFile, bool is_save)
 		{
 			pDBBackup = sqlite3_backup_init(mpDB, "main", pFileDB, "main");
 		}
+		if (nullptr == pDBBackup) { break; }
 
-		if (nullptr == pDBBackup)
+		//
+		//	Run backup
+		//		
+		nRet = sqlite3_backup_step(pDBBackup, -1);
+		while (nRet == SQLITE_OK)
 		{
-			break;
+			//
+			//	sqlite3_backup_step() 에서 복사할 페이지가 더 남았다면 
+			//	SQLITE_OK 를 리턴하고, 요청한 모든 페이지가 복사된 경우
+			//	SQLITE_DONE 을 리턴한다.
+			//
+			nRet = sqlite3_backup_step(pDBBackup, -1);
 		}
 
-		nRet = sqlite3_backup_step(pDBBackup, -1);
-		if ((nRet != SQLITE_OK) && (nRet != SQLITE_DONE) && (nRet != SQLITE_BUSY) && (nRet != SQLITE_LOCKED))
+		if (nRet != SQLITE_DONE)
 		{
-			log_err "sqlite3_backup_step failed. err=%s",
-				sqlite3_errstr(nRet)
+			//
+			//	SQLITE_DONE 이 아닌경우 에러
+			//
+			log_err "sqlite3_backup_step() failed. ret=%d",
+				nRet
 				log_end;
 			break;
 		}
 
-		sqlite3_backup_finish(pDBBackup);
-
 	} while (false);
 
-	if (nullptr != pFileDB)
-	{
-		sqlite3_close(pFileDB); pFileDB = nullptr;
-	}
+	if (nullptr != pDBBackup) { sqlite3_backup_finish(pDBBackup); }
+	if (nullptr != pFileDB){ sqlite3_close(pFileDB); }
+
 	return;
 }
 
