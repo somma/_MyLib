@@ -1329,7 +1329,7 @@ void CppSQLite3DB::load_or_save(const wchar_t* const szFile, bool is_save)
 		}
 
 		nRet = sqlite3_backup_step(pDBBackup, -1);
-		if ((nRet != SQLITE_OK) && (nRet != SQLITE_BUSY) && (nRet != SQLITE_LOCKED))
+		if ((nRet != SQLITE_OK) && (nRet != SQLITE_DONE) && (nRet != SQLITE_BUSY) && (nRet != SQLITE_LOCKED))
 		{
 			log_err "sqlite3_backup_step failed. err=%s",
 				sqlite3_errstr(nRet)
