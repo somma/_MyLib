@@ -290,9 +290,10 @@ public:
 
     virtual ~CppSQLite3DB();
 
-    void open(const char* szFile);
-	void open(const wchar_t* szFile);
-	void open(const char* utf8_file, bool read_only);
+    void open(const char* szFile, bool memory_mode = false);
+	void open(const wchar_t* szFile, bool memory_mode = false);
+	void open(const char* utf8_file, bool read_only, bool memory_mode = false);
+	void load_or_save(const wchar_t* const szFile, bool is_save);
 
     void close();
 
@@ -316,6 +317,8 @@ public:
 
     static const char* SQLiteVersion() { return SQLITE_VERSION; }
 
+	bool use_in_memory() { return in_memory_mode; }
+
 private:
 
     CppSQLite3DB(const CppSQLite3DB& db);
@@ -327,6 +330,7 @@ private:
 
     sqlite3* mpDB;
     int mnBusyTimeoutMs;
+	bool in_memory_mode;
 };
 
 #endif

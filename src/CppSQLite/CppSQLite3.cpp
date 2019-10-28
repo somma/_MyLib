@@ -1191,6 +1191,7 @@ CppSQLite3DB::CppSQLite3DB()
 {
     mpDB = 0;
     mnBusyTimeoutMs = 60000; // 60 seconds
+	in_memory_mode = false;
 }
 
 
@@ -1215,7 +1216,7 @@ CppSQLite3DB& CppSQLite3DB::operator=(const CppSQLite3DB& db)
 }
 
 
-void CppSQLite3DB::open(const char* szFile)
+void CppSQLite3DB::open(const char* szFile, bool memory_mode)
 {
     int nRet = sqlite3_open(szFile, &mpDB);
 	
@@ -1226,9 +1227,10 @@ void CppSQLite3DB::open(const char* szFile)
     }
 
     setBusyTimeout(mnBusyTimeoutMs);
+	in_memory_mode = memory_mode;
 }
 
-void CppSQLite3DB::open(const wchar_t* szFile)
+void CppSQLite3DB::open(const wchar_t* szFile, bool memory_mode)
 {
 	int nRet = sqlite3_open16(szFile, &mpDB);
 	
@@ -1239,9 +1241,10 @@ void CppSQLite3DB::open(const wchar_t* szFile)
 	}
 
 	setBusyTimeout(mnBusyTimeoutMs);
+	in_memory_mode = memory_mode;
 }
 
-void CppSQLite3DB::open(const char* utf8_file, bool read_only)
+void CppSQLite3DB::open(const char* utf8_file, bool read_only, bool memory_mode)
 {
 	int nRet = 0;
 	if (true != read_only)
@@ -1266,6 +1269,83 @@ void CppSQLite3DB::open(const char* utf8_file, bool read_only)
 	}
 
 	setBusyTimeout(mnBusyTimeoutMs);
+	in_memory_mode = memory_mode;
+}
+
+/// @brief load_or_save는 in-memory 모드로 디비를 사용하고, 데이터베이스를 종료 또는 오픈 할 때
+///		   파일로 저장 또는 파일에 저장된 내용을 가져올 때 사용한다.
+void CppSQLite3DB::load_or_save(const wchar_t* const szFile, bool is_save)
+{
+	_ASSERTE(true == in_memory_mode);
+	if (true != in_memory_mode) return;
+
+	if (is_save)
+	{
+		if (true == is_file_existsW(szFile))
+		{
+			DeleteFileW(szFile);
+			log_err "DeleteFileW( %ws ) failed. gle = %u",
+				szFile,
+				GetLastError()
+				log_end;
+			return;
+		}
+	}
+	else
+	{
+		if (true != is_file_existsW(szFile))
+		{
+			return;
+		}
+	}
+
+	sqlite3* pFileDB;
+	int nRet = sqlite3_open16(szFile, &pFileDB);
+	if (nRet != SQLITE_OK)
+	{
+		log_err "file db open failed. path=%ws, is_save=%s",
+			szFile,
+			is_save == true ? "O" : "X"
+			log_end;
+		return;
+	}
+	_ASSERTE(nullptr != pFileDB);
+
+	do
+	{
+		sqlite3_backup* pDBBackup = nullptr;
+		if (true == is_save)
+		{
+			pDBBackup = sqlite3_backup_init(pFileDB, "main", mpDB, "main");
+		}
+		else
+		{
+			pDBBackup = sqlite3_backup_init(mpDB, "main", pFileDB, "main");
+		}
+
+		if (nullptr == pDBBackup)
+		{
+			break;
+		}
+
+		nRet = sqlite3_backup_step(pDBBackup, -1);
+		if ((nRet != SQLITE_OK) && (nRet != SQLITE_BUSY) && (nRet != SQLITE_LOCKED))
+		{
+			log_err "sqlite3_backup_step failed. err=%s",
+				sqlite3_errstr(nRet)
+				log_end;
+			break;
+		}
+
+		sqlite3_backup_finish(pDBBackup);
+
+	} while (false);
+
+	if (nullptr != pFileDB)
+	{
+		sqlite3_close(pFileDB); pFileDB = nullptr;
+	}
+	return;
 }
 
 void CppSQLite3DB::close()
