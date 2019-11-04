@@ -662,10 +662,7 @@ SchedClient::get_folder_info(
 	hres = _svc->GetFolder(_bstr_t(folder_name), folder);
 	if (!SUCCEEDED(hres))
 	{
-		log_err "_svc->GetFolder() failed. hres=%u, folder=%ws",
-			hres,
-			folder_name
-			log_end;
+		log_dbg "_svc->GetFolder() failed. folder=%ws", folder_name log_end;
 		return false;
 	}
 
@@ -691,17 +688,14 @@ SchedClient::get_task_register_info(
 	{
 		if (true != get_folder_info(folder_name, &folder))
 		{
-			//log_err "get_folder_info() failed. folder=%ws" log_end;
+			log_dbg "get_folder_info() failed. folder=%ws" log_end;
 			break;
 		}
 
 		hres = folder->GetTask(_bstr_t(task_name), registered_task);
 		if (!SUCCEEDED(hres))
 		{
-			log_err "folder->GetTask() failed. hres=%u, task_name=%ws",
-				hres,
-				task_name
-				log_end;
+			log_dbg "folder->GetTask() failed. task_name=%ws", task_name log_end;
 			break;
 		}
 		ret = true;
