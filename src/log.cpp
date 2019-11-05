@@ -732,7 +732,7 @@ bool slogger::rotate_log_file(_In_ const wchar_t* log_file_path)
 	_ASSERTE(INVALID_HANDLE_VALUE == _log_file_handle);
 	_log_file_handle = CreateFileW(log_file_path,
 								   GENERIC_ALL,
-								   FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
+								   FILE_SHARE_WRITE | FILE_SHARE_READ,
 								   NULL,
 								   CREATE_NEW,
 								   FILE_ATTRIBUTE_NORMAL,
