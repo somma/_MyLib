@@ -4801,7 +4801,7 @@ bool create_guid(_Out_ std::wstring& guid)
 bool
 string_to_guid(
 	_In_ const char* guid_string,
-	_Out_ GUID& guid
+	_Out_ const GUID& guid
 )
 {
 	_ASSERTE(nullptr != guid_string);
@@ -4814,19 +4814,19 @@ string_to_guid(
 bool
 wstring_to_guid(
 	_In_ const wchar_t* guid_string,
-	_Out_ GUID& guid
+	_Out_ const GUID& guid
 )
 {
 	_ASSERTE(nullptr != guid_string);
 	if (nullptr == guid_string) return false;
 
-	return SUCCEEDED(CLSIDFromString(guid_string, &guid));
+	return SUCCEEDED(CLSIDFromString(guid_string, const_cast<LPCLSID>(&guid)));
 }
 
 /// @brief	
 std::string
 guid_to_string(
-	_In_ GUID& guid
+	_In_ const GUID& guid
 )
 {
 	std::wstring guid_stringw = guid_to_stringw(guid);
@@ -4836,7 +4836,7 @@ guid_to_string(
 /// @brief	
 std::wstring
 guid_to_stringw(
-	_In_ GUID& guid
+	_In_ const GUID& guid
 )
 {
 	const wchar_t* null_guid = L"{00000000-0000-0000-0000-000000000000}";

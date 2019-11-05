@@ -607,10 +607,10 @@ typedef std::unique_ptr<std::remove_pointer<SC_HANDLE>::type, void(*)(SC_HANDLE)
 bool create_guid(_Out_ GUID& guid);
 bool create_guid(_Out_ std::string& guid);
 bool create_guid(_Out_ std::wstring& guid);
-bool string_to_guid(_In_ const char* guid_string, _Out_ GUID& guid);
-bool wstring_to_guid(_In_ const wchar_t* guid_string, _Out_ GUID& guid);
-std::string guid_to_string(_In_ GUID& guid);
-std::wstring guid_to_stringw(_In_ GUID& guid);
+bool string_to_guid(_In_ const char* guid_string, _Out_ const GUID& guid);
+bool wstring_to_guid(_In_ const wchar_t* guid_string, _Out_ const GUID& guid);
+std::string guid_to_string(_In_ const GUID& guid);
+std::wstring guid_to_stringw(_In_ const GUID& guid);
 
 
 std::string Win32ErrorToStringA(IN DWORD ErrorCode);
