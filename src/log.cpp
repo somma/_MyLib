@@ -847,6 +847,8 @@ void slogger::remove_old_log_files()
 ///			pops log entry from log queue and writes log to output
 void slogger::slog_thread()
 {
+	FILETIME prev_flushed; GetSystemTimeAsFileTime(&prev_flushed);
+
 	while (true != _stop_logger)
 	{
 		if (true == _log_queue.empty())
@@ -928,6 +930,21 @@ void slogger::slog_thread()
 				_log_count++;
 				write_to_filea(_log_file_handle, "%s", log->_msg.c_str());
 			}
+
+			//
+			//	30 초 마다 File 을 Flush 한다. 
+			//
+			FILETIME now; GetSystemTimeAsFileTime(&now);
+			if (file_time_delta_sec(&now, &prev_flushed) > 30)
+			{
+				prev_flushed = now;
+				_ASSERTE(INVALID_HANDLE_VALUE != _log_file_handle);
+				if (INVALID_HANDLE_VALUE != _log_file_handle)
+				{
+					FlushFileBuffers(_log_file_handle);
+				}
+			}
+			
 		}
 
 		delete log;
