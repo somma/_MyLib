@@ -8,7 +8,7 @@
 **/
 
 #include "stdafx.h"
-#include "CStream.h"
+#include "_MyLib/src/CStream.h"
 
 bool test_cstream()
 {

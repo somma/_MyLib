@@ -1,6 +1,6 @@
 
 #include "stdafx.h"
-#include "net_util.h"
+#include "_MyLib/src/net_util.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN

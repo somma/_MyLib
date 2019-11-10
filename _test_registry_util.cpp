@@ -8,7 +8,7 @@
  * 2014:9:24 21:10 created
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
-#include "RegistryUtil.h"
+#include "_MyLib/src/RegistryUtil.h"
 
 /**
  * @brief	
