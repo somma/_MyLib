@@ -34,7 +34,7 @@ bool create_remove_task(_In_ const wchar_t* task_name,
 											   execute_path,
 											   L"\\",
 											   arguments,
-											   interval))
+											   (short)interval))
 	{
 		log_err "SchedClient::easy_create() failed." log_end;
 		return false;
