@@ -7,7 +7,7 @@
  * @copyright (C)Somma, Inc. All rights reserved.
 **/
 #include "stdafx.h"
-#include "BaseWindowsHeader.h"
+#include "_MyLib/src/BaseWindowsHeader.h"
 
 class ThreadParamClass
 {

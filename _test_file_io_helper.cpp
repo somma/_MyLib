@@ -9,8 +9,8 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
-#include "StopWatch.h"
-#include "FileIoHelperClass.h"
+#include "_MyLib/src/StopWatch.h"
+#include "_MyLib/src/FileIoHelperClass.h"
 
 
 

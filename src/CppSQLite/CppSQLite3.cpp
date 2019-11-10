@@ -5,10 +5,10 @@
  * See LICENSE file for copyright and license info
 */
 #include "stdafx.h"
-#include "CppSQLite3.h"
 #include <cstdlib>
 #include <utility>
-#include "Win32Utils.h"
+#include "_MyLib/src/CppSQLite/CppSQLite3.h"
+#include "_MyLib/src/Win32Utils.h"
 
 
 // Named constant for passing to CppSQLite3Exception when passing it a string

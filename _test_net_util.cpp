@@ -7,11 +7,9 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
-#include "Win32Utils.h"
-#include "net_util.h"
-
-
 #include <vector>
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/src/net_util.h"
 
 void dump_adapter(_In_ const PInetAdapter adapter)
 {

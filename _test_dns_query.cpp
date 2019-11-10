@@ -9,8 +9,8 @@
 #include "stdafx.h"
 #include <crtdbg.h>
 
-#include "net_util.h"
-#include "StopWatch.h"
+#include "_MyLib/src/net_util.h"
+#include "_MyLib/src/StopWatch.h"
 
  /// @brief
 bool test_ip_to_dns()

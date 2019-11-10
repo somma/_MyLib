@@ -7,7 +7,7 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
-#include "wmi_client.h"
+#include "_MyLib/src/wmi_client.h"
 
 
 /// @brief  send wmi query 

@@ -8,7 +8,7 @@
 **/
 #include "stdafx.h"
 #include <crtdbg.h>
-#include "steady_timer.h"
+#include "_MyLib/src/steady_timer.h"
 
 bool test_steady_timer_using_lambda()
 {

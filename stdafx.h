@@ -40,6 +40,6 @@
 #include <crtdbg.h>
 
 #include <strsafe.h>
-#include "Win32Utils.h"
-#include "mini_test.h"
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/mini_test.h"
 

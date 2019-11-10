@@ -9,7 +9,7 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
-#include "scm_context.h"
+#include "_MyLib/src/scm_context.h"
 
 
 

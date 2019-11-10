@@ -8,7 +8,7 @@
 **/
 
 #include "stdafx.h"
-#include "sched_client.h"
+#include "_MyLib/src/sched_client.h"
 
 typedef struct _task_list {
 	const wchar_t* task_name;

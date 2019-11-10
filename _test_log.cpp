@@ -7,7 +7,7 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
-#include "log.h"
+#include "_MyLib/src/log.h"
 
 bool test_log_rotate_with_no_file();
 bool test_log_rotate_with_ext();

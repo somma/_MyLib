@@ -7,27 +7,28 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
-#include "process_tree.h"
-#include "base64.h"
-#include "rc4.h"
-#include "thread_pool.h"
-#include "md5.h"
-#include "sha2.h"
-#include "Win32Utils.h"
-#include "send_ping.h"
 #include <regex>
-#include "wmi_client.h"
-#include "nt_name_conv.h"
-#include "crc64.h"
-#include "StopWatch.h"
-#include "GeneralHashFunctions.h"
 #include <unordered_map>
-#include "Singleton.h"
-#include "FileInfoCache.h"
-#include "account_info.h"
-#include "curl_client.h"
-#include "CStream.h"
-#include "sched_client.h"
+
+#include "_MyLib/src/process_tree.h"
+#include "_MyLib/src/base64.h"
+#include "_MyLib/src/rc4.h"
+#include "_MyLib/src/thread_pool.h"
+#include "_MyLib/src/md5.h"
+#include "_MyLib/src/sha2.h"
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/src/send_ping.h"
+#include "_MyLib/src/wmi_client.h"
+#include "_MyLib/src/nt_name_conv.h"
+#include "_MyLib/src/crc64.h"
+#include "_MyLib/src/StopWatch.h"
+#include "_MyLib/src/GeneralHashFunctions.h"
+#include "_MyLib/src/Singleton.h"
+#include "_MyLib/src/FileInfoCache.h"
+#include "_MyLib/src/account_info.h"
+#include "_MyLib/src/curl_client.h"
+#include "_MyLib/src/CStream.h"
+#include "_MyLib/src/sched_client.h"
 
 // test_CStream.cpp
 extern bool test_cstream();
@@ -400,7 +401,7 @@ void run_test()
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //
-	//assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
+	assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
 	//assert_bool(true, test_const_position);		// 컴파일 불가 테스트
 
 

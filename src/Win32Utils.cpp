@@ -4360,7 +4360,7 @@ std::string generate_random_string(_In_ const size_t length)
 		"{|}~";
 
 	std::stringstream strm;
-	for (int i = 0; i < length; ++i) 
+	for (size_t i = 0; i < length; ++i) 
 	{
 		strm << alphanum[rand() % (sizeof(alphanum) - 1)];
 	}
@@ -4380,7 +4380,7 @@ std::wstring generate_random_stringw(_In_ const size_t length)
 		L"{|}~";
 
 	std::wstringstream strm;
-	for (int i = 0; i < length; ++i)
+	for (size_t i = 0; i < length; ++i)
 	{
 		wchar_t w = alphanumw[rand() % ((sizeof(alphanumw) / sizeof(wchar_t)) - 1)];
 		strm << w;
