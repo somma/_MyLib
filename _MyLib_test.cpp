@@ -239,6 +239,7 @@ bool test_stop_watch();
 bool test_bit_field();
 bool test_interlock_operation();
 bool test_auto_manual_reset_event();
+bool test_get_module_dirEx();
 
 
 void run_test()
@@ -390,12 +391,14 @@ void run_test()
 	//assert_bool(true, test_sched_client);
 	//assert_bool(true, test_interlock_operation);
 	//assert_bool(true, test_auto_manual_reset_event);
+	assert_bool(true, test_get_module_dirEx);
 	//assert_bool(true, test_unique_ptr);
 	//assert_bool(true, test_unique_ptr_assign);
 	//assert_bool(true, test_unique_ptr_list);
 	//assert_bool(true, test_unique_ptr_list_remove);
 	
 	//assert_bool(true, test_callby_value_container);
+
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //
 	assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
@@ -3807,6 +3810,45 @@ bool test_auto_manual_reset_event()
 	wr = WaitForSingleObject(hevent, 100);
 	_ASSERTE(wr == WAIT_TIMEOUT);
 
+	return true;
+}
+
+/// @brief 
+bool test_get_module_dirEx()
+{
+	//
+	//	실행 모듈(exe, dll)을 파라미터로 전달한 경우 문제없음
+	//
+	std::wstring path = get_module_dirEx(get_current_module_pathEx().c_str());
+	log_info
+		"in  : %ws\n"
+		"out : %ws",
+		get_current_module_pathEx().c_str(),
+		path.c_str()
+		log_end;
+
+	//
+	//	실행 모듈이 아닌 다른경로를 넣었을 경우, 현재 프로그램의 경로가 리턴됨
+	//
+	path = get_module_dirEx(L"c:\\windows\\system32\\boot.ini");
+	log_info
+		"in  : %ws\n"
+		"out : %ws",
+		L"c:\\windows\\system32\\boot.ini",
+		path.c_str()
+		log_end;
+
+	//
+	//	실행 모듈이 아닌 경우 directory_from_file_pathw() 함수 사용
+	//
+	path = directory_from_file_pathw(L"c:\\windows\\system32\\boot.ini");
+	_ASSERTE(0 == path.compare(L"c:\\windows\\system32"));
+	log_info
+		"in  : %ws\n"
+		"out : %ws",
+		L"c:\\windows\\system32\\boot.ini",
+		path.c_str()
+		log_end;
 	return true;
 }
 
