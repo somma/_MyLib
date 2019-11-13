@@ -97,6 +97,10 @@ typedef struct _continuous_memory
 
 #define _pause  _getch()
 
+#define _mem_dump_console \
+	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);\
+	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
+
 #define _mem_check_begin \
 	_CrtMemState memoryState = { 0 }; \
 	_CrtMemCheckpoint(&memoryState); 
