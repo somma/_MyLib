@@ -339,11 +339,11 @@ SocketAddressToStr(
 	수동으로 ip -> DNS 조회 테스트 해보기
 
 	> nslookup
-	> set type = PTR
+	> set type=PTR
 	> set debug
 
 	> 103.27.148.71
-	Server:  google - public - dns - a.google.com
+	Server:  google-public-dns-a.google.com
 	Address : 8.8.8.8
 
 	------------
@@ -359,7 +359,7 @@ SocketAddressToStr(
 		->  103.in - addr.arpa
 		ttl = 1798 (29 mins 58 secs)
 		primary name server = ns1.apnic.net
-		responsible mail addr = read - txt - record - of - zone - first - dns - admin.apnic.net
+		responsible mail addr = read-txt-record-of-zone-first-dns-admin.apnic.net
 		serial = 36246
 		refresh = 7200 (2 hours)
 		retry = 1800 (30 mins)
@@ -367,12 +367,12 @@ SocketAddressToStr(
 		default TTL = 172800 (2 days)
 
 	------------
-		*** google - public - dns - a.google.com can't find 71.148.27.103.in-addr.arpa.: Non-existent domain
+		*** google-public-dns-a.google.com can't find 71.148.27.103.in-addr.arpa.: Non-existent domain
 
 
 
 	> 103.243.220.231
-	Server:  google - public - dns - a.google.com
+	Server:  google-public-dns-a.google.com
 	Address : 8.8.8.8
 
 	------------
@@ -383,16 +383,16 @@ SocketAddressToStr(
 		questions = 1, answers = 1, authority records = 0, additional = 0
 
 		QUESTIONS :
-			231.220.243.103.in - addr.arpa, type = PTR, class = IN
+			231.220.243.103.in-addr.arpa, type=PTR, class=IN
 			ANSWERS :
 		->  231.220.243.103.in - addr.arpa
-		name = 175.bm - nginx - loadbalancer.mgmt.sin1.adnexus.net
+		name = 175.bm-nginx-loadbalancer.mgmt.sin1.adnexus.net
 		ttl = 3004 (50 mins 4 secs)
 
 	------------
 	Non - authoritative answer :
-	231.220.243.103.in - addr.arpa
-		name = 175.bm - nginx - loadbalancer.mgmt.sin1.adnexus.net
+	231.220.243.103.in-addr.arpa
+		name = 175.bm-nginx-loadbalancer.mgmt.sin1.adnexus.net
 		ttl = 3004 (50 mins 4 secs)
 
 */
@@ -411,12 +411,13 @@ ip_to_dns(
 	//
 	dns_query_ip = ipv4_to_str(swap_endian_32(ip_netbyte_order)).append(".IN-ADDR.ARPA");
 
-	//--------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------
 	//
 	// DNS_QUERY_STANDARD 옵션을 사용한 경우 
 	//	- local cache -> query with UDP -> query with TCP (응답데이터가 잘린경우)
 	//	- DNS_QUERY_NO_MULTICAST : DNS 서버에만 요청을 전송(음?)
-	//	- DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE 옵션을 주면 tcp 를 통한 재시도를 방지 함
+	//	- DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE 옵션을 주면 tcp 를 통한 재시도를 
+	//	  방지 함
 	//
 	//--------------------------------------------------------------------------------
 	//
@@ -436,12 +437,13 @@ ip_to_dns(
 	//	빠르기 때문에 1st try, 2nd try 간 차이가 DNS_QUERY_STANDARD 보다 더 큼
 	//
 	//--------------------------------------------------------------------------------
-	DNS_STATUS status = DnsQuery_W(MbsToWcsEx(dns_query_ip.c_str()).c_str(),
-								   DNS_TYPE_PTR,
-								   (true == cache_only) ? DNS_QUERY_NO_WIRE_QUERY : (DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE),
-								   NULL,
-								   &dns_record,
-								   NULL);
+	DNS_STATUS status = 
+		DnsQuery_W(MbsToWcsEx(dns_query_ip.c_str()).c_str(),
+				   DNS_TYPE_PTR,
+				   cache_only ? DNS_QUERY_NO_WIRE_QUERY : (DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE),
+				   NULL,
+				   &dns_record,
+				   NULL);
 	if (ERROR_SUCCESS != status)
 	{
 		if (DNS_ERROR_RECORD_DOES_NOT_EXIST == status || DNS_ERROR_RCODE_NAME_ERROR == status)
