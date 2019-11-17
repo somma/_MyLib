@@ -9,7 +9,7 @@
  *
  * + lsass.exe 프로세스 컨텍스트에서 build() 하면 멈추는 현상 확인 (x64 win7 sp1)
 **---------------------------------------------------------------------------*/
-
+#pragma once
 #include <sstream>
 #include <string>
 #include <map>
