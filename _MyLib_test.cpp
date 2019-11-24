@@ -223,6 +223,7 @@ extern bool test_unique_ptr();
 extern bool test_unique_ptr_assign();
 extern bool test_unique_ptr_list();
 extern bool test_unique_ptr_list_remove();
+extern bool test_make_unique_struct_allocate();
 
 // _test_call_by_value_container.cpp
 extern bool test_callby_value_container();
@@ -391,17 +392,18 @@ void run_test()
 	//assert_bool(true, test_sched_client);
 	//assert_bool(true, test_interlock_operation);
 	//assert_bool(true, test_auto_manual_reset_event);
-	assert_bool(true, test_get_module_dirEx);
+	//assert_bool(true, test_get_module_dirEx);
 	//assert_bool(true, test_unique_ptr);
 	//assert_bool(true, test_unique_ptr_assign);
 	//assert_bool(true, test_unique_ptr_list);
 	//assert_bool(true, test_unique_ptr_list_remove);
+	assert_bool(true, test_make_unique_struct_allocate);
 	
 	//assert_bool(true, test_callby_value_container);
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //
-	assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
+	//assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
 	//assert_bool(true, test_const_position);		// 컴파일 불가 테스트
 
 

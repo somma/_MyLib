@@ -158,3 +158,28 @@ bool test_unique_ptr_list_remove()
 	return true;
 }
 
+bool test_make_unique_struct_allocate()
+{
+	typedef struct test_struct
+	{
+		int a;
+		int b;
+		int c;
+
+	}*ptest_struct;
+
+	_mem_dump_console
+	_mem_check_begin
+	{
+		//
+		//	allocate struct
+		//
+		auto p_rec = std::make_unique<test_struct>();
+		p_rec->a = 1;
+		p_rec->b = 2;
+		p_rec->c = 3;
+	}
+	_mem_check_end;	
+
+	return true;
+}
