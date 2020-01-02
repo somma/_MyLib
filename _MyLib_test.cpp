@@ -3868,38 +3868,28 @@ int _tmain(int argc, _TCHAR* argv[])
 	UNREFERENCED_PARAMETER(argc);
 	UNREFERENCED_PARAMETER(argv);
 
-	_CrtMemState memoryState = { 0 };
-	_CrtMemCheckpoint(&memoryState);
-	//_CrtSetBreakAlloc(152);
-
 	if (argc == 1)
 	{
 		set_log_to(log_to_ods|log_to_con);
 		set_log_level(log_level_info);
 
-		run_test();
+		_mem_dump_console
+		_mem_check_begin
+		{
+			run_test();
+		}
+		_mem_check_end;		
+		return 0;
 	}
 	else
 	{
 		set_log_to(log_to_con);
 		set_log_level(log_level_info);
 
-		if (argv[1][0] != L'/' ||
-			argv[1][1] == L'?')
-		{
-			log_err
-				"\nUsage:\n\n"\
-				"%ws /?	show help \n"\
-				"%ws /filetime_to_str 131618627540824506\n",
-				argv[0],
-				argv[0]
-				log_end;
-			return 0;
-		}
 		//
 		//	mylib.exe /filetime_to_str 131618627540824506
 		//
-		else if (argc == 3 && (0 == _wcsicmp(&argv[1][1], L"filetime_to_str")))
+		if (argc == 3 && (0 == _wcsicmp(&argv[1][1], L"filetime_to_str")))
 		{
 			uint64_t ftime;
 			if (true != wstr_to_uint64(argv[2], ftime))
@@ -3910,15 +3900,53 @@ int _tmain(int argc, _TCHAR* argv[])
 				return -1;
 			}
 
-			log_info "Input=%llu, Local Time=%s",
+			log_info 
+				"Input=%llu, Local Time=%s",
 				ftime,
 				file_time_to_str(ftime, true, true).c_str()
 				log_end;
 			return 0;
 		}
-	}
+		//
+		//	mylib.exe /session_info
+		//
+		else if (argc == 2 && (0 == _wcsicmp(&argv[1][1], L"session_info")))
+		{
+			DWORD console_session_id = WTSGetActiveConsoleSessionId();
+			DWORD process_session_id = 0xffffffff;
+			if (!ProcessIdToSessionId(GetCurrentProcessId(), &process_session_id))
+			{
+				log_err
+					"ProcessIdToSessionId() failed. gle=%u",
+					GetLastError()
+					log_end;
+			}
+			else
+			{
+				log_info
+					"\n"\
+					"Active console session  id=%u \n"
+					"Current process session id=%u ",
+					console_session_id,
+					process_session_id
+					log_end;
+			}
 
-	_CrtMemDumpAllObjectsSince(&memoryState);
-	return 0;
+			return 0;
+		}
+		else
+		{
+			log_err
+				"\nUsage:\n\n"\
+				"%ws /?	show help \n"\
+				"%ws /filetime_to_str 131618627540824506\n"\
+				"%ws /session_info \n",
+				argv[0],
+				argv[0],
+				argv[0]
+				log_end;
+			return -1;
+		}
+	}
 }
 
