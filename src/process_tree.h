@@ -18,17 +18,15 @@
 
 #include <TlHelp32.h>
 
-#ifndef _system_proc_def_
-#define _system_proc_def_
+#define _pt_system_proc_   L"System"
+#define _pt_system_proc_pid 4
+#define _pt_explorer_proc_ L"explorer.exe"
 
-#define _system_proc_   L"System"
-#define _system_proc_pid 4
-#define _explorer_proc_ L"explorer.exe"
+#define _pt_registry_proc_ L"Registry"
+#define _pt_memcomp_proc_ L"MemCompression"
 
-#define _idle_proc_		L"System Idle Process";
-#define _idle_proc_pid	0
-
-#endif
+#define _pt_idle_proc_		L"System Idle Process";
+#define _pt_idle_proc_pid	0
 
 /// @brief	class for running process
 typedef class process

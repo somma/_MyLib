@@ -393,7 +393,7 @@ cprocess_tree::get_parent(
 	_In_ const process* const process
 )
 {
-	if (process->pid() == _idle_proc_pid || process->pid() == _system_proc_pid)
+	if (process->pid() == _pt_idle_proc_pid || process->pid() == _pt_system_proc_pid)
 	{
 		return nullptr;
 	}
