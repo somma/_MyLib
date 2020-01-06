@@ -30,6 +30,7 @@ process::process(
 	_In_ const wchar_t* process_name,
 	_In_ DWORD ppid,
 	_In_ DWORD pid,
+	_In_ DWORD session_id,
 	_In_ uint64_t creation_time,
 	_In_ bool is_wow64,
 	_In_ std::wstring& full_path,
@@ -38,6 +39,7 @@ process::process(
 	_process_name(process_name),
 	_ppid(ppid),
 	_pid(pid),
+	_session_id(session_id),
 	_creation_time(creation_time),
 	_is_wow64(is_wow64),
 	_full_path(full_path),
@@ -74,7 +76,7 @@ bool process::kill(_In_ DWORD exit_code, _In_ bool enable_debug_priv)
 		if (true != set_privilege(SE_DEBUG_NAME, true))
 		{
 			log_err
-				"OpenProcess() failed and no debug privilege), pid = %u, gle = %u",
+				"OpenProcess() failed and no debug privilege), pid = %u, gle=%u",
 				_pid,
 				gle
 				log_end;
@@ -90,7 +92,7 @@ bool process::kill(_In_ DWORD exit_code, _In_ bool enable_debug_priv)
 	if (NULL == h)
 	{
 		log_err
-			"OpenProcess() failed, pid = %u, gle = %u",
+			"OpenProcess() failed, pid = %u, gle=%u",
 			_pid,
 			GetLastError()
 			log_end;
@@ -100,7 +102,7 @@ bool process::kill(_In_ DWORD exit_code, _In_ bool enable_debug_priv)
 	if (!TerminateProcess(h, exit_code))
 	{
 		log_err
-			"TerminateProcess() failed, pid = %u, gle = %u",
+			"TerminateProcess() failed, pid = %u, gle=%u",
 			_pid,
 			GetLastError()
 			log_end;
@@ -188,7 +190,7 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 	HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (snap == INVALID_HANDLE_VALUE)
 	{
-		log_err "CreateToolhelp32Snapshot() failed, gle = %u", GetLastError() log_end;
+		log_err "CreateToolhelp32Snapshot() failed, gle=%u", GetLastError() log_end;
 		return false;
 	}
 
@@ -198,7 +200,8 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 		proc_entry.dwSize = sizeof(PROCESSENTRY32W);
 		if (!Process32First(snap, &proc_entry))
 		{
-			log_err "CreateToolhelp32Snapshot() failed, gle = %u", GetLastError() log_end;
+			log_err 
+				"CreateToolhelp32Snapshot() failed, gle=%u", GetLastError() log_end;
 			break;
 		}
 
@@ -227,14 +230,14 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 			}
 			else
 			{
-				HANDLE process_handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
-													FALSE,
-													proc_entry.th32ProcessID);
+				auto process_handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
+												  FALSE,
+												  proc_entry.th32ProcessID);
 				if (NULL == process_handle)
 				{
 					// too much logs.
 					//log_err 
-					//	"OpenProcess() failed, pid = %u, proc = %s, gle = %u", 
+					//	"OpenProcess() failed, pid = %u, proc = %s, gle=%u", 
 					//	proc_entry.th32ProcessID, 
 					//	WcsToMbsEx(proc_entry.szExeFile).c_str(),
 					//	GetLastError() 
@@ -244,7 +247,8 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 				{
 					if (!get_process_image_full_path(process_handle, full_path))
 					{
-						log_err "get_process_image_full_path() failed. pid=%u, process=%ws",
+						log_err 
+							"get_process_image_full_path() failed. pid=%u, process=%ws",
 							proc_entry.th32ProcessID,
 							proc_entry.szExeFile
 							log_end;
@@ -257,7 +261,8 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 										 &dummy_time,
 										 &dummy_time))
 					{
-						log_err "GetProcessTimes() failed, pid=%u, process=%ws, gle = %u",
+						log_err 
+							"GetProcessTimes() failed, pid=%u, process=%ws, gle=%u",
 							proc_entry.th32ProcessID,
 							proc_entry.szExeFile,
 							GetLastError()
@@ -270,7 +275,8 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 					//					
 					if (!IsWow64Process(process_handle, &IsWow64))
 					{
-						log_err "IsWow64Process() failed. pid=%u, process=%ws, gle = %u",
+						log_err 
+							"IsWow64Process() failed. pid=%u, process=%ws, gle=%u",
 							proc_entry.th32ProcessID,
 							proc_entry.szExeFile,
 							GetLastError()
@@ -278,7 +284,8 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 						// assume process is not WoW64
 					}
 #endif
-					CloseHandle(process_handle); process_handle = NULL;
+					CloseHandle(process_handle); 
+					process_handle = nullptr;
 				}
 			}
 
@@ -306,7 +313,11 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
  * @endcode
  * @return
 **/
-DWORD cprocess_tree::find_process(_In_ const wchar_t* process_name)
+bool
+cprocess_tree::find_process(
+	_In_ const wchar_t* process_name, 
+	_In_ on_proc_walk callback
+)
 {
 	_ASSERTE(NULL != process_name);
 	if (NULL == process_name) return false;
@@ -316,11 +327,15 @@ DWORD cprocess_tree::find_process(_In_ const wchar_t* process_name)
 		if (rstrnicmp(process.second->process_name(), process_name))
 		{
 			// found
-			return process.second->pid();
+			if (!callback(process.second))
+			{
+				// stop iterating
+				return false;
+			}
 		}
 	}
 
-	return 0;
+	return true;
 }
 
 const process* cprocess_tree::get_process(_In_ DWORD pid)
@@ -546,11 +561,13 @@ void cprocess_tree::print_process_tree(_In_ const wchar_t* root_process_name)
 	_ASSERTE(NULL != root_process_name);
 	if (NULL == root_process_name) { return; }
 
-	DWORD pid = find_process(root_process_name);
-	if (0 != pid)
+	find_process(root_process_name, 
+				 [&](_In_ const process* const process_info)->bool 
 	{
-		print_process_tree(pid);
-	}
+		DWORD depth = 0;
+		print_process_tree(process_info, depth);
+		return true;
+	});
 }
 
 /**
@@ -628,13 +645,21 @@ bool cprocess_tree::kill_process(_In_ DWORD pid, _In_ bool enable_debug_priv)
  * @endcode
  * @return
 **/
-bool cprocess_tree::kill_process(_In_ const wchar_t* process_name, _In_ bool enable_debug_priv)
+bool 
+cprocess_tree::kill_process(
+	_In_ const wchar_t* process_name, 
+	_In_ bool enable_debug_priv
+)
 {
 	_ASSERTE(NULL != process_name);
 	if (NULL == process_name) return false;
 
-	DWORD pid = find_process(process_name);
-	return kill_process(pid, enable_debug_priv);
+	return find_process(process_name, 
+						[&](_In_ const process* const process_info)->bool 
+	{
+		const_cast<process*>(process_info)->kill(0, enable_debug_priv);
+		return true;
+	});
 }
 
 /**
@@ -686,16 +711,20 @@ cprocess_tree::kill_process_tree(
 void
 cprocess_tree::add_process(
 	_In_ DWORD ppid,
-	_In_ DWORD pid,
+	_In_ DWORD pid,	
 	_In_ FILETIME& creation_time,
 	_In_ BOOL is_wow64,
 	_In_ const wchar_t* process_name,
 	_In_ std::wstring& full_path
 )
 {
+	DWORD session_id = 0xffffffff;
+	ProcessIdToSessionId(pid, &session_id);
+
 	pprocess p = new process(process_name,
 							 ppid,
 							 pid,
+							 session_id,
 							 *(uint64_t*)&creation_time,
 							 (is_wow64 ? true : false),
 							 full_path,

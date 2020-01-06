@@ -27,11 +27,10 @@
 
 #define _idle_proc_		L"System Idle Process";
 #define _idle_proc_pid	0
+
 #endif
 
-/**
- * @brief	class for running process
-**/
+/// @brief	class for running process
 typedef class process
 {
 public:
@@ -39,6 +38,7 @@ public:
 	process(_In_ const wchar_t* process_name,
 			_In_ DWORD ppid,
 			_In_ DWORD pid,
+			_In_ DWORD session_id,
 			_In_ uint64_t creation_time,
 			_In_ bool is_wow64,
 			_In_ std::wstring& full_path,
@@ -61,6 +61,7 @@ public:
 
 	DWORD			ppid() const { return _ppid; }
 	DWORD			pid() const { return _pid; }
+	DWORD			session_id() const { return _session_id; }
 	uint64_t		creation_time() const { return _creation_time; }	
 	bool			is_wow64() const { return _is_wow64; }
 	bool			killed() const { return _killed; }
@@ -69,6 +70,7 @@ private:
 	std::wstring	_process_name;
 	DWORD			_ppid;
 	DWORD			_pid;
+	DWORD			_session_id;
 	uint64_t		_creation_time;
 	bool			_is_wow64;
     std::wstring    _full_path;
@@ -76,9 +78,7 @@ private:
 } *pprocess;
 
 
-/**
- * @brief	place holder for running processes
-**/
+///	@brief	place holder for running processes
 using process_map = std::map<DWORD, pprocess>;
 using on_proc_walk = boost::function<bool(_In_ const process* const process_info)>;
 
@@ -91,10 +91,10 @@ public:
 	void clear_process_tree();
 	bool build_process_tree(_In_ bool enable_debug_priv);
 
-	DWORD find_process(_In_ const wchar_t* process_name);
+	bool find_process(_In_ const wchar_t* process_name, _In_ on_proc_walk callback);
 
 	const process* get_process(_In_ DWORD pid);
-	const wchar_t*get_process_name(_In_ DWORD pid);
+	const wchar_t* get_process_name(_In_ DWORD pid);
 	const wchar_t* get_process_path(_In_ DWORD pid);
 	uint64_t get_process_time(_In_ DWORD pid);
 
