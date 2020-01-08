@@ -5684,6 +5684,22 @@ bool process_in_console_session(_In_ DWORD process_id)
 	}
 }
 
+/// @brief	
+bool get_current_session_id(_Out_ DWORD& session_id)
+{
+	if (!ProcessIdToSessionId(GetCurrentProcessId(), &session_id))
+	{
+		log_err
+			"ProcessIdToSessionId( pid = %u ) failed. gle = %u",
+			GetCurrentProcessId(),
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	return true;
+}
+
 /// @brief	cmdline 을 실행하는 프로세스를 생성하는 CreateProcessW 함수 wrapper
 bool
 create_process(
