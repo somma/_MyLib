@@ -950,8 +950,11 @@ void slogger::slog_thread()
 		delete log;
 	}
 
-	// flush all logs to target media only file.
-	//write_to_console(wtc_green, "[INFO] finalizing logs...");
+	//
+	//	logger 종료 요청을 받은 상태.
+	//	로그 큐에 있는 로그들을 파일에 모두 쓴다(log_to_file 이 설정된 경우).
+	//	console, ods 등은 그냥 버린다.
+	//
 	{
 		boost::lock_guard< boost::mutex > lock(_lock);
 
@@ -1002,27 +1005,6 @@ void slogger::slog_thread()
 					_log_count++;
 					write_to_filea(_log_file_handle, "%s", log->_msg.c_str());
 				}
-			}
-
-			if (FlagOn(_log_to, log_to_con))
-			{
-				switch (log->_log_level)
-				{
-				case log_level_error: // same as log_level_critical
-					write_to_console(fc_red, log->_msg.c_str());
-					break;
-				case log_level_info:
-				case log_level_warn:
-					write_to_console(fc_green, log->_msg.c_str());
-					break;
-				default:
-					write_to_console(fc_none, log->_msg.c_str());
-				}
-			}
-
-			if (FlagOn(_log_to, log_to_ods))
-			{
-				OutputDebugStringA(log->_msg.c_str());
 			}
 
 			delete log;
