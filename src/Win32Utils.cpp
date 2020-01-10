@@ -6561,7 +6561,16 @@ bool terminate_process_by_pid(_In_ DWORD pid, _In_ DWORD exit_code)
 		return false;
 	}
 
-	return terminate_process_by_handle(proc_handle, exit_code) ? true : false;
+	bool ret = terminate_process_by_handle(proc_handle, exit_code) ? true : false;
+
+	//
+	//	TerminateProcess() API 는 asynchronous 하기때문에 호출 후 
+	//	핸들을 Close 해주는것이 맞다. 프로세스가 종료되었다면 CloseHandle() 을 
+	//	호출하지 않아도 되겠지만 어떤 이유로든 TerminateProcess() 가 실패한 경우 
+	//	핸들 Leak 이 발생할 수 있다. 
+	//
+	CloseHandle(proc_handle);
+	return ret;
 }
 
 bool suspend_process_by_handle(_In_ HANDLE handle)

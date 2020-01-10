@@ -387,12 +387,7 @@ BOOL GetImageFullPathFromPredefinedPathA(
 bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring& full_path);
 
 #if _WIN32_WINNT >= 0x0600	// after vista
-bool 
-image_path_by_pid(
-	_In_ DWORD process_id, 
-	_In_ bool win32_format, 
-	_Out_ std::wstring& image_path
-	);
+bool image_path_by_pid(_In_ DWORD process_id, _In_ bool win32_format, _Out_ std::wstring& image_path);
 #endif
 
 /// @brief  system direcotry 경로 리턴 (c:\windows\system32 )
