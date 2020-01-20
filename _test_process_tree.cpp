@@ -88,8 +88,14 @@ bool test_process_tree()
 
 		// 프로세스 열거 테스트 (by callback)
 		proc_tree.iterate_process(proc_tree_callback);
-		proc_tree.iterate_process_tree(proc_tree.find_process(L"cmd.exe"), 
-									   proc_tree_callback);
+		proc_tree.find_process(L"cmd.exe", 
+							   [&](_In_ const process* const process_info)->bool 
+		{
+			proc_tree.iterate_process_tree(process_info->pid(),
+										   proc_tree_callback);
+			return true;
+		});
+		
 
 		// 프로세스 열거 테스트 (by lambda)
 		proc_tree.iterate_process([](_In_ const process* const process_info)->bool
@@ -157,8 +163,13 @@ bool test_process_tree()
 		log_info "kill notepad..." log_end;
 		_ASSERTE(true == proc_tree.build_process_tree(false));
 		proc_tree.print_process_tree(L"notepad.exe");
-		_ASSERTE(true == proc_tree.kill_process_tree(proc_tree.find_process(L"notepad.exe"),
-													 false));
+
+		proc_tree.find_process(L"notepad.exe", 
+							   [&](const process* process_info)->bool 
+		{
+			proc_tree.kill_process_tree(process_info->pid(), false);
+			return true;
+		});
 
 		////
 		////	print process tree
@@ -178,18 +189,23 @@ bool test_image_path_by_pid()
 		cprocess_tree proc_tree;
 		if (!proc_tree.build_process_tree(true)) return false;
 
-		DWORD pid = proc_tree.find_process(L"explorer.exe");
+		proc_tree.find_process(L"explorer.exe", [&](const process* process)->bool
+		{
+			std::wstring win32_path;
+			std::wstring native_path;
+			if (!image_path_by_pid(process->pid(), true, win32_path)) return false;
+			if (!image_path_by_pid(process->pid(), false, native_path)) return false;
 
-		std::wstring win32_path;
-		std::wstring native_path;
-		if (!image_path_by_pid(pid, true, win32_path)) return false;
-		if (!image_path_by_pid(pid, false, native_path)) return false;
+			log_info "pid=%u, explorer.exe, \nwin32_path=%ws\nnative_path=%ws",
+				process->pid(),
+				win32_path.c_str(),
+				native_path.c_str()
+				log_end;
 
-		log_info "pid=%u, explorer.exe, \nwin32_path=%ws\nnative_path=%ws",
-			pid,
-			win32_path.c_str(),
-			native_path.c_str()
-			log_end;
+			return false; // No all process, just one for test!
+		});
+
+		
 	}
 	_mem_check_end;
 
@@ -204,15 +220,21 @@ bool test_get_process_creation_time()
 		cprocess_tree proc_tree;
 		if (!proc_tree.build_process_tree(true)) return false;
 
-		DWORD pid = proc_tree.find_process(L"explorer.exe");
+		proc_tree.find_process(L"explorer.exe", [](const process* process) 
+		{
+			FILETIME creation_time;
+			if (!get_process_creation_time(process->pid(), 
+										   &creation_time)) return false;
 
-		FILETIME creation_time;
-		if (!get_process_creation_time(pid, &creation_time)) return false;
+			log_info "pid=%u, explorer.exe, creation_time=%s",
+				process->pid(),
+				file_time_to_str(&creation_time, true, true).c_str()
+				log_end;
 
-		log_info "pid=%u, explorer.exe, creation_time=%s",
-			pid,
-			file_time_to_str(&creation_time, true, true).c_str()
-			log_end;
+			return false; // No all process, just one for test!
+		});
+
+		
 	}
 	_mem_check_end;
 
