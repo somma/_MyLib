@@ -133,3 +133,59 @@ bool test_get_addr_info()
 
 	return true;
 }
+
+
+bool test_is_reserved_ipv4()
+{
+	const static struct ip_and_result
+	{
+		const char* ip;
+		const bool result;
+
+	} iar[] = {
+		{"10.0.0.2", true},
+		{"10.0.1.1", false},
+		
+		{"192.168.0.121", true},
+		{"192.168.11.112", true},
+		{"192.167.11.112", false},
+
+		{"172.16.0.22", true},
+		{"172.16.8.22", true},
+		{"172.16.253.22", false},
+
+		{"224.0.0.8", true},
+		{"224.0.0.250", false},
+		
+		{"255.255.255.255", true},
+
+		{"127.0.0.1", true},
+
+		{"169.254.0.1", true},
+		{"169.254.2.1", true},
+		{"169.253.2.1", false},
+
+		{"100.64.0.9", true},
+		
+		{"240.0.0.1", true},
+		{"240.0.1.1", false},
+
+		{"0.0.0.2", true}
+	};
+
+	_mem_dump_console
+	_mem_check_begin
+	{
+		for (int i = 0; i < sizeof(iar) / sizeof(ip_and_result); ++i)
+		{
+			uint32_t netb_ip = 0xffffffff;
+			_ASSERTE(true == str_to_ipv4(MbsToWcsEx(iar[i].ip).c_str(), netb_ip));
+			bool r = is_reserved_ipv4(netb_ip);
+			_ASSERTE(iar[i].result == r);
+		}
+
+	}
+	_mem_check_end;
+
+	return true;
+}
