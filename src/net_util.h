@@ -143,3 +143,9 @@ get_addr_infow(
 	_Out_opt_ std::vector<in6_addr>* const ipv6_addrs
 );
 
+
+
+bool
+is_reserved_ipv4(
+	_In_ uint32_t ip_netbyte_order
+);

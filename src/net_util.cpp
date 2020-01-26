@@ -11,6 +11,47 @@
 #include "log.h"
 
 
+//
+//	예약된 IP 주소 목록
+//
+//	Ref #1: Address Allocation for Private Internets, https://tools.ietf.org/html/rfc1918
+//	Ref #2: https://github.com/google/ipaddr-py/blob/master/ipaddr.py
+//	Ref #3: https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml
+//
+//	Ref #2 코드를 기반으로 아래 목록 작성
+//
+static const struct net_and_mask 
+{
+	uint32_t netbyte_order_ip;
+	uint32_t netbyte_order_mask;
+
+} __reserved_net_and_masks[] = 
+{
+	{0x0000000a, 0x00ffffff},	// 10.0.0.0/8,		Private-Use
+	{0x0000a8c0, 0x0000ffff},	// 192.168.0.0/16,	Private-Use
+	{0x000010ac, 0x00f0ffff},	// 172.16.0.0/12,	Private-Use
+
+	{0x000000e0, 0xf0ffffff},	// 224.0.0.0/4,	Multicast 
+	//{0xffffffff, 0x00000000},	// 255.255.255.255/32, Limited Broadcast(RFC8190, 919)
+
+	{0x0000007f, 0x00ffffff},	// 127.0.0.0/8, Loop back
+
+	{0x0000fea9, 0x0000ffff},	// 169.254.0.0/16, Link local (RFC 3927)
+	{0x00004064, 0x00fcffff},	// 100.64.0.0/10, Shared Address Space
+	{0x000000f0, 0xf0ffffff},	// 240.0.0.0/4, Reserved
+
+	//{0x006433c6, 0x000000ff},	// 198.51.100.0/24, Documentation, RFC5737
+	//{0x007100cb, 0x000000ff},	// 203.0.113.0/24, Documentation, RFC5737	
+
+	//{0x000012c6, 0x0080ffff},	// 198.18.0.0/15, Benchmarking(RFC2544)
+	{0x00000000, 0x00ffffff}	// 0.0.0.0/8, RFC1122
+};
+
+static const uint32_t __crnam = sizeof(__reserved_net_and_masks) / sizeof(net_and_mask);
+
+
+
+
 /// @brief	Winsock 을 초기화한다.
 ///			
 ///			!!주의!!
@@ -1015,3 +1056,24 @@ get_addr_infow(
 
 
 
+
+/// @brief	예약된 IP 주소인 경우 true 를 리턴한다.
+bool
+is_reserved_ipv4(
+	_In_ uint32_t ip_netbyte_order
+)
+{
+	if (0 == ip_netbyte_order) return true;
+	if (0xffffffff == ip_netbyte_order) return true;
+
+	for (int i = 0; i < __crnam; ++i)
+	{
+		if (__reserved_net_and_masks[i].netbyte_order_ip == 
+			(ip_netbyte_order & __reserved_net_and_masks[i].netbyte_order_mask))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}

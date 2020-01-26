@@ -47,6 +47,7 @@ extern bool test_dns_to_ip();
 // _test_net_util.cpp
 extern bool test_get_adapters();
 extern bool test_get_addr_info();
+extern bool test_is_reserved_ipv4();
 
 // test_iphelp_api.cpp
 extern bool test_iphelp_api();
@@ -255,6 +256,7 @@ void run_test()
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
+	assert_bool(true, test_is_reserved_ipv4);
 	//assert_bool(true, test_ip_to_dns);
 	//assert_bool(true, test_dns_to_ip);
 	//assert_bool(true, test_iphelp_api);
@@ -397,7 +399,7 @@ void run_test()
 	//assert_bool(true, test_unique_ptr_assign);
 	//assert_bool(true, test_unique_ptr_list);
 	//assert_bool(true, test_unique_ptr_list_remove);
-	assert_bool(true, test_make_unique_struct_allocate);
+	//assert_bool(true, test_make_unique_struct_allocate);
 	
 	//assert_bool(true, test_callby_value_container);
 
