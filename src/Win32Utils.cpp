@@ -45,6 +45,7 @@
 #include "FileIoHelperClass.h"
 #include "ResourceHelper.h"
 #include "gpt_partition_guid.h"
+#include "process_tree.h"
 
 
 char _int_to_char_table[] = {
@@ -2739,7 +2740,11 @@ GetImageFullPathFromPredefinedPathW(
 /// @brief	Process handle 로 full path 를 구한다. 
 ///	@return	nt device name format 의 프로세스의 이미지 경로
 ///			( e.g. \Device\Harddisk0\Partition1\Windows\System32\Ctype.nls )
-bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring& full_path)
+bool 
+get_process_image_full_path(
+	_In_ HANDLE process_handle, 
+	_Out_ std::wstring& full_path
+)
 {
 	bool ret = false;
 	uint32_t    buf_len = 1024;
@@ -2748,7 +2753,9 @@ bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring&
 
 	for (int i = 0; i < 3; ++i) // 버퍼 늘리는건 세번만...
 	{
-		DWORD dwret = GetProcessImageFileNameW(process_handle, buf, buf_len / sizeof(wchar_t));
+		DWORD dwret = GetProcessImageFileNameW(process_handle, 
+											   buf, 
+											   buf_len / sizeof(wchar_t));
 		if (0 == dwret)
 		{
 			DWORD gle = GetLastError();
@@ -6044,60 +6051,24 @@ create_process_on_session(
 	_ASSERTE(nullptr != cmdline);
 	if (0xffffffff == session_id || nullptr == cmdline) return false;
 
-	LUID luid = { 0 };
-	TOKEN_PRIVILEGES tknold = { 0 };
-	TOKEN_PRIVILEGES tknAdj = { 0 };
-
-	HANDLE hTokenProcess = nullptr;
-	HANDLE hTokenImperson = nullptr;
-	HANDLE hTokenUser = nullptr;
-
-	LPVOID pEnvironment = nullptr;
-	DWORD dwReturnLength = 0;
-	
-	if (!OpenProcessToken(GetCurrentProcess(),
-						  TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
-						  &hTokenProcess))
-	{
-		log_err 
-			"OpenProcessToken() failed. gle=%u",
-			GetLastError()
-			log_end;
-		return false;
-	}
-	handle_ptr tpg(hTokenProcess, [](HANDLE handle) {
-		if (nullptr != handle)
-		{
-			CloseHandle(handle);
-		}
-	});
-
-	LookupPrivilegeValue(nullptr, SE_TCB_NAME, &luid);
-	tknAdj.PrivilegeCount = 1;
-	tknAdj.Privileges[0].Luid = luid;
-	tknAdj.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-	if (!AdjustTokenPrivileges(hTokenProcess,
-							   false,
-							   &tknAdj,
-							   sizeof(TOKEN_PRIVILEGES),
-							   &tknold,
-							   &dwReturnLength))
-	{
-		log_err
-			"AdjustTokenPrivileges() failed. gle=%u",
-			GetLastError()
-			log_end;
-		return false;
-	}
-
 	//
 	//	해당 세션에 로그인한 사용자의 토큰을 구한다. 
 	// 
 	//	WTSQueryUserToken() 을 성공적으로 호출하기 위해서는 
 	//		- Local system account 
 	//		- SE_TCB_NAME privilege 
-	//	가 활성화 되어있어야 한다.
+	//	조건을 만족해야 한다.
 	//
+	if (!set_privilege(SE_TCB_NAME, true))
+	{
+		log_err
+			"set_privilege() failed. priv=%ws",
+			SE_TCB_NAME
+			log_end;
+		return false;
+	}
+
+	HANDLE hTokenImperson = nullptr; 
 	if (!WTSQueryUserToken(session_id, &hTokenImperson))
 	{
 		log_err
@@ -6114,6 +6085,7 @@ create_process_on_session(
 		}
 	});
 
+	HANDLE hTokenUser = nullptr; 
 	if (!DuplicateTokenEx(hTokenImperson,
 						  MAXIMUM_ALLOWED,
 						  nullptr,
@@ -6134,10 +6106,15 @@ create_process_on_session(
 		}
 	});
 	
-	
-	STARTUPINFOW si = { 0 }; si.cb = sizeof(si);
-	si.lpDesktop = const_cast<wchar_t*>(L"winsta0\\default");
-	if (!CreateEnvironmentBlock(&pEnvironment, hTokenUser, TRUE))
+	LPVOID env = nullptr;
+	void_ptr env_ptr(env, [](void* env_block) 
+	{
+		if (nullptr != env_block)
+		{
+			DestroyEnvironmentBlock(env_block);
+		}
+	});	
+	if (!CreateEnvironmentBlock(&env, hTokenUser, TRUE))
 	{
 		log_err "CreateEnvironmentBlock() failed. gle=%u",
 			GetLastError()
@@ -6145,20 +6122,24 @@ create_process_on_session(
 		return false;
 	}
 
+	STARTUPINFOW si = { 0 }; si.cb = sizeof(si);
+	si.lpDesktop = const_cast<wchar_t*>(L"winsta0\\default");
+
 	//
 	//	CreateProcessAsUserW() 함수의 command line 파라미터는 쓰기 가능한 
 	//	버퍼이어야 한다. input 의 사본을 생성해서 호출한다. 
 	//
 	auto buffer = std::make_unique<wchar_t[]>(wcslen(cmdline) + 1);
 	RtlCopyMemory(buffer.get(), cmdline, wcslen(cmdline) * sizeof(wchar_t));
+
 	if (!CreateProcessAsUserW(hTokenUser,
+							  nullptr, 
 							  buffer.get(),
-							  nullptr,
 							  nullptr,
 							  nullptr,
 							  false,
 							  CREATE_UNICODE_ENVIRONMENT,
-							  pEnvironment,
+							  env_ptr.get(),
 							  nullptr,
 							  &si,
 							  &pi))

@@ -591,6 +591,7 @@ std::wstring generate_random_stringw(_In_ const size_t length);
 /******************************************************************************
  * RAII (Resource Acquisition Is Initialization ), raii
 ******************************************************************************/
+typedef std::unique_ptr<void, void(*)(void*)> void_ptr;
 typedef std::unique_ptr<char, void(*)(char*)> char_ptr;
 typedef std::unique_ptr<wchar_t, void(*)(wchar_t*)> wchar_ptr;
 typedef std::unique_ptr<std::remove_pointer<HANDLE>::type, void(*)(HANDLE)> handle_ptr;

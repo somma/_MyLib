@@ -173,14 +173,12 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 	{
 		if (true != set_privilege(SE_DEBUG_NAME, true))
 		{
-			log_err "set_privilege(SE_DEBUG_NAME) failed."
-				log_end;
+			log_err "set_privilege(SE_DEBUG_NAME) failed." log_end;
 			//
 			// `SeDebugPrivilege`를 활성화 하지 못한 경우 실패를 반환
 			// 하고 함수를 빠져 나가지 않는 이유는 `SeDebugPrivilege`
 			// 권한이 없다고 해서 프로세스 정보를 수집 못하는게 아니기 떄문이다.
 			//
-
 		}
 	}
 
@@ -245,7 +243,8 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 				}
 				else
 				{
-					if (!get_process_image_full_path(process_handle, full_path))
+					if (!get_process_image_full_path(process_handle, 
+													 full_path))
 					{
 						log_err 
 							"get_process_image_full_path() failed. pid=%u, process=%ws",
@@ -273,7 +272,8 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 					//
 					// Is WoW64 process?
 					//					
-					if (!IsWow64Process(process_handle, &IsWow64))
+					if (!IsWow64Process(process_handle, 
+										&IsWow64))
 					{
 						log_err 
 							"IsWow64Process() failed. pid=%u, process=%ws, gle=%u",

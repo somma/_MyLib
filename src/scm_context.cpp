@@ -823,7 +823,7 @@ service_installed(
 	//
 	schandle_ptr scm_handle(OpenSCManagerW(NULL,
 										   NULL,
-										   SC_MANAGER_ALL_ACCESS),
+										   SC_MANAGER_CONNECT),
 							[](SC_HANDLE handle) {
 		if (nullptr != handle)
 		{

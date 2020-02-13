@@ -25,8 +25,10 @@
 #define _pt_registry_proc_ L"Registry"
 #define _pt_memcomp_proc_ L"MemCompression"
 
-#define _pt_idle_proc_		L"System Idle Process";
+#define _pt_idle_proc_		L"System Idle Process"
 #define _pt_idle_proc_pid	0
+
+#define _pt_winlogon_proc	L"winlogon.exe"
 
 /// @brief	class for running process
 typedef class process

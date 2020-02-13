@@ -244,6 +244,8 @@ bool test_auto_manual_reset_event();
 bool test_get_module_dirEx();
 
 
+
+
 void run_test()
 {
 	UINT32 _pass_count = 0;
@@ -256,7 +258,7 @@ void run_test()
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
-	assert_bool(true, test_is_reserved_ipv4);
+	//assert_bool(true, test_is_reserved_ipv4);
 	//assert_bool(true, test_ip_to_dns);
 	//assert_bool(true, test_dns_to_ip);
 	//assert_bool(true, test_iphelp_api);
@@ -321,10 +323,10 @@ void run_test()
 
 	//assert_bool(true, test_initialize_string);
 
-	assert_bool(true, test_process_tree);
-	assert_bool(true, test_iterate_process_tree);	
-	assert_bool(true, test_image_path_by_pid);
-	assert_bool(true, test_get_process_creation_time);
+	//assert_bool(true, test_process_tree);
+	//assert_bool(true, test_iterate_process_tree);	
+	//assert_bool(true, test_image_path_by_pid);
+	//assert_bool(true, test_get_process_creation_time);
 
 	//assert_bool(true, test_base64);
 	//assert_bool(true, test_random);
