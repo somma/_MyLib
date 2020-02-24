@@ -66,11 +66,8 @@ public:
 					_In_ long ssl_verifypeer = 1);
 	
 	void set_connection_timeout(_In_ long connection_timeout) { _connection_timeout = connection_timeout; }
-
-	void set_read_timeout(_In_ long read_timeout) { _read_timeout = read_timeout; }
-	
+	void set_read_timeout(_In_ long read_timeout) { _read_timeout = read_timeout; }	
 	void set_ssl_verifypeer(_In_ long ssl_verifypeer) { _ssl_verifypeer = ssl_verifypeer; }
-
 
 	void append_header(_In_z_ const char* key, _In_z_ const char* value);
 
@@ -81,7 +78,7 @@ public:
 							 _In_z_ const char* id,
 							 _In_z_ const char* pw,
 							 _Out_ long& http_response_code, 
-							 _Out_ std::string& response);
+							 _Out_ std::wstring& local_file_path);
 
 	bool http_post(_In_z_ const char* url,
 				   _In_z_ const char* data,
@@ -109,10 +106,18 @@ public:
 						  _Out_  std::string& response);
 		
 private:
-	bool set_common_opt(_In_ long connection_timeout = 10,
-						_In_ long read_timeout = 90,
-						_In_ long ssl_verifypeer = 1);
-	
+	// refc
+	//bool set_common_opt(_In_ long connection_timeout = 10,
+	//					_In_ long read_timeout = 90,
+	//					_In_ long ssl_verifypeer = 1);
+
+	bool prepare_perform(_In_ const char* url,
+						 _In_ long connection_timeout=10,
+						 _In_ long read_timeout=90, 
+						 _In_ bool ssl_verify_peer=true,
+						 _In_ bool ssl_verify_host_name=true,
+						 _In_ bool verbose=false);
+
 	bool perform(_Out_ long& http_response_code);
 
 	// multipart/form type을 request body data에 설정한 후 전송하는 함수
@@ -128,4 +133,8 @@ private:
 private:
 	typedef std::map<std::string, std::string> Fields;
 	Fields _header_fields;
+
+
+private:
+	HANDLE get_tempfile();
 } *pcurl_client;
