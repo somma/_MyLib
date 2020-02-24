@@ -11,19 +11,7 @@
 #include "curl_client.h"
 #include "log.h"
 
-/// @brief
-curl_client::curl_client() :
-	_curl(nullptr),
-	_connection_timeout(0),
-	_read_timeout(0),
-	_ssl_verifypeer(0)
-{
-}
 
-curl_client::~curl_client()
-{
-	finalize();
-}
 
 ///	@brief	libcUrl 에서 데이터 수신시 호출되는 콜백 함수
 ///	@param	ptr         수신한 데이터
@@ -39,7 +27,7 @@ http_get_write_callback(
 	_In_ size_t size,
 	_In_ size_t nmemb,
 	_In_ void* userdata
-	)
+)
 {
 	_ASSERTE(NULL != ptr);
 	_ASSERTE(NULL != userdata);
@@ -54,6 +42,25 @@ http_get_write_callback(
 		return 0;
 	}
 	return (size * nmemb);
+}
+
+
+
+
+
+
+/// @brief
+curl_client::curl_client() :
+	_curl(nullptr),
+	_connection_timeout(0),
+	_read_timeout(0),
+	_ssl_verifypeer(0)
+{
+}
+
+curl_client::~curl_client()
+{
+	finalize();
 }
 
 bool
@@ -72,9 +79,7 @@ curl_client::initialize(
 	}
 
 	_connection_timeout = connection_timeout;
-	
 	_read_timeout = read_timeout;
-	
 	_ssl_verifypeer = ssl_verifypeer;
 	
 	return true;
@@ -149,7 +154,7 @@ curl_client::http_get(
 		return false;
 	}
 
-	// perform
+	//	Execute
 	if (true != perform(http_response_code))
 	{
 		log_err "perform() failed." log_end;
@@ -188,6 +193,97 @@ curl_client::http_get(
 	response = (char*)stream.GetMemory();
 	stream.ClearStream();
 	
+	return true;
+}
+
+
+bool 
+curl_client::http_down_with_auth(
+	_In_z_ const char* url,
+	_In_z_ const char* id,
+	_In_z_ const char* pw,
+	_Out_ long& http_response_code,
+	_Out_ std::string& response)
+{
+	_ASSERTE(nullptr != _curl);
+	_ASSERTE(nullptr != url);
+	if (nullptr == url || nullptr == _curl) return false;
+
+	// 우선 스트림을 초기화 한다. 
+	CMemoryStream stream; 
+	stream.ClearStream();
+
+	//	Set url
+	CURLcode curl_code = curl_easy_setopt(_curl,
+										  CURLOPT_URL,
+										  url);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	//	Set receiving data
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_WRITEDATA,
+								 &stream);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	// set auth
+	//	tell libcurl we can use "any" auth, which lets the lib pick one, 
+	//	but italso costs one extra round-trip and possibly sending of all the PUT
+	//	data twice!!!
+	curl_code = curl_easy_setopt(_curl, 
+								 CURLOPT_HTTPAUTH, 
+								 (long)CURLAUTH_ANY);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	/* set user name and password for the authentication */
+	std::stringstream id_n_pw;
+	id_n_pw << id << ":" << pw;
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_USERPWD,								 
+								 id_n_pw.str().c_str());
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+	
+	// perform
+	if (true != perform(http_response_code))
+	{
+		log_err "perform() failed." log_end;
+		return false;
+	}
+
+	// response data 에 null terminate 를 추가하고
+	// Stream 을 string  으로 변환 후 리턴한다.
+	char nt = '\0';
+	stream.WriteToStream(&nt, sizeof(char));
+	response = (char*)stream.GetMemory();
+	stream.ClearStream();
+
 	return true;
 }
 
@@ -412,6 +508,13 @@ curl_client::http_post(
 	return true;
 }
 
+// refac - 개별 함수내에서 알아서 설정해야 한다. over spec
+//			CURLOPT_WRITEFUNCTION 옵션은 기본옵션이 아니다.
+//			파일로 떨굴때도 있고, 스트림으로 받는 경우도 있다.
+// 
+//			CURLOPT_SSL_VERIFYPEER 는 https 모드만 ...
+//
+//
 /// @brief	전송을 하기위한 기본 options을 설정한다.
 bool
 curl_client::set_common_opt(
@@ -511,7 +614,7 @@ curl_client::perform(
 {
 	CURLcode curl_code = CURLE_OK;
 
-	// Set HTTP Headers
+	//	Set HTTP Headers
 	curl_slist* header_list = nullptr;
 	if (true != _header_fields.empty())
 	{
@@ -521,10 +624,13 @@ curl_client::perform(
 			header_item = hf.first;
 			header_item += ":";
 			header_item += hf.second;
-			header_list = curl_slist_append(header_list, header_item.c_str());
+			header_list = curl_slist_append(header_list, 
+											header_item.c_str());
 		}
 
-		curl_code = curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, header_list);
+		curl_code = curl_easy_setopt(_curl, 
+									 CURLOPT_HTTPHEADER, 
+									 header_list);
 		if (CURLE_OK != curl_code)
 		{
 			log_err "set http header failed. curl_code = %d, %s",
@@ -538,7 +644,9 @@ curl_client::perform(
 		_header_fields.clear();
 	}
 	
-	set_common_opt(_connection_timeout, _read_timeout, _ssl_verifypeer);
+	set_common_opt(_connection_timeout, 
+				   _read_timeout, 
+				   _ssl_verifypeer);
 
 	//	Execute
 	curl_code = curl_easy_perform(_curl);
@@ -593,9 +701,13 @@ curl_client::perform(
 	_Out_ long& http_response_code
 	)
 {
-	set_common_opt(_connection_timeout, _read_timeout, _ssl_verifypeer);
+	set_common_opt(_connection_timeout, 
+				   _read_timeout, 
+				   _ssl_verifypeer);
 
-	CURLcode curl_code = curl_easy_setopt(_curl, CURLOPT_NOPROGRESS, 1);
+	CURLcode curl_code = curl_easy_setopt(_curl, 
+										  CURLOPT_NOPROGRESS, 
+										  1);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "set noprogress option failed. curl_code = %d, %s",
@@ -605,7 +717,9 @@ curl_client::perform(
 		return false;
 	}
 
-	curl_code = curl_easy_setopt(_curl, CURLOPT_TCP_KEEPALIVE, 1L);
+	curl_code = curl_easy_setopt(_curl, 
+								 CURLOPT_TCP_KEEPALIVE, 
+								 1L);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "set tcp keepalive option failed. curl_code = %d, %s",
@@ -635,7 +749,9 @@ curl_client::perform(
 		curl_mime_name(part, fm.first.c_str());
 		curl_mime_data(part, fm.second.c_str(), CURL_ZERO_TERMINATED);
 	}
-	curl_code = curl_easy_setopt(_curl, CURLOPT_MIMEPOST, http_multipart_form);
+	curl_code = curl_easy_setopt(_curl, 
+								 CURLOPT_MIMEPOST, 
+								 http_multipart_form);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "set tcp keepalive option failed. curl_code = %d, %s",

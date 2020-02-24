@@ -71,10 +71,17 @@ public:
 	
 	void set_ssl_verifypeer(_In_ long ssl_verifypeer) { _ssl_verifypeer = ssl_verifypeer; }
 
+
 	void append_header(_In_z_ const char* key, _In_z_ const char* value);
 
 	bool http_get(_In_z_ const char* url, _Out_ long& http_response_code, _Out_ CMemoryStream& stream);
 	bool http_get(_In_z_ const char* url, _Out_ long& http_response_code, _Out_ std::string& response);
+
+	bool http_down_with_auth(_In_z_ const char* url,
+							 _In_z_ const char* id,
+							 _In_z_ const char* pw,
+							 _Out_ long& http_response_code, 
+							 _Out_ std::string& response);
 
 	bool http_post(_In_z_ const char* url,
 				   _In_z_ const char* data,
@@ -105,9 +112,11 @@ private:
 	bool set_common_opt(_In_ long connection_timeout = 10,
 						_In_ long read_timeout = 90,
 						_In_ long ssl_verifypeer = 1);
+	
 	bool perform(_Out_ long& http_response_code);
+
 	// multipart/form type을 request body data에 설정한 후 전송하는 함수
-	bool perform(_In_ const char* file_path, _In_   Forms& forms, _Out_ long& http_response_code);
+	bool perform(_In_ const char* file_path, _In_ Forms& forms, _Out_ long& http_response_code);
 
 	void finalize();
 

@@ -26,7 +26,7 @@
 #include "_MyLib/src/Singleton.h"
 #include "_MyLib/src/FileInfoCache.h"
 #include "_MyLib/src/account_info.h"
-#include "_MyLib/src/curl_client.h"
+
 #include "_MyLib/src/CStream.h"
 #include "_MyLib/src/sched_client.h"
 
@@ -199,7 +199,8 @@ extern bool test_read_mouted_device();
 extern bool test_set_binary_data();
 extern bool test_reg_multi_value();
 
-// _test_curl_https
+// _test_curl.cpp
+bool test_curl_https_down_with_auth();
 bool test_curl_https();
 bool test_curl_http();
 bool test_curl_http_upload();
@@ -386,6 +387,7 @@ void run_test()
 	//assert_bool(true, test_reg_multi_value);
 	//assert_bool(true, test_aes256);
 
+	assert_bool(true, test_curl_https_down_with_auth);
 	//assert_bool(true, test_curl_https);
 	//assert_bool(true, test_curl_http);
 	//assert_bool(true, test_curl_http_upload);
@@ -428,113 +430,7 @@ void run_test()
 	finalize_log();
 }
 
-bool test_curl_https()
-{
-	pcurl_client _curl_client = new curl_client();
-	if (nullptr == _curl_client)
-	{
-		log_err "not enought memory" log_end;
-		return false;
-	}
 
-	std::stringstream http_header;
-	http_header << "authorization: Bearer "
-				<< "FOO";
-
-	if (true != _curl_client->initialize(10, 90, 0))
-	{
-		log_err "curl client initialize() failed." log_end;
-		return false;
-	}
-
-	_curl_client->append_header("authorization", http_header.str().c_str());
-
-	const char* url = "https://api.somma.kr:55550/api/v1100/host-info";
-
-	long http_response_code = 404;
-	std::string res;
-	_ASSERTE(true == _curl_client->http_get(url, http_response_code, res));
-
-	_ASSERTE(_curl_client != nullptr);
-	delete _curl_client; _curl_client = nullptr;
-	return true;
-}
-
-bool test_curl_http()
-{
-	pcurl_client _curl_client = new curl_client();
-	if (nullptr == _curl_client)
-	{
-		log_err "not enought memory" log_end;
-		return false;
-	}
-
-	if (true != _curl_client->initialize())
-	{
-		log_err "curl client initialize() failed." log_end;
-		return false;
-	}
-
-	const char* url = "http://192.168.10.200:5601/app/kibana#/monster?_g=()";
-	long http_response_code = 404;
-	CMemoryStream stream;
-	_ASSERTE(true == _curl_client->http_get(url, http_response_code, stream));
-
-	std::vector<std::string> dumps;
-	dump_memory(0LL, (unsigned char*)(stream.GetMemory()), (UINT32)stream.GetSize(), dumps);
-	std::for_each(dumps.begin(), dumps.end(),[](std::string& dump){printf("%s\n", dump.c_str());});
-
-	_ASSERTE(_curl_client != nullptr);
-	delete _curl_client; _curl_client = nullptr;
-	return true;
-}
-
-bool test_curl_http_upload()
-{
-	pcurl_client client = new curl_client();
-
-	const wchar_t* path = L"C:\\Windows\\System32\\notepad.exe";
-	const char*  url = "http://localhost:33330/upload";
-	long response_code;
-	std::string response;
-	client->initialize();
-
-	std::map<std::string, std::string> forms;
-	forms["group_guid"] = "invalid_group_guid";
-	forms["host_guid"] = "invalid_host_guid";
-	forms["full_path"] = "invalid_full_path";
-
-	bool ret = false;
-	do
-	{
-		if (true != client->http_file_upload(url, path, forms, response_code, response))
-		{
-			log_err "http_file_upload() failed. path=%ws, url=%s, status_code=%u",
-				path,
-				url,
-				response_code
-				log_end;
-			break;
-		}
-
-		ret = true;
-	} while (false);
-
-	if (true == ret)
-	{
-		log_info "file upload success. path=%ws, url=%s, status_code=%u",
-			path,
-			url,
-			response_code
-			log_end;
-	}
-
-	if (nullptr != client)
-	{
-		delete client; client = nullptr;
-	}
-	return false;
-}
 
 /// @brief
 bool test_get_drive_type()
