@@ -41,8 +41,8 @@ bool test_curl_https_down_with_auth()
 	_ASSERTE(true == _curl_client->http_down_with_auth(url.c_str(),
 													   id.c_str(), 
 													   pw.c_str(),
-													   http_response_code, 
-													   file_path));
+													   file_path.c_str(),
+													   http_response_code));
 	if (200 == http_response_code)
 	{
 		_ASSERTE(is_file_existsW(file_path));		
@@ -76,7 +76,7 @@ bool test_curl_https()
 
 	_curl_client->append_header("authorization", http_header.str().c_str());
 
-	const char* url = "https://api.somma.kr:55550/api/v1100/host-info";
+	const char* url = "https://www.google.com/";
 
 	long http_response_code = 404;
 	std::string res;

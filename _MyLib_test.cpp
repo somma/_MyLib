@@ -388,7 +388,7 @@ void run_test()
 	//assert_bool(true, test_aes256);
 
 	assert_bool(true, test_curl_https_down_with_auth);
-	//assert_bool(true, test_curl_https);
+	assert_bool(true, test_curl_https);
 	//assert_bool(true, test_curl_http);
 	//assert_bool(true, test_curl_http_upload);
 	//assert_bool(true, test_alignment);

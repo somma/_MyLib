@@ -13,16 +13,17 @@
 
 
 
-///	@brief	libcUrl 에서 데이터 수신시 호출되는 콜백 함수
+///	@brief	libcUrl Write Callback To Stream 
+///			데이터 수신시 호출되는 콜백 함수로 fread() 함수 처럼 구조화된 
+///			IO 를 위해 size, nmemb 를 사용함
 ///	@param	ptr         수신한 데이터
 ///	@param	size        nmemb(메모리 블럭) 의 사이즈 / 엘리먼트 사이즈
 ///	@param	nmemb       메모리 블럭의 갯수 / 엘리먼크 갯수
 ///	@param	userdata    CURLOPT_WRITEDATA 옵션 설정 시 설정한 데이터 포인터
-///	@remarks	fread (void * DstBuf, size_t ElementSize, size_t Count, FILE * FileStream) 함수 처럼
-///			구조화된 IO 를 위해 size, nmemb 를 사용함
-///	@return	처리된 byte 수. ( size * nmemb ) 값과 다른 값이 리턴되면 curl 이 세션을 중지함
+///	@return	처리된 byte 수, size * nmemb 값과 다른 값이 리턴되면 curl 이 
+///			세션을 중지한다.
 size_t
-http_get_write_to_stream(
+curl_wcb_to_stream(
 	_In_ void* ptr,
 	_In_ size_t size,
 	_In_ size_t nmemb,
@@ -44,9 +45,9 @@ http_get_write_to_stream(
 	return (size * nmemb);
 }
 
-
+///	@brief	libcUrl Write Callback To file 
 size_t
-http_get_write_to_file(
+curl_wcb_to_file(
 	_In_ void* rcvd_buffer,
 	_In_ size_t rcvd_block_size,
 	_In_ size_t rcvd_block_count,
@@ -171,7 +172,7 @@ curl_client::http_get(
 	//
 	//	Prepare (set common options)
 	//
-	if (!prepare_perform(url, 10, 90, true, true, false))
+	if (!prepare_perform(url, 10, 90, true, true, true, false))
 	{
 		log_err "prepare_perform() failed. " log_end;
 		return false;
@@ -195,7 +196,7 @@ curl_client::http_get(
 
 	curl_code = curl_easy_setopt(_curl,
 								 CURLOPT_WRITEFUNCTION,
-								 http_get_write_to_stream);
+								 curl_wcb_to_stream);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -255,11 +256,12 @@ curl_client::http_get(
 /// @brief	HTTP(S) 인증이 걸린 페이지에서 파일을 다운로드한다.
 bool 
 curl_client::http_down_with_auth(
-	_In_ const char* url,
-	_In_ const char* id,
-	_In_ const char* pw,	
-	_Out_ long& http_response_code,
-	_Out_ std::wstring& local_file_path)
+	_In_ const char* const url,
+	_In_ const char* const id,
+	_In_ const char* const pw,	
+	_In_ const wchar_t* const target_path,
+	_Out_ long& http_response_code
+	)
 {
 	_ASSERTE(nullptr != _curl);
 	_ASSERTE(nullptr != url);
@@ -268,12 +270,11 @@ curl_client::http_down_with_auth(
 	//
 	//	Prepare (set common options)
 	//
-	if (!prepare_perform(url, 10, 90, true, true, false))
+	if (!prepare_perform(url, 10, 90, true, true, true, false))
 	{
 		log_err "prepare_perform() failed. " log_end;
 		return false;
 	}
-
 
 	//
 	//	Set mothod specific options
@@ -286,7 +287,7 @@ curl_client::http_down_with_auth(
 	//	임시파일 경로 생성 (랜덤하게 생성한 파일명이 다섯번이나 존재한다면 포기)
 	//
 	handle_ptr tmp_file(
-		open_file_to_write(local_file_path.c_str()), 
+		open_file_to_write(target_path), 
 		[](HANDLE h) 
 	{
 		if (INVALID_HANDLE_VALUE != h)
@@ -321,7 +322,7 @@ curl_client::http_down_with_auth(
 
 	curl_code = curl_easy_setopt(_curl,
 								 CURLOPT_WRITEFUNCTION,
-								 http_get_write_to_file);
+								 curl_wcb_to_file);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -334,13 +335,9 @@ curl_client::http_down_with_auth(
 	//
 	//	Set auth mode
 	//
-	//	tell libcurl we can use "any" auth, which lets the lib pick one, 
-	//	but italso costs one extra round-trip and possibly sending of 
-	//	all the PUT data twice!!!
-	//
 	curl_code = curl_easy_setopt(_curl, 
 								 CURLOPT_HTTPAUTH, 
-								 (long)CURLAUTH_ANY);
+								 (long)CURLAUTH_BASIC);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -414,6 +411,7 @@ curl_client::http_post(
 	return true;
 }
 
+/// @brief	
 bool
 curl_client::http_file_upload(
 	_In_z_ const char* url,
@@ -435,13 +433,23 @@ curl_client::http_file_upload(
 			log_end;
 		return false;
 	}
+	
+	//
+	//	Prepare (set common options)
+	//
+	if (!prepare_perform(url, 10, 90, true, true, true, false))
+	{
+		log_err "prepare_perform() failed. " log_end;
+		return false;
+	}
 
-	CURLcode curl_code = CURLE_OK;
-
-	//	Set url
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_URL,
-								 url);
+	//
+	//	Set mothod specific options
+	//
+	stream.ClearStream();
+	auto curl_code = curl_easy_setopt(_curl,
+									  CURLOPT_WRITEDATA,
+									  &stream);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -451,10 +459,9 @@ curl_client::http_file_upload(
 		return false;
 	}
 
-	//	Set receiving data
 	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_WRITEDATA,
-								 &stream);
+								 CURLOPT_WRITEFUNCTION,
+								 curl_wcb_to_stream);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -463,10 +470,14 @@ curl_client::http_file_upload(
 			log_end;
 		return false;
 	}
-
-	//	perform
+	
+	//
+	//	Perform http(s) I/O
+	//
 	std::string file_path_utf8 = WcsToMbsUTF8Ex(file_path);
-	if (true != perform(file_path_utf8.c_str(), forms, http_response_code))
+	if (true != perform(file_path_utf8.c_str(), 
+						forms, 
+						http_response_code))
 	{
 		log_err "perform() failed." log_end;
 		return false;
@@ -512,10 +523,7 @@ curl_client::http_file_upload(
 	return true;
 }
 
-///
-///
-///
-///
+/// @brief	
 bool
 curl_client::http_post(
 	_In_z_ const char* url,
@@ -524,73 +532,100 @@ curl_client::http_post(
 	_Out_ CMemoryStream& stream
 	)
 {
-	CURLcode curl_code = CURLE_OK;
+	_ASSERTE(nullptr == url);
+	_ASSERTE(nullptr == data);
+	if (nullptr == url || nullptr == data) return false;
 
-	//	Set url
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_URL,
-								 url);
-	if (CURLE_OK != curl_code)
+	//
+	//	Prepare (set common options)
+	//
+	if (!prepare_perform(url, 10, 90, true, true, true, false))
 	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
+		log_err "prepare_perform() failed. " log_end;
 		return false;
 	}
 
-	//	Set receiving data
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_WRITEDATA,
-								 &stream);
-	if (CURLE_OK != curl_code)
+	//
+	//	Set mothod specific options
+	//
+	bool ret = false;
+	do
 	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
+		//
+		//	Received data stuff
+		//
+		stream.ClearStream();
+		auto curl_code = curl_easy_setopt(_curl,
+										  CURLOPT_WRITEDATA,
+										  &stream);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
 
-	//	Set HTTP method to POST
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_POST,
-								 1);
-	if (CURLE_OK != curl_code)
-	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_WRITEFUNCTION,
+									 curl_wcb_to_stream);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
 
-	//	sending data
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_POSTFIELDSIZE,
-								 strlen(data));
-	if (CURLE_OK != curl_code)
-	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
+		//
+		//	HTTP POST stuff
+		//
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_POST,
+									 1);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
 
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_POSTFIELDS,
-								 data);
-	if (CURLE_OK != curl_code)
-	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_POSTFIELDSIZE,
+									 strlen(data));
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
 
-	//	perform
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_POSTFIELDS,
+									 data);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		ret = true;		//<!
+	} while (false);
+	
+	if (!ret) return false;
+
+	//
+	//	Perform http(s) I/O
+	//
 	if (true != perform(http_response_code))
 	{
 		log_err "perform() failed." log_end;
@@ -600,110 +635,13 @@ curl_client::http_post(
 	return true;
 }
 
-// refac - 개별 함수내에서 알아서 설정해야 한다. over spec
-//			CURLOPT_WRITEFUNCTION 옵션은 기본옵션이 아니다.
-//			파일로 떨굴때도 있고, 스트림으로 받는 경우도 있다.
-// 
-//			CURLOPT_SSL_VERIFYPEER 는 https 모드만 ...
-//
-//
-///// @brief	전송을 하기위한 기본 options을 설정한다.
-//bool
-//curl_client::set_common_opt(
-//	_In_ long connection_timeout,
-//	_In_ long read_timeout,
-//	_In_ long ssl_verifypeer
-//	)
-//{
-//	CURLcode curl_code = CURLE_OK;
-//
-//	bool ret = false;
-//	do
-//	{
-//		//
-//		// SSL Verifyer 유무 설정
-//		//
-//		curl_code = curl_easy_setopt(_curl,
-//									 CURLOPT_SSL_VERIFYPEER,
-//									 ssl_verifypeer);
-//		if (CURLE_OK != curl_code)
-//		{
-//			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-//				curl_code,
-//				curl_easy_strerror(curl_code)
-//				log_end;
-//			break;
-//		}
-//
-//		//	Set callback
-//		curl_code = curl_easy_setopt(_curl,
-//									 CURLOPT_WRITEFUNCTION,
-//									 http_get_write_callback);
-//		if (CURLE_OK != curl_code)
-//		{
-//			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-//				curl_code,
-//				curl_easy_strerror(curl_code)
-//				log_end;
-//			break;
-//		}
-//
-//		// Set timeout
-//		// 목적지 서버상태가 Overload 상태인지, 또는 크리티컬한 에러가 있는 상태인지에 따라 적용
-//		// e.g. 설정한 시간(10초)내에 서버에서 응답이 없을 경우 강제 해제
-//		curl_code = curl_easy_setopt(_curl,
-//									 CURLOPT_CONNECTTIMEOUT,
-//									 connection_timeout);
-//		if (CURLE_OK != curl_code)
-//		{
-//			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-//				curl_code,
-//				curl_easy_strerror(curl_code)
-//				log_end;
-//			break;
-//		}
-//
-//		// Set connect timeout
-//		// 굉장히 큰파일, 또는 느린 연결 속도(네트워크속도에 좌우됨) 등에 따라 적용
-//		// e.g. 설정한 시간(90초) 내에 다운로드가 완료되지 않을 경우 강제 해제
-//		curl_code = curl_easy_setopt(_curl,
-//									CURLOPT_TIMEOUT,
-//									read_timeout);
-//		if (CURLE_OK != curl_code)
-//		{
-//			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-//				curl_code,
-//				curl_easy_strerror(curl_code)
-//				log_end;
-//			break;
-//		}
-//
-//#ifdef _DEBUG 
-//		//	get verbose debug output please
-//		curl_code = curl_easy_setopt(_curl,
-//									 CURLOPT_VERBOSE,
-//									 1L);
-//		if (CURLE_OK != curl_code)
-//		{
-//			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-//				curl_code,
-//				curl_easy_strerror(curl_code)
-//				log_end;
-//			break;
-//		}
-//#endif
-//		ret = true;
-//	} while (false);
-//
-//	return ret;
-//}
-
 ///	@brief	HTTP(S) 요청의 공통 옵션들을 설정하고, 성공시 true 를 리턴
 bool
 curl_client::prepare_perform(
 	_In_ const char* url,
 	_In_ long connection_timeout,
 	_In_ long read_timeout,
+	_In_ bool follow_location,
 	_In_ bool ssl_verify_peer,
 	_In_ bool ssl_verify_host_name,
 	_In_ bool verbose
@@ -770,6 +708,24 @@ curl_client::prepare_perform(
 		}
 
 		//
+		//	HTTP redirection 
+		//
+		//	example.com is redirected, so we tell libcurl to follow 
+		//	redirection
+		//
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_FOLLOWLOCATION,
+									 true == follow_location ? 1 : 0);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		//
 		//	SSL, Verify peer
 		//		
 		curl_code = curl_easy_setopt(_curl,
@@ -790,7 +746,7 @@ curl_client::prepare_perform(
 		//		1,2 : verify host name (default)
 		//
 		curl_code = curl_easy_setopt(_curl,
-									 CURLOPT_SSL_VERIFYPEER,
+									 CURLOPT_SSL_VERIFYHOST,
 									 true == ssl_verify_host_name ? 2 : 0);
 		if (CURLE_OK != curl_code)
 		{
@@ -822,7 +778,7 @@ curl_client::prepare_perform(
 	return ret;
 }
 
-/// @brief	전송을 실행하고, 문제가 없는지 확인한다.
+/// @brief	HTTP(S) Request 를 전송하고, 응답코드를 확인한다.
 bool curl_client::perform(_Out_ long& http_response_code)
 {
 	http_response_code = 0;
@@ -912,7 +868,7 @@ bool curl_client::perform(_Out_ long& http_response_code)
 	return ret;
 }			
 
-// refac - todo
+/// @brief	
 bool 
 curl_client::perform(
 	_In_ const char* file_path,
@@ -920,11 +876,6 @@ curl_client::perform(
 	_Out_ long& http_response_code
 	)
 {
-	// refac
-	//set_common_opt(_connection_timeout, 
-	//			   _read_timeout, 
-	//			   _ssl_verifypeer);
-
 	CURLcode curl_code = curl_easy_setopt(_curl, 
 										  CURLOPT_NOPROGRESS, 
 										  1);

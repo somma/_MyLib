@@ -61,67 +61,82 @@ public:
 	~curl_client();
 
 public:
-	bool initialize(_In_ long connection_timeout = 10,
-					_In_ long read_timeout = 90,
-					_In_ long ssl_verifypeer = 1);
+	bool initialize(
+		_In_ long connection_timeout = 10,
+		_In_ long read_timeout = 90,
+		_In_ long ssl_verifypeer = 1);
 	
-	void set_connection_timeout(_In_ long connection_timeout) { _connection_timeout = connection_timeout; }
-	void set_read_timeout(_In_ long read_timeout) { _read_timeout = read_timeout; }	
-	void set_ssl_verifypeer(_In_ long ssl_verifypeer) { _ssl_verifypeer = ssl_verifypeer; }
+	bool http_get(
+		_In_z_ const char* url, 
+		_Out_ long& http_response_code, 
+		_Out_ CMemoryStream& stream);
 
-	void append_header(_In_z_ const char* key, _In_z_ const char* value);
+	bool http_get(
+		_In_z_ const char* url, 
+		_Out_ long& http_response_code, 
+		_Out_ std::string& response);
 
-	bool http_get(_In_z_ const char* url, _Out_ long& http_response_code, _Out_ CMemoryStream& stream);
-	bool http_get(_In_z_ const char* url, _Out_ long& http_response_code, _Out_ std::string& response);
+	bool http_down_with_auth(
+		_In_ const char* const url,
+		_In_ const char* const id,
+		_In_ const char* const pw,
+		_In_ const wchar_t* const target_path,
+		_Out_ long& http_response_code);
 
-	bool http_down_with_auth(_In_z_ const char* url,
-							 _In_z_ const char* id,
-							 _In_z_ const char* pw,
-							 _Out_ long& http_response_code, 
-							 _Out_ std::wstring& local_file_path);
+	bool http_post(
+		_In_z_ const char* url,
+		_In_z_ const char* data,
+		_Out_  long& http_response_code,
+		_Out_  CMemoryStream& stream);
 
-	bool http_post(_In_z_ const char* url,
-				   _In_z_ const char* data,
-				   _Out_  long& http_response_code, 
-				   _Out_  CMemoryStream& stream);
-	bool http_post(_In_z_ const char* url,
-				   _In_z_ const char* data,
-				   _Out_  long& http_response_code, 
-				   _Out_  std::string& response);
+	bool http_post(
+		_In_z_ const char* url,
+		_In_z_ const char* data,
+		_Out_  long& http_response_code,
+		_Out_  std::string& response);
 
 	//
 	// http_file_upload 함수를 사용하면, 파일 이름은 서버로 전송된다.
 	// 만약, 추가적으로 전송할 데이터가 있다면 forms를 사용한다.
 	//
+#pragma todo("Forms 객체를 파라미터로 받지 않게. add_form() 형태로 리팩토링")
 	typedef std::map<std::string, std::string> Forms;
-	bool http_file_upload(_In_z_ const char* url,
-						  _In_z_ const wchar_t* file_path,
-						  _In_   Forms& forms,
-						  _Out_  long& http_response_code,
-						  _Out_  CMemoryStream& stream);
-	bool http_file_upload(_In_z_ const char* url,
-						  _In_z_ const wchar_t* file_path,
-						  _In_   Forms& forms,
-						  _Out_  long& http_response_code,
-						  _Out_  std::string& response);
-		
-private:
-	// refc
-	//bool set_common_opt(_In_ long connection_timeout = 10,
-	//					_In_ long read_timeout = 90,
-	//					_In_ long ssl_verifypeer = 1);
+	bool http_file_upload(
+		_In_z_ const char* url,
+		_In_z_ const wchar_t* file_path,
+		_In_   Forms& forms,
+		_Out_  long& http_response_code,
+		_Out_  CMemoryStream& stream);
+	bool http_file_upload(
+		_In_z_ const char* url,
+		_In_z_ const wchar_t* file_path,
+		_In_   Forms& forms,
+		_Out_  long& http_response_code,
+		_Out_  std::string& response);
 
-	bool prepare_perform(_In_ const char* url,
-						 _In_ long connection_timeout=10,
-						 _In_ long read_timeout=90, 
-						 _In_ bool ssl_verify_peer=true,
-						 _In_ bool ssl_verify_host_name=true,
-						 _In_ bool verbose=false);
+public:
+	void set_connection_timeout(_In_ long connection_timeout) { _connection_timeout = connection_timeout; }
+	void set_read_timeout(_In_ long read_timeout) { _read_timeout = read_timeout; }
+	void set_ssl_verifypeer(_In_ long ssl_verifypeer) { _ssl_verifypeer = ssl_verifypeer; }
+	void append_header(_In_z_ const char* key, _In_z_ const char* value);
+
+private:
+	bool prepare_perform(
+		_In_ const char* url,
+		_In_ long connection_timeout = 10,
+		_In_ long read_timeout = 90,
+		_In_ bool follow_location=true,
+		_In_ bool ssl_verify_peer = true,
+		_In_ bool ssl_verify_host_name = true,
+		_In_ bool verbose = false);
 
 	bool perform(_Out_ long& http_response_code);
 
 	// multipart/form type을 request body data에 설정한 후 전송하는 함수
-	bool perform(_In_ const char* file_path, _In_ Forms& forms, _Out_ long& http_response_code);
+	bool perform(
+		_In_ const char* file_path, 
+		_In_ Forms& forms, 
+		_Out_ long& http_response_code);
 
 	void finalize();
 
