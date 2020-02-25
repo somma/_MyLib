@@ -4478,8 +4478,11 @@ bool get_temp_dirW(_Out_ std::wstring& temp_dir)
 	DWORD ret = GetTempPathW(MAX_PATH, path);
 	if (ret > MAX_PATH || 0 == ret)
 	{
-		log_err "GetTempPathW() failed. gle = %u", GetLastError() log_end
-			return false;
+		log_err
+			"GetTempPathW() failed. gle=%u",
+			GetLastError()
+			log_end;
+		return false;
 	}
 
 	temp_dir = path;
