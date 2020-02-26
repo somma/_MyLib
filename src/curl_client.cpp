@@ -532,8 +532,8 @@ curl_client::http_post(
 	_Out_ CMemoryStream& stream
 	)
 {
-	_ASSERTE(nullptr == url);
-	_ASSERTE(nullptr == data);
+	_ASSERTE(nullptr != url);
+	_ASSERTE(nullptr != data);
 	if (nullptr == url || nullptr == data) return false;
 
 	//
