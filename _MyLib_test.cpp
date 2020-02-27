@@ -155,6 +155,7 @@ bool test_get_installed_programs();
 bool test_get_file_company_name();
 bool test_generate_random_string();
 bool test_bit_check_set_clear();
+bool test_file_time_stuff();
 
 // rc4.cpp
 bool test_rc4_encrypt();
@@ -353,6 +354,7 @@ void run_test()
 	//assert_bool(true, test_get_file_company_name);
 	//assert_bool(true, test_generate_random_string);
 	//assert_bool(true, test_bit_check_set_clear);
+	assert_bool(true, test_file_time_stuff);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
 
@@ -387,8 +389,8 @@ void run_test()
 	//assert_bool(true, test_reg_multi_value);
 	//assert_bool(true, test_aes256);
 
-	assert_bool(true, test_curl_https_down_with_auth);
-	assert_bool(true, test_curl_https);
+	//assert_bool(true, test_curl_https_down_with_auth);
+	//assert_bool(true, test_curl_https);
 	//assert_bool(true, test_curl_http);
 	//assert_bool(true, test_curl_http_upload);
 	//assert_bool(true, test_alignment);
@@ -1608,6 +1610,35 @@ bool test_bit_check_set_clear()
 	_ASSERTE(!_check_bit(v, 31));
 	_ASSERTE(v == 0xAF6);
 
+	return true;
+}
+
+/// @brief	
+bool test_file_time_stuff()
+{
+	//
+	//	UTC 00:00 에서 몇시간 지났는지 알아내기
+	//
+	SYSTEMTIME utc_now;
+	GetSystemTime(&utc_now);
+	uint16_t hours_passed = utc_now.wHour;
+
+	// YYYYMMDD hh:mm:ss 문자열 생성
+	std::wstringstream wss;
+	wss << std::setfill(L'0')
+		<< std::setw(4) << utc_now.wYear
+		<< std::setw(2) << utc_now.wMonth
+		<< std::setw(2) << utc_now.wDay
+		<< L"  "
+		<< std::setw(2) << utc_now.wHour << L":"
+		<< std::setw(2) << utc_now.wMinute << L":"
+		<< std::setw(2) << utc_now.wSecond;
+
+	log_info 
+		"%u hours passed from 00:00(UTC), str=%ws", 
+		hours_passed,
+		wss.str().c_str() 
+		log_end;
 	return true;
 }
 
