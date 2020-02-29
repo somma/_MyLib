@@ -3792,92 +3792,114 @@ bool test_get_module_dirEx()
 /// @brief	
 bool test_zip_unzip()
 {
-	//
-	//	현재 디렉토리에 
-	//	- tmp 폴더를 만들고 파일들을 생성
-	//	- tmp 폴더를 tmp.zip 으로 압축
-	//	- tmp 폴더 삭제
-	//	- tmp.zip 을 tmp 폴더에 풀고
-	//	- tmp.zip 삭제
-	//	- tmp 폴더 삭제
-	//	  
-
-	std::wstringstream wss;
-	wss << get_current_module_dirEx() << L"\\tmp";
-
-	if (is_file_existsW(wss.str().c_str()))
+	_mem_dump_console
+	_mem_check_begin
 	{
-		if (!WUDeleteDirectoryW(wss.str().c_str()))
-		{			
-			_ASSERTE(!"WUDeleteDirectoryW() failed.");
+		//
+		//	현재 디렉토리에 
+		//	- tmp 폴더를 만들고 파일들을 생성
+		//	- tmp 폴더를 tmp.zip 으로 압축
+		//	- tmp 폴더 삭제
+		//	- tmp.zip 을 tmp 폴더에 풀고
+		//	- tmp.zip 삭제
+		//	- tmp 폴더 삭제
+		//	  
+
+		std::wstringstream wss;
+		wss << get_current_module_dirEx() << L"\\tmp";
+
+		if (is_file_existsW(wss.str().c_str()))
+		{
+			if (!WUDeleteDirectoryW(wss.str().c_str()))
+			{
+				_ASSERTE(!"WUDeleteDirectoryW() failed.");
+			}
 		}
-	}
-	_ASSERTE(WUCreateDirectory(wss.str().c_str()));
-
-	for (int i = 0; i < 10; ++i)
-	{
-		std::wstring path = 
-			wss.str() + L"\\" + std::to_wstring(i) + L".txt";
-
-		HANDLE h = open_file_to_write(path.c_str());
-		write_to_filew(h, L"ttttttttttttttttttest....");
-		CloseHandle(h);
-	}
-
-	// tmp.zip 파일 생성
-	std::stringstream ss;
-	ss	<< WcsToMbsEx(get_current_module_dirEx().c_str()) 
-		<< "\\tmp.zip";
-	{
-		libzippp::ZipArchive zf(ss.str().c_str());
-		_ASSERTE(true == zf.open(libzippp::ZipArchive::WRITE));
+		_ASSERTE(WUCreateDirectory(wss.str().c_str()));
 
 		for (int i = 0; i < 10; ++i)
 		{
 			std::wstring path =
 				wss.str() + L"\\" + std::to_wstring(i) + L".txt";
-			zf.addFile(std::to_string(i) + ".txt", 
-					   WcsToMbsEx(path));
-		}
 
-		zf.close();
-	}
-
-	// tmp 폴더 삭제 후 다시 생성
-	_ASSERTE(WUDeleteDirectoryW(wss.str().c_str()));
-	_ASSERTE(WUCreateDirectory(wss.str().c_str()));
-
-	// tmp.zip -> /tmp 에 압축 해제
-	{
-		libzippp::ZipArchive zf(ss.str().c_str());
-		_ASSERTE(true == zf.open(libzippp::ZipArchive::READ_ONLY));
-
-		auto entries = zf.getEntries();
-		for (const libzippp::ZipEntry& entry : entries)
-		{
-			std::wstring path = wss.str() + L"\\" + MbsToWcsEx(entry.getName());
 			HANDLE h = open_file_to_write(path.c_str());
-			_ASSERTE(INVALID_HANDLE_VALUE != h);
-			if (h != INVALID_HANDLE_VALUE)
-			{
-				void *p = entry.readAsBinary();
-				_ASSERTE(WriteFile(h,
-								   p,
-								   entry.getSize(),
-								   nullptr,
-								   nullptr));
-			}
+			write_to_filew(h, L"ttttttttttttttttttest....");
 			CloseHandle(h);
 		}
-		zf.close();
+
+		// tmp.zip 파일 생성
+		std::stringstream ss;
+		ss << WcsToMbsEx(get_current_module_dirEx().c_str())
+			<< "\\tmp.zip";
+		{
+			libzippp::ZipArchive zf(ss.str().c_str());
+			_ASSERTE(true == zf.open(libzippp::ZipArchive::WRITE));
+
+			for (int i = 0; i < 10; ++i)
+			{
+				std::wstring path =
+					wss.str() + L"\\" + std::to_wstring(i) + L".txt";
+				zf.addFile(std::to_string(i) + ".txt",
+						   WcsToMbsEx(path));
+			}
+
+			zf.close();
+		}
+
+		// tmp 폴더 삭제 후 다시 생성
+		_ASSERTE(WUDeleteDirectoryW(wss.str().c_str()));
+		_ASSERTE(WUCreateDirectory(wss.str().c_str()));
+
+		// tmp.zip -> /tmp 에 압축 해제
+		{
+			libzippp::ZipArchive zf(ss.str().c_str());
+			_ASSERTE(true == zf.open(libzippp::ZipArchive::READ_ONLY));
+
+			auto entries = zf.getEntries();
+			for (const libzippp::ZipEntry& entry : entries)
+			{
+				std::wstring path = 
+					wss.str() + L"\\" + MbsToWcsEx(entry.getName());
+				HANDLE h = open_file_to_write(path.c_str());
+				_ASSERTE(INVALID_HANDLE_VALUE != h);
+				if (h != INVALID_HANDLE_VALUE)
+				{
+					if (entry.getSize() > 0)
+					{
+						//
+						//	!!중요!!
+						//	readAsBinary() 는 내부에서 new char[] 로 
+						//	메모리를 할당후 리턴하므로 delete [] 로 소멸한다.
+						//
+						void_ptr vp(entry.readAsBinary(), [](void* p)
+						{
+							if (nullptr != p) delete[] p;
+						});
+
+						if (vp)
+						{
+							_ASSERTE(WriteFile(h,
+											   vp.get(),
+											   entry.getSize(),
+											   nullptr,
+											   nullptr));
+						}
+					}
+					CloseHandle(h);
+				}
+			}	
+			zf.close();
+
+			// tmp.zip 삭제
+			DeleteFileA(ss.str().c_str());
+
+			// 
+			_ASSERTE(is_file_existsW(wss.str().c_str()));
+			_ASSERTE(WUDeleteDirectoryW(wss.str().c_str()));
+		}
 	}
+	_mem_check_end;
 
-	// tmp.zip 삭제
-	DeleteFileA(ss.str().c_str());
-
-	// 
-	_ASSERTE(is_file_existsW(wss.str().c_str()));
-	_ASSERTE(WUDeleteDirectoryW(wss.str().c_str()));
 	return true;
 }
 

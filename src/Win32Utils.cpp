@@ -3945,12 +3945,6 @@ extract_last_tokenW(
 					   .		: token
 			ABCDEFG.HIJ			: out_string if forward = TRUE
 						KLMN	: out_string if forward = FALSE
- * @param
- * @see
- * @remarks
- * @code
- * @endcode
- * @return
 **/
 std::wstring
 extract_last_tokenExW(
@@ -3980,13 +3974,7 @@ extract_last_tokenExW(
 			ABCDEFG.HIJ			: out_string if forward = TRUE
 						KLMN	: out_string if forward = FALSE
 
-			delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제
- * @param
- * @see
- * @remarks
- * @code
- * @endcode
- * @return
+			delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제 
 **/
 bool
 extract_last_tokenA(
@@ -4515,15 +4503,7 @@ bool get_temp_dirA(_Out_ std::string& temp_dir)
 	return true;
 }
 
-/**
- * @brief	모듈의 full path 를 구한다.
- * @param
- * @see
- * @remarks
- * @code
- * @endcode
- * @return
-**/
+/// @brief	로드된 module_name 의 full path 를 구한다.
 bool
 get_module_path(
 	_In_ const wchar_t* module_name,
@@ -4618,15 +4598,7 @@ bool get_current_module_file(_Out_ std::wstring& module_file)
 	return true;
 }
 
-/**
- * @brief
- * @param
- * @see
- * @remarks
- * @code
- * @endcode
- * @return
-**/
+/// @brief	로드된 module_name 의 full path 를 구한다.
 std::wstring get_module_pathEx(_In_ const wchar_t* module_name)
 {
 	std::wstring out;
@@ -4640,15 +4612,7 @@ std::wstring get_module_pathEx(_In_ const wchar_t* module_name)
 	}
 }
 
-/**
- * @brief
- * @param
- * @see
- * @remarks
- * @code
- * @endcode
- * @return
-**/
+/// @brief	로드된 module_name 의 디렉토리 경로를 리턴한다.
 std::wstring get_module_dirEx(_In_ const wchar_t* module_name)
 {
 	std::wstring module_path = get_module_pathEx(module_name);
@@ -4745,24 +4709,51 @@ std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name)
 }
 
 /// @brief	full path 경로명에서 `파일명.확장자:ADS` 부분만 떼어낸다. 
-std::wstring file_name_from_file_pathw(_In_ const wchar_t* file_path)
+std::wstring 
+file_name_from_file_pathw(
+	_In_ const wchar_t* file_path, 
+	_In_ const bool include_ext)
 {
 	_ASSERTE(nullptr != file_path);
 	if (nullptr == file_path) return _null_stringw;
 
-	return extract_last_tokenExW(file_path, L"\\", false);
+	if (include_ext)
+	{
+		return extract_last_tokenExW(file_path, L"\\", false);
+	}
+	else
+	{
+		auto file_name = extract_last_tokenExW(file_path, L"\\", false);
+		return extract_last_tokenExW(file_name.c_str(), L".", true);
+	}
+	
 }
 
-std::string file_name_from_file_patha(_In_ const char* file_path)
+std::string 
+file_name_from_file_patha(
+	_In_ const char* file_path,
+	_In_ const bool include_ext
+)
 {
 	_ASSERTE(nullptr != file_path);
 	if (nullptr == file_path) return _null_stringa;
 
-	return extract_last_tokenExA(file_path, "\\", false);
+	if (include_ext)
+	{
+		return extract_last_tokenExA(file_path, "\\", false);
+	}
+	else
+	{
+		auto file_name = extract_last_tokenExA(file_path, "\\", false);
+		return extract_last_tokenExA(file_name.c_str(), ".", true);
+	}
 }
 
 /// @brief	full path 경로명에서 `파일명.확장자` 를 제외한 디렉토리 부분만 떼어낸다. 
-std::wstring directory_from_file_pathw(_In_ const wchar_t* file_path)
+std::wstring 
+directory_from_file_pathw(
+	_In_ const wchar_t* file_path
+)
 {
 	_ASSERTE(nullptr != file_path);
 	if (nullptr == file_path) return _null_stringw;
