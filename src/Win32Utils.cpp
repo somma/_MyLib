@@ -4673,15 +4673,8 @@ std::wstring get_current_module_pathEx()
 	}
 }
 
-/**
- * @brief
- * @param
- * @see
- * @remarks
- * @code
- * @endcode
- * @return
-**/
+/// @brief	현재 모듈의 파일명을 제외한 디렉토리 경로를 구한다. 
+///			('\' 문자는 제외)
 std::wstring get_current_module_dirEx()
 {
 	std::wstring out;

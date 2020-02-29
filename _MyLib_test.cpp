@@ -10,6 +10,8 @@
 #include <regex>
 #include <unordered_map>
 
+#include "libzippp/libzippp.h"
+
 #include "_MyLib/src/process_tree.h"
 #include "_MyLib/src/base64.h"
 #include "_MyLib/src/rc4.h"
@@ -26,9 +28,10 @@
 #include "_MyLib/src/Singleton.h"
 #include "_MyLib/src/FileInfoCache.h"
 #include "_MyLib/src/account_info.h"
-
 #include "_MyLib/src/CStream.h"
 #include "_MyLib/src/sched_client.h"
+
+
 
 // test_CStream.cpp
 extern bool test_cstream();
@@ -245,7 +248,7 @@ bool test_interlock_operation();
 bool test_auto_manual_reset_event();
 bool test_get_module_dirEx();
 
-
+bool test_zip_unzip();
 
 
 void run_test()
@@ -354,7 +357,7 @@ void run_test()
 	//assert_bool(true, test_get_file_company_name);
 	//assert_bool(true, test_generate_random_string);
 	//assert_bool(true, test_bit_check_set_clear);
-	assert_bool(true, test_file_time_stuff);
+	//assert_bool(true, test_file_time_stuff);
 	//assert_bool(true, test_rc4_encrypt);
 	//assert_bool(true, test_md5_sha2);
 
@@ -406,6 +409,7 @@ void run_test()
 	//assert_bool(true, test_unique_ptr_list);
 	//assert_bool(true, test_unique_ptr_list_remove);
 	//assert_bool(true, test_make_unique_struct_allocate);
+	assert_bool(true, test_zip_unzip);
 	
 	//assert_bool(true, test_callby_value_container);
 
@@ -3782,6 +3786,98 @@ bool test_get_module_dirEx()
 		L"c:\\windows\\system32\\boot.ini",
 		path.c_str()
 		log_end;
+	return true;
+}
+
+/// @brief	
+bool test_zip_unzip()
+{
+	//
+	//	현재 디렉토리에 
+	//	- tmp 폴더를 만들고 파일들을 생성
+	//	- tmp 폴더를 tmp.zip 으로 압축
+	//	- tmp 폴더 삭제
+	//	- tmp.zip 을 tmp 폴더에 풀고
+	//	- tmp.zip 삭제
+	//	- tmp 폴더 삭제
+	//	  
+
+	std::wstringstream wss;
+	wss << get_current_module_dirEx() << L"\\tmp";
+
+	if (is_file_existsW(wss.str().c_str()))
+	{
+		if (!WUDeleteDirectoryW(wss.str().c_str()))
+		{			
+			_ASSERTE(!"WUDeleteDirectoryW() failed.");
+		}
+	}
+	_ASSERTE(WUCreateDirectory(wss.str().c_str()));
+
+	for (int i = 0; i < 10; ++i)
+	{
+		std::wstring path = 
+			wss.str() + L"\\" + std::to_wstring(i) + L".txt";
+
+		HANDLE h = open_file_to_write(path.c_str());
+		write_to_filew(h, L"ttttttttttttttttttest....");
+		CloseHandle(h);
+	}
+
+	// tmp.zip 파일 생성
+	std::stringstream ss;
+	ss	<< WcsToMbsEx(get_current_module_dirEx().c_str()) 
+		<< "\\tmp.zip";
+	{
+		libzippp::ZipArchive zf(ss.str().c_str());
+		_ASSERTE(true == zf.open(libzippp::ZipArchive::WRITE));
+
+		for (int i = 0; i < 10; ++i)
+		{
+			std::wstring path =
+				wss.str() + L"\\" + std::to_wstring(i) + L".txt";
+			zf.addFile(std::to_string(i) + ".txt", 
+					   WcsToMbsEx(path));
+		}
+
+		zf.close();
+	}
+
+	// tmp 폴더 삭제 후 다시 생성
+	_ASSERTE(WUDeleteDirectoryW(wss.str().c_str()));
+	_ASSERTE(WUCreateDirectory(wss.str().c_str()));
+
+	// tmp.zip -> /tmp 에 압축 해제
+	{
+		libzippp::ZipArchive zf(ss.str().c_str());
+		_ASSERTE(true == zf.open(libzippp::ZipArchive::READ_ONLY));
+
+		auto entries = zf.getEntries();
+		for (const libzippp::ZipEntry& entry : entries)
+		{
+			std::wstring path = wss.str() + L"\\" + MbsToWcsEx(entry.getName());
+			HANDLE h = open_file_to_write(path.c_str());
+			_ASSERTE(INVALID_HANDLE_VALUE != h);
+			if (h != INVALID_HANDLE_VALUE)
+			{
+				void *p = entry.readAsBinary();
+				_ASSERTE(WriteFile(h,
+								   p,
+								   entry.getSize(),
+								   nullptr,
+								   nullptr));
+			}
+			CloseHandle(h);
+		}
+		zf.close();
+	}
+
+	// tmp.zip 삭제
+	DeleteFileA(ss.str().c_str());
+
+	// 
+	_ASSERTE(is_file_existsW(wss.str().c_str()));
+	_ASSERTE(WUDeleteDirectoryW(wss.str().c_str()));
 	return true;
 }
 
