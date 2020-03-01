@@ -1543,7 +1543,7 @@ HANDLE open_file_to_write(_In_ const wchar_t* file_path)
 	}
 
 	HANDLE hFile = CreateFileW(file_path,
-							   GENERIC_WRITE,
+							   GENERIC_READ|GENERIC_WRITE,
 							   FILE_SHARE_READ,
 							   NULL,
 							   OPEN_ALWAYS,
@@ -2617,6 +2617,55 @@ bool WUDeleteDirectoryW(_In_ const wchar_t* DirctoryPathToDelete)
 	}
 
 	return true;
+}
+
+/// @brief	dir_create 디렉토리를 생성한다.
+///
+///			이미 디렉토리가 존재하고 remove_if_exists 가 true 인경우 
+///			디렉토리 및 디렉토리내 파일들을 모두 제거하고, 다시 생성한다.
+///
+///			어떤 이유로 dir_create 디렉토리 생성에 실패하는 경우 
+///			(기존디렉토리 삭제 실패 포함), dir_create_[N] 형태의 폴더 
+///			생성을 retry_count 만큼 시도한다.
+///
+///			폴더 생성 성공시 true 를 리턴하고, dir_created 변수를 설정한다.
+bool create_directory_ex(
+	_In_ const wchar_t* const dir_create,
+	_In_ const bool remove_if_exists,
+	_In_ const uint32_t retry_count,
+	_Out_ std::wstring& dir_created)
+{
+	uint32_t rc = 0;
+	std::wstring out_dir = dir_create;
+	do
+	{
+		if (is_file_existsW(out_dir) && remove_if_exists)
+		{
+			if (!WUDeleteDirectoryW(out_dir))
+			{
+				goto __retry;
+			}
+		}
+
+		if (!WUCreateDirectory(out_dir))
+		{
+			goto __retry;
+		}
+		else
+		{
+			//
+			//	Succeeded
+			//
+			dir_created = out_dir;
+			return true;
+		}
+
+	__retry:
+		out_dir = std::wstring(dir_create) + L"_" + std::to_wstring(rc);
+
+	} while (rc < retry_count);
+
+	return false;
 }
 
 /**
@@ -3804,12 +3853,6 @@ extract_first_tokenExW(
 					HIJ.KLMN	: out_string if forward = FALSE
 
 			delete_token 가 True 인 경우 org_string 에서 out_string + token 을 삭제
- * @param
- * @see
- * @remarks
- * @code
- * @endcode
- * @return
 **/
 bool
 extract_first_tokenA(
@@ -3880,7 +3923,11 @@ extract_first_tokenExA(
 
 	std::string org_string = org;
 	std::string out_string;
-	if (true != extract_first_tokenA(org_string, token, out_string, forward, false))
+	if (true != extract_first_tokenA(org_string, 
+									 token, 
+									 out_string, 
+									 forward, 
+									 false))
 		return _null_stringa;
 	else
 		return out_string;
@@ -4501,6 +4548,48 @@ bool get_temp_dirA(_Out_ std::string& temp_dir)
 
 	temp_dir = path;
 	return true;
+}
+
+/// @brief	%TMP%\prefix_[n].tmp 형태의 쓰기 가능한 임시파일 
+///			경로를 리턴한다.
+bool 
+get_temp_fileW(
+	_In_ const wchar_t* prefix,	
+	_Out_ std::wstring& temp_file
+)
+{
+	HANDLE h_file = INVALID_HANDLE_VALUE;
+	std::wstring ws;
+	if (true != get_temp_dirW(ws))
+	{
+		log_err "get_temp_dirW() failed." log_end;
+		return INVALID_HANDLE_VALUE;
+	}
+
+	for (int i = 0; i < 32; ++i)
+	{
+		//
+		//	%tmp%\prefix_10.tmp
+		//
+		std::wstring out =
+			ws + 
+			std::wstring(prefix) + 
+			L"_" + 
+			std::to_wstring(i) + 
+			L".tmp";
+
+		if (is_file_existsW(out))
+		{
+			continue;
+		}
+		else
+		{
+			temp_file = out;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 /// @brief	로드된 module_name 의 full path 를 구한다.

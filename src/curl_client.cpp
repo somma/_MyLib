@@ -1,115 +1,44 @@
 ﻿/**
-* @file    curl_client.cpp
-* @brief
-*
-* @author  Jungil, Yang (chaserhunter@somma.kr)
-* @date    2017/09/07 16:30 created.
-* @copyright (C)Somma, Inc. All rights reserved.
+ * @file    curl_client.cpp
+ * @brief
+ *
+ * @author  Jungil, Yang (chaserhunter@somma.kr)
+ * @date    2017/09/07 16:30 created.
+ * @copyright (C)Somma, Inc. All rights reserved.
 **/
 
 #include "stdafx.h"
-#include "curl_client.h"
-#include "log.h"
+#include "_MyLib/src/log.h"
+#include "_MyLib/src/md5.h"
+#include "_MyLib/src/sha2.h"
+#include "_MyLib/src/curl_client.h"
 
-
-
-///	@brief	libcUrl Write Callback To Stream 
-///			데이터 수신시 호출되는 콜백 함수로 fread() 함수 처럼 구조화된 
-///			IO 를 위해 size, nmemb 를 사용함
-///	@param	ptr         수신한 데이터
-///	@param	size        nmemb(메모리 블럭) 의 사이즈 / 엘리먼트 사이즈
-///	@param	nmemb       메모리 블럭의 갯수 / 엘리먼크 갯수
-///	@param	userdata    CURLOPT_WRITEDATA 옵션 설정 시 설정한 데이터 포인터
-///	@return	처리된 byte 수, size * nmemb 값과 다른 값이 리턴되면 curl 이 
-///			세션을 중지한다.
-size_t
-curl_wcb_to_stream(
-	_In_ void* ptr,
-	_In_ size_t size,
-	_In_ size_t nmemb,
-	_In_ void* userdata
-)
-{
-	_ASSERTE(NULL != ptr);
-	_ASSERTE(NULL != userdata);
-	if (NULL == ptr || NULL == userdata) return 0;
-
-	UINT32 DataSizeToWrite = (UINT32)(size * nmemb);
-	CMemoryStream* stream = (CMemoryStream*)userdata;
-
-	if (-1 == stream->WriteToStream((char*)ptr, DataSizeToWrite))
-	{
-		log_err "Can not write to memory stream" log_end;
-		return 0;
-	}
-	return (size * nmemb);
-}
-
-///	@brief	libcUrl Write Callback To file 
-size_t
-curl_wcb_to_file(
-	_In_ void* rcvd_buffer,
-	_In_ size_t rcvd_block_size,
-	_In_ size_t rcvd_block_count,
-	_In_ void* out_file_handle)
-{
-	_ASSERTE(nullptr != rcvd_buffer);
-	_ASSERTE(rcvd_block_size > 0);
-	_ASSERTE(rcvd_block_count > 0);
-	_ASSERTE(out_file_handle != nullptr);
-	_ASSERTE(out_file_handle != INVALID_HANDLE_VALUE);
-
-	if (nullptr == rcvd_buffer ||
-		0 == rcvd_block_size ||
-		0 == rcvd_block_count ||
-		out_file_handle == nullptr ||
-		out_file_handle == INVALID_HANDLE_VALUE)
-	{
-		return 0;
-	}
-
-	DWORD bytes_written = 0;
-	if (!WriteFile((HANDLE)out_file_handle,
-				   rcvd_buffer,
-				   (DWORD)(rcvd_block_size * rcvd_block_count),
-				   &bytes_written,
-				   nullptr))
-	{
-		log_err "WriteFile() failed. gle=%u",
-			GetLastError()
-			log_end;
-		return 0;
-	}
-
-	return (rcvd_block_size * rcvd_block_count);
-}
-
-
-
-
+#define _def_conn_timeout	10			// 10초
+#define _def_read_timeout	60 * 5		// 5분
 
 /// @brief
-curl_client::curl_client() :
-	_curl(nullptr),
-	_connection_timeout(0),
-	_read_timeout(0),
-	_ssl_verifypeer(0)
+curl_client::curl_client() 
+	: 
+	_curl(nullptr), 
+	_url(_null_stringa),
+	_conn_timeout(_def_conn_timeout),
+	_read_timeout(_def_read_timeout),
+	_follow_location(true),
+	_ssl_verify_peer(true),
+	_ssl_verify_host(true),
+	_verbose(false)
 {
 }
 
+/// @brief
 curl_client::~curl_client()
 {
 	finalize();
 }
 
-bool
-curl_client::initialize(
-	_In_ long connection_timeout, 
-	_In_ long read_timeout,
-	_In_ long ssl_verifypeer
-	)
+/// @brief	
+bool curl_client::initialize()
 {
-	//	Get a curl object
 	_curl = curl_easy_init();
 	if (nullptr == _curl)
 	{
@@ -117,16 +46,13 @@ curl_client::initialize(
 			return false;
 	}
 
-	_connection_timeout = connection_timeout;
-	_read_timeout = read_timeout;
-	_ssl_verifypeer = ssl_verifypeer;
-	
 	return true;
 }
 
 /// @brief
 void curl_client::finalize()
 {
+	_header_fields.clear();
 	curl_easy_cleanup(_curl);
 
 	// curl_global_cleanup() 호출은 thread safe 하지 않기때문에
@@ -135,6 +61,52 @@ void curl_client::finalize()
 	// 아니면 어차피 application 종료되면 알아서 문제 해결됨
 	//
 	//curl_global_cleanup();
+}
+
+
+/// @brief	
+bool 
+curl_client::enable_auth(
+	_In_ const char* id,
+	_In_ const char* password
+)
+{
+	_ASSERTE(nullptr != id);
+	_ASSERTE(nullptr != password);
+	if (nullptr == id || nullptr == password) return false;
+
+	//
+	//	Set auth mode
+	//
+	auto curl_code = curl_easy_setopt(_curl,
+									  CURLOPT_HTTPAUTH,
+									  (long)CURLAUTH_BASIC);
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	//
+	// set user name and password for the authentication
+	//
+	std::string id_n_pw = std::string(id) + ":" + std::string(password);
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_USERPWD,
+								 id_n_pw.c_str());
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	return true;
 }
 
 /// @brief
@@ -172,7 +144,7 @@ curl_client::http_get(
 	//
 	//	Prepare (set common options)
 	//
-	if (!prepare_perform(url, 10, 90, true, true, true, false))
+	if (!prepare_perform(url))
 	{
 		log_err "prepare_perform() failed. " log_end;
 		return false;
@@ -253,24 +225,21 @@ curl_client::http_get(
 }
 
 
-/// @brief	HTTP(S) 인증이 걸린 페이지에서 파일을 다운로드한다.
-bool 
-curl_client::http_down_with_auth(
-	_In_ const char* const url,
-	_In_ const char* const id,
-	_In_ const char* const pw,	
-	_In_ const wchar_t* const target_path,
+/// @brief	HTTP(S) 파일 다운로드
+bool
+curl_client::http_download_file(
+	_In_ const http_download_ctx* ctx,
 	_Out_ long& http_response_code
 	)
 {
 	_ASSERTE(nullptr != _curl);
-	_ASSERTE(nullptr != url);
-	if (nullptr == url || nullptr == _curl) return false;
+	_ASSERTE(nullptr != ctx);
+	if (nullptr == ctx || nullptr == _curl) return false;
 
 	//
 	//	Prepare (set common options)
 	//
-	if (!prepare_perform(url, 10, 90, true, true, true, false))
+	if (!prepare_perform(ctx->_url.c_str()))
 	{
 		log_err "prepare_perform() failed. " log_end;
 		return false;
@@ -279,38 +248,14 @@ curl_client::http_down_with_auth(
 	//
 	//	Set mothod specific options
 	//
-	//	파일의 사이즈를 알 수 없기때문에 HTTP(S) 응답데이터를 메모리에
-	//	적재하면 안되고, 임시파일에 저장한다.
-	//	
-
-	//
-	//	임시파일 경로 생성 (랜덤하게 생성한 파일명이 다섯번이나 존재한다면 포기)
-	//
-	handle_ptr tmp_file(
-		open_file_to_write(target_path), 
-		[](HANDLE h) 
-	{
-		if (INVALID_HANDLE_VALUE != h)
-		{
-			CloseHandle(h);
-		}
-	});
-
-	if (tmp_file.get() == INVALID_HANDLE_VALUE)
-	{
-		log_err
-			"Can not create local temp file for download."
-			log_end;
-		return false;
-	}
-
+	
 	//
 	//	파일핸들을 다운로드 콜백 데이터로 설정하고, 
 	//	콜백함수를 지정한다.
 	//
 	auto curl_code = curl_easy_setopt(_curl,
 									  CURLOPT_WRITEDATA,
-									  tmp_file.get());
+									  ctx);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -322,7 +267,7 @@ curl_client::http_down_with_auth(
 
 	curl_code = curl_easy_setopt(_curl,
 								 CURLOPT_WRITEFUNCTION,
-								 curl_wcb_to_file);
+								 curl_wcb_to_ctx);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -330,40 +275,8 @@ curl_client::http_down_with_auth(
 			curl_easy_strerror(curl_code)
 			log_end;
 		return false;
-	}
-	
-	//
-	//	Set auth mode
-	//
-	curl_code = curl_easy_setopt(_curl, 
-								 CURLOPT_HTTPAUTH, 
-								 (long)CURLAUTH_BASIC);
-	if (CURLE_OK != curl_code)
-	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
+	}	
 
-	//
-	// set user name and password for the authentication
-	//
-	std::stringstream id_n_pw;
-	id_n_pw << id << ":" << pw;
-	curl_code = curl_easy_setopt(_curl,
-								 CURLOPT_USERPWD,								 
-								 id_n_pw.str().c_str());
-	if (CURLE_OK != curl_code)
-	{
-		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
-			curl_code,
-			curl_easy_strerror(curl_code)
-			log_end;
-		return false;
-	}
-	
 	//
 	//	Perform http(s) I/O
 	//
@@ -437,7 +350,7 @@ curl_client::http_file_upload(
 	//
 	//	Prepare (set common options)
 	//
-	if (!prepare_perform(url, 10, 90, true, true, true, false))
+	if (!prepare_perform(url))
 	{
 		log_err "prepare_perform() failed. " log_end;
 		return false;
@@ -539,7 +452,7 @@ curl_client::http_post(
 	//
 	//	Prepare (set common options)
 	//
-	if (!prepare_perform(url, 10, 90, true, true, true, false))
+	if (!prepare_perform(url))
 	{
 		log_err "prepare_perform() failed. " log_end;
 		return false;
@@ -636,21 +549,11 @@ curl_client::http_post(
 }
 
 ///	@brief	HTTP(S) 요청의 공통 옵션들을 설정하고, 성공시 true 를 리턴
-bool
-curl_client::prepare_perform(
-	_In_ const char* url,
-	_In_ long connection_timeout,
-	_In_ long read_timeout,
-	_In_ bool follow_location,
-	_In_ bool ssl_verify_peer,
-	_In_ bool ssl_verify_host_name,
-	_In_ bool verbose
-)
+bool curl_client::prepare_perform(_In_ const char* const url)
 {
 	_ASSERTE(nullptr != url);
 	if (nullptr == url) return false;
-
-
+	
 	CURLcode curl_code = CURLE_OK;
 	bool ret = false;
 	do
@@ -678,7 +581,7 @@ curl_client::prepare_perform(
 		//
 		curl_code = curl_easy_setopt(_curl,
 									 CURLOPT_CONNECTTIMEOUT,
-									 connection_timeout);
+									 _conn_timeout);
 		if (CURLE_OK != curl_code)
 		{
 			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -697,7 +600,7 @@ curl_client::prepare_perform(
 		//
 		curl_code = curl_easy_setopt(_curl,
 									 CURLOPT_TIMEOUT,
-									 read_timeout);
+									 _read_timeout);
 		if (CURLE_OK != curl_code)
 		{
 			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -715,7 +618,7 @@ curl_client::prepare_perform(
 		//
 		curl_code = curl_easy_setopt(_curl,
 									 CURLOPT_FOLLOWLOCATION,
-									 true == follow_location ? 1 : 0);
+									 true == _follow_location? 1 : 0);
 		if (CURLE_OK != curl_code)
 		{
 			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -730,7 +633,7 @@ curl_client::prepare_perform(
 		//		
 		curl_code = curl_easy_setopt(_curl,
 									 CURLOPT_SSL_VERIFYPEER,
-									 true == ssl_verify_peer ? 1 : 0);
+									 true == _ssl_verify_peer? 1 : 0);
 		if (CURLE_OK != curl_code)
 		{
 			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -747,7 +650,7 @@ curl_client::prepare_perform(
 		//
 		curl_code = curl_easy_setopt(_curl,
 									 CURLOPT_SSL_VERIFYHOST,
-									 true == ssl_verify_host_name ? 2 : 0);
+									 true == _ssl_verify_host ? 2 : 0);
 		if (CURLE_OK != curl_code)
 		{
 			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -762,7 +665,7 @@ curl_client::prepare_perform(
 		//
 		curl_code = curl_easy_setopt(_curl,
 									 CURLOPT_VERBOSE,
-									 true == verbose ? 1 : 0);
+									 true == _verbose ? 1 : 0);
 		if (CURLE_OK != curl_code)
 		{
 			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
@@ -813,11 +716,6 @@ bool curl_client::perform(_Out_ long& http_response_code)
 					log_end;
 				break;
 			}
-
-			//
-			//	설정 완료된 HTTP Header 필드들은 정리
-			//
-			_header_fields.clear();
 		}
 
 		//
@@ -861,10 +759,14 @@ bool curl_client::perform(_Out_ long& http_response_code)
 	}
 
 	//
+	//	설정 완료된 HTTP Header 필드들은 정리
+	//
+	_header_fields.clear();
+
+	//
 	//	reset curl handle
 	//
 	curl_easy_reset(_curl);	
-
 	return ret;
 }			
 
@@ -972,47 +874,15 @@ curl_client::perform(
 		http_multipart_form = nullptr;
 	}
 
+	//
+	//	설정 완료된 HTTP Header 필드들은 정리
+	//
+	_header_fields.clear();
+
+	//
 	// reset curl handle
+	//
 	curl_easy_reset(_curl);
 
 	return true;
-}
-
-// refac - remove me
-HANDLE curl_client::get_tempfile()
-{
-	HANDLE h_file = INVALID_HANDLE_VALUE;
-	std::wstring ws;
-	if (true != get_temp_dirW(ws))
-	{
-		log_err "get_temp_dirW() for mmq failed." log_end;
-		return INVALID_HANDLE_VALUE;
-	}
-
-	for (int i = 5; i > 0; --i)
-	{
-		std::wstringstream wss;
-		wss << ws << generate_random_stringw(16);
-
-		if (is_file_existsW(wss.str().c_str()))
-		{
-			continue;
-		}
-		else
-		{
-			h_file = open_file_to_write(wss.str().c_str());
-			if (INVALID_HANDLE_VALUE == h_file)
-			{
-				log_err
-					"open_file_to_write() failed. file=%ws",
-					wss.str().c_str()
-					log_end;
-				continue;
-			}
-			else
-				return h_file;		//<!
-		}
-	}
-
-	return INVALID_HANDLE_VALUE;
 }

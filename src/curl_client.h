@@ -11,6 +11,7 @@
 #include <Windows.h>
 #include "CStream.h"
 #include "curl/curl.h"
+#include "_MyLib/src/curl_client_support.h"
 
 
 //
@@ -61,26 +62,20 @@ public:
 	~curl_client();
 
 public:
-	bool initialize(
-		_In_ long connection_timeout = 10,
-		_In_ long read_timeout = 90,
-		_In_ long ssl_verifypeer = 1);
-	
+	bool initialize();
+
 	bool http_get(
-		_In_z_ const char* url, 
-		_Out_ long& http_response_code, 
+		_In_z_ const char* url,
+		_Out_ long& http_response_code,
 		_Out_ CMemoryStream& stream);
 
 	bool http_get(
-		_In_z_ const char* url, 
-		_Out_ long& http_response_code, 
+		_In_z_ const char* url,
+		_Out_ long& http_response_code,
 		_Out_ std::string& response);
 
-	bool http_down_with_auth(
-		_In_ const char* const url,
-		_In_ const char* const id,
-		_In_ const char* const pw,
-		_In_ const wchar_t* const target_path,
+	bool http_download_file(
+		_In_ const http_download_ctx* ctx,
 		_Out_ long& http_response_code);
 
 	bool http_post(
@@ -114,21 +109,41 @@ public:
 		_Out_  long& http_response_code,
 		_Out_  std::string& response);
 
-public:
-	void set_connection_timeout(_In_ long connection_timeout) { _connection_timeout = connection_timeout; }
-	void set_read_timeout(_In_ long read_timeout) { _read_timeout = read_timeout; }
-	void set_ssl_verifypeer(_In_ long ssl_verifypeer) { _ssl_verifypeer = ssl_verifypeer; }
-	void append_header(_In_z_ const char* key, _In_z_ const char* value);
+private:
+	//
+	//	CURL object
+	//
+	CURL* _curl;
 
 private:
-	bool prepare_perform(
-		_In_ const char* url,
-		_In_ long connection_timeout = 10,
-		_In_ long read_timeout = 90,
-		_In_ bool follow_location=true,
-		_In_ bool ssl_verify_peer = true,
-		_In_ bool ssl_verify_host_name = true,
-		_In_ bool verbose = false);
+	//
+	//	Options that applied on every I/O perform
+	//
+	std::string _url;
+	long _conn_timeout;
+	long _read_timeout;
+	bool _follow_location;
+	bool _ssl_verify_peer;
+	bool _ssl_verify_host;
+	bool _verbose;
+
+	typedef std::map<std::string, std::string> Fields;
+	Fields _header_fields;
+public:
+	bool enable_auth(_In_ const char* id, _In_ const char* password);
+	void append_header(_In_z_ const char* key, _In_z_ const char* value);
+
+	void set_url(const char* const url) { _url = url; }
+	void set_connection_timeout(const long value) { _conn_timeout = value; }
+	void set_read_timeout(const long value) { _read_timeout = value; }
+	void set_follow_location(const bool value) { _follow_location = value; }
+	void set_ssl_verify_peer(const bool value) { _ssl_verify_peer = value; }
+	void set_ssl_verify_host(const bool value) { _ssl_verify_host = value; }
+	void set_verbose(const bool value) { _verbose = value; }
+
+
+private:
+	bool prepare_perform(_In_ const char* const url);
 
 	bool perform(_Out_ long& http_response_code);
 
@@ -140,16 +155,6 @@ private:
 
 	void finalize();
 
-private:
-	CURL* _curl;
-	long  _connection_timeout;
-	long  _read_timeout;
-	long  _ssl_verifypeer;
-private:
-	typedef std::map<std::string, std::string> Fields;
-	Fields _header_fields;
 
 
-private:
-	HANDLE get_tempfile();
 } *pcurl_client;

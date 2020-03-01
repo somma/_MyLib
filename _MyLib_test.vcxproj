@@ -219,6 +219,7 @@ echo "done." </Command>
     <ClInclude Include="src\crc64.h" />
     <ClInclude Include="src\CStream.h" />
     <ClInclude Include="src\curl_client.h" />
+    <ClInclude Include="src\curl_client_support.h" />
     <ClInclude Include="src\FileInfoCache.h" />
     <ClInclude Include="src\FileIoHelper.h" />
     <ClInclude Include="src\FileIoHelperClass.h" />
@@ -264,6 +265,7 @@ echo "done." </Command>
     <ClCompile Include="src\crc64.cpp" />
     <ClCompile Include="src\CStream.cpp" />
     <ClCompile Include="src\curl_client.cpp" />
+    <ClCompile Include="src\curl_client_support.cpp" />
     <ClCompile Include="src\FileInfoCache.cpp" />
     <ClCompile Include="src\FileIoHelper.cpp" />
     <ClCompile Include="src\FileIoHelperClass.cpp" />

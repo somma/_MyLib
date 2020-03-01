@@ -8,48 +8,90 @@
  **/
 #include "stdafx.h"
 #include "_MyLib/src/curl_client.h"
+#include "_MyLib/src/curl_client_support.h"
+#include "_MyLib/src/StopWatch.h"
 
  /// @brief	
 bool test_curl_https_down_with_auth()
 {
-	std::string url;
-	std::string id;
-	std::string pw;
-
-	std::cout << "URL: ";
-	std::cin >> url;
-	std::cout << "ID : ";
-	std::cin >> id;
-	std::cout << "PW : ";
-	std::cin >> pw;
-
-	pcurl_client _curl_client = new curl_client();
-	if (nullptr == _curl_client)
+	_mem_dump_console
+	_mem_check_begin
 	{
-		log_err "not enought memory" log_end;
-		return false;
-	}
+		std::string url;
+		std::string id;
+		std::string pw;
 
-	if (true != _curl_client->initialize(10, 90, 0))
-	{
-		log_err "curl client initialize() failed." log_end;
-		return false;
-	}
+		std::cout << "URL: ";
+		std::cin >> url;
+		std::cout << "ID : ";
+		std::cin >> id;
+		std::cout << "PW : ";
+		std::cin >> pw;
 
-	long http_response_code = 404;
-	std::wstring file_path = L"c:\\dbg\\download.dat";
-	_ASSERTE(true == _curl_client->http_down_with_auth(url.c_str(),
-													   id.c_str(), 
-													   pw.c_str(),
-													   file_path.c_str(),
-													   http_response_code));
-	if (200 == http_response_code)
-	{
-		_ASSERTE(is_file_existsW(file_path));		
-	}
+		std::wstring file_path = L"c:\\dbg\\download.dat";
 
-	_ASSERTE(_curl_client != nullptr);
-	delete _curl_client; _curl_client = nullptr;
+		pcurl_client _cc = new curl_client();
+		if (nullptr == _cc)
+		{
+			log_err "not enought memory" log_end;
+			return false;
+		}
+
+		if (true != _cc->initialize())
+		{
+			log_err "curl client initialize() failed." log_end;
+			return false;
+		}
+
+		//
+		//	enable auth
+		//
+		_cc->enable_auth(id.c_str(), pw.c_str());
+
+		StopWatch sw; sw.Start();
+
+		//
+		//	creates a download context
+		//
+		http_download_ctx ctx(url.c_str());
+		_ASSERTE(true == ctx.initialize(file_path.c_str()));
+
+		//
+		//	download
+		//
+		long http_response_code = 404;		
+		_ASSERTE(true == _cc->http_download_file(&ctx,
+												 http_response_code));
+		if (200 == http_response_code)
+		{
+			_ASSERTE(is_file_existsW(file_path));
+		}
+
+		sw.Stop();
+		
+		std::string md5;
+		std::string sha2;
+		_ASSERTE(ctx.get_md5(md5));
+		_ASSERTE(ctx.get_sha2(sha2));
+
+		log_info
+			"download url=%s, local=%ws, md5=%s, sha2=%s, elapsed=%f sec",
+			url.c_str(),
+			file_path.c_str(),
+			md5.c_str(),
+			sha2.c_str(),
+			sw.GetDurationSecond()
+			log_end;
+
+		//
+		//	finalize download context
+		//
+		_ASSERTE(true == ctx.finalize());
+		
+		_ASSERTE(_cc != nullptr);
+		delete _cc; _cc = nullptr;
+	}
+	_mem_check_end;
 	return true;
 }
 
@@ -68,7 +110,7 @@ bool test_curl_https()
 	http_header << "authorization: Bearer "
 		<< "FOO";
 
-	if (true != _curl_client->initialize(10, 90, 0))
+	if (true != _curl_client->initialize())
 	{
 		log_err "curl client initialize() failed." log_end;
 		return false;

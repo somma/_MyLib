@@ -333,6 +333,7 @@ bool WUGetCurrentDirectoryA(IN OUT std::string& CurrentDir);
 
 bool get_temp_dirW(_Out_ std::wstring& temp_dir);
 bool get_temp_dirA(_Out_ std::string& temp_dir);
+bool get_temp_fileW(_In_ const wchar_t* prefix, _Out_ std::wstring& temp_file);
 
 bool get_module_path(_In_ const wchar_t* module_name, _Out_ std::wstring& module_path);
 bool get_current_module_path(_Out_ std::wstring& module_path);
@@ -379,6 +380,12 @@ bool WUCreateDirectory(_In_ std::wstring& DirectoryPath);
 bool WUDeleteDirectoryW(_In_ std::wstring& DirctoryPathToDelete);
 bool WUCreateDirectory(_In_ const wchar_t* DirectoryPath);
 bool WUDeleteDirectoryW(_In_ const wchar_t* DirctoryPathToDelete);
+bool create_directory_ex(
+	_In_ const wchar_t* const dir_create,
+	_In_ const bool remove_if_exists,
+	_In_ const uint32_t retry_count,
+	_Out_ std::wstring& dir_created);
+
 BOOL GetImageFullPathFromPredefinedPathW(
                 IN  LPCWSTR ImageName, 
                 IN  DWORD   BufferLen,

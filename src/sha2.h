@@ -144,4 +144,7 @@ int sha2(unsigned char hval[], unsigned long size, const unsigned char data[], u
 }
 #endif
 
+bool get_sha2(_In_ const wchar_t* file_path, _Out_ std::string& sha2);
+bool get_sha2(_In_ const HANDLE file_handle, _Out_ std::string& sha2);
+
 #endif
