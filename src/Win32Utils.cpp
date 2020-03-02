@@ -4550,15 +4550,17 @@ bool get_temp_dirA(_Out_ std::string& temp_dir)
 	return true;
 }
 
-/// @brief	%TMP%\prefix_[n].tmp 형태의 쓰기 가능한 임시파일 
-///			경로를 리턴한다.
+/// @brief	%TMP%\prefix.tmp 형태의 쓰기 가능한 임시파일 경로를 리턴한다.
+///			%TMP%\prefix.tmp 가 이미 있다면
+///				%TMP%\prefix_0.tmp
+///				%TMP%\prefix_1.tmp 
+///			형태의 이름을 생성한다. (N 까지만 시도해보고 안되면 에러 처리)
 bool 
 get_temp_fileW(
 	_In_ const wchar_t* prefix,	
 	_Out_ std::wstring& temp_file
 )
 {
-	HANDLE h_file = INVALID_HANDLE_VALUE;
 	std::wstring ws;
 	if (true != get_temp_dirW(ws))
 	{
@@ -4566,28 +4568,26 @@ get_temp_fileW(
 		return INVALID_HANDLE_VALUE;
 	}
 
-	for (int i = 0; i < 32; ++i)
+	std::wstring out = ws + std::wstring(prefix) + L".tmp"; 
+	uint32_t retry = 0;	
+	do
 	{
-		//
-		//	%tmp%\prefix_10.tmp
-		//
-		std::wstring out =
-			ws + 
-			std::wstring(prefix) + 
-			L"_" + 
-			std::to_wstring(i) + 
-			L".tmp";
-
-		if (is_file_existsW(out))
-		{
-			continue;
-		}
-		else
+		if (!is_file_existsW(out))
 		{
 			temp_file = out;
 			return true;
 		}
-	}
+
+		//
+		//	%tmp%\prefix_10.tmp 형태의 경로를 생성
+		//
+		out = ws + 
+			std::wstring(prefix) + 
+			L"_" + 
+			std::to_wstring(retry++) + 
+			L".tmp";
+
+	} while (retry < 128);
 
 	return false;
 }
