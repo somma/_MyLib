@@ -260,7 +260,7 @@ void run_test()
 	//assert_bool(true, test_cstream);
 	//assert_bool(true, test_cstream_read_only);
 	//assert_bool(true, test_log_rotate);
-	//assert_bool(true, test_steady_timer);
+	assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_is_reserved_ipv4);
@@ -392,7 +392,7 @@ void run_test()
 	//assert_bool(true, test_reg_multi_value);
 	//assert_bool(true, test_aes256);
 
-	assert_bool(true, test_curl_https_down_with_auth);
+	//assert_bool(true, test_curl_https_down_with_auth);
 	//assert_bool(true, test_curl_https);
 	//assert_bool(true, test_curl_http);
 	//assert_bool(true, test_curl_http_upload);
@@ -409,7 +409,7 @@ void run_test()
 	//assert_bool(true, test_unique_ptr_list);
 	//assert_bool(true, test_unique_ptr_list_remove);
 	//assert_bool(true, test_make_unique_struct_allocate);
-	assert_bool(true, test_zip_unzip);
+	//assert_bool(true, test_zip_unzip);
 	
 	//assert_bool(true, test_callby_value_container);
 

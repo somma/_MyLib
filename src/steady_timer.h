@@ -54,6 +54,7 @@ public:
 		//
 		//	타이머 객체 생성 
 		//
+		_timer.expires_from_now(std::chrono::seconds(this->_interval));
 		_timer.async_wait(boost::bind(&SteadyTimer::internal_callback,
 									 this,
 									 boost::asio::placeholders::error,
@@ -61,7 +62,7 @@ public:
 
 		//
 		//	타이머 시작, io_service_run() 은 blocking call 이므로 
-		// 백그라운드 태스크를 만들어서 실행한다. 
+		//	백그라운드 태스크를 만들어서 실행한다. 
 		// 
 		_timer_task = Concurrency::create_task([&]()->void {
 			_io_service.run();
@@ -109,7 +110,7 @@ private:
 			{
 				//
 				//	타이머 재 시작
-				//
+				//				
 				timer.expires_from_now(std::chrono::seconds(this->_interval));
 				timer.async_wait(boost::bind(&SteadyTimer::internal_callback,
 											 this,

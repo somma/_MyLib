@@ -17,7 +17,7 @@ bool test_steady_timer_using_lambda()
 	//
 	DWORD_PTR random_value = 1024;
 	SteadyTimer timer;
-	bool ret = timer.start(1, 
+	bool ret = timer.start(2, 
 						   random_value, 
 						   [&](_In_ DWORD_PTR tag)->bool
 	{
@@ -27,7 +27,7 @@ bool test_steady_timer_using_lambda()
 	});
 	_ASSERTE(true == ret);
 	
-	for (int i = 0; i < 3; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
 		Sleep(1000);		
 	}
@@ -125,7 +125,7 @@ bool test_steady_timer_class()
 bool test_steady_timer()
 {
 	_ASSERTE(true == test_steady_timer_using_lambda());
-	_ASSERTE(true == test_steady_timer_using_callback());
-	_ASSERTE(true == test_steady_timer_class());
+	//_ASSERTE(true == test_steady_timer_using_callback());
+	//_ASSERTE(true == test_steady_timer_class());
 	return true;
 }
