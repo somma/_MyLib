@@ -118,7 +118,7 @@
       <AdditionalOptions>/D "MYLIB_TEST" /I "../"</AdditionalOptions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SDLCheck>true</SDLCheck>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,7 +140,7 @@ echo "done." </Command>
       <AdditionalOptions>/D "MYLIB_TEST" /I "../"</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <EnablePREfast>false</EnablePREfast>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <MultiProcessorCompilation>
       </MultiProcessorCompilation>
       <AdditionalIncludeDirectories>
@@ -167,7 +167,7 @@ echo "done." </Command>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/D "MYLIB_TEST" /I "../"</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -192,7 +192,7 @@ echo "done." </Command>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/D "MYLIB_TEST" /I "../"</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -219,6 +219,7 @@ echo "done." </Command>
     <ClInclude Include="src\crc64.h" />
     <ClInclude Include="src\CStream.h" />
     <ClInclude Include="src\curl_client.h" />
+    <ClInclude Include="src\curl_client_support.h" />
     <ClInclude Include="src\FileInfoCache.h" />
     <ClInclude Include="src\FileIoHelper.h" />
     <ClInclude Include="src\FileIoHelperClass.h" />
@@ -264,6 +265,7 @@ echo "done." </Command>
     <ClCompile Include="src\crc64.cpp" />
     <ClCompile Include="src\CStream.cpp" />
     <ClCompile Include="src\curl_client.cpp" />
+    <ClCompile Include="src\curl_client_support.cpp" />
     <ClCompile Include="src\FileInfoCache.cpp" />
     <ClCompile Include="src\FileIoHelper.cpp" />
     <ClCompile Include="src\FileIoHelperClass.cpp" />

@@ -77,4 +77,8 @@ void MD5Final(MD5_CTX *mdContext);
 }
 #endif
 
+
+bool get_md5(_In_ const wchar_t* file_path, _Out_ std::string& md5);
+bool get_md5(_In_ const HANDLE file_handle, _Out_ std::string& md5);
+
 #endif /* ___MD5_H___ included */

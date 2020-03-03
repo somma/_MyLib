@@ -162,6 +162,9 @@
     <ClInclude Include="src\CppSQLite\CppSQLite3.h">
       <Filter>src\CppSQLite</Filter>
     </ClInclude>
+    <ClInclude Include="src\curl_client_support.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -340,6 +343,9 @@
     </ClCompile>
     <ClCompile Include="_test_curl.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\curl_client_support.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

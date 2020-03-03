@@ -262,3 +262,109 @@ void MD5Final (MD5_CTX *mdContext)
 		mdContext->digest[ii+3] = (unsigned char)((mdContext->buf[i] >> 24) & 0xFF);
 	}
 }
+
+/// @brief	
+bool 
+get_md5(
+	_In_ const wchar_t* file_path, 
+	_Out_ std::string& md5
+)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path || !is_file_existsW(file_path))
+	{
+		return false;
+	}
+
+	handle_ptr file_handle(
+		CreateFileW(file_path,
+					GENERIC_READ,
+					FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+					nullptr,
+					OPEN_EXISTING,
+					FILE_ATTRIBUTE_NORMAL,
+					nullptr),
+		[](HANDLE h)
+	{
+		if (INVALID_HANDLE_VALUE != h) {CloseHandle(h);}
+	});
+
+	if (INVALID_HANDLE_VALUE == file_handle.get())
+	{
+		log_err
+			"CreateFileW() failed. path=%ws, gle = %u",
+			file_path,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	if (INVALID_SET_FILE_POINTER == SetFilePointer(file_handle.get(),
+												   0,
+												   nullptr,
+												   FILE_BEGIN))
+	{
+		log_err
+			"SetFilePointer() failed. path=%ws, gle = %u",
+			file_path,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	return get_md5(file_handle.get(), md5);
+}
+
+/// @brief	
+bool 
+get_md5(
+	_In_ const HANDLE file_handle, 
+	_Out_ std::string& md5
+)
+{
+	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
+	if (INVALID_HANDLE_VALUE == file_handle) return false;
+
+	MD5_CTX ctx_md5;
+	MD5Init(&ctx_md5, 0);
+	const uint32_t read_buffer_size = 4096;
+	uint8_t read_buffer[read_buffer_size];
+	DWORD read = read_buffer_size;
+
+	while (read_buffer_size == read)
+	{
+		if (FALSE == ::ReadFile(file_handle,
+								read_buffer,
+								read_buffer_size,
+								&read,
+								nullptr))
+		{
+			log_err
+				"ReadFile() failed. handle=0x%08x, gle = %u",
+				file_handle,
+				GetLastError()
+				log_end;
+			return false;
+		}
+
+		if (0 != read)
+		{
+			MD5Update(&ctx_md5, read_buffer, read);
+		}
+	}
+	MD5Final(&ctx_md5);
+
+	//
+	//	Hash 바이너리 버퍼를 hex 문자열로 변환
+	//
+	if (true != bin_to_hexa_fast(sizeof(ctx_md5.digest),
+								 ctx_md5.digest,
+								 false,
+								 md5))
+	{
+		log_err "bin_to_hexa_fast() failed. " log_end;
+		return false;
+	}
+
+	return true;
+}
