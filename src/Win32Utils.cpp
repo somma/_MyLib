@@ -9,8 +9,9 @@
 #include "stdafx.h"
 #include "BaseWindowsHeader.h"
 
-#include <random>
+#include <fstream>
 
+#include <random>
 #include <errno.h>
 #include <io.h>			// _setmode()
 #include <fcntl.h>		// _O_U8TEXT, ...
@@ -2094,6 +2095,38 @@ bool set_file_size(_In_ HANDLE file_handle, _In_ int64_t new_size)
 
 	return true;
 }
+
+/// @brief	file_path 를 열어서 line 단위로 콜백을 호출한다.
+bool read_line(_In_ const wchar_t* file_path, cb_rdline cb)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path || !cb)
+	{
+		return false;
+	}
+
+	std::ifstream wif(file_path, std::ifstream::in);
+	if (!wif.good())
+	{
+		log_err
+			"Can not open file. path=%ws",
+			file_path
+			log_end;
+		return false;
+	}
+
+	std::string line;
+	while (std::getline(wif, line))
+	{
+		if (!cb(line.c_str()))
+		{
+			break;		// cancel 
+		}
+	}
+
+	return true;
+}
+
 
 /**
 * @brief	문자열을 UTF8 형식 파일로 저장한다.

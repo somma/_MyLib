@@ -247,6 +247,7 @@ bool test_bit_field();
 bool test_interlock_operation();
 bool test_auto_manual_reset_event();
 bool test_get_module_dirEx();
+bool test_read_line();
 
 bool test_zip_unzip();
 
@@ -260,7 +261,7 @@ void run_test()
 	//assert_bool(true, test_cstream);
 	//assert_bool(true, test_cstream_read_only);
 	//assert_bool(true, test_log_rotate);
-	assert_bool(true, test_steady_timer);
+	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_is_reserved_ipv4);
@@ -404,6 +405,7 @@ void run_test()
 	//assert_bool(true, test_interlock_operation);
 	//assert_bool(true, test_auto_manual_reset_event);
 	//assert_bool(true, test_get_module_dirEx);
+	assert_bool(true, test_read_line);
 	//assert_bool(true, test_unique_ptr);
 	//assert_bool(true, test_unique_ptr_assign);
 	//assert_bool(true, test_unique_ptr_list);
@@ -3786,6 +3788,28 @@ bool test_get_module_dirEx()
 		L"c:\\windows\\system32\\boot.ini",
 		path.c_str()
 		log_end;
+	return true;
+}
+
+/// @brief	
+bool test_read_line()
+{
+	uint32_t num = 0;
+	read_line(L"c:\\work.monster\\_MyLib\\_MyLib_test.cpp",
+					   [&](const char* line)->bool 
+	{
+		if (line)
+		{
+			log_info
+				"%u, %s",
+				num++,
+				line
+				log_end;
+		}
+
+		return true;
+	});
+
 	return true;
 }
 

@@ -250,6 +250,10 @@ bool get_file_position(_In_ HANDLE file_handle, _Out_ int64_t& position);
 bool set_file_position(_In_ HANDLE file_handle, _In_ int64_t distance, _Out_opt_ int64_t* new_position);
 bool set_file_size(_In_ HANDLE file_handle, _In_ int64_t new_size);
 
+typedef boost::function<bool(_In_ const char* const line)> cb_rdline;
+bool read_line(_In_ const wchar_t* file_path, cb_rdline cb);
+
+
 BOOL SaveToFileAsUTF8A(
                 IN LPCWSTR FilePathDoesNotExists, 
                 IN LPCSTR NullTerminatedAsciiString
