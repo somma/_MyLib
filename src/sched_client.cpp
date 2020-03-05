@@ -7,7 +7,11 @@
  * @copyright (C)Somma, Inc. All rights reserved.
 **/
 #include "stdafx.h"
-#include "sched_client.h"
+
+#include "_MyLib/src/log.h"
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/src/sched_client.h"
+
 
 SchedClient::SchedClient()
 	:_initialized(false), _svc(nullptr)

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "_MyLib/src/process_tree.h"
+#include "_MyLib/src/log.h"
 
 
 bool test_process_token()

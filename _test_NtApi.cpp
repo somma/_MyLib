@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "_MyLib/src/log.h"
 #include <winternl.h>
 
 

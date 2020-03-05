@@ -8,8 +8,10 @@
  * 26:8:2011   15:31 created
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
-#include "injector.h"
-#include "Win32Utils.h"
+#include "_MyLib/src/injector.h"
+#include "_MyLib/src/log.h"
+#include "_MyLib/src/Win32Utils.h"
+
 
 bool 
 my_create_remote_thread(

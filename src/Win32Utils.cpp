@@ -10,7 +10,6 @@
 #include "BaseWindowsHeader.h"
 
 #include <fstream>
-
 #include <random>
 #include <errno.h>
 #include <io.h>			// _setmode()
@@ -47,6 +46,7 @@
 #include "ResourceHelper.h"
 #include "gpt_partition_guid.h"
 #include "process_tree.h"
+#include "log.h"
 
 
 char _int_to_char_table[] = {
@@ -1592,15 +1592,42 @@ HANDLE open_file_to_read(LPCWCH file_path)
 	return hFile;
 }
 
-/**
- * @brief
- * @param
- * @see
- * @remarks
- * @code
- * @endcode
- * @return
-**/
+/// @brief	
+bool 
+get_file_size(
+	_In_ const wchar_t* const file_path,
+	_Out_ int64_t& size
+)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path || !is_file_existsW(file_path))
+	{
+		return false;
+	}
+
+	HANDLE file_handle = CreateFileW(file_path,
+									 FILE_READ_ATTRIBUTES,
+									 FILE_SHARE_READ,
+									 nullptr,
+									 OPEN_ALWAYS,
+									 FILE_ATTRIBUTE_NORMAL,
+									 nullptr);
+	if (INVALID_HANDLE_VALUE == file_handle)
+	{
+		log_err
+			"CreateFileW() failed. file=%ws",
+			file_path
+			log_end;
+		return false;
+	}
+
+	bool ret = get_file_size(file_handle, size);
+
+	CloseHandle(file_handle);
+	return ret;
+}
+
+/// @brief
 bool
 get_file_size(
 	_In_ HANDLE file_handle,
@@ -3617,15 +3644,7 @@ std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs)
 	}
 }
 
-/**
- * @brief
- * @param
- * @see
- * @remarks
- * @code
- * @endcode
- * @return
-**/
+/// @brief	
 std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 {
 	_ASSERTE(nullptr != utf8);
@@ -3646,6 +3665,33 @@ std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 	else
 	{
 		return std::wstring(tmp.get());
+	}
+}
+
+/// @brief	포맷팅된 문자열을 리턴한다. 
+///			static 배열을 사용하므로 Thread safe 하지 않으며 포맷팅된 문자열의 
+///			길이가 buffer 사이즈를 넘는경우 nullptr 을 리턴한다.
+const 
+char* 
+const 
+format_string(
+	_In_z_ const char* const fmt, ...
+)
+{
+	static char buf[2048];
+
+	va_list args;
+	va_start(args, fmt);
+	HRESULT hr = StringCbVPrintfA(buf, sizeof(buf), fmt, args);
+	va_end(args);
+
+	if (SUCCEEDED(hr))
+	{
+		return buf;
+	}
+	else
+	{
+		return nullptr;
 	}
 }
 
@@ -5468,90 +5514,6 @@ bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32
 	}
 
 	return false;
-}
-
-/**----------------------------------------------------------------------------
-	\brief
-
-	\param
-	\return
-	\code
-
-	\endcode
------------------------------------------------------------------------------*/
-BOOL GetTimeStringA(OUT std::string& TimeString)
-{
-	__time64_t long_time = 0;
-	struct tm newtime = { 0 };
-
-	// Get time as 64-bit integer.
-	_time64(&long_time);
-
-	errno_t err = _localtime64_s(&newtime, &long_time);
-	if (err)
-	{
-		log_err "_localtime64_s() failed" log_end
-			return FALSE;
-	}
-
-	// e.g. 2009.07.06 23:04:33
-	//
-	CHAR buf[20] = { 0 };
-	if (!SUCCEEDED(StringCbPrintfA(
-		buf,
-		20 * sizeof(CHAR),
-		"%.4d.%.2d.%.2d_%.2d.%.2d.%.2d",
-		newtime.tm_year + 1900,
-		newtime.tm_mon + 1,			// 1월 = 0, 2월 = 1, ... 임
-		newtime.tm_mday,
-		newtime.tm_hour,
-		newtime.tm_min,
-		newtime.tm_sec)))
-	{
-		log_err "StringCbPrintfEx() failed" log_end
-			return FALSE;
-	}
-
-	TimeString = buf;
-	return TRUE;
-}
-
-BOOL GetTimeStringW(IN std::wstring& TimeString)
-{
-	__time64_t long_time = 0;
-	struct tm newtime = { 0 };
-
-	// Get time as 64-bit integer.
-	//
-	_time64(&long_time);
-
-	errno_t err = _localtime64_s(&newtime, &long_time);
-	if (err)
-	{
-		log_err "_localtime64_s() failed" log_end
-			return FALSE;
-	}
-
-	// e.g. 2009.07.06 23:04:33
-	//
-	WCHAR buf[20] = { 0 };
-	if (!SUCCEEDED(StringCbPrintfW(
-		buf,
-		20 * sizeof(WCHAR),
-		L"%.4d.%.2d.%.2d_%.2d.%.2d.%.2d",
-		newtime.tm_year + 1900,
-		newtime.tm_mon,
-		newtime.tm_mday,
-		newtime.tm_hour,
-		newtime.tm_min,
-		newtime.tm_sec)))
-	{
-		log_err "StringCbPrintfEx() failed" log_end
-			return FALSE;
-	}
-
-	TimeString = buf;
-	return TRUE;
 }
 
 /**

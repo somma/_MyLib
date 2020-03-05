@@ -10,9 +10,9 @@
 
 #include "stdafx.h"
 #include <crtdbg.h>
-
-#include "Win32Utils.h"
-#include "FileIoHelper.h"
+#include "_MyLib/src/log.h"
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/src/FileIoHelper.h"
 
 
 

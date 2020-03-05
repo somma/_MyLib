@@ -7,9 +7,10 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
-#include "Win32Utils.h"
 #include <sddl.h>
 #include "account_info.h"
+#include "_MyLib/src/log.h"
+#include "_MyLib/src/Win32Utils.h"
 
 #include <LM.h>
 #pragma comment(lib, "Advapi32.lib")

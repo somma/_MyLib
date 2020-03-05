@@ -7,11 +7,12 @@
  * @copyright (C)Somma, Inc. All rights reserved.
 **/
 #include "stdafx.h"
-#include "Singleton.h"
-#include "FileInfoCache.h"
-#include "md5.h"
-#include "sha2.h"
-#include "Win32Utils.h"
+#include "_MyLib/src/log.h"
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/src/Singleton.h"
+#include "_MyLib/src/FileInfoCache.h"
+#include "_MyLib/src/md5.h"
+#include "_MyLib/src/sha2.h"
 
 #define _create_file_cache \
                 "CREATE TABLE file_hash ( "\
