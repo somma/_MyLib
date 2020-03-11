@@ -46,6 +46,18 @@ RUWriteDword(
 	_In_ DWORD value
 	);
 
+uint64_t
+RUReadQword(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
+	_In_ uint64_t DefaultValue);
+
+bool
+RUWriteQword(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
+	_In_ uint64_t value);
+
 bool 
 RUReadString(
 	_In_ HKEY key_handle, 
