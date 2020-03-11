@@ -49,6 +49,14 @@ bool test_registry_util()
 	// Delete DWORD Value
 	_ASSERTE(true == RUDeleteValue(key, L"TestValue"));
 
+	
+	uint64_t test64 = 1234567890;
+	uint64_t ret_test64 = 0;
+	// Write QWORD Value
+	_ASSERTE(true == RUWriteQword(key, L"test_Qword", test64));
+	// Read QWORD Value
+	_ASSERTE(test64 == RUReadQword(key, L"test_Qword", 0));
+
 	// Delete key
 	// -- key 내부의 value 들도 함께 삭제됨
 	_ASSERTE(true == RUDeleteKey(HKEY_CURRENT_USER, L"_test_key", true));

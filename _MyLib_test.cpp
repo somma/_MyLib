@@ -387,7 +387,7 @@ void run_test()
 	//assert_bool(true, test_map_insert_swap);
 
 
-	//assert_bool(true, test_registry_util);
+	assert_bool(true, test_registry_util);
 	//assert_bool(true, test_read_mouted_device);
 	//assert_bool(true, test_set_binary_data);
 	//assert_bool(true, test_reg_multi_value);
