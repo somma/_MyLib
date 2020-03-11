@@ -178,6 +178,69 @@ RUWriteDword(
     return true;
 }
 
+uint64_t 
+RUReadQword(
+	_In_ HKEY key_handle, 
+	_In_ const wchar_t * value_name,
+	_In_ uint64_t DefaultValue
+)
+{
+	_ASSERTE(nullptr != value_name);
+	_ASSERTE(nullptr != key_handle);
+	if (nullptr == key_handle || nullptr == value_name) return DefaultValue;
+
+	uint64_t value = DefaultValue;
+	DWORD value_size = sizeof(value);
+
+	DWORD ret = RegQueryValueExW(key_handle,
+						    value_name,
+						    NULL,
+						    NULL,
+						    (PBYTE)&value,
+						    &value_size);
+
+	if (ERROR_SUCCESS != ret)
+	{
+		//log_err "RegQueryValueExW(%ws) failed, ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
+		return DefaultValue;
+	}
+
+	return value;
+}
+
+bool 
+RUWriteQword(
+	_In_ HKEY key_handle, 
+	_In_ const wchar_t * value_name, 
+	_In_ uint64_t value
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle || nullptr == value_name) return false;
+
+	DWORD ret = RegSetValueExW(key_handle,
+						  value_name,
+						  0,
+						  REG_QWORD,
+						  (PBYTE)&value,
+						  sizeof(uint64_t));
+
+	if (ERROR_SUCCESS != ret)
+	{
+		//log_err "RegSetValueExW(%ws) failed, ret = %u",
+		//	value_name,
+		//	ret
+		//	log_end;
+		return false;
+	}
+
+	return true;
+}
+
 bool
 RUReadString(
     _In_ HKEY key_handle,

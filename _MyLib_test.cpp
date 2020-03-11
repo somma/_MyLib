@@ -260,7 +260,7 @@ void run_test()
 	//assert_bool(true, test_cstream);
 	//assert_bool(true, test_cstream_read_only);
 	//assert_bool(true, test_log_rotate);
-	assert_bool(true, test_steady_timer);
+	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_is_reserved_ipv4);
@@ -386,7 +386,7 @@ void run_test()
 	//assert_bool(true, test_map_insert_swap);
 
 
-	//assert_bool(true, test_registry_util);
+	assert_bool(true, test_registry_util);
 	//assert_bool(true, test_read_mouted_device);
 	//assert_bool(true, test_set_binary_data);
 	//assert_bool(true, test_reg_multi_value);
