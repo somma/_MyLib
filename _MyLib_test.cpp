@@ -36,6 +36,7 @@
 // test_CStream.cpp
 extern bool test_cstream();
 extern bool test_cstream_read_only();
+extern bool test_cstream_read_write_string();
 
 // _test_log.cpp
 extern bool test_log_rotate();
@@ -258,8 +259,9 @@ void run_test()
 	UINT32 _fail_count = 0;
 
 	bool ret = false;
-	//assert_bool(true, test_cstream);
+	//assert_bool(true, test_cstream);	
 	//assert_bool(true, test_cstream_read_only);
+	assert_bool(true, test_cstream_read_write_string);
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
@@ -387,7 +389,7 @@ void run_test()
 	//assert_bool(true, test_map_insert_swap);
 
 
-	assert_bool(true, test_registry_util);
+	//assert_bool(true, test_registry_util);
 	//assert_bool(true, test_read_mouted_device);
 	//assert_bool(true, test_set_binary_data);
 	//assert_bool(true, test_reg_multi_value);
@@ -405,7 +407,7 @@ void run_test()
 	//assert_bool(true, test_interlock_operation);
 	//assert_bool(true, test_auto_manual_reset_event);
 	//assert_bool(true, test_get_module_dirEx);
-	assert_bool(true, test_read_line);
+	//assert_bool(true, test_read_line);
 	//assert_bool(true, test_unique_ptr);
 	//assert_bool(true, test_unique_ptr_assign);
 	//assert_bool(true, test_unique_ptr_list);

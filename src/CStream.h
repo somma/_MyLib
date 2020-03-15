@@ -98,6 +98,19 @@ public:
 			return true;
 		}
 	}
+
+	/// string/wstring 전용 함수
+	bool WriteString(_In_ const std::string& str); 
+	bool WriteWstring(_In_ const std::wstring& wstr); 
+
+	/// char*/wchar_t* 쓰기 전용 함수	
+	bool WriteString(_In_ const char* const str);
+	bool WriteWstring(_In_ const wchar_t* const wstr);
+	
+	/// string/wstring, char*/wchar* 읽기 전용 함수
+	std::string ReadString();
+	std::wstring ReadWstring();
+
 private:	
 	size_t IncreseSize(_In_ size_t newSize);
 

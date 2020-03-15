@@ -263,3 +263,141 @@ CMemoryStream::WriteToStream(
 	return 0;	// write 한 바이트가 0 이므로
 }
 
+/// @brief	스트림에 std::string 을 쓴다.
+bool CMemoryStream::WriteString(_In_ const std::string& str)
+{
+	//
+	//	빈 string 객체라면 사이즈(0) 값만 스트림에 쓴다.
+	//
+	if (str.empty())
+	{
+		return WriteInt<size_t>(0);
+	}
+
+	//
+	//	스트림에 string 의 바이트 수를 쓴다.
+	//	
+	if (true != WriteInt<size_t>(str.size() * sizeof(char)))
+	{
+		return false;
+	}
+
+	//
+	//	Writes contents of the input string.
+	//
+	return WriteToStream((char*)str.c_str(), str.size()*sizeof(char));
+}
+
+/// @brief	
+bool CMemoryStream::WriteWstring(_In_ const std::wstring& wstr)
+{
+	//
+	//	빈 string 객체라면 사이즈(0) 값만 스트림에 쓴다.
+	//
+	if (wstr.empty())
+	{
+		return WriteInt<size_t>(0);
+	}
+
+	//
+	//	스트림에 string 의 바이트 수를 쓴다.
+	//	
+	if (true != WriteInt<size_t>(wstr.size() * sizeof(wchar_t)))
+	{
+		return false;
+	}
+
+	//
+	//	Writes contents of the input string.
+	//
+	return WriteToStream((char*)wstr.c_str(), wstr.size() * sizeof(wchar_t));
+}
+
+/// @brief	
+bool CMemoryStream::WriteString(_In_ const char* const str)
+{	
+	size_t cc = strlen(str);	
+	if (nullptr == str || 0 == cc)
+	{
+		return WriteInt<size_t>(0);
+	}
+
+	//
+	//	스트림에 string 의 바이트 수를 쓴다.
+	//		
+	if (true != WriteInt<size_t>(cc * sizeof(char)))
+	{
+		return false;
+	}
+
+	//
+	//	Writes contents of the input string.
+	//
+	return WriteToStream((char*)str, cc * sizeof(char));
+}
+
+/// @brief	
+bool CMemoryStream::WriteWstring(_In_ const wchar_t* const wstr)
+{
+	size_t wcc = wcslen(wstr);
+	if (nullptr == wstr || 0 == wcc)
+	{
+		return WriteInt<size_t>(0);
+	}
+
+	//
+	//	스트림에 string 의 바이트 수를 쓴다.
+	//		
+	if (true != WriteInt<size_t>(wcc * sizeof(wchar_t)))
+	{
+		return false;
+	}
+
+	//
+	//	Writes contents of the input string.
+	//
+	return WriteToStream((char*)wstr, wcc * sizeof(wchar_t));
+}
+
+/// @brief	Reads std::string from stream.
+std::string CMemoryStream::ReadString()
+{
+	size_t size = ReadInt<size_t>();
+	if (size > 0)
+	{
+		const char* p = nullptr;
+		if (size != RefFromStream(p, size))
+		{
+			return _null_stringa;
+		}
+
+		return std::string(p, size/sizeof(char));
+	}
+	else
+	{
+		return _null_stringa;
+	}
+}
+
+/// @brief	
+std::wstring CMemoryStream::ReadWstring()
+{
+	size_t size = ReadInt<size_t>();
+	if (size > 0)
+	{
+		_ASSERTE(0 == size % sizeof(wchar_t));
+		if (0 != size % sizeof(wchar_t)) return _null_stringw;
+
+		const char* p = nullptr;
+		if (size != RefFromStream(p, size))
+		{
+			return _null_stringw;
+		}
+
+		return std::wstring((wchar_t*)p, size / sizeof(wchar_t));
+	}
+	else
+	{
+		return _null_stringw;
+	}
+}
