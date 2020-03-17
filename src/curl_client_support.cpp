@@ -69,7 +69,7 @@ http_download_ctx::update(
 	DWORD bytes_written = 0;
 	if (!WriteFile((HANDLE)_file_handle,
 					buffer,
-					cb_buffer,
+					(DWORD)cb_buffer,
 					&bytes_written,
 					nullptr))
 	{
@@ -88,6 +88,7 @@ http_download_ctx::update(
 	//	별도의 메소드에서 구현한다. 
 	//	
 
+	FlushFileBuffers(_file_handle);
 	return true;
 }
 
@@ -109,7 +110,9 @@ bool http_download_ctx::get_md5(_Out_ std::string& value)
 		return false;
 	}
 	
-	return ::get_md5(_file_handle, value);
+	return get_file_hash_by_filehandle(_file_handle,
+									   &value,
+									   nullptr);
 }
 
 /// @brief	다운로드한 파일의 SHA2 해시 값을 구한다.
@@ -130,7 +133,9 @@ bool http_download_ctx::get_sha2(_Out_ std::string& value)
 		return false;
 	}
 
-	return ::get_sha2(_file_handle, value);
+	return get_file_hash_by_filehandle(_file_handle,
+									   nullptr,
+									   &value);
 }
 
 

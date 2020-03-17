@@ -3,6 +3,9 @@
 #include <boost\thread\thread.hpp>
 #include <boost\bind.hpp>
 #include <boost\thread\condition.hpp>
+#include "_MyLib/src/log.h"
+
+
 
 const int _buf_size = 10;
 const int _iters = 100;

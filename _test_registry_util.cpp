@@ -9,6 +9,7 @@
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
 #include "_MyLib/src/RegistryUtil.h"
+#include "_MyLib/src/log.h"
 
 /**
  * @brief	

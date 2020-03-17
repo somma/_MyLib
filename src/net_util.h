@@ -102,13 +102,25 @@ ipv6_to_str(
 
 bool
 str_to_ipv4(
-	_In_ const wchar_t* ipv4,
+	_In_ const char* const ipv4,
 	_Out_ uint32_t& ip_netbyte_order
 );
 
 bool
 str_to_ipv6(
-	_In_ const wchar_t* ipv6,
+	_In_ const char* const ipv6,
+	_Out_ in_addr6& ip_netbyte_order
+);
+
+bool
+str_to_ipv4(
+	_In_ const wchar_t* const ipv4,
+	_Out_ uint32_t& ip_netbyte_order
+);
+
+bool
+str_to_ipv6(
+	_In_ const wchar_t* const ipv6,
 	_Out_ in_addr6& ip_netbyte_order
 );
 

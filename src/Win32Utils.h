@@ -14,7 +14,6 @@
 #include <conio.h>
 #include "BaseWindowsHeader.h"
 #include "boost/algorithm/string.hpp"	// to_uppper, to_lower
-#include "log.h"
 
 //
 //  _pointer 가 _alignment 바운더리에 있는지 확인 (fltKernel.h 에 정의되어있음)
@@ -176,8 +175,6 @@ int64_t file_time_delta_day(_In_ const PFILETIME ftl, _In_ const PFILETIME ftr);
 FILETIME add_sec_to_file_time(_In_ const PFILETIME file_time, _In_ int32_t secs);
 FILETIME add_day_to_file_time(_In_ const PFILETIME file_time, _In_ int32_t day);
 
-
-
 std::string	time_now_to_str(_In_ bool localtime, _In_ bool show_misec);
 std::string	time_now_to_str2();
 
@@ -242,6 +239,7 @@ BOOL write_to_filew(LPCWCH file_path, LPCWCH format,...);
 BOOL write_to_filew(HANDLE hFile, LPCWCH format, ...);
 BOOL write_to_filea(HANDLE hFile, LPCCH format, ...);
 
+bool get_file_size(_In_ const wchar_t* const file_path, _Out_ int64_t& size);
 bool get_file_size(_In_ HANDLE file_handle, _Out_ int64_t& size);
 bool get_file_version(_In_ const wchar_t* file_path, _Out_ std::wstring& file_version);
 bool get_file_company_name(_In_ const wchar_t* file_path, _Out_ std::wstring& company_name);
@@ -249,6 +247,10 @@ ULONG get_file_versioninfo_lang_code_page(_In_ PVOID version_info);
 bool get_file_position(_In_ HANDLE file_handle, _Out_ int64_t& position);
 bool set_file_position(_In_ HANDLE file_handle, _In_ int64_t distance, _Out_opt_ int64_t* new_position);
 bool set_file_size(_In_ HANDLE file_handle, _In_ int64_t new_size);
+
+typedef boost::function<bool(_In_ const char* const line)> cb_rdline;
+bool read_line(_In_ const wchar_t* file_path, cb_rdline cb);
+
 
 BOOL SaveToFileAsUTF8A(
                 IN LPCWSTR FilePathDoesNotExists, 
@@ -438,6 +440,8 @@ __inline std::wstring MbsToWcsEx(_In_ const std::string& mbs) { return MbsToWcsE
 __inline std::string WcsToMbsEx(_In_ const std::wstring& wcs) { return WcsToMbsEx(wcs.c_str()); }
 __inline std::string WcsToMbsUTF8Ex(_In_ const std::wstring& wcs) { return WcsToMbsUTF8Ex(wcs.c_str()); }
 __inline std::wstring Utf8MbsToWcsEx(_In_ const std::string& utf8) { return Utf8MbsToWcsEx(utf8.c_str()); }
+
+const char* const format_string(_In_z_ const char* const fmt, ...);
 
 
 /// @brief  src 의 뒤에서부터 fnd 문자열을 찾는다. 
@@ -638,9 +642,6 @@ std::wstring Win32ErrorToStringW(IN DWORD ErrorCode);
 BOOL	DumpMemory(DWORD Length, BYTE* Buf);
 BOOL	DumpMemory(FILE* stream,DWORD Length,BYTE* Buf);
 bool	dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump);
-
-BOOL	GetTimeStringA(OUT std::string& TimeString);
-BOOL	GetTimeStringW(IN std::wstring& TimeString);
 
 bool	set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
 

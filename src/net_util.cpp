@@ -639,6 +639,32 @@ ipv6_to_str(
 /// @brief  
 bool
 str_to_ipv4(
+	_In_ const char* const ipv4,
+	_Out_ uint32_t& ip_netbyte_order
+)
+{
+	_ASSERTE(nullptr != ipv4);
+	if (nullptr == ipv4) return false;
+
+	return str_to_ipv4(MbsToWcsEx(ipv4).c_str(), ip_netbyte_order);
+}
+
+/// @brief  
+bool
+str_to_ipv6(
+	_In_ const char* const ipv6,
+	_Out_ in_addr6& ip_netbyte_order
+)
+{
+	_ASSERTE(nullptr != ipv6);
+	if (nullptr == ipv6) return false;
+
+	return str_to_ipv6(MbsToWcsEx(ipv6).c_str(), ip_netbyte_order);
+}
+
+/// @brief  
+bool
+str_to_ipv4(
 	_In_ const wchar_t* ipv4,
 	_Out_ uint32_t& ip_netbyte_order
 )

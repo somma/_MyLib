@@ -9,7 +9,10 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
-#include "wmi_client.h"
+
+#include "_MyLib/src/log.h"
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/src/wmi_client.h"
 
 
 WmiClient::WmiClient():_initialized(false), _locator(NULL), _svc(NULL)

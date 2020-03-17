@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "_MyLib/src/AirCrypto.h"
+#include "_MyLib/src/log.h"
+#include "_MyLib/src/Win32Utils.h"
 
 /**
 * @brief	test_aes256()에서 설정한 경로에 샘플 파일을 생성한다.

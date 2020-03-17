@@ -8,10 +8,10 @@
  * @date    2015:08:01 10:02 created.
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
-
 #include <queue>
 #include <thread>
 #include <mutex>
+#include "_Mylib/src/log.h"
 
 /// @brief thread pool implementation
 /// @see test_thread_pool()

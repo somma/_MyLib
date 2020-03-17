@@ -8,6 +8,7 @@
  * 2014:1:25 14:54 created
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
+#include "_MyLib/src/log.h"
 #include <iostream>
 #include <unordered_map>
 

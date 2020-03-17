@@ -7,6 +7,7 @@
 #include "stdafx.h"
 #include <cstdlib>
 #include <utility>
+#include "_MyLib/src/log.h"
 #include "_MyLib/src/CppSQLite/CppSQLite3.h"
 #include "_MyLib/src/Win32Utils.h"
 
@@ -1272,36 +1273,52 @@ void CppSQLite3DB::open(const char* utf8_file, bool read_only, bool memory_mode)
 	in_memory_mode = memory_mode;
 }
 
-/// @brief load_or_save는 in-memory 모드로 디비를 사용하고, 데이터베이스를 종료 또는 오픈 할 때
-///		   파일로 저장 또는 파일에 저장된 내용을 가져올 때 사용한다.
-void CppSQLite3DB::load_or_save(const wchar_t* const szFile, bool is_save)
+/// @brief	load_or_save는 in-memory 모드로 디비를 사용하고, 데이터베이스를 
+///			종료 또는 오픈 할 때 파일로 저장 또는 파일에 저장된 내용을 가져올 
+//			때 사용한다.
+void
+CppSQLite3DB::load_or_save(
+	const wchar_t* const szFile,
+	bool is_save
+)
 {
 	if (true != in_memory_mode) return;
 
 	if (is_save)
 	{
+		//
+		//	파일이 이미 존재하는 경우 삭제
+		//
 		if (true == is_file_existsW(szFile))
 		{
 			if (!DeleteFileW(szFile))
 			{
-				log_err "DeleteFileW() failed. file=%ws, gle=%u",
-					szFile,
-					GetLastError()
-					log_end;
-				return;
+				throw CppSQLite3Exception(-1,
+										  format_string("DeleteFileW() failed. file=%ws, gle=%u",
+														szFile,
+														GetLastError()),
+										  DONT_DELETE_MSG);
 			}
 		}
 	}
 	else
 	{
+		//
+		//	로드할 파일이 없으면 에러
+		//
 		if (true != is_file_existsW(szFile))
 		{
-			return;
+			throw CppSQLite3Exception(-1,
+									  format_string("No file. file=%ws",
+													szFile),
+									  DONT_DELETE_MSG);
 		}
 	}
 
+	bool ret = false;
 	sqlite3* pFileDB = nullptr;
 	sqlite3_backup* pDBBackup = nullptr;
+	std::string msg;
 	do
 	{
 		//
@@ -1310,10 +1327,10 @@ void CppSQLite3DB::load_or_save(const wchar_t* const szFile, bool is_save)
 		int nRet = sqlite3_open16(szFile, &pFileDB);
 		if (nRet != SQLITE_OK)
 		{
-			log_err "sqlite3_open16() failed. path=%ws, is_save=%s",
-				szFile,
-				is_save == true ? "O" : "X"
-				log_end;
+			msg = format_string("sqlite3_open16() failed. db=%ws, sql code=%u, msg=%s",
+								szFile,
+								nRet,
+								sqlite3_errmsg(mpDB));
 			break;
 		}
 
@@ -1322,13 +1339,24 @@ void CppSQLite3DB::load_or_save(const wchar_t* const szFile, bool is_save)
 		//
 		if (true == is_save)
 		{
-			pDBBackup = sqlite3_backup_init(pFileDB, "main", mpDB, "main");
+			pDBBackup = sqlite3_backup_init(pFileDB,
+											"main",
+											mpDB,
+											"main");
 		}
 		else
 		{
-			pDBBackup = sqlite3_backup_init(mpDB, "main", pFileDB, "main");
+			pDBBackup = sqlite3_backup_init(mpDB,
+											"main",
+											pFileDB,
+											"main");
 		}
-		if (nullptr == pDBBackup) { break; }
+		if (nullptr == pDBBackup)
+		{
+			msg = format_string("sqlite3_backup_init() failed. db=%ws",
+								szFile);
+			break;
+		}
 
 		//
 		//	Run backup
@@ -1349,18 +1377,25 @@ void CppSQLite3DB::load_or_save(const wchar_t* const szFile, bool is_save)
 			//
 			//	SQLITE_DONE 이 아닌경우 에러
 			//
-			log_err "sqlite3_backup_step() failed. ret=%d",
-				nRet
-				log_end;
+			msg = format_string("sqlite3_backup_step() failed. db=%ws, sql code=%u, msg=%s",
+								szFile,
+								nRet,
+								sqlite3_errmsg(mpDB));
 			break;
 		}
 
+		ret = true;
 	} while (false);
 
 	if (nullptr != pDBBackup) { sqlite3_backup_finish(pDBBackup); }
-	if (nullptr != pFileDB){ sqlite3_close(pFileDB); }
+	if (nullptr != pFileDB) { sqlite3_close(pFileDB); }
 
-	return;
+	if (!ret)
+	{
+		throw CppSQLite3Exception(-1,
+								  msg.c_str(),
+								  DONT_DELETE_MSG);
+	}
 }
 
 void CppSQLite3DB::close()

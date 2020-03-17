@@ -7,11 +7,12 @@
  * @copyright (C)Somma, Inc. All rights reserved.
 **/
 #include "stdafx.h"
-#include "Singleton.h"
-#include "FileInfoCache.h"
-#include "md5.h"
-#include "sha2.h"
-#include "Win32Utils.h"
+#include "_MyLib/src/log.h"
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/src/Singleton.h"
+#include "_MyLib/src/FileInfoCache.h"
+#include "_MyLib/src/md5.h"
+#include "_MyLib/src/sha2.h"
 
 #define _create_file_cache \
                 "CREATE TABLE file_hash ( "\
@@ -510,102 +511,7 @@ FileInfoCache::file_util_get_hash(
 	_Out_ std::string& md5, 
 	_Out_ std::string& sha2)
 {
-	handle_ptr file_handle(
-		CreateFileW(file_path,
-					GENERIC_READ,
-					FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-					NULL,
-					OPEN_EXISTING,
-					FILE_ATTRIBUTE_NORMAL,
-					NULL),
-		[](HANDLE h) 
-		{
-			if (INVALID_HANDLE_VALUE != h)
-			{
-				CloseHandle(h);
-			}
-		});
-
-    if (INVALID_HANDLE_VALUE == file_handle.get())
-    {
-        log_err
-            "CreateFileW() failed. path=%ws, gle = %u",
-            file_path, 
-			GetLastError()
-            log_end;
-        return false; 
-    }
-    
-    if (INVALID_SET_FILE_POINTER == SetFilePointer(file_handle.get(), 
-												   0, 
-												   NULL, 
-												   FILE_BEGIN))
-    {
-        log_err
-            "SetFilePointer() failed. path=%ws, gle = %u", 
-			file_path, 
-			GetLastError()
-            log_end;
-        return false;
-    }
-
-    uint8_t sha2_buf[32];
-    MD5_CTX ctx_md5;
-    sha256_ctx ctx_sha2;
-    MD5Init(&ctx_md5, 0);
-    sha256_begin(&ctx_sha2);
-
-    const uint32_t read_buffer_size = 4096;
-    uint8_t read_buffer[read_buffer_size];
-    DWORD read = read_buffer_size;
-
-    while (read_buffer_size == read)
-    {
-		if (FALSE == ::ReadFile(file_handle.get(),
-								read_buffer,
-								read_buffer_size,
-								&read,
-								NULL))
-        {
-            log_err
-                "ReadFile() failed. path=%ws, gle = %u",
-                file_path,
-                GetLastError()
-                log_end;
-            return false;
-        }
-
-        if (0 != read)
-        {
-            MD5Update(&ctx_md5, read_buffer, read);
-            sha256_hash(read_buffer, read, &ctx_sha2);
-        }
-    }
-
-    MD5Final(&ctx_md5);
-    sha256_end(sha2_buf, &ctx_sha2);
-
-	//
-	//	Hash 바이너리 버퍼를 hex 문자열로 변환
-	//
-	if (true != bin_to_hexa_fast(sizeof(ctx_md5.digest),
-								 ctx_md5.digest,
-								 false,
-								 md5))
-	{
-		log_err "bin_to_hexa_fast() failed. " log_end;
-		return false;
-	}
-
-	if (true != bin_to_hexa_fast(sizeof(sha2_buf), 
-								 sha2_buf, 
-								 false, 
-								 sha2))
-	{
-		log_err "bin_to_hexa_fast() failed. " log_end;
-		return false;
-	}
-    return true;
+	return get_file_hash_by_filepath(file_path, &md5, &sha2);	
 }
 
 

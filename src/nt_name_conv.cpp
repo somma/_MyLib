@@ -10,8 +10,10 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
-#include "nt_name_conv.h"
-#include "Singleton.h"
+#include "_MyLib/src/log.h"
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/src/nt_name_conv.h"
+#include "_MyLib/src/Singleton.h"
 
 
 /// @brief  

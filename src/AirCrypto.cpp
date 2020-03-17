@@ -18,10 +18,13 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 
-#include "AIRCrypto.h"
+#include "_MyLib/src/log.h"
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/src/AirCrypto.h"
+
 #pragma comment(lib, "libeay32.lib")
 
-#include "Win32Utils.h"
+
 
 /**
 * @brief	aes256 파일 암호화
@@ -59,7 +62,8 @@ aes256_encrypt(
 							 false,
 							 false))
 	{
-		log_err "extract_last_tokenW(%ws) failed.", 
+		log_err 
+			"extract_last_tokenW(%ws) failed.", 
 			encrypt_file_path.c_str() 
 			log_end;
 		return false;

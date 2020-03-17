@@ -91,9 +91,6 @@ bool test_cstream()
 			_ASSERTE(0x1122334411223344 == strm.ReadInt<uint64_t>());
 		}
 
-		
-		
-
 		strm.ClearStream();
 		_ASSERTE(0 == strm.GetPos());
 		_ASSERTE(0 == strm.GetSize());
@@ -104,7 +101,6 @@ bool test_cstream()
 
 	return true;
 }
-
 
 
 bool test_cstream_read_only()
@@ -159,5 +155,51 @@ bool test_cstream_read_only()
 	}
 	_mem_check_end;
 
+	return true;
+}
+
+bool test_cstream_read_write_string()
+{
+	std::string test_str = "0123456789";
+	std::wstring test_wstr = L"0123456789";
+
+	//log_info "%zu, %zu", test_str.size(), test_wstr.size() log_end;
+
+	_mem_check_begin
+	{
+		CMemoryStream strm;
+
+
+		// 
+		_ASSERTE(true == strm.WriteString(_null_stringa));
+		_ASSERTE(true == strm.WriteWstring(_null_stringw));
+		
+		_ASSERTE(true == strm.WriteString(test_str));
+		_ASSERTE(true == strm.WriteWstring(test_wstr));
+
+		_ASSERTE(true == strm.WriteString(test_str.c_str()));
+		_ASSERTE(true == strm.WriteWstring(test_wstr.c_str()));
+
+
+
+		_ASSERTE(strm.SetPos(0));
+
+		// 
+		std::string s = strm.ReadString();
+		std::wstring ws = strm.ReadWstring();
+		_ASSERTE(true == s.empty());		
+		_ASSERTE(true == ws.empty());
+
+		s = strm.ReadString();
+		ws = strm.ReadWstring();
+		_ASSERTE(0 == s.compare(test_str));
+		_ASSERTE(0 == ws.compare(test_wstr));
+
+		s = strm.ReadString();
+		ws = strm.ReadWstring();
+		_ASSERTE(0 == s.compare(test_str));
+		_ASSERTE(0 == ws.compare(test_wstr));
+	}
+	_mem_check_end;
 	return true;
 }
