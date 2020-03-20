@@ -26,7 +26,6 @@
 #include "_MyLib/src/StopWatch.h"
 #include "_MyLib/src/GeneralHashFunctions.h"
 #include "_MyLib/src/Singleton.h"
-#include "_MyLib/src/FileInfoCache.h"
 #include "_MyLib/src/account_info.h"
 #include "_MyLib/src/CStream.h"
 #include "_MyLib/src/sched_client.h"
@@ -237,7 +236,7 @@ extern bool test_callby_value_container();
 
 
 bool test_create_guid();
-bool test_file_info_cache();
+
 bool test_is_executable_file_w();
 bool test_singleton();
 bool test_trivia();
@@ -271,8 +270,7 @@ void run_test()
 	//assert_bool(true, test_dns_to_ip);
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
-	//assert_bool(true, test_file_info_cache);
-	//
+
 	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
@@ -2640,41 +2638,6 @@ private:
 	int _v1;
 	int _v2;
 };
-
-bool test_file_info_cache()
-{
-	const wchar_t* test_file_1 = L"c:\\windows\\system32\\notepad.exe";
-	std::wstringstream db;
-	db << get_current_module_dirEx() << L"\\file_info_cache.db";
-	{
-		FileInfoCache cache;
-		_ASSERTE(true == cache.initialize(db.str().c_str(), true));
-
-		//
-		//	FileInfoCache 클래스 이용
-		//
-		FileInformation fi1;
-		FileInformation fi2;
-		_ASSERTE(true == cache.get_file_information(test_file_1, fi1));
-		_ASSERTE(true == cache.get_file_information(test_file_1, fi2));
-		_ASSERTE(1 == cache.size());
-		_ASSERTE(1 == cache.hit_count());
-		_ASSERTE(0 == fi1.sha2.compare(fi2.sha2));
-	}
-	DeleteFileW(db.str().c_str());
-
-	//
-	//	FileInfoCache C api 이용
-	//
-	_ASSERTE(true == fi_initialize());
-	FileInformation fic1;
-	_ASSERTE(true == fi_get_file_information(test_file_1, fic1));
-	FileInformation fic2;
-	_ASSERTE(true == fi_get_file_information(test_file_1, fic2));
-	_ASSERTE(0 == fic1.sha2.compare(fic2.sha2));
-	fi_finalize();		///<!
-	return true;
-}
 
 bool test_create_guid()
 {
