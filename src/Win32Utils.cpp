@@ -3695,6 +3695,28 @@ format_string(
 	}
 }
 
+/// @brief	buf 에 포맷팅된 문자열을 리턴한다.
+bool 
+format_string(
+	_Out_ char* buf,
+	_In_z_ const char* const fmt,
+	...)
+{
+	va_list args;
+	va_start(args, fmt);
+	HRESULT hr = StringCbVPrintfA(buf, sizeof(buf), fmt, args);
+	va_end(args);
+
+	if (SUCCEEDED(hr))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 /// @brief  src 의 뒤에서부터 fnd 문자열을 찾는다. 
 ///         fnd 가 src 의 꽁무니와 정확히 일치하면 true, 아니면 false 리턴
 ///         - 확장자 검사같은거 할때 사용

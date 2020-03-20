@@ -442,6 +442,7 @@ __inline std::string WcsToMbsUTF8Ex(_In_ const std::wstring& wcs) { return WcsTo
 __inline std::wstring Utf8MbsToWcsEx(_In_ const std::string& utf8) { return Utf8MbsToWcsEx(utf8.c_str()); }
 
 const char* const format_string(_In_z_ const char* const fmt, ...);
+bool format_string(_In_ char* buf, _In_z_ const char* const fmt, ...);
 
 
 /// @brief  src 의 뒤에서부터 fnd 문자열을 찾는다. 
