@@ -183,3 +183,31 @@ bool test_make_unique_struct_allocate()
 
 	return true;
 }
+
+
+std::unique_ptr<Foo> return_uniq()
+{
+	return std::make_unique<Foo>("test");
+}
+
+std::unique_ptr<Foo> return_uniq_empty()
+{
+	auto u = std::make_unique<Foo>("test");
+	delete u.release();
+	return u;
+}
+
+
+bool test_return_unique_ptr()
+{
+	_mem_check_begin
+	{
+		auto u = return_uniq();
+		_ASSERTE(u);
+		auto u2 = return_uniq_empty();
+		_ASSERTE(!u2);
+	}
+	_mem_check_end;
+
+	return true;
+}
