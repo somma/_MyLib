@@ -231,6 +231,7 @@ extern bool test_unique_ptr_assign();
 extern bool test_unique_ptr_list();
 extern bool test_unique_ptr_list_remove();
 extern bool test_make_unique_struct_allocate();
+extern bool test_return_unique_ptr();
 
 // _test_call_by_value_container.cpp
 extern bool test_callby_value_container();
@@ -261,7 +262,7 @@ void run_test()
 	bool ret = false;
 	//assert_bool(true, test_cstream);	
 	//assert_bool(true, test_cstream_read_only);
-	assert_bool(true, test_cstream_read_write_string);
+	//assert_bool(true, test_cstream_read_write_string);
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
@@ -413,6 +414,8 @@ void run_test()
 	//assert_bool(true, test_unique_ptr_list);
 	//assert_bool(true, test_unique_ptr_list_remove);
 	//assert_bool(true, test_make_unique_struct_allocate);
+	assert_bool(true, test_return_unique_ptr);
+
 	//assert_bool(true, test_zip_unzip);
 	
 	//assert_bool(true, test_callby_value_container);

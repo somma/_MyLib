@@ -8053,7 +8053,6 @@ get_process_token_elevated(
 
 /// @brief 설치된 프로그램의 정보(프로그램명, 버전, 제조사) 읽어 온다.
 ///
-#pragma todo("현재 사용자의 설치된 프로그램 정보를 읽어 오는 기능을 추가 해야한다.")
 pprogram
 get_installed_program_info(
 	_In_ HKEY key_handle,
