@@ -19,9 +19,6 @@
     <Filter Include="src">
       <UniqueIdentifier>{26ff1700-93eb-4edf-be4e-a415d26a9d80}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\CppSQLite">
-      <UniqueIdentifier>{d75ab059-4393-4d19-83a4-ce63531f6fdf}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -58,9 +55,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\curl_client.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\FileInfoCache.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\FileIoHelper.h">
@@ -158,9 +152,6 @@
     </ClInclude>
     <ClInclude Include="src\Wow64Util.h">
       <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CppSQLite\CppSQLite3.h">
-      <Filter>src\CppSQLite</Filter>
     </ClInclude>
     <ClInclude Include="src\curl_client_support.h">
       <Filter>src</Filter>
@@ -269,9 +260,6 @@
     <ClCompile Include="src\curl_client.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\FileInfoCache.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\FileIoHelper.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -329,9 +317,6 @@
     <ClCompile Include="src\Wow64Util.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\CppSQLite\CppSQLite3.cpp">
-      <Filter>src\CppSQLite</Filter>
-    </ClCompile>
     <ClCompile Include="_test_call_by_value_container.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -357,10 +342,5 @@
     <ResourceCompile Include="_MyLib_test.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="src\CppSQLite\LICENSE">
-      <Filter>src\CppSQLite</Filter>
-    </None>
   </ItemGroup>
 </Project>

@@ -215,12 +215,10 @@ echo "done." </Command>
     <ClInclude Include="src\arch.h" />
     <ClInclude Include="src\base64.h" />
     <ClInclude Include="src\BaseWindowsHeader.h" />
-    <ClInclude Include="src\CppSQLite\CppSQLite3.h" />
     <ClInclude Include="src\crc64.h" />
     <ClInclude Include="src\CStream.h" />
     <ClInclude Include="src\curl_client.h" />
     <ClInclude Include="src\curl_client_support.h" />
-    <ClInclude Include="src\FileInfoCache.h" />
     <ClInclude Include="src\FileIoHelper.h" />
     <ClInclude Include="src\FileIoHelperClass.h" />
     <ClInclude Include="src\GeneralHashFunctions.h" />
@@ -261,12 +259,10 @@ echo "done." </Command>
     <ClCompile Include="src\AirCrypto.cpp" />
     <ClCompile Include="src\AKSyncObjs.cpp" />
     <ClCompile Include="src\base64.cpp" />
-    <ClCompile Include="src\CppSQLite\CppSQLite3.cpp" />
     <ClCompile Include="src\crc64.cpp" />
     <ClCompile Include="src\CStream.cpp" />
     <ClCompile Include="src\curl_client.cpp" />
     <ClCompile Include="src\curl_client_support.cpp" />
-    <ClCompile Include="src\FileInfoCache.cpp" />
     <ClCompile Include="src\FileIoHelper.cpp" />
     <ClCompile Include="src\FileIoHelperClass.cpp" />
     <ClCompile Include="src\GeneralHashFunctions.cpp" />
@@ -339,9 +335,6 @@ echo "done." </Command>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="_MyLib_test.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="src\CppSQLite\LICENSE" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
