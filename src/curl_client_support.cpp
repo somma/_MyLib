@@ -13,45 +13,24 @@
 
 
 /// @brief	Constructor
-http_download_ctx::http_download_ctx(const char* const url)
+http_download_ctx::http_download_ctx(
+	_In_ const char* url,
+	_In_ const HANDLE file_handle
+)
 	:
-	_url(nullptr == url ? _null_stringa : url),
-	_file_handle(INVALID_HANDLE_VALUE)
+	_cancel(false),
+	_url(url),
+	_file_handle(file_handle)
 {
 	_ASSERTE(nullptr != url);
+	_ASSERTE(INVALID_HANDLE_VALUE != file_handle);
 }
 
 /// @brief	
 http_download_ctx::~http_download_ctx()
 {
-	finalize();
-}
-
-/// @brief	
-bool http_download_ctx::initialize(_In_ const wchar_t* const file_path)
-{
-	_ASSERTE(nullptr != file_path);
-	_ASSERTE(INVALID_HANDLE_VALUE == _file_handle);
-
-	if (nullptr == file_path) { return false; }
-	if (INVALID_HANDLE_VALUE != _file_handle) return false;
-
-	//
-	//	로컬 파일 생성
-	//
-	_file_path = file_path;
-	_file_handle = open_file_to_write(file_path);
-	if (INVALID_HANDLE_VALUE == _file_handle)
-	{
-		log_err
-			"CreateFile() failed. path=%ws, gle=%u",
-			file_path,
-			GetLastError()
-			log_end;
-		return false;
-	}
-
-	return true;
+	_url = _null_stringa;
+	_file_handle = INVALID_HANDLE_VALUE;
 }
 
 /// @brief	
@@ -61,6 +40,16 @@ http_download_ctx::update(
 	_In_ const size_t cb_buffer
 )
 {
+	if (_cancel)
+	{
+		log_info
+			"Download request canceled. url=%s, file=0x%p",
+			_url.c_str(),
+			_file_handle			
+			log_end;
+		return false;
+	}
+
 	if (INVALID_HANDLE_VALUE == _file_handle) return false;
 
 	//
@@ -73,8 +62,9 @@ http_download_ctx::update(
 					&bytes_written,
 					nullptr))
 	{
-		log_err "WriteFile() failed. gle=%u",
-			GetLastError()
+		log_err "WriteFile() failed. gle=%u, file=0x%p",
+			GetLastError(), 
+			_file_handle
 			log_end;
 		return false;
 	}
@@ -103,8 +93,8 @@ bool http_download_ctx::get_md5(_Out_ std::string& value)
 												   FILE_BEGIN))
 	{
 		log_err
-			"SetFilePointer() failed. path=%ws, gle = %u",
-			_file_path.c_str(),
+			"SetFilePointer() failed. file=0x%p, gle=%u",
+			_file_handle,
 			GetLastError()
 			log_end;
 		return false;
@@ -126,8 +116,8 @@ bool http_download_ctx::get_sha2(_Out_ std::string& value)
 												   FILE_BEGIN))
 	{
 		log_err
-			"SetFilePointer() failed. path=%ws, gle = %u",
-			_file_path.c_str(),
+			"SetFilePointer() failed. file=0x%p, gle=%u",
+			_file_handle,
 			GetLastError()
 			log_end;
 		return false;
@@ -136,20 +126,6 @@ bool http_download_ctx::get_sha2(_Out_ std::string& value)
 	return get_file_hash_by_filehandle(_file_handle,
 									   nullptr,
 									   &value);
-}
-
-
-/// @brief	
-bool
-http_download_ctx::finalize()
-{
-	if (INVALID_HANDLE_VALUE != _file_handle)
-	{
-		CloseHandle(_file_handle);
-		_file_handle = INVALID_HANDLE_VALUE;
-	}
-
-	return true;
 }
 
 ///	@brief	libcUrl Write Callback To Stream 
@@ -207,7 +183,6 @@ curl_wcb_to_ctx(
 	}
 
 	phttp_download_ctx ctx = (phttp_download_ctx)userdata;
-
 	if (!ctx->update(rcvd_buffer, rcvd_block_size * rcvd_block_count))
 	{
 		log_err "ctx->update() failed." log_end;

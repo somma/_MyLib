@@ -75,7 +75,7 @@ public:
 		_Out_ std::string& response);
 
 	bool http_download_file(
-		_In_ const http_download_ctx* ctx,
+		_In_ http_download_ctx* ctx,
 		_Out_ long& http_response_code);
 
 	bool http_post(
