@@ -228,7 +228,7 @@ curl_client::http_get(
 /// @brief	HTTP(S) 파일 다운로드
 bool
 curl_client::http_download_file(
-	_In_ const http_download_ctx* ctx,
+	_In_ http_download_ctx* ctx,
 	_Out_ long& http_response_code
 	)
 {
@@ -238,8 +238,8 @@ curl_client::http_download_file(
 
 	//
 	//	Prepare (set common options)
-	//
-	if (!prepare_perform(ctx->_url.c_str()))
+	//	
+	if (!prepare_perform(ctx->url()))
 	{
 		log_err "prepare_perform() failed. " log_end;
 		return false;
