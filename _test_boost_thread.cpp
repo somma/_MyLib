@@ -26,8 +26,8 @@ public:
     void put(int m)
     {
 
-		// boost::condition Àº unique_lock À» »ç¿ëÇØ¾ß ÇÏ±â ¶§¹®¿¡ scoped_lock À» »ç¿ë
-		// boost::mutex::sclped_lock Àº unique_lock ÀÇ typedef ÀÓ
+		// boost::condition ì€ unique_lock ì„ ì‚¬ìš©í•´ì•¼ í•˜ê¸° ë•Œë¬¸ì— scoped_lock ì„ ì‚¬ìš©
+		// boost::mutex::sclped_lock ì€ unique_lock ì˜ typedef ì„
 		boost::mutex::scoped_lock lock(mutex);
         if (full == _buf_size)
         {
@@ -188,12 +188,12 @@ public:
 		}
 	}
 
-	///	cond.notify() ¸¦ ¸ÕÀú È£ÃâÇÏ°í, cond.wait() À» ³ªÁß¿¡ È£ÃâÇÏ¸é 
-	/// ¶Ç´Â ±× ¹İ´ëÀÇ °æ¿ì ¾î¶»°Ô µÇ´ÂÁö Å×½ºÆ® 	
+	///	cond.notify() ë¥¼ ë¨¼ì € í˜¸ì¶œí•˜ê³ , cond.wait() ì„ ë‚˜ì¤‘ì— í˜¸ì¶œí•˜ë©´ 
+	/// ë˜ëŠ” ê·¸ ë°˜ëŒ€ì˜ ê²½ìš° ì–´ë–»ê²Œ ë˜ëŠ”ì§€ í…ŒìŠ¤íŠ¸ 	
 	void ConditionNotifyWaitTest()
 	{
-		/// wait º¸´Ù notify ¸¦ ¸ÕÀú È£ÃâÇÏ¸é ±ú¾î³ªÁö ¾Ê´Â´Ù. 
-		/// ´ç¿¬ÇÑ°É ¹¹....
+		/// wait ë³´ë‹¤ notify ë¥¼ ë¨¼ì € í˜¸ì¶œí•˜ë©´ ê¹¨ì–´ë‚˜ì§€ ì•ŠëŠ”ë‹¤. 
+		/// ë‹¹ì—°í•œê±¸ ë­....
 		boost::thread t1(boost::bind(&ConditionNotifyBeforeWait::notifier,
 									 this));
 		boost::thread t2(boost::bind(&ConditionNotifyBeforeWait::waiter,
@@ -202,7 +202,7 @@ public:
 		t1.join();
 		t2.join();
 
-		/// wait( ) -> notify() ÇÏ¸é ÀÇµµ´ë·Î Àß ±ú¾î³ªÁö
+		/// wait( ) -> notify() í•˜ë©´ ì˜ë„ëŒ€ë¡œ ì˜ ê¹¨ì–´ë‚˜ì§€
 		boost::thread t3(boost::bind(&ConditionNotifyBeforeWait::waiter,
 									 this));
 		boost::thread t4(boost::bind(&ConditionNotifyBeforeWait::notifier,
@@ -212,11 +212,11 @@ public:
 		t4.join();
 	}
 
-	/// SetEvent(), WaitForSingleObject() ¼ø¼­¿¡ µû¶ó
-	/// ¾î¶»°Ô µ¿ÀÛÇÏ´ÂÁö Å×½ºÆ® 
+	/// SetEvent(), WaitForSingleObject() ìˆœì„œì— ë”°ë¼
+	/// ì–´ë–»ê²Œ ë™ì‘í•˜ëŠ”ì§€ í…ŒìŠ¤íŠ¸ 
 	///
-	/// ÀÌº¥Æ® °´Ã¼´Â ´ç¿¬È÷ »óÅÂ°¡ À¯ÁöµÇ´Â Ä¿³Î°´Ã¼´Ï±î
-	/// Set À» ¸ÕÀúÇÏµç Wait À» ¸ÕÀúÇÏµç Àß µÇ¾î¾ß Á¤»ó
+	/// ì´ë²¤íŠ¸ ê°ì²´ëŠ” ë‹¹ì—°íˆ ìƒíƒœê°€ ìœ ì§€ë˜ëŠ” ì»¤ë„ê°ì²´ë‹ˆê¹Œ
+	/// Set ì„ ë¨¼ì €í•˜ë“  Wait ì„ ë¨¼ì €í•˜ë“  ì˜ ë˜ì–´ì•¼ ì •ìƒ
 	void EventSetAfterWait()
 	{
 		HANDLE event = CreateEvent(NULL, FALSE, FALSE, NULL);

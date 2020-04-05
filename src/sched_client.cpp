@@ -55,8 +55,8 @@ SchedClient::initialize()
 	if (!SUCCEEDED(hres))
 	{
 		//
-		//	CoInitializedSecurity() ÇÔ¼ö´Â ÇÁ·Î¼¼½º¿¡¼­ ÇÑ¹ø¸¸ È£ÃâÇÒ ¼ö ÀÖ´Ù.
-		//	µÎ¹ø È£Ãâ µÇ¸é RPC_E_TOO_LATE ¸¦ ¸®ÅÏÇÔ
+		//	CoInitializedSecurity() í•¨ìˆ˜ëŠ” í”„ë¡œì„¸ìŠ¤ì—ì„œ í•œë²ˆë§Œ í˜¸ì¶œí•  ìˆ˜ ìžˆë‹¤.
+		//	ë‘ë²ˆ í˜¸ì¶œ ë˜ë©´ RPC_E_TOO_LATE ë¥¼ ë¦¬í„´í•¨
 		//
 		if (RPC_E_TOO_LATE != hres)
 		{
@@ -125,8 +125,8 @@ SchedClient::initialized()
 	return _initialized;
 }
 
-///	@brief	ÀÛ¾÷ ½ºÄÉÁÙ·¯¿¡ µî·ÏÇÒ folder_name,°ú task_name·Î daily task¸¦ »ý¼ºÇÏ°í 
-///			ÁÖ±âÀûÀ¸·Î ½ÇÇà½ÃÅ³ ÆÄÀÏÀÇ °æ·Î¸¦ µî·ÏÇÑ´Ù.
+///	@brief	ìž‘ì—… ìŠ¤ì¼€ì¤„ëŸ¬ì— ë“±ë¡í•  folder_name,ê³¼ task_nameë¡œ daily taskë¥¼ ìƒì„±í•˜ê³  
+///			ì£¼ê¸°ì ìœ¼ë¡œ ì‹¤í–‰ì‹œí‚¬ íŒŒì¼ì˜ ê²½ë¡œë¥¼ ë“±ë¡í•œë‹¤.
 bool
 SchedClient::create_daily_task(
 	_In_ const wchar_t* task_name,
@@ -237,7 +237,7 @@ SchedClient::create_daily_task(
 	return ret;
 }
 
-///	@brief task¸¦ »èÁ¦ÇÑ´Ù.
+///	@brief taskë¥¼ ì‚­ì œí•œë‹¤.
 bool
 SchedClient::remove_task(
 	_In_ const wchar_t* task_name,
@@ -277,7 +277,7 @@ SchedClient::remove_task(
 	return ret;
 }
 
-///	@brief task¸¦ È°¼ºÈ­ ÇÏ°Å³ª ºñÈ°¼ºÈ­ ÇÑ´Ù.
+///	@brief taskë¥¼ í™œì„±í™” í•˜ê±°ë‚˜ ë¹„í™œì„±í™” í•œë‹¤.
 bool 
 SchedClient::change_task_status(
 	_In_ const wchar_t* task_name,
@@ -292,9 +292,9 @@ SchedClient::change_task_status(
 	if (nullptr == task_name || nullptr == folder_name) return false;
 
 	//
-	// put_Enabled´Â VARIANT_BOOL Å¸ÀÔÀ» ÆÄ¶ó¹ÌÅÍ·Î ¹Þ´Âµ¥ VARIANT_BOOLÀº -1ÀÌ Âü,
-	// 0ÀÌ °ÅÁþÀÌ´Ù. ±×·¡¼­ task¸¦ enabledÇÏ°Ô ¹Ù²Ü·Á¸é enabled_task¸¦ -1,
-	// task¸¦ disabledÇÏ°Ô ¹Ù²Ü·Á¸é 0À¸·Î ¸Å°³º¯¼ö¸¦ ³Ñ°ÜÁÖ¸é µÈ´Ù. ÀÌ¿ÜÀÇ °ªµéÀº InValiedÇÑ °ªÀÌ´Ù.
+	// put_EnabledëŠ” VARIANT_BOOL íƒ€ìž…ì„ íŒŒë¼ë¯¸í„°ë¡œ ë°›ëŠ”ë° VARIANT_BOOLì€ -1ì´ ì°¸,
+	// 0ì´ ê±°ì§“ì´ë‹¤. ê·¸ëž˜ì„œ taskë¥¼ enabledí•˜ê²Œ ë°”ê¿€ë ¤ë©´ enabled_taskë¥¼ -1,
+	// taskë¥¼ disabledí•˜ê²Œ ë°”ê¿€ë ¤ë©´ 0ìœ¼ë¡œ ë§¤ê°œë³€ìˆ˜ë¥¼ ë„˜ê²¨ì£¼ë©´ ëœë‹¤. ì´ì™¸ì˜ ê°’ë“¤ì€ InValiedí•œ ê°’ì´ë‹¤.
 	//
 
 	IRegisteredTask* registered_task = nullptr;
@@ -328,7 +328,7 @@ SchedClient::change_task_status(
 	return ret;
 }
 
-///	@brief	ÅÂ½ºÅ©°¡ µî·ÏµÇ¾îÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+///	@brief	íƒœìŠ¤í¬ê°€ ë“±ë¡ë˜ì–´ìžˆëŠ”ì§€ í™•ì¸í•œë‹¤.
 bool
 SchedClient::is_task_existW(
 	_In_ const wchar_t* task_name,
@@ -356,7 +356,7 @@ SchedClient::is_task_existW(
 	return true;
 }
 
-/// @brief	µî·ÏµÈ taskÀÇ ½ÇÇà ÆÄÀÏµéÀÇ °æ·Î¸¦ ±¸ÇÑ´Ù.
+/// @brief	ë“±ë¡ëœ taskì˜ ì‹¤í–‰ íŒŒì¼ë“¤ì˜ ê²½ë¡œë¥¼ êµ¬í•œë‹¤.
 bool
 SchedClient::get_task_action_exec_programs(
 	_In_ const wchar_t* task_name,
@@ -473,8 +473,8 @@ SchedClient::get_task_action_exec_programs(
 	return ret;
 }
 
-/// @brief	task¿¡ daily Æ®¸®°Å¸¦ µî·Ï, start_time°ú end_timeÀº "YYYY-MM-DDTHH-MM-SS"°ú
-///			°°Àº Æ÷¸ä Çü½ÄÀ» µû¸¥´Ù.
+/// @brief	taskì— daily íŠ¸ë¦¬ê±°ë¥¼ ë“±ë¡, start_timeê³¼ end_timeì€ "YYYY-MM-DDTHH-MM-SS"ê³¼
+///			ê°™ì€ í¬ë©§ í˜•ì‹ì„ ë”°ë¥¸ë‹¤.
 ///			day_interval
 bool
 SchedClient::make_daily_trigger(
@@ -541,8 +541,8 @@ SchedClient::make_daily_trigger(
 			break;
 		}
 
-		// interval°ú durationÀº "PT00{H,M}" Æ÷¸äÀ» °¡Áö°í 1H´Â 1½Ã°£, 1MÀº 1ºÐÀ» ³ªÅ¸³½´Ù.
-		// intervalÀº ±âº»°ªÀ¸·Î 30ºÐ , durationÀº ±âº»°ªÀ¸·Î 24½Ã°£À¸·Î ¼³Á¤ µÈ´Ù.
+		// intervalê³¼ durationì€ "PT00{H,M}" í¬ë©§ì„ ê°€ì§€ê³  1HëŠ” 1ì‹œê°„, 1Mì€ 1ë¶„ì„ ë‚˜íƒ€ë‚¸ë‹¤.
+		// intervalì€ ê¸°ë³¸ê°’ìœ¼ë¡œ 30ë¶„ , durationì€ ê¸°ë³¸ê°’ìœ¼ë¡œ 24ì‹œê°„ìœ¼ë¡œ ì„¤ì • ëœë‹¤.
 		hres = repetition->put_Duration(_bstr_t(task_duration));
 		if (!SUCCEEDED(hres))
 		{

@@ -68,7 +68,7 @@ char _int_to_uchar_table[] = {
 };
 
 
-/// @brief	int type ·£´ı°ªÀ» ¸®ÅÏÇÑ´Ù.
+/// @brief	int type ëœë¤ê°’ì„ ë¦¬í„´í•œë‹¤.
 int get_random_int(_In_ int min, _In_ int max)
 {
 	std::random_device seed;
@@ -101,8 +101,8 @@ std::string FAT2Str(IN FATTIME& fat)
 			DWORD dwHighDateTime;
 		} FILETIME, *PFILETIME, *LPFILETIME;
 
-	FILETIME ±¸Á¶Ã¼´Â 4¹ÙÀÌÆ® º¯¼ö 2°³·Î ±¸¼ºµÇ¾î ÀÖÀ¸¹Ç·Î 4 byte alignment µÇ¾î¾ß ÇÑ´Ù.
-	ÀÌ °æ¿ì FILETIME -> __int64 ·Î º¯È¯ÇØµµ ¹®Á¦°¡ ¹ß»ıÇÏÁö´Â ¾Ê´Â´Ù.
+	FILETIME êµ¬ì¡°ì²´ëŠ” 4ë°”ì´íŠ¸ ë³€ìˆ˜ 2ê°œë¡œ êµ¬ì„±ë˜ì–´ ìˆìœ¼ë¯€ë¡œ 4 byte alignment ë˜ì–´ì•¼ í•œë‹¤.
+	ì´ ê²½ìš° FILETIME -> __int64 ë¡œ ë³€í™˜í•´ë„ ë¬¸ì œê°€ ë°œìƒí•˜ì§€ëŠ” ì•ŠëŠ”ë‹¤.
 
 	+----------------------------------------------------------------------------+
 
@@ -116,24 +116,24 @@ std::string FAT2Str(IN FATTIME& fat)
 		...
 	} WIN32_FIND_DATAW, *PWIN32_FIND_DATAW, *LPWIN32_FIND_DATAW;
 
-	WIN32_FIND_DATAW ±¸Á¶Ã¼ÀÇ °æ¿ì dwFileAttributes °¡ 4¹ÙÀÌÆ®ÀÌ¹Ç·Î,
+	WIN32_FIND_DATAW êµ¬ì¡°ì²´ì˜ ê²½ìš° dwFileAttributes ê°€ 4ë°”ì´íŠ¸ì´ë¯€ë¡œ,
 		- ftCreationTime   = 0x00000004 ~ 0x0000000C
 		- ftLastAccessTime = 0x0000000c ~ 0x00000020
-	¿¡ À§Ä¡ÇÏ°Ô µÈ´Ù.
+	ì— ìœ„ì¹˜í•˜ê²Œ ëœë‹¤.
 
-	Æ÷ÀÎÅÍ º¯¼ö´Â pointer alignment(8¹ÙÀÌÆ®)°¡ µÇ¾î¾ß ÇÏ´Âµ¥, ¸¸ÀÏ ftCreationTime ÀÇ
-	ÁÖ¼Ò(0x00000004)¸¦ __int64_t* Å¸ÀÔÀÇ Æ÷ÀÎÅÍ·Î Ä³½ºÆÃÇØ¼­ ¿¢¼¼½ºÇÏ°Ô µÇ´Â °æ¿ì
-	__int64_t Æ÷ÀÎÅÍ´Â pointer alignment(8¹ÙÀÌÆ®)°¡ ¾Æ´Ï¶ó 4 byte alignment ¸Ş¸ğ¸® ¿µ¿ª¿¡
-	Á¢±ÙÇÏ°Ô µÇ±â ¶§¹®¿¡ alignment ¸¦ ÁöÄÑ¾ß ÇÏ´Â °æ¿ì ¿¡·¯°¡ ¹ß»ıÇÒ ¼ö ÀÖ´Ù.
+	í¬ì¸í„° ë³€ìˆ˜ëŠ” pointer alignment(8ë°”ì´íŠ¸)ê°€ ë˜ì–´ì•¼ í•˜ëŠ”ë°, ë§Œì¼ ftCreationTime ì˜
+	ì£¼ì†Œ(0x00000004)ë¥¼ __int64_t* íƒ€ì…ì˜ í¬ì¸í„°ë¡œ ìºìŠ¤íŒ…í•´ì„œ ì—‘ì„¸ìŠ¤í•˜ê²Œ ë˜ëŠ” ê²½ìš°
+	__int64_t í¬ì¸í„°ëŠ” pointer alignment(8ë°”ì´íŠ¸)ê°€ ì•„ë‹ˆë¼ 4 byte alignment ë©”ëª¨ë¦¬ ì˜ì—­ì—
+	ì ‘ê·¼í•˜ê²Œ ë˜ê¸° ë•Œë¬¸ì— alignment ë¥¼ ì§€ì¼œì•¼ í•˜ëŠ” ê²½ìš° ì—ëŸ¬ê°€ ë°œìƒí•  ìˆ˜ ìˆë‹¤.
 
-	Ä¿³ÎÀÇ ¸Ş¼¼Áö µğ½ºÆĞÃ³¿¡´Â ¾Æ·¡¿Í °°Àº ÄÚµåµéÀ» ÀÚÁÖ º¼ ¼ö ÀÖ´Ù.
+	ì»¤ë„ì˜ ë©”ì„¸ì§€ ë””ìŠ¤íŒ¨ì²˜ì—ëŠ” ì•„ë˜ì™€ ê°™ì€ ì½”ë“œë“¤ì„ ìì£¼ ë³¼ ìˆ˜ ìˆë‹¤.
 
 		if (!IS_ALIGNED(OutputBuffer, sizeof(uint64_t*))) {
 			return STATUS_DATATYPE_MISALIGNMENT;
 		}
 
-	¸¸ÀÏ ftCreateTime À» __uint64_t* ·Î °­Á¦Ä³½ºÆÃÇØ¼­ Ä¿³Î¼­ºñ½º ·çÆ¾À» È£ÃâÇß´Ù¸é
-	STATUS_DATATYPE_MISALIGNMENT ¿¡·¯°¡ ¸®ÅÏµÉ °ÍÀÌ´Ù.
+	ë§Œì¼ ftCreateTime ì„ __uint64_t* ë¡œ ê°•ì œìºìŠ¤íŒ…í•´ì„œ ì»¤ë„ì„œë¹„ìŠ¤ ë£¨í‹´ì„ í˜¸ì¶œí–ˆë‹¤ë©´
+	STATUS_DATATYPE_MISALIGNMENT ì—ëŸ¬ê°€ ë¦¬í„´ë  ê²ƒì´ë‹¤.
 
 	+----------------------------------------------------------------------------+
 
@@ -152,12 +152,12 @@ std::string FAT2Str(IN FATTIME& fat)
 			LONGLONG QuadPart;
 		} LARGE_INTEGER;
 
-	LARGE_INTEGER, ULARGE_INTEGER ´Â union À¸·Î Á¤ÀÇµÇ¾îÀÖ°í LONGLONG Å¸ÀÔ º¯¼ö°¡ ÀÖ±â¶§¹®¿¡
-	±âº»À¸·Î 8byte align À» »ç¿ëÇÏ±â ¶§¹®¿¡ À§ÀÇ ¹®Á¦°¡ ¹ß»ıÇÏÁö ¾Ê´Â´Ù.
+	LARGE_INTEGER, ULARGE_INTEGER ëŠ” union ìœ¼ë¡œ ì •ì˜ë˜ì–´ìˆê³  LONGLONG íƒ€ì… ë³€ìˆ˜ê°€ ìˆê¸°ë•Œë¬¸ì—
+	ê¸°ë³¸ìœ¼ë¡œ 8byte align ì„ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ìœ„ì˜ ë¬¸ì œê°€ ë°œìƒí•˜ì§€ ì•ŠëŠ”ë‹¤.
 
-	Âü°í·Î LowPart, HighPart ¸¦ °¡Áö´Â µ¿ÀÏÇÑ ±¸Á¶Ã¼¸¦ union ¾È¿¡ µÎ¹ø ¼±¾ğÇÑ ÀÌÀ¯´Â ¿¹Àü ÄÚµå¿ÍÀÇ
-	È£È¯¼ºÀ» À§ÇÑ °ÍÀÌ¶ó°í ÇÔ (ÀÌ¸§ ¾ø´Â ±¸Á¶Ã¼¸¦ °¡Áö´Â À¯´Ï¿ÂÀ» Áö¿øÇÏ´À³Ä ¸¶´Â³Ä ¹¹ ±×·±...)
-	Àú·¸°Ô À¯´Ï¿ÂÀ» ¼±¾ğÇØ µÎ¸é ¾Æ·¡ µÎ°¡Áö ÇüÅÂÀÇ ÄÚµå¸¦ ¸ğµÎ »ç¿ëÇÒ ¼ö ÀÖ±â ¶§¹®ÀÌ¶ó°í ÇÔ
+	ì°¸ê³ ë¡œ LowPart, HighPart ë¥¼ ê°€ì§€ëŠ” ë™ì¼í•œ êµ¬ì¡°ì²´ë¥¼ union ì•ˆì— ë‘ë²ˆ ì„ ì–¸í•œ ì´ìœ ëŠ” ì˜ˆì „ ì½”ë“œì™€ì˜
+	í˜¸í™˜ì„±ì„ ìœ„í•œ ê²ƒì´ë¼ê³  í•¨ (ì´ë¦„ ì—†ëŠ” êµ¬ì¡°ì²´ë¥¼ ê°€ì§€ëŠ” ìœ ë‹ˆì˜¨ì„ ì§€ì›í•˜ëŠëƒ ë§ˆëŠ”ëƒ ë­ ê·¸ëŸ°...)
+	ì €ë ‡ê²Œ ìœ ë‹ˆì˜¨ì„ ì„ ì–¸í•´ ë‘ë©´ ì•„ë˜ ë‘ê°€ì§€ í˜•íƒœì˜ ì½”ë“œë¥¼ ëª¨ë‘ ì‚¬ìš©í•  ìˆ˜ ìˆê¸° ë•Œë¬¸ì´ë¼ê³  í•¨
 
 		LargeInteger.u.Lowpart = 0
 		LargeInteger.LowPart = 0
@@ -195,10 +195,10 @@ int_to_file_time(
 	large_int_to_file_time(reinterpret_cast<PLARGE_INTEGER>(&file_time_int), file_time);
 }
 
-/// @brief	LARGE_INTEGER -> FILETIME À¸·Î º¯È¯
+/// @brief	LARGE_INTEGER -> FILETIME ìœ¼ë¡œ ë³€í™˜
 ///			** NOTE **
-///			Æ¯º°ÇÑ °æ¿ì°¡ ¾Æ´Ï¶ó¸é large_int_to_file_time() ÇÔ¼ö¸¦ »ç¿ëÇÒ ÇÊ¿ä¾øÀÌ 
-///			`PFILETIME ft = (PFILETIME)&large_int` ÇüÅÂ·Î ¹Ù·Î Ä³½ºÆÃÇØ¼­ »ç¿ëÇÏµµ ¹®Á¦¾ø´Ù. 
+///			íŠ¹ë³„í•œ ê²½ìš°ê°€ ì•„ë‹ˆë¼ë©´ large_int_to_file_time() í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•  í•„ìš”ì—†ì´ 
+///			`PFILETIME ft = (PFILETIME)&large_int` í˜•íƒœë¡œ ë°”ë¡œ ìºìŠ¤íŒ…í•´ì„œ ì‚¬ìš©í•˜ë„ ë¬¸ì œì—†ë‹¤. 
 ///			
 __inline
 void
@@ -234,7 +234,7 @@ unixtime_to_filetime(
 	file_time->dwHighDateTime = ll >> 32;
 }
 
-/// @brief	ftl, ftr °ªÀÇ Â÷¸¦ ¹Ğ¸®¼¼ÄÁµå ´ÜÀ§·Î ¸®ÅÏÇÑ´Ù. 
+/// @brief	ftl, ftr ê°’ì˜ ì°¨ë¥¼ ë°€ë¦¬ì„¸ì»¨ë“œ ë‹¨ìœ„ë¡œ ë¦¬í„´í•œë‹¤. 
 int64_t
 file_time_delta_msec(
 	_In_ const PFILETIME ftl,
@@ -244,7 +244,7 @@ file_time_delta_msec(
 	return (llabs(file_time_to_int(ftl) - file_time_to_int(ftr)) / _file_time_to_msec);
 }
 
-/// @brief  ftl, ftr °ªÀÇ Â÷¸¦ ÃÊ´ÜÀ§·Î ¸®ÅÏÇÑ´Ù. 
+/// @brief  ftl, ftr ê°’ì˜ ì°¨ë¥¼ ì´ˆë‹¨ìœ„ë¡œ ë¦¬í„´í•œë‹¤. 
 int64_t
 file_time_delta_sec(
 	_In_ const PFILETIME ftl,
@@ -254,7 +254,7 @@ file_time_delta_sec(
 	return (llabs(file_time_to_int(ftl) - file_time_to_int(ftr)) / _file_time_to_sec);
 }
 
-/// @brief	ftl, ftr °ªÀÇ Â÷¸¦ ÀÏ´ÜÀ§·Î ¸®ÅÏÇÑ´Ù. 
+/// @brief	ftl, ftr ê°’ì˜ ì°¨ë¥¼ ì¼ë‹¨ìœ„ë¡œ ë¦¬í„´í•œë‹¤. 
 int64_t
 file_time_delta_day(
 	_In_ const PFILETIME ftl,
@@ -264,7 +264,7 @@ file_time_delta_day(
 	return (llabs(file_time_to_int(ftl) - file_time_to_int(ft2)) / _file_time_to_day);
 }
 
-/// @brief file_time ¿¡ secs ÃÊ¸¦ ´õÇÑ ÆÄÀÏÅ¸ÀÓÀ» ¸®ÅÏÇÑ´Ù.
+/// @brief file_time ì— secs ì´ˆë¥¼ ë”í•œ íŒŒì¼íƒ€ì„ì„ ë¦¬í„´í•œë‹¤.
 FILETIME
 add_sec_to_file_time(
 	_In_ const PFILETIME file_time,
@@ -280,7 +280,7 @@ add_sec_to_file_time(
 	return added_file_time;
 }
 
-/// @brief file_time ¿¡ day ¸¸Å­ ´õÇÑ ÆÄÀÏÅ¸ÀÓÀ» ¸®ÅÏÇÑ´Ù.
+/// @brief file_time ì— day ë§Œí¼ ë”í•œ íŒŒì¼íƒ€ì„ì„ ë¦¬í„´í•œë‹¤.
 FILETIME
 add_day_to_file_time(
 	_In_ const PFILETIME file_time,
@@ -297,7 +297,7 @@ add_day_to_file_time(
 }
 
 
-/// @brief	ÇöÀç ½Ã°¢À» `2017-05-23 21:23:24.821` Æ÷¸Ë ¹®ÀÚ¿­·Î Ãâ·ÂÇÑ´Ù. 
+/// @brief	í˜„ì¬ ì‹œê°ì„ `2017-05-23 21:23:24.821` í¬ë§· ë¬¸ìì—´ë¡œ ì¶œë ¥í•œë‹¤. 
 std::string	time_now_to_str(_In_ bool localtime, _In_ bool show_misec)
 {
 	SYSTEMTIME utc_system_time;
@@ -307,7 +307,7 @@ std::string	time_now_to_str(_In_ bool localtime, _In_ bool show_misec)
 }
 
 
-/// @brief	ÇöÀç ½Ã°¢À» `2017-05-23T21:23:24.821+09:00` Æ÷¸Ë ¹®ÀÚ¿­·Î Ãâ·ÂÇÑ´Ù. 
+/// @brief	í˜„ì¬ ì‹œê°ì„ `2017-05-23T21:23:24.821+09:00` í¬ë§· ë¬¸ìì—´ë¡œ ì¶œë ¥í•œë‹¤. 
 std::string	time_now_to_str2()
 {
 	SYSTEMTIME utc_system_time;
@@ -399,11 +399,11 @@ sys_time_to_str(
 }
 
 
-/// @brief  `2017-05-23T21:23:24.821+09:00` Æ÷¸Ë ½Ã°£ ¹®ÀÚ¿­À» ¸®ÅÏÇÑ´Ù. 
-///			[localtime][time zone] Æ÷¸ËÀÌ¹Ç·Î utc_sys_time ÆÄ¶ó¹ÌÅÍ¸¦ 
-///			¹İµå½Ã localtime À¸·Î º¯È¯ÇØ¾ß ÇÑ´Ù. 
+/// @brief  `2017-05-23T21:23:24.821+09:00` í¬ë§· ì‹œê°„ ë¬¸ìì—´ì„ ë¦¬í„´í•œë‹¤. 
+///			[localtime][time zone] í¬ë§·ì´ë¯€ë¡œ utc_sys_time íŒŒë¼ë¯¸í„°ë¥¼ 
+///			ë°˜ë“œì‹œ localtime ìœ¼ë¡œ ë³€í™˜í•´ì•¼ í•œë‹¤. 
 ///
-///			https://www.w3.org/TR/NOTE-datetime Âü°í
+///			https://www.w3.org/TR/NOTE-datetime ì°¸ê³ 
 std::string
 sys_time_to_str2(
 	_In_ const PSYSTEMTIME utc_sys_time
@@ -412,15 +412,15 @@ sys_time_to_str2(
 	char buf[32];
 
 	//
-	//	local time À¸·Î º¯È¯
+	//	local time ìœ¼ë¡œ ë³€í™˜
 	// 
 	SYSTEMTIME local_sys_time;
 	SystemTimeToTzSpecificLocalTime(NULL, utc_sys_time, &local_sys_time);
 
 
 	//
-	//	Å¸ÀÓÁ¸ Á¤º¸
-	//	UTC+xxx ÀÎ °æ¿ì TimeZone.Bias °ªÀº À½¼ö¸¦ °¡Áö¹Ç·Î +/- ±âÈ£¸¦ ¼³Á¤ÇÑ´Ù.
+	//	íƒ€ì„ì¡´ ì •ë³´
+	//	UTC+xxx ì¸ ê²½ìš° TimeZone.Bias ê°’ì€ ìŒìˆ˜ë¥¼ ê°€ì§€ë¯€ë¡œ +/- ê¸°í˜¸ë¥¼ ì„¤ì •í•œë‹¤.
 	TIME_ZONE_INFORMATION lpTimeZone = { 0 };
 	GetTimeZoneInformation(&lpTimeZone);
 
@@ -474,9 +474,9 @@ bool is_file_existsW(_In_ const wchar_t* file_path)
 	WIN32_FILE_ATTRIBUTE_DATA info = { 0 };
 
 	//
-	//	CreateFile()ÀÌ ¾Æ´Ñ GetFileAttributesEx()¸¦ ÀÌ¿ëÇÏ¸é ÆÄÀÏÀÌ 
-	//	´Ù¸¥ process¿¡ ÀÇÇØ lockµÇ¾î ÀÖ¾îµµ
-	//	ÆÄÀÏ Á¸Àç¿©ºÎ¸¦ Á¤È®È÷ Ã¼Å©ÇÒ ¼ö ÀÖ´Ù.
+	//	CreateFile()ì´ ì•„ë‹Œ GetFileAttributesEx()ë¥¼ ì´ìš©í•˜ë©´ íŒŒì¼ì´ 
+	//	ë‹¤ë¥¸ processì— ì˜í•´ lockë˜ì–´ ìˆì–´ë„
+	//	íŒŒì¼ ì¡´ì¬ì—¬ë¶€ë¥¼ ì •í™•íˆ ì²´í¬í•  ìˆ˜ ìˆë‹¤.
 	//
 	if (FALSE == GetFileAttributesExW(file_path,
 									  GetFileExInfoStandard,
@@ -495,8 +495,8 @@ bool is_file_existsA(_In_ const char* file_path)
 	return ret;
 }
 
-/// @brief  `file_path` °¡ Á¸ÀçÇÏ°í, directory ÀÌ¸é true ¸®ÅÏ
-///         `file_path` °¡ ¾ø°Å³ª, ÆÄÀÏÀÌ¸é false ¸®ÅÏ
+/// @brief  `file_path` ê°€ ì¡´ì¬í•˜ê³ , directory ì´ë©´ true ë¦¬í„´
+///         `file_path` ê°€ ì—†ê±°ë‚˜, íŒŒì¼ì´ë©´ false ë¦¬í„´
 bool is_dir(_In_ const wchar_t* file_path)
 {
 	WIN32_FILE_ATTRIBUTE_DATA info = { 0 };
@@ -504,7 +504,7 @@ bool is_dir(_In_ const wchar_t* file_path)
 									 GetFileExInfoStandard,
 									 &info))
 	{
-		// ÆÄÀÏÀÌ Á¸ÀçÇÏ°í, µğ·ºÅä¸®¶ó¸é true
+		// íŒŒì¼ì´ ì¡´ì¬í•˜ê³ , ë””ë ‰í† ë¦¬ë¼ë©´ true
 		if (info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
 			return true;
@@ -514,8 +514,8 @@ bool is_dir(_In_ const wchar_t* file_path)
 	return false;
 }
 
-/// @brief  `file_path` ÆÄÀÏÀÌ Á¸ÀçÇÏ°í, µğ·ºÅä¸®°¡ ¾Æ´Ñ ÆÄÀÏÀÌ¸é true ¸®ÅÏ
-///         `file_path` °¡ Á¸ÀçÇÏÁö ¾Ê°Å³ª µğ·ºÅä¸®ÀÎ °æ¿ì false ¸®ÅÏ
+/// @brief  `file_path` íŒŒì¼ì´ ì¡´ì¬í•˜ê³ , ë””ë ‰í† ë¦¬ê°€ ì•„ë‹Œ íŒŒì¼ì´ë©´ true ë¦¬í„´
+///         `file_path` ê°€ ì¡´ì¬í•˜ì§€ ì•Šê±°ë‚˜ ë””ë ‰í† ë¦¬ì¸ ê²½ìš° false ë¦¬í„´
 bool is_file(_In_ const wchar_t* file_path)
 {
 	WIN32_FILE_ATTRIBUTE_DATA info = { 0 };
@@ -523,7 +523,7 @@ bool is_file(_In_ const wchar_t* file_path)
 									 GetFileExInfoStandard,
 									 &info))
 	{
-		// ÆÄÀÏÀÌ Á¸ÀçÇÏ°í, µğ·ºÅä¸®°¡ ¾Æ´Ï¸é true
+		// íŒŒì¼ì´ ì¡´ì¬í•˜ê³ , ë””ë ‰í† ë¦¬ê°€ ì•„ë‹ˆë©´ true
 		if (!(info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			return true;
@@ -534,12 +534,12 @@ bool is_file(_In_ const wchar_t* file_path)
 }
 
 /**
- * @brief	file_handle ·Î file path ¸¦ ±¸ÇÏ´Â ÇÔ¼ö
+ * @brief	file_handle ë¡œ file path ë¥¼ êµ¬í•˜ëŠ” í•¨ìˆ˜
  * @param
  * @see		http://msdn.microsoft.com/en-us/library/windows/desktop/aa366789(v=vs.85).aspx
  * @see		https://msdn.microsoft.com/en-us/library/aa364962(v=vs.85).aspx
- * @remarks	NtQueryObject() ¸¦ »ç¿ëÇÏ´Â°Ô ´õ ÁÁÀ» °Í °°±âµµ ÇÔ, ±ÇÇÑ ¹®Á¦°¡ ¹ß»ı ÇÒ ¼öµµ ÀÖÀ»°Í °°À¸³ª
- * @remarks È®ÀÎÇØº»Àû ¾øÀ½
+ * @remarks	NtQueryObject() ë¥¼ ì‚¬ìš©í•˜ëŠ”ê²Œ ë” ì¢‹ì„ ê²ƒ ê°™ê¸°ë„ í•¨, ê¶Œí•œ ë¬¸ì œê°€ ë°œìƒ í•  ìˆ˜ë„ ìˆì„ê²ƒ ê°™ìœ¼ë‚˜
+ * @remarks í™•ì¸í•´ë³¸ì  ì—†ìŒ
  * @code
  * @endcode
  * @return
@@ -725,16 +725,16 @@ nt_name_to_dos_name(
 
 	bool ret = false;
 
-	// ½Ã½ºÅÛ¿¡ ¸ÅÇÎµÇ¾îÀÖ´Â µå¶óÀÌºê ¸ñ·ÏÀ» ±¸ÇÑ´Ù. 
+	// ì‹œìŠ¤í…œì— ë§¤í•‘ë˜ì–´ìˆëŠ” ë“œë¼ì´ë¸Œ ëª©ë¡ì„ êµ¬í•œë‹¤. 
 	// 
 	// 0               4               8               12
 	// +---+---+---+---+---+---+---+---+---+---+---+---+
 	// | A | : | \ |NUL| C | : | \ |NUL| D | : | \ |NUL|
 	//  "A:\"           "C:\"           "D:\"
 	// 
-	// ¸ÅÇÎµÈ µå¶óÀÌºê¸¦ ³ªÅ¸³»´Â ¹®ÀÚ¿­ ¹öÆÛ´Â 
-	// 26 (¾ËÆÄºª) * 4 (µå¶óÀÌºê ¸í) = 104 ¹ÙÀÌÆ®¸é ÃæºĞÇÔ
-	// À¯´ÏÄÚµåÀÎ °æ¿ì 208¹ÙÀÌÆ® 	
+	// ë§¤í•‘ëœ ë“œë¼ì´ë¸Œë¥¼ ë‚˜íƒ€ë‚´ëŠ” ë¬¸ìì—´ ë²„í¼ëŠ” 
+	// 26 (ì•ŒíŒŒë²³) * 4 (ë“œë¼ì´ë¸Œ ëª…) = 104 ë°”ì´íŠ¸ë©´ ì¶©ë¶„í•¨
+	// ìœ ë‹ˆì½”ë“œì¸ ê²½ìš° 208ë°”ì´íŠ¸ 	
 	wchar_t drive_string[128 + 1] = { 0 };
 	DWORD length = GetLogicalDriveStringsW(128, drive_string);
 	if (0 == length)
@@ -746,12 +746,12 @@ nt_name_to_dos_name(
 	}
 
 	std::wstring nt_namel(nt_name);
-	to_lower_string(nt_namel);			// ¼Ò¹®ÀÚ·Î ¸ğµÎ º¯È¯
+	to_lower_string(nt_namel);			// ì†Œë¬¸ìë¡œ ëª¨ë‘ ë³€í™˜
 
 	for (DWORD i = 0; i < length / 4; ++i)
 	{
-		// C:  --> \Device\HarddiskVolume1 ¸ÅÇÎ Á¤º¸¸¦ Á¶È¸ 
-		// QueryDosDeviceW() È£Ãâ ½Ã drive name ¿¡ ¿ª½½·¡½Ã '\' ¾ø¾î¾ß ÇÔ		
+		// C:  --> \Device\HarddiskVolume1 ë§¤í•‘ ì •ë³´ë¥¼ ì¡°íšŒ 
+		// QueryDosDeviceW() í˜¸ì¶œ ì‹œ drive name ì— ì—­ìŠ¬ë˜ì‹œ '\' ì—†ì–´ì•¼ í•¨		
 		wchar_t* dos_device_name = &(drive_string[i * 4]);
 		dos_device_name[2] = 0x0000;
 
@@ -766,7 +766,7 @@ nt_name_to_dos_name(
 		}
 		to_lower_string(nt_device);
 
-		// nt_name ÀÇ device_name ºÎºĞÀÌ ÀÏÄ¡ÇÏ´ÂÁö ºñ±³
+		// nt_name ì˜ device_name ë¶€ë¶„ì´ ì¼ì¹˜í•˜ëŠ”ì§€ ë¹„êµ
 		// 
 		// nt_device= \\device\\harddiskvolume1
 		// nt_namel = \\device\\harddiskvolume1\\windows\\system32\\drivers
@@ -867,29 +867,29 @@ bool query_dos_device(_In_ const wchar_t* dos_device, _Out_ std::wstring& nt_dev
 	return ret;
 }
 
-/// @brief  ¸¶¿îÆ® µÈ disk ÀÇ number ¸ñ·ÏÀ» ±¸ÇÑ´Ù. 
+/// @brief  ë§ˆìš´íŠ¸ ëœ disk ì˜ number ëª©ë¡ì„ êµ¬í•œë‹¤. 
 /// 
-///         È¹µæÇÑ disk number ´Â Diskdevice ¸¦ Á÷Á¢ ¿­¾î¼­ NTFS ¸¦ ÅëÇÏÁö ¾Ê°í
-///         I/O ¸¦ ¼öÇàÇÏ´Âµ¥ »ç¿ëÇÒ ¼ö ÀÖ´Ù. 
-///             - CreateFile( L"\\\\.\\\Physicaldisk[disk number]" ) ÇüÅÂ·Î »ç¿ëÇÒ ¼ö ÀÖÀ½
-///             - `Win32 Device Namespaces` ÀÌ±â¶§¹®¿¡ file system À» °ÅÄ¡Áö ¾Ê°í, io ¸¦ ÇÒ ¼ö ÀÖÀ½
+///         íšë“í•œ disk number ëŠ” Diskdevice ë¥¼ ì§ì ‘ ì—´ì–´ì„œ NTFS ë¥¼ í†µí•˜ì§€ ì•Šê³ 
+///         I/O ë¥¼ ìˆ˜í–‰í•˜ëŠ”ë° ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤. 
+///             - CreateFile( L"\\\\.\\\Physicaldisk[disk number]" ) í˜•íƒœë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆìŒ
+///             - `Win32 Device Namespaces` ì´ê¸°ë•Œë¬¸ì— file system ì„ ê±°ì¹˜ì§€ ì•Šê³ , io ë¥¼ í•  ìˆ˜ ìˆìŒ
 ///
-///         ÇÏÁö¸¸ I/O ¿ëµµ·Î »ç¿ëÇÏ´Â °æ¿ì 
-///             - `\\physicaldisk[disk number]` ÇüÅÂ°¡ ¾Æ´Ï¶ó 
-///             - `\\.\c:` ÇüÅÂ·Îµµ ¿ÀÇÂÇÒ ¼ö ÀÖ±â¶§¹®¿¡ ¾î·Æ°Ô disk number ¸¦ ±¸ÇÒ ÇÊ¿ä°¡ ¾ø´Ù. 
+///         í•˜ì§€ë§Œ I/O ìš©ë„ë¡œ ì‚¬ìš©í•˜ëŠ” ê²½ìš° 
+///             - `\\physicaldisk[disk number]` í˜•íƒœê°€ ì•„ë‹ˆë¼ 
+///             - `\\.\c:` í˜•íƒœë¡œë„ ì˜¤í”ˆí•  ìˆ˜ ìˆê¸°ë•Œë¬¸ì— ì–´ë µê²Œ disk number ë¥¼ êµ¬í•  í•„ìš”ê°€ ì—†ë‹¤. 
 ///         
 bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
 {
-	// ½Ã½ºÅÛ¿¡ ¸ÅÇÎµÇ¾îÀÖ´Â µå¶óÀÌºê ¸ñ·ÏÀ» ±¸ÇÑ´Ù. 
+	// ì‹œìŠ¤í…œì— ë§¤í•‘ë˜ì–´ìˆëŠ” ë“œë¼ì´ë¸Œ ëª©ë¡ì„ êµ¬í•œë‹¤. 
 	// 
 	// 0               4               8               12
 	// +---+---+---+---+---+---+---+---+---+---+---+---+
 	// | A | : | \ |NUL| C | : | \ |NUL| D | : | \ |NUL|
 	//  "A:\"           "C:\"           "D:\"
 	// 
-	// ¸ÅÇÎµÈ µå¶óÀÌºê¸¦ ³ªÅ¸³»´Â ¹®ÀÚ¿­ ¹öÆÛ´Â 
-	// 26 (¾ËÆÄºª) * 4 (µå¶óÀÌºê ¸í) = 104 ¹ÙÀÌÆ®¸é ÃæºĞÇÔ
-	// À¯´ÏÄÚµåÀÎ °æ¿ì 208¹ÙÀÌÆ® 	
+	// ë§¤í•‘ëœ ë“œë¼ì´ë¸Œë¥¼ ë‚˜íƒ€ë‚´ëŠ” ë¬¸ìì—´ ë²„í¼ëŠ” 
+	// 26 (ì•ŒíŒŒë²³) * 4 (ë“œë¼ì´ë¸Œ ëª…) = 104 ë°”ì´íŠ¸ë©´ ì¶©ë¶„í•¨
+	// ìœ ë‹ˆì½”ë“œì¸ ê²½ìš° 208ë°”ì´íŠ¸ 	
 	wchar_t drive_string[128 + 1] = { 0 };
 	DWORD length = GetLogicalDriveStringsW(128, drive_string);
 	if (0 == length)
@@ -900,8 +900,8 @@ bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
 			return false;
 	}
 
-	// ÇÏ³ªÀÇ µğ½ºÅ©¿¡ ¿©·¯°³ÀÇ ÆÄÆ¼¼Ç(º¼·ı)ÀÌ ±¸¼ºµÇ¾î ÀÖÀ» ¼ö ÀÖ±â¶§¹®¿¡
-	// ÀÌ¹Ì ±¸ÇÑ disk_number ÀÎÁö È®ÀÎÇÑ´Ù.
+	// í•˜ë‚˜ì˜ ë””ìŠ¤í¬ì— ì—¬ëŸ¬ê°œì˜ íŒŒí‹°ì…˜(ë³¼ë¥¨)ì´ êµ¬ì„±ë˜ì–´ ìˆì„ ìˆ˜ ìˆê¸°ë•Œë¬¸ì—
+	// ì´ë¯¸ êµ¬í•œ disk_number ì¸ì§€ í™•ì¸í•œë‹¤.
 	std::set<uint32_t> disk_numberz;
 
 	for (DWORD i = 0; i < length / 4; ++i)
@@ -909,7 +909,7 @@ bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
 		wchar_t* dos_device_name = &(drive_string[i * 4]);
 
 		//
-		//	A: ´Â °Ç³Ê¶Ú´Ù.
+		//	A: ëŠ” ê±´ë„ˆë›´ë‹¤.
 		// 
 		if (dos_device_name[0] == 'A' || dos_device_name[0] == 'a') continue;
 
@@ -926,8 +926,8 @@ bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
 			NULL);
 		if (INVALID_HANDLE_VALUE == hFile)
 		{
-			// cdrom ÀÌ ºñ¾îÀÖ°Å³ª, network fs ÀÌ°Å³ª,...
-			// ¿¡·¯³ª´Â »óÈ²µéÀÌ ÀÖÀ» ¼ö ÀÖÀ½
+			// cdrom ì´ ë¹„ì–´ìˆê±°ë‚˜, network fs ì´ê±°ë‚˜,...
+			// ì—ëŸ¬ë‚˜ëŠ” ìƒí™©ë“¤ì´ ìˆì„ ìˆ˜ ìˆìŒ
 			log_warn
 				"CreateFile( %ws ) failed. gle = %u",
 				path.str().c_str(),
@@ -939,16 +939,16 @@ bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
 		STORAGE_DEVICE_NUMBER sdn = { 0 };
 		DWORD bytes_returned = 0;
 
-		// disk number ¸¦ ¾Ë¾Æ³»±â À§ÇØ¼­ È£ÃâÇÏ´Â°ÍÀÌ¹Ç·Î
-		// hFile µğ¹ÙÀÌ½º¿¡ ´ëÇÑ ¸ğµç volume extents ¸ñ·ÏÀ» °¡Á®¿Ã ÇÊ¿ä¾øÀÌ
-		// ÇÏ³ª¸¸ °¡Á®¿À¸é µÈ´Ù. 
+		// disk number ë¥¼ ì•Œì•„ë‚´ê¸° ìœ„í•´ì„œ í˜¸ì¶œí•˜ëŠ”ê²ƒì´ë¯€ë¡œ
+		// hFile ë””ë°”ì´ìŠ¤ì— ëŒ€í•œ ëª¨ë“  volume extents ëª©ë¡ì„ ê°€ì ¸ì˜¬ í•„ìš”ì—†ì´
+		// í•˜ë‚˜ë§Œ ê°€ì ¸ì˜¤ë©´ ëœë‹¤. 
 		// 
-		// :Âü°í¿ë:
+		// :ì°¸ê³ ìš©:
 		// use IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS
-		//      device number, extent Á¤º¸¸¦ ¾ò¾î¿Ã¶§
+		//      device number, extent ì •ë³´ë¥¼ ì–»ì–´ì˜¬ë•Œ
 		// 
 		// use IOCTL_DISK_GET_DRIVE_LAYOUT_EX  
-		//      µğ¹ÙÀÌ½ºÀÇ ÆÄÆ¼¼Ç Á¤º¸¸¦ ¾ò¾î¿Ã¶§ 
+		//      ë””ë°”ì´ìŠ¤ì˜ íŒŒí‹°ì…˜ ì •ë³´ë¥¼ ì–»ì–´ì˜¬ë•Œ 
 
 
 		bool ioctrl_succeeded = true;
@@ -1041,12 +1041,12 @@ const char* gpt_partition_type_to_str(_In_ GUID& partition_type)
 		return "UNKNOWN GUID";
 }
 
-/// @brief  info._disk_number µğ½ºÅ©³» VBR (Volume Boot Record) ÀÇ VBR Á¤º¸¸¦ ±¸ÇÑ´Ù.
+/// @brief  info._disk_number ë””ìŠ¤í¬ë‚´ VBR (Volume Boot Record) ì˜ VBR ì •ë³´ë¥¼ êµ¬í•œë‹¤.
 ///
-///         disk ´Â ¿©·¯°³ÀÇ º¼·ı(ÆÄÆ¼¼Ç)À¸·Î ³ª´µ°í, °¢ º¼·ıÀº °¢°¢ VBR À» °¡Áø´Ù. 
-///         MBR ÆÄÆ¼¼ÇÀÇ °æ¿ì ÁÖ ÆÄÆ¼¼Ç 4°³, GPT ´Â 128°³(¸Â³ª?)
+///         disk ëŠ” ì—¬ëŸ¬ê°œì˜ ë³¼ë¥¨(íŒŒí‹°ì…˜)ìœ¼ë¡œ ë‚˜ë‰˜ê³ , ê° ë³¼ë¥¨ì€ ê°ê° VBR ì„ ê°€ì§„ë‹¤. 
+///         MBR íŒŒí‹°ì…˜ì˜ ê²½ìš° ì£¼ íŒŒí‹°ì…˜ 4ê°œ, GPT ëŠ” 128ê°œ(ë§ë‚˜?)
 ///         
-/// @return ¼º°ø½Ã true, ½ÇÆĞ½Ã false
+/// @return ì„±ê³µì‹œ true, ì‹¤íŒ¨ì‹œ false
 bool get_disk_volume_info(_Inout_ disk_volume_info& info)
 {
 	std::wstringstream path;
@@ -1192,7 +1192,7 @@ bool get_disk_volume_info(_Inout_ disk_volume_info& info)
 }
 
 /// @brief  sample code about using IOCTL_DISK_GET_DRIVE_LAYOUT_EX
-///         disk ÀÇ ÆÄÆ¼¼Ç Á¤º¸¸¦ ´ıÇÁÇÑ´Ù. 
+///         disk ì˜ íŒŒí‹°ì…˜ ì •ë³´ë¥¼ ë¤í”„í•œë‹¤. 
 bool dump_all_disk_drive_layout()
 {
 	std::vector<uint32_t> disk_numbers;
@@ -1318,7 +1318,7 @@ bool dump_all_disk_drive_layout()
 							LARGE_INTEGER li_new_pos = { 0 };
 							LARGE_INTEGER li_distance = { 0 };
 
-							// boot ÆÄÆ¼¼ÇÀÌ ¼³Ä¡µÈ µğ½ºÅ©ÀÇ Ã¹ ¼½ÅÍ´Â MBR
+							// boot íŒŒí‹°ì…˜ì´ ì„¤ì¹˜ëœ ë””ìŠ¤í¬ì˜ ì²« ì„¹í„°ëŠ” MBR
 							log_info "[*] dump MBR" log_end
 								li_distance.QuadPart = 0;
 							if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
@@ -1343,7 +1343,7 @@ bool dump_all_disk_drive_layout()
 								}
 							}
 
-							// boot ÆÄÆ¼¼ÇÀÇ Ã¹ ¼½ÅÍ´Â VBR
+							// boot íŒŒí‹°ì…˜ì˜ ì²« ì„¹í„°ëŠ” VBR
 							li_distance = pi->StartingOffset;
 							if (!SetFilePointerEx(disk, li_distance, &li_new_pos, FILE_BEGIN))
 							{
@@ -1431,8 +1431,8 @@ bool dump_all_disk_drive_layout()
 	return true;
 }
 
-/// @brief  c µå¶óÀÌºê·Î ¸ÅÇÎµÈ ÆÄÆ¼¼Ç(º¼·ı)ÀÇ boot_area Á¤º¸¸¦ Ãâ·ÂÇÑ´Ù. 
-///         ´ç¿¬È÷ CreateFile ·Î openÇÏ´Â ÇÚµéÀº º¼·ıÀÇ ÇÚµéÀÌ¾î¾ß ÇÑ´Ù. 
+/// @brief  c ë“œë¼ì´ë¸Œë¡œ ë§¤í•‘ëœ íŒŒí‹°ì…˜(ë³¼ë¥¨)ì˜ boot_area ì •ë³´ë¥¼ ì¶œë ¥í•œë‹¤. 
+///         ë‹¹ì—°íˆ CreateFile ë¡œ opení•˜ëŠ” í•¸ë“¤ì€ ë³¼ë¥¨ì˜ í•¸ë“¤ì´ì–´ì•¼ í•œë‹¤. 
 bool dump_boot_area()
 {
 	DWORD bytes_returned = 0;
@@ -1450,7 +1450,7 @@ bool dump_boot_area()
 	do
 	{
 		std::wstringstream path;
-		path << L"\\\\.\\h:";           // º¼·ıÀ» ¿ÀÇÂÇØ¾ß ÇÑ´Ù. \\.\PhysicalDrive0 °°Àº°Å ¿ÀÇÂÇÏ¸é ¾ÈµÊ
+		path << L"\\\\.\\h:";           // ë³¼ë¥¨ì„ ì˜¤í”ˆí•´ì•¼ í•œë‹¤. \\.\PhysicalDrive0 ê°™ì€ê±° ì˜¤í”ˆí•˜ë©´ ì•ˆë¨
 		disk = CreateFileW(
 			path.str().c_str(),
 			GENERIC_READ,
@@ -1533,7 +1533,7 @@ bool dump_boot_area()
 }
 
 /**
-* @brief	ÆÄÀÏÀ» ¾²±â¸ğµå·Î ¿ÀÇÂÇÑ´Ù.
+* @brief	íŒŒì¼ì„ ì“°ê¸°ëª¨ë“œë¡œ ì˜¤í”ˆí•œë‹¤.
 */
 HANDLE open_file_to_write(_In_ const wchar_t* file_path)
 {
@@ -1563,7 +1563,7 @@ HANDLE open_file_to_write(_In_ const wchar_t* file_path)
 }
 
 /**
-* @brief	ÆÄÀÏÀ» ÀĞ±â¸ğµå·Î ¿ÀÇÂÇÑ´Ù.
+* @brief	íŒŒì¼ì„ ì½ê¸°ëª¨ë“œë¡œ ì˜¤í”ˆí•œë‹¤.
 */
 HANDLE open_file_to_read(LPCWCH file_path)
 {
@@ -1654,11 +1654,11 @@ get_file_size(
 }
 
 ///
-///	@brief	ÁöÁ¤µÈ ÆÄÀÏÀÇ ¹öÀü Á¤º¸¸¦ ¼öÁıÇÏ´Â ÇÔ¼ö
-/// @return ¼º°ø		true
-///					(ÆÄÀÏ¿¡ ¸®¼Ò½º ¼½¼ÇÀÌ ¾ø´Â°æ¿ì¿¡µµ,
-///					 file_versionÀ» ""·Î true¸¦ return ÇÑ´Ù.)
-/// @return ½ÇÆĞ		false
+///	@brief	ì§€ì •ëœ íŒŒì¼ì˜ ë²„ì „ ì •ë³´ë¥¼ ìˆ˜ì§‘í•˜ëŠ” í•¨ìˆ˜
+/// @return ì„±ê³µ		true
+///					(íŒŒì¼ì— ë¦¬ì†ŒìŠ¤ ì„¹ì…˜ì´ ì—†ëŠ”ê²½ìš°ì—ë„,
+///					 file_versionì„ ""ë¡œ trueë¥¼ return í•œë‹¤.)
+/// @return ì‹¤íŒ¨		false
 ///
 bool
 get_file_version(
@@ -1681,8 +1681,8 @@ get_file_version(
 			ERROR_RESOURCE_TYPE_NOT_FOUND == err)
 		{
 			//
-			//	ÆÄÀÏÀÇ ¸®¼Ò½º ¼½¼ÇÀÌ ¾ø´Â°æ¿ì get_file_version()´Â Ç×»ó ½ÇÆĞÇÏ°Ô µÈ´Ù.
-			//	¶§¹®¿¡, file_versionÀ» ""·Î ¼³Á¤ÇÏ°í true¸¦ return ÇÑ´Ù.
+			//	íŒŒì¼ì˜ ë¦¬ì†ŒìŠ¤ ì„¹ì…˜ì´ ì—†ëŠ”ê²½ìš° get_file_version()ëŠ” í•­ìƒ ì‹¤íŒ¨í•˜ê²Œ ëœë‹¤.
+			//	ë•Œë¬¸ì—, file_versionì„ ""ë¡œ ì„¤ì •í•˜ê³  trueë¥¼ return í•œë‹¤.
 			//
 			file_version = L"";
 			return true;
@@ -1745,11 +1745,11 @@ get_file_version(
 }
 
 ///
-///	@brief	ÁöÁ¤µÈ ÆÄÀÏÀÇ È¸»ç¸íÀ» ¼öÁıÇÏ´Â ÇÔ¼ö
-/// @return ¼º°ø		true
-///					(ÆÄÀÏ¿¡ ¸®¼Ò½º ¼½¼ÇÀÌ ¾ø´Â°æ¿ì¿¡µµ,
-///					 company_nameÀ» ""·Î true¸¦ return ÇÑ´Ù.)
-/// @return ½ÇÆĞ		false
+///	@brief	ì§€ì •ëœ íŒŒì¼ì˜ íšŒì‚¬ëª…ì„ ìˆ˜ì§‘í•˜ëŠ” í•¨ìˆ˜
+/// @return ì„±ê³µ		true
+///					(íŒŒì¼ì— ë¦¬ì†ŒìŠ¤ ì„¹ì…˜ì´ ì—†ëŠ”ê²½ìš°ì—ë„,
+///					 company_nameì„ ""ë¡œ trueë¥¼ return í•œë‹¤.)
+/// @return ì‹¤íŒ¨		false
 ///
 bool
 get_file_company_name(
@@ -1772,8 +1772,8 @@ get_file_company_name(
 			ERROR_RESOURCE_TYPE_NOT_FOUND == err)
 		{
 			//
-			//	ÆÄÀÏÀÇ ¸®¼Ò½º ¼½¼ÇÀÌ ¾ø´Â°æ¿ì get_file_version()´Â Ç×»ó ½ÇÆĞÇÏ°Ô µÈ´Ù.
-			//	¶§¹®¿¡, file_versionÀ» ""·Î ¼³Á¤ÇÏ°í true¸¦ return ÇÑ´Ù.
+			//	íŒŒì¼ì˜ ë¦¬ì†ŒìŠ¤ ì„¹ì…˜ì´ ì—†ëŠ”ê²½ìš° get_file_version()ëŠ” í•­ìƒ ì‹¤íŒ¨í•˜ê²Œ ëœë‹¤.
+			//	ë•Œë¬¸ì—, file_versionì„ ""ë¡œ ì„¤ì •í•˜ê³  trueë¥¼ return í•œë‹¤.
 			//
 			company_name = L"";
 			return true;
@@ -1859,7 +1859,7 @@ get_file_versioninfo_lang_code_page(
 	else
 	{
 		//
-		// code page¸¦ resource Á¤º¸¿¡¼­ ÀĞ¾î ¿Ã ¼ö ¾ø´Â °æ¿ì ¿µ¾î ÄÚµå ÆäÀÌÁö¸¦ ±âº»À¸·Î »ç¿ëÇÑ´Ù.
+		// code pageë¥¼ resource ì •ë³´ì—ì„œ ì½ì–´ ì˜¬ ìˆ˜ ì—†ëŠ” ê²½ìš° ì˜ì–´ ì½”ë“œ í˜ì´ì§€ë¥¼ ê¸°ë³¸ìœ¼ë¡œ ì‚¬ìš©í•œë‹¤.
 		//
 		return (MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US) << 16) + 1252;
 	}
@@ -1867,7 +1867,7 @@ get_file_versioninfo_lang_code_page(
 
 
 /**
-* @brief	ÆÄÀÏ¿¡ Æ÷¸Ë¹®ÀÚ¿­À» ¾´´Ù.
+* @brief	íŒŒì¼ì— í¬ë§·ë¬¸ìì—´ì„ ì“´ë‹¤.
 */
 BOOL write_to_filew(LPCWCH file_path, LPCWCH format, ...)
 {
@@ -1893,7 +1893,7 @@ BOOL write_to_filew(LPCWCH file_path, LPCWCH format, ...)
 			return FALSE;
 	}
 
-	// ÀÚ¿ø °ü¸® °´Ã¼ »ı¼º
+	// ìì› ê´€ë¦¬ ê°ì²´ ìƒì„±
 	//
 	SmrtHandle file_handle(hFile);
 	DWORD pos = SetFilePointer(hFile, 0, NULL, FILE_END);
@@ -1933,7 +1933,7 @@ BOOL write_to_filew(LPCWCH file_path, LPCWCH format, ...)
 }
 
 /**
-* @brief	ÆÄÀÏ¿¡ Æ÷¸Ë ¹®ÀÚ¿­À» ¾´´Ù
+* @brief	íŒŒì¼ì— í¬ë§· ë¬¸ìì—´ì„ ì“´ë‹¤
 */
 BOOL write_to_filew(HANDLE hFile, LPCWCH format, ...)
 {
@@ -1975,7 +1975,7 @@ BOOL write_to_filew(HANDLE hFile, LPCWCH format, ...)
 }
 
 /**
-* @brief	ÆÄÀÏ¿¡ Æ÷¸Ë ¹®ÀÚ¿­À» ¾´´Ù
+* @brief	íŒŒì¼ì— í¬ë§· ë¬¸ìì—´ì„ ì“´ë‹¤
 */
 BOOL write_to_filea(HANDLE hFile, LPCCH format, ...)
 {
@@ -2052,7 +2052,7 @@ bool get_file_position(_In_ HANDLE file_handle, _Out_ int64_t& position)
 	return true;
 }
 
-/// @brief	ÆÄÀÏÆ÷ÀÎÅÍ¸¦ distance ·Î ÀÌµ¿ÇÑ´Ù.
+/// @brief	íŒŒì¼í¬ì¸í„°ë¥¼ distance ë¡œ ì´ë™í•œë‹¤.
 bool
 set_file_position(
 	_In_ HANDLE file_handle,
@@ -2087,9 +2087,9 @@ set_file_position(
 	return true;
 }
 
-/// @brief	ÆÄÀÏÀÇ »çÀÌÁî¸¦ º¯°æÇÑ´Ù.
-///			- SetFilePointer() -> SetEndOfFile() ¹æ½Ä
-///			- SetFileInformationByHandle(..., FileAllocationInfo, ...)  ¹æ½Ä
+/// @brief	íŒŒì¼ì˜ ì‚¬ì´ì¦ˆë¥¼ ë³€ê²½í•œë‹¤.
+///			- SetFilePointer() -> SetEndOfFile() ë°©ì‹
+///			- SetFileInformationByHandle(..., FileAllocationInfo, ...)  ë°©ì‹
 bool set_file_size(_In_ HANDLE file_handle, _In_ int64_t new_size)
 {
 #if 0
@@ -2123,7 +2123,7 @@ bool set_file_size(_In_ HANDLE file_handle, _In_ int64_t new_size)
 	return true;
 }
 
-/// @brief	file_path ¸¦ ¿­¾î¼­ line ´ÜÀ§·Î Äİ¹éÀ» È£ÃâÇÑ´Ù.
+/// @brief	file_path ë¥¼ ì—´ì–´ì„œ line ë‹¨ìœ„ë¡œ ì½œë°±ì„ í˜¸ì¶œí•œë‹¤.
 bool read_line(_In_ const wchar_t* file_path, cb_rdline cb)
 {
 	_ASSERTE(nullptr != file_path);
@@ -2156,8 +2156,8 @@ bool read_line(_In_ const wchar_t* file_path, cb_rdline cb)
 
 
 /**
-* @brief	¹®ÀÚ¿­À» UTF8 Çü½Ä ÆÄÀÏ·Î ÀúÀåÇÑ´Ù.
-*           http://digitz.tistory.com/303   ANSI¿Í UTF-8°úÀÇ »óÈ£ º¯È¯
+* @brief	ë¬¸ìì—´ì„ UTF8 í˜•ì‹ íŒŒì¼ë¡œ ì €ì¥í•œë‹¤.
+*           http://digitz.tistory.com/303   ANSIì™€ UTF-8ê³¼ì˜ ìƒí˜¸ ë³€í™˜
 *           http://en.wikipedia.org/wiki/Byte_Order_Mark
 *           http://golbenge.wordpress.com/2009/12/24/stl%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-unicode-%ED%85%8D%EC%8A%A4%ED%8A%B8-%ED%8C%8C%EC%9D%BC-%EC%B6%9C%EB%A0%A5/
 */
@@ -2185,7 +2185,7 @@ SaveToFileAsUTF8A(
 
 
 /**
-* @brief	¹®ÀÚ¿­À» UTF8 Çü½Ä ÆÄÀÏ·Î ÀúÀåÇÑ´Ù.
+* @brief	ë¬¸ìì—´ì„ UTF8 í˜•ì‹ íŒŒì¼ë¡œ ì €ì¥í•œë‹¤.
 */
 BOOL
 SaveToFileAsUTF8W(
@@ -2253,7 +2253,7 @@ SaveToFileAsUTF8W(
 }
 
 /**
-* @brief	ÆÄÀÏÀ» ¸Ş¸ğ¸®¿¡ ·ÎµåÇÑ´Ù. ¹İÈ¯µÇ´Â ¸Ş¸ğ¸®´Â µ¿ÀûÇÒ´çµÈ ¸Ş¸ğ¸®ÀÌ¹Ç·Î caller °¡ ÇØÁ¦ÇØ¾ß ÇÔ
+* @brief	íŒŒì¼ì„ ë©”ëª¨ë¦¬ì— ë¡œë“œí•œë‹¤. ë°˜í™˜ë˜ëŠ” ë©”ëª¨ë¦¬ëŠ” ë™ì í• ë‹¹ëœ ë©”ëª¨ë¦¬ì´ë¯€ë¡œ caller ê°€ í•´ì œí•´ì•¼ í•¨
 */
 bool
 LoadFileToMemory(
@@ -2340,7 +2340,7 @@ LoadFileToMemory(
 	}
 	SmrtView sfView(ImageView);
 
-	MemorySize = fileSize.LowPart;  // max config fileSize = 4 MB ÀÌ¹Ç·Î ¾ÈÀüÇÔ
+	MemorySize = fileSize.LowPart;  // max config fileSize = 4 MB ì´ë¯€ë¡œ ì•ˆì „í•¨
 	Memory = (PBYTE)malloc(MemorySize);
 	if (nullptr == Memory) { return false; }
 
@@ -2350,7 +2350,7 @@ LoadFileToMemory(
 }
 
 /**
- * @brief	¹ÙÀÌ³Ê¸® ÆÄÀÏ·Î µ¥ÀÌÅÍ¸¦ ÀúÀåÇÑ´Ù.
+ * @brief	ë°”ì´ë„ˆë¦¬ íŒŒì¼ë¡œ ë°ì´í„°ë¥¼ ì €ì¥í•œë‹¤.
  */
 bool
 SaveBinaryFile(
@@ -2397,7 +2397,7 @@ SaveBinaryFile(
 			return false;
 	}
 
-	// µ¿ÀÏÇÑ ÆÄÀÏÀÌ Á¸ÀçÇÏ´Â °æ¿ì ±âÁ¸ ÆÄÀÏÀ» »èÁ¦ ÈÄ »õ·Ó°Ô »ı¼ºÇÔ
+	// ë™ì¼í•œ íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° ê¸°ì¡´ íŒŒì¼ì„ ì‚­ì œ í›„ ìƒˆë¡­ê²Œ ìƒì„±í•¨
 	// 
 	if (true == is_file_existsW(DataPath))
 	{
@@ -2436,7 +2436,7 @@ SaveBinaryFile(
 	return true;
 }
 
-/// @brief	ÆÄÀÏÀÇ ÇØ½Ã¸¦ °è»êÇÑ´Ù.
+/// @brief	íŒŒì¼ì˜ í•´ì‹œë¥¼ ê³„ì‚°í•œë‹¤.
 bool
 get_file_hash_by_filepath(
 	_In_ const wchar_t* file_path,
@@ -2483,7 +2483,7 @@ get_file_hash_by_filepath(
 }
 
 
-/// @brief	ÆÄÀÏÀÇ ÇØ½Ã¸¦ °è»êÇÑ´Ù.
+/// @brief	íŒŒì¼ì˜ í•´ì‹œë¥¼ ê³„ì‚°í•œë‹¤.
 bool
 get_file_hash_by_filehandle(
 	_In_ HANDLE file_handle,
@@ -2520,9 +2520,9 @@ get_file_hash_by_filehandle(
 		_ASSERTE(!(nullptr == ctx_md5 && nullptr == ctx_sha2));
 
 		/// NOTE by somma
-		/// ReadFile() ·Î ÀĞ¾î¼­ ÇØ½Ã¸¦ ±¸ÇÏ´ø ÄÚµå¸¦ FileIoHelper ¸¦ »ç¿ëÇØ¼­
-		/// MMIO ·Î º¯°æÇßÀ¸³ª ¼º´É»óÀÇ Å« ÀÌµæÀº ¾ø´Â°Í °°´Ù. 
-		/// ¾îÂ÷ÇÇ ½ÇÇà ÆÄÀÏ »çÀÌÁî°¡ ÀÛ¾Æ¼­ Å©°Ô ÀÌµæÀº ¾øÀ» µí ½Í´Ù.
+		/// ReadFile() ë¡œ ì½ì–´ì„œ í•´ì‹œë¥¼ êµ¬í•˜ë˜ ì½”ë“œë¥¼ FileIoHelper ë¥¼ ì‚¬ìš©í•´ì„œ
+		/// MMIO ë¡œ ë³€ê²½í–ˆìœ¼ë‚˜ ì„±ëŠ¥ìƒì˜ í° ì´ë“ì€ ì—†ëŠ”ê²ƒ ê°™ë‹¤. 
+		/// ì–´ì°¨í”¼ ì‹¤í–‰ íŒŒì¼ ì‚¬ì´ì¦ˆê°€ ì‘ì•„ì„œ í¬ê²Œ ì´ë“ì€ ì—†ì„ ë“¯ ì‹¶ë‹¤.
 		FileIoHelper fio;
 		if (true != fio.OpenForRead(file_handle))
 		{
@@ -2556,7 +2556,7 @@ get_file_hash_by_filehandle(
 		if (nullptr != ctx_sha2) { sha256_end(sha2_buf, ctx_sha2); }
 
 		//
-		//	Hash ¹ÙÀÌ³Ê¸® ¹öÆÛ¸¦ hex ¹®ÀÚ¿­·Î º¯È¯
+		//	Hash ë°”ì´ë„ˆë¦¬ ë²„í¼ë¥¼ hex ë¬¸ìì—´ë¡œ ë³€í™˜
 		//
 		std::string tmp;
 		if (nullptr != ctx_md5)
@@ -2593,21 +2593,21 @@ get_file_hash_by_filehandle(
 }
 
 
-/// @brief	DirectoryPath µğ·ºÅä¸®¸¦ »ı¼ºÇÑ´Ù. 
-///			Áß°£¿¡ ¾ø´Â µğ·ºÅä¸® °æ·Î°¡ Á¸ÀçÇÏ¸é »ı¼ºÇÑ´Ù.
+/// @brief	DirectoryPath ë””ë ‰í† ë¦¬ë¥¼ ìƒì„±í•œë‹¤. 
+///			ì¤‘ê°„ì— ì—†ëŠ” ë””ë ‰í† ë¦¬ ê²½ë¡œê°€ ì¡´ì¬í•˜ë©´ ìƒì„±í•œë‹¤.
 bool WUCreateDirectory(_In_ std::wstring& DirectoryPath)
 {
 	return WUCreateDirectory(DirectoryPath.c_str());
 }
 
-/// @brief	ÁöÁ¤µÈ µğ·ºÅä¸®(³»ºÎÀÇ Æú´õ, ÆÄÀÏµî±îÁö)¸¦ ¸ù¶¥ »èÁ¦ÇÑ´Ù. 
+/// @brief	ì§€ì •ëœ ë””ë ‰í† ë¦¬(ë‚´ë¶€ì˜ í´ë”, íŒŒì¼ë“±ê¹Œì§€)ë¥¼ ëª½ë•… ì‚­ì œí•œë‹¤. 
 bool WUDeleteDirectoryW(_In_ std::wstring& DirctoryPathToDelete)
 {
 	return WUDeleteDirectoryW(DirctoryPathToDelete.c_str());
 }
 
-/// @brief	DirectoryPath µğ·ºÅä¸®¸¦ »ı¼ºÇÑ´Ù. 
-///			Áß°£¿¡ ¾ø´Â µğ·ºÅä¸® °æ·Î°¡ Á¸ÀçÇÏ¸é »ı¼ºÇÑ´Ù.
+/// @brief	DirectoryPath ë””ë ‰í† ë¦¬ë¥¼ ìƒì„±í•œë‹¤. 
+///			ì¤‘ê°„ì— ì—†ëŠ” ë””ë ‰í† ë¦¬ ê²½ë¡œê°€ ì¡´ì¬í•˜ë©´ ìƒì„±í•œë‹¤.
 bool WUCreateDirectory(_In_ const wchar_t* DirectoryPath)
 {
 	_ASSERTE(NULL != DirectoryPath);
@@ -2628,7 +2628,7 @@ bool WUCreateDirectory(_In_ const wchar_t* DirectoryPath)
 	return true;
 }
 
-/// @brief	ÁöÁ¤µÈ µğ·ºÅä¸®(³»ºÎÀÇ Æú´õ, ÆÄÀÏµî±îÁö)¸¦ ¸ù¶¥ »èÁ¦ÇÑ´Ù. 
+/// @brief	ì§€ì •ëœ ë””ë ‰í† ë¦¬(ë‚´ë¶€ì˜ í´ë”, íŒŒì¼ë“±ê¹Œì§€)ë¥¼ ëª½ë•… ì‚­ì œí•œë‹¤. 
 bool WUDeleteDirectoryW(_In_ const wchar_t* DirctoryPathToDelete)
 {
 	_ASSERTE(NULL != DirctoryPathToDelete);
@@ -2638,7 +2638,7 @@ bool WUDeleteDirectoryW(_In_ const wchar_t* DirctoryPathToDelete)
 
 	SHFILEOPSTRUCTW FileOp = { 0 };
 
-	// FileOp.pFrom, FileOp.pTo ´Â NULL char °¡ µÎ°³ÀÌ¾î¾ß ÇÔ (msdn Âü°í)
+	// FileOp.pFrom, FileOp.pTo ëŠ” NULL char ê°€ ë‘ê°œì´ì–´ì•¼ í•¨ (msdn ì°¸ê³ )
 	// 
 	size_t len = (wcslen(DirctoryPathToDelete) + 2) * sizeof(WCHAR);
 	wchar_ptr tmp((wchar_t*)malloc(len), [](wchar_t* p) {
@@ -2658,9 +2658,9 @@ bool WUDeleteDirectoryW(_In_ const wchar_t* DirctoryPathToDelete)
 	}
 
 	FileOp.hwnd = NULL;
-	FileOp.wFunc = FO_DELETE;       // »èÁ¦ ¼Ó¼º ¼³Á¤
+	FileOp.wFunc = FO_DELETE;       // ì‚­ì œ ì†ì„± ì„¤ì •
 	FileOp.pTo = NULL;
-	FileOp.fFlags = FOF_SILENT | FOF_NOCONFIRMATION;//FOF_NOCONFIRMATION | FOF_NOERRORUI; // È®ÀÎ¸Ş½ÃÁö°¡ ¾È¶ßµµ·Ï ¼³Á¤
+	FileOp.fFlags = FOF_SILENT | FOF_NOCONFIRMATION;//FOF_NOCONFIRMATION | FOF_NOERRORUI; // í™•ì¸ë©”ì‹œì§€ê°€ ì•ˆëœ¨ë„ë¡ ì„¤ì •
 	FileOp.fAnyOperationsAborted = false;
 	FileOp.hNameMappings = NULL;
 	FileOp.lpszProgressTitle = tmp.get();
@@ -2679,16 +2679,16 @@ bool WUDeleteDirectoryW(_In_ const wchar_t* DirctoryPathToDelete)
 	return true;
 }
 
-/// @brief	dir_create µğ·ºÅä¸®¸¦ »ı¼ºÇÑ´Ù.
+/// @brief	dir_create ë””ë ‰í† ë¦¬ë¥¼ ìƒì„±í•œë‹¤.
 ///
-///			ÀÌ¹Ì µğ·ºÅä¸®°¡ Á¸ÀçÇÏ°í remove_if_exists °¡ true ÀÎ°æ¿ì 
-///			µğ·ºÅä¸® ¹× µğ·ºÅä¸®³» ÆÄÀÏµéÀ» ¸ğµÎ Á¦°ÅÇÏ°í, ´Ù½Ã »ı¼ºÇÑ´Ù.
+///			ì´ë¯¸ ë””ë ‰í† ë¦¬ê°€ ì¡´ì¬í•˜ê³  remove_if_exists ê°€ true ì¸ê²½ìš° 
+///			ë””ë ‰í† ë¦¬ ë° ë””ë ‰í† ë¦¬ë‚´ íŒŒì¼ë“¤ì„ ëª¨ë‘ ì œê±°í•˜ê³ , ë‹¤ì‹œ ìƒì„±í•œë‹¤.
 ///
-///			¾î¶² ÀÌÀ¯·Î dir_create µğ·ºÅä¸® »ı¼º¿¡ ½ÇÆĞÇÏ´Â °æ¿ì 
-///			(±âÁ¸µğ·ºÅä¸® »èÁ¦ ½ÇÆĞ Æ÷ÇÔ), dir_create_[N] ÇüÅÂÀÇ Æú´õ 
-///			»ı¼ºÀ» retry_count ¸¸Å­ ½ÃµµÇÑ´Ù.
+///			ì–´ë–¤ ì´ìœ ë¡œ dir_create ë””ë ‰í† ë¦¬ ìƒì„±ì— ì‹¤íŒ¨í•˜ëŠ” ê²½ìš° 
+///			(ê¸°ì¡´ë””ë ‰í† ë¦¬ ì‚­ì œ ì‹¤íŒ¨ í¬í•¨), dir_create_[N] í˜•íƒœì˜ í´ë” 
+///			ìƒì„±ì„ retry_count ë§Œí¼ ì‹œë„í•œë‹¤.
 ///
-///			Æú´õ »ı¼º ¼º°ø½Ã true ¸¦ ¸®ÅÏÇÏ°í, dir_created º¯¼ö¸¦ ¼³Á¤ÇÑ´Ù.
+///			í´ë” ìƒì„± ì„±ê³µì‹œ true ë¥¼ ë¦¬í„´í•˜ê³ , dir_created ë³€ìˆ˜ë¥¼ ì„¤ì •í•œë‹¤.
 bool create_directory_ex(
 	_In_ const wchar_t* const dir_create,
 	_In_ const bool remove_if_exists,
@@ -2804,8 +2804,8 @@ GetImageFullPathFromPredefinedPathW(
 	}
 	else
 	{
-		// ´Ù½Ã È£ÃâµÇ´Â °æ¿ì SearchPathBuf ¹öÆÛ¸¦ ´Ù½Ã ¸¸µå´Â ÀÏÀÌ ¾øµµ·Ï
-		// static À¸·Î ¸¸µë
+		// ë‹¤ì‹œ í˜¸ì¶œë˜ëŠ” ê²½ìš° SearchPathBuf ë²„í¼ë¥¼ ë‹¤ì‹œ ë§Œë“œëŠ” ì¼ì´ ì—†ë„ë¡
+		// static ìœ¼ë¡œ ë§Œë“¬
 		//
 		static WCHAR SearchPathBuf[MAX_PATH] = { 0, };
 		if (0x00 == SearchPathBuf[0])
@@ -2846,8 +2846,8 @@ GetImageFullPathFromPredefinedPathW(
 	}
 }
 
-/// @brief	Process handle ·Î full path ¸¦ ±¸ÇÑ´Ù. 
-///	@return	nt device name format ÀÇ ÇÁ·Î¼¼½ºÀÇ ÀÌ¹ÌÁö °æ·Î
+/// @brief	Process handle ë¡œ full path ë¥¼ êµ¬í•œë‹¤. 
+///	@return	nt device name format ì˜ í”„ë¡œì„¸ìŠ¤ì˜ ì´ë¯¸ì§€ ê²½ë¡œ
 ///			( e.g. \Device\Harddisk0\Partition1\Windows\System32\Ctype.nls )
 bool 
 get_process_image_full_path(
@@ -2860,7 +2860,7 @@ get_process_image_full_path(
 	wchar_t*    buf = (wchar_t*)malloc(buf_len);
 	if (NULL == buf) return false;
 
-	for (int i = 0; i < 3; ++i) // ¹öÆÛ ´Ã¸®´Â°Ç ¼¼¹ø¸¸...
+	for (int i = 0; i < 3; ++i) // ë²„í¼ ëŠ˜ë¦¬ëŠ”ê±´ ì„¸ë²ˆë§Œ...
 	{
 		DWORD dwret = GetProcessImageFileNameW(process_handle, 
 											   buf, 
@@ -2884,7 +2884,7 @@ get_process_image_full_path(
 		}
 		else
 		{
-			// ¼º°ø
+			// ì„±ê³µ
 			full_path = buf;
 			ret = true;
 			break;
@@ -2896,10 +2896,10 @@ get_process_image_full_path(
 }
 
 
-/// @brief	pid ·Î ÇÁ·Î¼¼½ºÀÇ ÀüÃ¼ ÀÌ¸§À» ±¸ÇÑ´Ù. (vista ÀÌ»ó)
+/// @brief	pid ë¡œ í”„ë¡œì„¸ìŠ¤ì˜ ì „ì²´ ì´ë¦„ì„ êµ¬í•œë‹¤. (vista ì´ìƒ)
 ///	@param	win32_format
-///				true ÀÎ °æ¿ì `c:\dbg\sound.dll` ÇüÅÂ (Win32 format) string ¸®ÅÏ
-///				false ÀÎ °æ¿ì `\Device\HarddiskVolume1\dbg\sound.dll` Æ÷¸Ë ¸®ÅÏ		
+///				true ì¸ ê²½ìš° `c:\dbg\sound.dll` í˜•íƒœ (Win32 format) string ë¦¬í„´
+///				false ì¸ ê²½ìš° `\Device\HarddiskVolume1\dbg\sound.dll` í¬ë§· ë¦¬í„´		
 #if _WIN32_WINNT >= 0x0600	// after vista
 bool
 image_path_by_pid(
@@ -2941,10 +2941,10 @@ image_path_by_pid(
 	DWORD		ret = 0;
 
 	//
-	//	ZwQuerySystemInformation Ã³·³ length ¸¦ 0 À» ³Ñ°ÜÁÖ¸é ÇÊ¿äÇÑ ¹öÆÛÀÇ ±æÀÌ¸¦
-	//	¸®ÅÏÇØ ÁÖÁö ¾Ê´Â´Ù. Å­Á÷ÇÏ°Ô ¹öÆÛ Àâ¾Æ¼­ È£ÃâÇØ¾ß ÇÔ
+	//	ZwQuerySystemInformation ì²˜ëŸ¼ length ë¥¼ 0 ì„ ë„˜ê²¨ì£¼ë©´ í•„ìš”í•œ ë²„í¼ì˜ ê¸¸ì´ë¥¼
+	//	ë¦¬í„´í•´ ì£¼ì§€ ì•ŠëŠ”ë‹¤. í¼ì§í•˜ê²Œ ë²„í¼ ì¡ì•„ì„œ í˜¸ì¶œí•´ì•¼ í•¨
 	//
-	for (int i = 0; i < 3; ++i)		// name buffer ¸¦ µÎ¹è¾¿ Å°¿ì´Â°Íµµ 3È¸¸¸ ½ÃµµÇÑ´Ù.
+	for (int i = 0; i < 3; ++i)		// name buffer ë¥¼ ë‘ë°°ì”© í‚¤ìš°ëŠ”ê²ƒë„ 3íšŒë§Œ ì‹œë„í•œë‹¤.
 	{
 		if (NULL != name) free(name);
 		name = (wchar_t*)malloc((name_len + 1) * sizeof(wchar_t));
@@ -3006,8 +3006,8 @@ bool get_system_dir(_Out_ std::wstring& system_dir)
 	}
 	else if (len == buf_len)
 	{
-		// GetWindowsDirectoryW( ) ´Â null char ¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â ±æÀÌ¸¦ ¸®ÅÏÇÔ
-		// ¹öÆÛ°¡ ´õ ÇÊ¿äÇÏ´Ù.
+		// GetWindowsDirectoryW( ) ëŠ” null char ë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ” ê¸¸ì´ë¥¼ ë¦¬í„´í•¨
+		// ë²„í¼ê°€ ë” í•„ìš”í•˜ë‹¤.
 		buf_len *= 2;
 		pbuf = (wchar_t*)malloc(buf_len);
 		if (NULL == buf)
@@ -3037,10 +3037,10 @@ bool get_system_dir(_Out_ std::wstring& system_dir)
 }
 
 /**
- * @brief	windows °æ·Î¸¦ ¸®ÅÏÇÏ´Â ÇÔ¼ö (c:\windows)
+ * @brief	windows ê²½ë¡œë¥¼ ë¦¬í„´í•˜ëŠ” í•¨ìˆ˜ (c:\windows)
  * @param
  * @see
- * @remarks	°æ·Î°¡ c:\ ÀÎ °æ¿ì¸¦ Á¦¿ÜÇÏ°í, '\' ¸¦ ºÙÀÌÁö ¾ÊÀ½. (GetWindowsDirectory() ÇÔ¼ö ½ºÆå)
+ * @remarks	ê²½ë¡œê°€ c:\ ì¸ ê²½ìš°ë¥¼ ì œì™¸í•˜ê³ , '\' ë¥¼ ë¶™ì´ì§€ ì•ŠìŒ. (GetWindowsDirectory() í•¨ìˆ˜ ìŠ¤í™)
  * @code
  * @endcode
  * @return
@@ -3048,10 +3048,10 @@ bool get_system_dir(_Out_ std::wstring& system_dir)
 bool get_windows_dir(_Out_ std::wstring& windows_dir)
 {
 	//
-	//	ÅÍ¹Ì³Î¼­ºñ½º°¡ µ¿ÀÛÁßÀÎ °æ¿ì °¢ ÅÍ¹Ì³Î ¼­ºñ½º »ç¿ëÀÚ´Â °³º° 
-	//	Windows µğ·ºÅä¸®¸¦ °¡Áø´Ù. 
-	//	GetWindowsDirectory() ÇÔ¼ö´Â °³º° windows µğ·ºÅä¸®¸¦ ¸®ÅÏÇÏ°í
-	//	GetSystemWindowsDirectory() ÇÔ¼ö´Â Àü¿ª windows µğ·ºÅä¸®¸£¸®ÅÏÇÑ´Ù.
+	//	í„°ë¯¸ë„ì„œë¹„ìŠ¤ê°€ ë™ì‘ì¤‘ì¸ ê²½ìš° ê° í„°ë¯¸ë„ ì„œë¹„ìŠ¤ ì‚¬ìš©ìëŠ” ê°œë³„ 
+	//	Windows ë””ë ‰í† ë¦¬ë¥¼ ê°€ì§„ë‹¤. 
+	//	GetWindowsDirectory() í•¨ìˆ˜ëŠ” ê°œë³„ windows ë””ë ‰í† ë¦¬ë¥¼ ë¦¬í„´í•˜ê³ 
+	//	GetSystemWindowsDirectory() í•¨ìˆ˜ëŠ” ì „ì—­ windows ë””ë ‰í† ë¦¬ë¥´ë¦¬í„´í•œë‹¤.
 	//
 	uint32_t cc_buf = GetSystemWindowsDirectoryW(nullptr, 0);
 	if (0 == cc_buf)
@@ -3081,14 +3081,14 @@ bool get_windows_dir(_Out_ std::wstring& windows_dir)
 }
 
 /**
- * @brief	ÇöÀç »ç¿ëÀÚ windows È¯°æº¯¼ö¸¦ ÀĞ¾î¼­ ¸®ÅÏÇÑ´Ù.
+ * @brief	í˜„ì¬ ì‚¬ìš©ì windows í™˜ê²½ë³€ìˆ˜ë¥¼ ì½ì–´ì„œ ë¦¬í„´í•œë‹¤.
 			%home% = \Users\somma
 			%path% = c:\python27\;xx.....
 			%temp% = \Users\somma\AppData\Loal\Temp
 			...
- * @param	env_variable	È¯°æ º¯¼ö ¹®ÀÚ¿­ (e.g. %home%, %path%)
- * @param	env_value		È¯°æ º¯¼ö °ª     (\Users\somma ¹®ÀÚ¿­)
- * @return	¼º°ø½Ã true, ½ÇÆĞ½Ã false
+ * @param	env_variable	í™˜ê²½ ë³€ìˆ˜ ë¬¸ìì—´ (e.g. %home%, %path%)
+ * @param	env_value		í™˜ê²½ ë³€ìˆ˜ ê°’     (\Users\somma ë¬¸ìì—´)
+ * @return	ì„±ê³µì‹œ true, ì‹¤íŒ¨ì‹œ false
 **/
 bool
 get_environment_value(
@@ -3139,7 +3139,7 @@ get_environment_value(
 }
 
 /**
- * @brief	ÀÌ¹Ì Á¸ÀçÇÏ´Â ÆÄÀÏÀÇ short file name À» ±¸ÇÑ´Ù.
+ * @brief	ì´ë¯¸ ì¡´ì¬í•˜ëŠ” íŒŒì¼ì˜ short file name ì„ êµ¬í•œë‹¤.
  * @param
  * @see
  * @remarks	https://msdn.microsoft.com/en-us/library/aa365247(v=vs.85).aspx
@@ -3190,15 +3190,15 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 
 
 /**
- * @brief      ÇÏÀ§ µğ·ºÅä¸®¿¡ Á¸ÀçÇÏ´Â ¸ğµç ÆÄÀÏµéÀ» enum ÇÏ´Â ÇÔ¼ö
+ * @brief      í•˜ìœ„ ë””ë ‰í† ë¦¬ì— ì¡´ì¬í•˜ëŠ” ëª¨ë“  íŒŒì¼ë“¤ì„ enum í•˜ëŠ” í•¨ìˆ˜
 
-				¾Æ·¡ ÇüÅÂ 4°¡Áö´Â ¸ğµÎ µ¿ÀÏÇÑ °á°ú¸¦ Ãâ·ÂÇÔ
+				ì•„ë˜ í˜•íƒœ 4ê°€ì§€ëŠ” ëª¨ë‘ ë™ì¼í•œ ê²°ê³¼ë¥¼ ì¶œë ¥í•¨
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData",
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\",
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*",
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.*"
 
-				È®ÀåÀÚ ÇÊÅÍ¸µ °°Àº°Íµµ °¡´ÉÇÔ
+				í™•ì¥ì í•„í„°ë§ ê°™ì€ê²ƒë„ ê°€ëŠ¥í•¨
 				"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.txt"
  * @param
  * @see
@@ -3224,19 +3224,19 @@ find_files(
 	if (root[wcslen(root) - 1] == L'\\')
 	{
 		//
-		//	root ÆÄ¶ó¹ÌÅÍ°¡ '\' ·Î ³¡³ª¸é ¾ÈµÇ¹Ç·Î `\*` ·Î °­Á¦ º¯°æ
+		//	root íŒŒë¼ë¯¸í„°ê°€ '\' ë¡œ ëë‚˜ë©´ ì•ˆë˜ë¯€ë¡œ `\*` ë¡œ ê°•ì œ ë³€ê²½
 		//
 		root_dir.append(L"*");
 	}
 	else
 	{
-		//	`d:\dir\` ÀÎ °æ¿ì´Â ÀÌ¹Ì °Ë»çÇßÀ¸¹Ç·Î root ´Â ¾Æ·¡ µÎ Å¸ÀÔ Áß ÇÏ³ªÀÏ°ÍÀÌ´Ù.
+		//	`d:\dir\` ì¸ ê²½ìš°ëŠ” ì´ë¯¸ ê²€ì‚¬í–ˆìœ¼ë¯€ë¡œ root ëŠ” ì•„ë˜ ë‘ íƒ€ì… ì¤‘ í•˜ë‚˜ì¼ê²ƒì´ë‹¤.
 		// 
 		//	d:\dir
 		//	d:\dir\*, d:\dir\*.*, d:\dir\*.txt, ...
 		//	
-		//	`d:\dir\*` ÇüÅÂ¶ó¸é ¾îÂ÷ÇÇ is_dir() ¿¡¼­ false ¸¦ ¸®ÅÏÇÏ¹Ç·Î 
-		//	is_dir() °¡ true ¸¦ ¸®ÅÏÇÏ´Â °æ¿ì¶ó¸é °­Á¦·Î `\*` ¸¦ ºÙ¿©ÁØ´Ù. 
+		//	`d:\dir\*` í˜•íƒœë¼ë©´ ì–´ì°¨í”¼ is_dir() ì—ì„œ false ë¥¼ ë¦¬í„´í•˜ë¯€ë¡œ 
+		//	is_dir() ê°€ true ë¥¼ ë¦¬í„´í•˜ëŠ” ê²½ìš°ë¼ë©´ ê°•ì œë¡œ `\*` ë¥¼ ë¶™ì—¬ì¤€ë‹¤. 
 		// 
 		if (true == is_dir(root))
 		{
@@ -3261,9 +3261,9 @@ find_files(
 		if (ERROR_ACCESS_DENIED == gle || ERROR_FILE_NOT_FOUND == gle)
 		{
 			//
-			// ¸ÅÄªµÇ´Â ÆÄÀÏÀÌ ¾ø°Å³ª(* ¸¦ »ç¿ëÇÑ find_files() È£ÃâÀÇ °æ¿ì)
-			// ±ÇÇÑÀÌ ºÎÁ·ÇÑ °æ¿ì 
-			// ¼º°øÀ¸·Î °£ÁÖÇÑ´Ù. 
+			// ë§¤ì¹­ë˜ëŠ” íŒŒì¼ì´ ì—†ê±°ë‚˜(* ë¥¼ ì‚¬ìš©í•œ find_files() í˜¸ì¶œì˜ ê²½ìš°)
+			// ê¶Œí•œì´ ë¶€ì¡±í•œ ê²½ìš° 
+			// ì„±ê³µìœ¼ë¡œ ê°„ì£¼í•œë‹¤. 
 			// 
 			return true;
 		}
@@ -3285,7 +3285,7 @@ find_files(
 
 		if (wfd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
 		{
-			// symbolic link ´Â Ã³¸®ÇÏÁö ¾ÊÀ½
+			// symbolic link ëŠ” ì²˜ë¦¬í•˜ì§€ ì•ŠìŒ
 			// 
 			if (wfd.dwReserved0 & IO_REPARSE_TAG_SYMLINK)
 			{
@@ -3307,7 +3307,7 @@ find_files(
 		else
 		{
 			//
-			//	ÆÄÀÏ °æ·Î¸¸ callback À¸·Î Àü´ŞÇÑ´Ù. µğ·ºÅä¸®´Â Àü´ŞÇÏÁö ¾ÊÀ½.
+			//	íŒŒì¼ ê²½ë¡œë§Œ callback ìœ¼ë¡œ ì „ë‹¬í•œë‹¤. ë””ë ‰í† ë¦¬ëŠ” ì „ë‹¬í•˜ì§€ ì•ŠìŒ.
 			// 
 
 			StringCbPrintfW(fname, sizeof(fname), L"%s%s%s", drive, dir, wfd.cFileName);
@@ -3324,9 +3324,9 @@ find_files(
 
 
 /**----------------------------------------------------------------------------
-	\brief  RootPath ÇÏÀ§µğ·ºÅä¸® °æ·Î¸¦ enum ÇÏ´Â ÇÔ¼ö
+	\brief  RootPath í•˜ìœ„ë””ë ‰í† ë¦¬ ê²½ë¡œë¥¼ enum í•˜ëŠ” í•¨ìˆ˜
 
-			¾Æ·¡ ÇüÅÂ 4°¡Áö´Â ¸ğµÎ µ¿ÀÏÇÑ °á°ú¸¦ Ãâ·ÂÇÔ
+			ì•„ë˜ í˜•íƒœ 4ê°€ì§€ëŠ” ëª¨ë‘ ë™ì¼í•œ ê²°ê³¼ë¥¼ ì¶œë ¥í•¨
 			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\",
 			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*",
 			"d:\\Work\\AFirstIRF\\trunk\\AIRF\\debug\\AIRSData\\*.*"
@@ -3352,10 +3352,10 @@ FindSubDirectory(
 	WCHAR drive[_MAX_DRIVE + 1] = { 0 };
 	WCHAR dir[MAX_PATH + 1] = { 0 };
 
-	// RootPath ÆÄ¶ó¹ÌÅÍ°¡ c:\dbg ÇüÅÂÀÎ °æ¿ì c:\dbg °ª(RootPath ÀÚ½Å)ÀÌ Ãß°¡µÊ
-	// µû¶ó¼­ '\', '\*', '\*.*' °¡ ¾Æ´Ñ °æ¿ì °­Á¦·Î '\*' ¸¦ ºÙ¿© RootPath °æ·Î´Â Á¦¿ÜÇÔ
+	// RootPath íŒŒë¼ë¯¸í„°ê°€ c:\dbg í˜•íƒœì¸ ê²½ìš° c:\dbg ê°’(RootPath ìì‹ )ì´ ì¶”ê°€ë¨
+	// ë”°ë¼ì„œ '\', '\*', '\*.*' ê°€ ì•„ë‹Œ ê²½ìš° ê°•ì œë¡œ '\*' ë¥¼ ë¶™ì—¬ RootPath ê²½ë¡œëŠ” ì œì™¸í•¨
 	// 
-	// ¶ÇÇÑ RootPath ÆÄ¶ó¹ÌÅÍ°¡ '\' ·Î ³¡³ª¸é ¾ÈµÇ¹Ç·Î \* ·Î °­Á¦ º¯°æ
+	// ë˜í•œ RootPath íŒŒë¼ë¯¸í„°ê°€ '\' ë¡œ ëë‚˜ë©´ ì•ˆë˜ë¯€ë¡œ \* ë¡œ ê°•ì œ ë³€ê²½
 	// 
 	std::wstring RootDir(RootPath);
 	if (RootPath[wcslen(RootPath) - 1] == L'\\')
@@ -3414,7 +3414,7 @@ FindSubDirectory(
 
 
 /**
- * @brief	ASCII(Multibyte) --> WIDE CHAR ·Î º¯È¯, caller ´Â ¸®ÅÏµÇ´Â Æ÷ÀÎÅÍ¸¦ ¼Ò¸ê½ÃÄÑÁÖ¾î¾ß ÇÔ
+ * @brief	ASCII(Multibyte) --> WIDE CHAR ë¡œ ë³€í™˜, caller ëŠ” ë¦¬í„´ë˜ëŠ” í¬ì¸í„°ë¥¼ ì†Œë©¸ì‹œì¼œì£¼ì–´ì•¼ í•¨
  * @param
  * @see
  * @remarks
@@ -3448,7 +3448,7 @@ wchar_t* MbsToWcs(_In_ const char* mbs)
 }
 
 /**
- * @brief	WIDE CHAR --> ASCII(Multibyte) ·Î º¯È¯, caller ´Â ¸®ÅÏµÇ´Â Æ÷ÀÎÅÍ¸¦ ¼Ò¸ê½ÃÄÑÁÖ¾î¾ß ÇÔ
+ * @brief	WIDE CHAR --> ASCII(Multibyte) ë¡œ ë³€í™˜, caller ëŠ” ë¦¬í„´ë˜ëŠ” í¬ì¸í„°ë¥¼ ì†Œë©¸ì‹œì¼œì£¼ì–´ì•¼ í•¨
  * @param
  * @see
  * @remarks
@@ -3481,7 +3481,7 @@ char* WcsToMbs(_In_ const wchar_t* wcs)
 }
 
 /**
- * @brief	wide char -> utf8 º¯È¯, caller ´Â ¸®ÅÏµÇ´Â Æ÷ÀÎÅÍ¸¦ ¼Ò¸ê½ÃÄÑÁÖ¾î¾ß ÇÔ
+ * @brief	wide char -> utf8 ë³€í™˜, caller ëŠ” ë¦¬í„´ë˜ëŠ” í¬ì¸í„°ë¥¼ ì†Œë©¸ì‹œì¼œì£¼ì–´ì•¼ í•¨
  * @param
  * @see
  * @remarks
@@ -3668,9 +3668,9 @@ std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 	}
 }
 
-/// @brief	Æ÷¸ËÆÃµÈ ¹®ÀÚ¿­À» ¸®ÅÏÇÑ´Ù. 
-///			static ¹è¿­À» »ç¿ëÇÏ¹Ç·Î Thread safe ÇÏÁö ¾ÊÀ¸¸ç Æ÷¸ËÆÃµÈ ¹®ÀÚ¿­ÀÇ 
-///			±æÀÌ°¡ buffer »çÀÌÁî¸¦ ³Ñ´Â°æ¿ì nullptr À» ¸®ÅÏÇÑ´Ù.
+/// @brief	í¬ë§·íŒ…ëœ ë¬¸ìì—´ì„ ë¦¬í„´í•œë‹¤. 
+///			static ë°°ì—´ì„ ì‚¬ìš©í•˜ë¯€ë¡œ Thread safe í•˜ì§€ ì•Šìœ¼ë©° í¬ë§·íŒ…ëœ ë¬¸ìì—´ì˜ 
+///			ê¸¸ì´ê°€ buffer ì‚¬ì´ì¦ˆë¥¼ ë„˜ëŠ”ê²½ìš° nullptr ì„ ë¦¬í„´í•œë‹¤.
 const 
 char* 
 const 
@@ -3695,7 +3695,7 @@ format_string(
 	}
 }
 
-/// @brief	buf ¿¡ Æ÷¸ËÆÃµÈ ¹®ÀÚ¿­À» ¸®ÅÏÇÑ´Ù.
+/// @brief	buf ì— í¬ë§·íŒ…ëœ ë¬¸ìì—´ì„ ë¦¬í„´í•œë‹¤.
 bool 
 format_string(
 	_Out_ char* buf,
@@ -3717,9 +3717,9 @@ format_string(
 	}
 }
 
-/// @brief  src ÀÇ µÚ¿¡¼­ºÎÅÍ fnd ¹®ÀÚ¿­À» Ã£´Â´Ù. 
-///         fnd °¡ src ÀÇ ²Ç¹«´Ï¿Í Á¤È®È÷ ÀÏÄ¡ÇÏ¸é true, ¾Æ´Ï¸é false ¸®ÅÏ
-///         - È®ÀåÀÚ °Ë»ç°°Àº°Å ÇÒ¶§ »ç¿ë
+/// @brief  src ì˜ ë’¤ì—ì„œë¶€í„° fnd ë¬¸ìì—´ì„ ì°¾ëŠ”ë‹¤. 
+///         fnd ê°€ src ì˜ ê½ë¬´ë‹ˆì™€ ì •í™•íˆ ì¼ì¹˜í•˜ë©´ true, ì•„ë‹ˆë©´ false ë¦¬í„´
+///         - í™•ì¥ì ê²€ì‚¬ê°™ì€ê±° í• ë•Œ ì‚¬ìš©
 bool
 rstrnicmp(
 	_In_ const wchar_t* src,
@@ -3735,7 +3735,7 @@ rstrnicmp(
 	uint32_t fnd_len = (uint32_t)wcslen(fnd);
 	if (fnd_len > src_len) return false;
 
-	int sidx = src_len - 1; // uint32_t Å¸ÀÔ ¾²¸é ¾ÈµÊ!
+	int sidx = src_len - 1; // uint32_t íƒ€ì… ì“°ë©´ ì•ˆë¨!
 	int fidx = fnd_len - 1;
 	while (fidx >= 0)
 	{
@@ -3766,7 +3766,7 @@ rstrnicmpa(
 	uint32_t fnd_len = (uint32_t)strlen(fnd);
 	if (fnd_len > src_len) return false;
 
-	int sidx = src_len - 1; // uint32_t Å¸ÀÔ ¾²¸é ¾ÈµÊ!
+	int sidx = src_len - 1; // uint32_t íƒ€ì… ì“°ë©´ ì•ˆë¨!
 	int fidx = fnd_len - 1;
 	while (fidx >= 0)
 	{
@@ -3782,7 +3782,7 @@ rstrnicmpa(
 	return true;
 }
 
-/// @brief  src ÀÇ ¾Õ¿¡¼­ºÎÅÍ fnd ¹®ÀÚ¿­À» Ã£´Â´Ù. 
+/// @brief  src ì˜ ì•ì—ì„œë¶€í„° fnd ë¬¸ìì—´ì„ ì°¾ëŠ”ë‹¤. 
 bool
 lstrnicmp(
 	_In_ const wchar_t* src,
@@ -3804,7 +3804,7 @@ lstrnicmp(
 	}
 }
 
-/// @brief  src ÀÇ ¾Õ¿¡¼­ºÎÅÍ fnd ¹®ÀÚ¿­À» Ã£´Â´Ù. 
+/// @brief  src ì˜ ì•ì—ì„œë¶€í„° fnd ë¬¸ìì—´ì„ ì°¾ëŠ”ë‹¤. 
 bool
 lstrnicmpa(
 	_In_ const char* src,
@@ -3826,7 +3826,7 @@ lstrnicmpa(
 	}
 }
 
-/// µÎ ¹®ÀÚ¿­ÀÌ ¿ÏÀüÈ÷ ÀÏÄ¡ÇÏ´ÂÁö È®ÀÎÇÑ´Ù. 
+/// ë‘ ë¬¸ìì—´ì´ ì™„ì „íˆ ì¼ì¹˜í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤. 
 bool
 is_same_string(
 	_In_ const wchar_t* lhs,
@@ -3851,15 +3851,15 @@ is_same_string(
 
 
 /**
- * \brief	org_string ¿¡¼­ token À» °Ë»öÇØ¼­ ¹®ÀÚ¿­À» Àß¶ó³½´Ù.
-			(org_string ÀÇ ¾Õ¿¡¼­ºÎÅÍ token À» °Ë»ö)
+ * \brief	org_string ì—ì„œ token ì„ ê²€ìƒ‰í•´ì„œ ë¬¸ìì—´ì„ ì˜ë¼ë‚¸ë‹¤.
+			(org_string ì˜ ì•ì—ì„œë¶€í„° token ì„ ê²€ìƒ‰)
 
 			ABCDEFG.HIJ.KLMN	: org_string
 				   .			: token
 			ABCDEFG             : out_string if forward = TRUE
 					HIJ.KLMN	: out_string if forward = FALSE
 
-			delete_token °¡ True ÀÎ °æ¿ì org_string ¿¡¼­ out_string + token À» »èÁ¦
+			delete_token ê°€ True ì¸ ê²½ìš° org_string ì—ì„œ out_string + token ì„ ì‚­ì œ
 
  * @param
  * @see
@@ -3909,8 +3909,8 @@ extract_first_tokenW(
 }
 
 /**
- * \brief	org_string ¿¡¼­ token À» °Ë»öÇØ¼­ ¹®ÀÚ¿­À» Àß¶ó³½´Ù.
-			(org_string ÀÇ ¾Õ¿¡¼­ºÎÅÍ token À» °Ë»ö)
+ * \brief	org_string ì—ì„œ token ì„ ê²€ìƒ‰í•´ì„œ ë¬¸ìì—´ì„ ì˜ë¼ë‚¸ë‹¤.
+			(org_string ì˜ ì•ì—ì„œë¶€í„° token ì„ ê²€ìƒ‰)
 
 			ABCDEFG.HIJ.KLMN	: org_string
 				   .			: token
@@ -3918,8 +3918,8 @@ extract_first_tokenW(
 					HIJ.KLMN	: out_string if forward = FALSE
  * @param
  * @see
- * @remarks ¼º°ø ½Ã ºĞ¸®µÈ ¹®ÀÚ¿­À» ½ºÆ®¸µ °´Ã¼¿¡ ¸®ÅÏ
-			½ÇÆĞ ½Ã _nullstringw ¸®ÅÏ
+ * @remarks ì„±ê³µ ì‹œ ë¶„ë¦¬ëœ ë¬¸ìì—´ì„ ìŠ¤íŠ¸ë§ ê°ì²´ì— ë¦¬í„´
+			ì‹¤íŒ¨ ì‹œ _nullstringw ë¦¬í„´
  * @code
  * @endcode
  * @return
@@ -3945,15 +3945,15 @@ extract_first_tokenExW(
 
 
 /**
- * @brief	org_string ¿¡¼­ token À» °Ë»öÇØ¼­ ¹®ÀÚ¿­À» Àß¶ó³½´Ù.
-			(org_string ÀÇ ¾Õ¿¡¼­ºÎÅÍ token À» °Ë»ö)
+ * @brief	org_string ì—ì„œ token ì„ ê²€ìƒ‰í•´ì„œ ë¬¸ìì—´ì„ ì˜ë¼ë‚¸ë‹¤.
+			(org_string ì˜ ì•ì—ì„œë¶€í„° token ì„ ê²€ìƒ‰)
 
 			ABCDEFG.HIJ.KLMN	: org_string
 				   .			: token
 			ABCDEFG             : out_string if forward = TRUE
 					HIJ.KLMN	: out_string if forward = FALSE
 
-			delete_token °¡ True ÀÎ °æ¿ì org_string ¿¡¼­ out_string + token À» »èÁ¦
+			delete_token ê°€ True ì¸ ê²½ìš° org_string ì—ì„œ out_string + token ì„ ì‚­ì œ
 **/
 bool
 extract_first_tokenA(
@@ -3996,8 +3996,8 @@ extract_first_tokenA(
 }
 
 /**
- * @brief	org_string ¿¡¼­ token À» °Ë»öÇØ¼­ ¹®ÀÚ¿­À» Àß¶ó³½´Ù.
-			(org_string ÀÇ ¾Õ¿¡¼­ºÎÅÍ token À» °Ë»ö)
+ * @brief	org_string ì—ì„œ token ì„ ê²€ìƒ‰í•´ì„œ ë¬¸ìì—´ì„ ì˜ë¼ë‚¸ë‹¤.
+			(org_string ì˜ ì•ì—ì„œë¶€í„° token ì„ ê²€ìƒ‰)
 
 			ABCDEFG.HIJ.KLMN	: org_string
 				   .			: token
@@ -4035,15 +4035,15 @@ extract_first_tokenExA(
 }
 
 /**
- * @brief	org_string ¿¡¼­ token À» °Ë»öÇØ¼­ ¹®ÀÚ¿­À» Àß¶ó³½´Ù.
-			(org_string ÀÇ µÚ¿¡¼­ºÎÅÍ token À» °Ë»ö)
+ * @brief	org_string ì—ì„œ token ì„ ê²€ìƒ‰í•´ì„œ ë¬¸ìì—´ì„ ì˜ë¼ë‚¸ë‹¤.
+			(org_string ì˜ ë’¤ì—ì„œë¶€í„° token ì„ ê²€ìƒ‰)
 
 			ABCDEFG.HIJ.KLMN	: org_string
 					   .		: token
 			ABCDEFG.HIJ			: out_string if forward = TRUE
 						KLMN	: out_string if forward = FALSE
 
-			delete_token °¡ True ÀÎ °æ¿ì org_string ¿¡¼­ out_string + token À» »èÁ¦
+			delete_token ê°€ True ì¸ ê²½ìš° org_string ì—ì„œ out_string + token ì„ ì‚­ì œ
 **/
 bool
 extract_last_tokenW(
@@ -4086,8 +4086,8 @@ extract_last_tokenW(
 }
 
 /**
- * @brief	org_string ¿¡¼­ token À» °Ë»öÇØ¼­ ¹®ÀÚ¿­À» Àß¶ó³½´Ù.
-			(org_string ÀÇ µÚ¿¡¼­ºÎÅÍ token À» °Ë»ö)
+ * @brief	org_string ì—ì„œ token ì„ ê²€ìƒ‰í•´ì„œ ë¬¸ìì—´ì„ ì˜ë¼ë‚¸ë‹¤.
+			(org_string ì˜ ë’¤ì—ì„œë¶€í„° token ì„ ê²€ìƒ‰)
 
 			ABCDEFG.HIJ.KLMN	: org_string
 					   .		: token
@@ -4114,15 +4114,15 @@ extract_last_tokenExW(
 }
 
 /**
- * @brief	org_string ¿¡¼­ token À» °Ë»öÇØ¼­ ¹®ÀÚ¿­À» Àß¶ó³½´Ù.
-			(org_string ÀÇ µÚ¿¡¼­ºÎÅÍ token À» °Ë»ö)
+ * @brief	org_string ì—ì„œ token ì„ ê²€ìƒ‰í•´ì„œ ë¬¸ìì—´ì„ ì˜ë¼ë‚¸ë‹¤.
+			(org_string ì˜ ë’¤ì—ì„œë¶€í„° token ì„ ê²€ìƒ‰)
 
 			ABCDEFG.HIJ.KLMN	: org_string
 					   .		: token
 			ABCDEFG.HIJ			: out_string if forward = TRUE
 						KLMN	: out_string if forward = FALSE
 
-			delete_token °¡ True ÀÎ °æ¿ì org_string ¿¡¼­ out_string + token À» »èÁ¦ 
+			delete_token ê°€ True ì¸ ê²½ìš° org_string ì—ì„œ out_string + token ì„ ì‚­ì œ 
 **/
 bool
 extract_last_tokenA(
@@ -4193,12 +4193,12 @@ extract_last_tokenExA(
 
 }
 
-/// @brief	ÆÄÀÏÀÇ È®ÀåÀÚ¸¦ ¸®ÅÏÇÑ´Ù. 
+/// @brief	íŒŒì¼ì˜ í™•ì¥ìë¥¼ ë¦¬í„´í•œë‹¤. 
 ///
 ///			c:\dbg\abc.txt -> txt 
 ///			\offsymxl.ttf:WofCompressedData -> ttf
 /// 
-///			È®ÀåÀÚ°¡ ¾ø´Â °æ¿ì false ¸¦ ¸®ÅÏÇÑ´Ù.
+///			í™•ì¥ìê°€ ì—†ëŠ” ê²½ìš° false ë¥¼ ë¦¬í„´í•œë‹¤.
 bool
 get_file_extensionw(
 	_In_ const wchar_t* file_path,
@@ -4209,9 +4209,9 @@ get_file_extensionw(
 	if (nullptr == file_path) return false;
 
 	//
-	// c:\dbg\.\sub\abc_no_ext ÇüÅÂÀÇ °æ·Î¸íÀÎ °æ¿ì `\sub\abc_no_ext` °¡ 
-	// È®ÀåÀÚ·Î ÀÎ½ÄµÈ´Ù. µû¶ó¼­ µÚ¿¡¼­ `\` ¹®ÀÚ¿­À» ¸ÕÀú Ã£Àº ÈÄ `\` ÀÌÈÄ 
-	// ¹®ÀÚ¿­¿¡¼­ `.` ¸¦ Ã£´Â´Ù.
+	// c:\dbg\.\sub\abc_no_ext í˜•íƒœì˜ ê²½ë¡œëª…ì¸ ê²½ìš° `\sub\abc_no_ext` ê°€ 
+	// í™•ì¥ìë¡œ ì¸ì‹ëœë‹¤. ë”°ë¼ì„œ ë’¤ì—ì„œ `\` ë¬¸ìì—´ì„ ë¨¼ì € ì°¾ì€ í›„ `\` ì´í›„ 
+	// ë¬¸ìì—´ì—ì„œ `.` ë¥¼ ì°¾ëŠ”ë‹¤.
 	//
 	std::wstring org_string = extract_last_tokenExW(file_path, L"\\", false);
 	size_t pos = org_string.rfind(L".");
@@ -4222,7 +4222,7 @@ get_file_extensionw(
 	org_string = org_string.substr(pos + 1, org_string.size());
 
 	//
-	//	ADS ¸¦ Àß¶ó³½´Ù.
+	//	ADS ë¥¼ ì˜ë¼ë‚¸ë‹¤.
 	// 
 	pos = org_string.find(L":");
 	if (std::wstring::npos == pos)
@@ -4237,7 +4237,7 @@ get_file_extensionw(
 
 
 /**
- * @brief	trim ÇÔ¼öµé
+ * @brief	trim í•¨ìˆ˜ë“¤
 
 			string szbuf="__12345_____";
 			cout<<"Before trim: "<<szbuf<<endl;
@@ -4317,7 +4317,7 @@ split_stringa(
 	StringCbPrintfA(buf.get(), buf_len, "%s", str);
 
 	//	
-	//	wcstok_s() ÇÔ¼ö¿¡¼­ separator ¹®ÀÚ¿­ÀÌ ¿¬¼ÓµÇ´Â °æ¿ì ¾Ë¾Æ¼­ °Ç³Ê¶Ú´Ù.
+	//	wcstok_s() í•¨ìˆ˜ì—ì„œ separator ë¬¸ìì—´ì´ ì—°ì†ë˜ëŠ” ê²½ìš° ì•Œì•„ì„œ ê±´ë„ˆë›´ë‹¤.
 	//
 	char* next_token = NULL;
 	char* token = strtok_s(buf.get(), seps, &next_token);
@@ -4382,8 +4382,8 @@ split_stringw(
 ///         http://stackoverflow.com/questions/98153/whats-the-best-hashing-algorithm-to-use-on-a-stl-string-when-using-hash-map?answertab=active
 ///
 ///			test_GeneralHashFunctions(), test_GeneralHashFunctions2()
-///			ÇÔ¼ö¸¦ ÀÛ¼ºÇØ¼­ c:\windows ÇÏÀ§ ÆÄÀÏµé¿¡ ´ëÇØ¼­ Å×½ºÆ®ÇØºÃ´Âµ¥, 
-///			²Ï ÁÁ´Ù. °è¼Ó ¾²ÀÚ.
+///			í•¨ìˆ˜ë¥¼ ì‘ì„±í•´ì„œ c:\windows í•˜ìœ„ íŒŒì¼ë“¤ì— ëŒ€í•´ì„œ í…ŒìŠ¤íŠ¸í•´ë´¤ëŠ”ë°, 
+///			ê½¤ ì¢‹ë‹¤. ê³„ì† ì“°ì.
 uint32_t hash_string32(_In_ const char* s, _In_opt_ uint32_t seed)
 {
 	_ASSERTE(NULL != s);
@@ -4442,8 +4442,8 @@ uint64_t hash_string64w(_In_ const wchar_t* s, _In_opt_ uint64_t seed)
 	return ret;
 }
 
-/// @brief  source ¿¡¼­ find ¸¦ Ã£¾Æ replace ·Î º¯°æÇØ¼­, »õ·Î¿î ¹®ÀÚ¿­ °´Ã¼¸¦ »ı¼º/¸®ÅÏÇÑ´Ù.
-///         ½ÇÆĞ½Ã _null_string_a °´Ã¼¸¦ ¸®ÅÏÇÑ´Ù.
+/// @brief  source ì—ì„œ find ë¥¼ ì°¾ì•„ replace ë¡œ ë³€ê²½í•´ì„œ, ìƒˆë¡œìš´ ë¬¸ìì—´ ê°ì²´ë¥¼ ìƒì„±/ë¦¬í„´í•œë‹¤.
+///         ì‹¤íŒ¨ì‹œ _null_string_a ê°ì²´ë¥¼ ë¦¬í„´í•œë‹¤.
 std::string
 find_and_replace_string_exa(
 	_In_ const char* source,
@@ -4490,7 +4490,7 @@ find_and_replace_string_exw(
 		return _null_stringw;
 }
 
-/// @brief	·£´ıÇÑ ¹®ÀÚ¿­ »ı¼ºÇÏ±â 
+/// @brief	ëœë¤í•œ ë¬¸ìì—´ ìƒì„±í•˜ê¸° 
 std::string generate_random_string(_In_ const size_t length)
 {
 	static const char alphanum[] =
@@ -4535,7 +4535,7 @@ std::wstring generate_random_stringw(_In_ const size_t length)
 
 
 /**
-* @brief	ÇöÀç µğ·ºÅä¸®¸¦ ¸®ÅÏÇÏ´Â ÇÔ¼ö (e.g. c:\debug )
+* @brief	í˜„ì¬ ë””ë ‰í† ë¦¬ë¥¼ ë¦¬í„´í•˜ëŠ” í•¨ìˆ˜ (e.g. c:\debug )
 * @param
 * @code
 * @endcode
@@ -4556,7 +4556,7 @@ bool WUGetCurrentDirectoryW(_Out_ std::wstring& CurrentDir)
 			return false;
 	}
 
-	// buflen : NULL Ä³¸¯ÅÍ¸¦ Æ÷ÇÔÇÑ ÇÊ¿äÇÑ ¹öÆÛÀÇ »çÀÌÁî in char.
+	// buflen : NULL ìºë¦­í„°ë¥¼ í¬í•¨í•œ í•„ìš”í•œ ë²„í¼ì˜ ì‚¬ì´ì¦ˆ in char.
 	// 
 	buf = (PWSTR)malloc(sizeof(WCHAR) * buflen);
 	if (0 == GetCurrentDirectoryW(buflen, buf))
@@ -4598,8 +4598,8 @@ bool WUGetCurrentDirectoryA(_Out_ std::string& CurrentDir)
 
 /**
  * @brief	GetTempPath() wrapper.
-			%TMP% > %TEMP% > %USERPROFILE% È¯°æº¯¼ö ¼ø¼­´ë·Î °¡Á®¿È
-			¸¶Áö¸·¿¡ '\' ºÙ¿©¼­ ¸®ÅÏÇÑ´Ù.
+			%TMP% > %TEMP% > %USERPROFILE% í™˜ê²½ë³€ìˆ˜ ìˆœì„œëŒ€ë¡œ ê°€ì ¸ì˜´
+			ë§ˆì§€ë§‰ì— '\' ë¶™ì—¬ì„œ ë¦¬í„´í•œë‹¤.
  * @param
  * @see
  * @remarks
@@ -4627,8 +4627,8 @@ bool get_temp_dirW(_Out_ std::wstring& temp_dir)
 
 /**
  * @brief	GetTempPath() wrapper.
-			%TMP% > %TEMP% > %USERPROFILE% È¯°æº¯¼ö ¼ø¼­´ë·Î °¡Á®¿È
-			¸¶Áö¸·¿¡ '\' ºÙ¿©¼­ ¸®ÅÏÇÑ´Ù.
+			%TMP% > %TEMP% > %USERPROFILE% í™˜ê²½ë³€ìˆ˜ ìˆœì„œëŒ€ë¡œ ê°€ì ¸ì˜´
+			ë§ˆì§€ë§‰ì— '\' ë¶™ì—¬ì„œ ë¦¬í„´í•œë‹¤.
  * @param
  * @see
  * @remarks
@@ -4651,11 +4651,11 @@ bool get_temp_dirA(_Out_ std::string& temp_dir)
 	return true;
 }
 
-/// @brief	%TMP%\prefix.tmp ÇüÅÂÀÇ ¾²±â °¡´ÉÇÑ ÀÓ½ÃÆÄÀÏ °æ·Î¸¦ ¸®ÅÏÇÑ´Ù.
-///			%TMP%\prefix.tmp °¡ ÀÌ¹Ì ÀÖ´Ù¸é
+/// @brief	%TMP%\prefix.tmp í˜•íƒœì˜ ì“°ê¸° ê°€ëŠ¥í•œ ì„ì‹œíŒŒì¼ ê²½ë¡œë¥¼ ë¦¬í„´í•œë‹¤.
+///			%TMP%\prefix.tmp ê°€ ì´ë¯¸ ìˆë‹¤ë©´
 ///				%TMP%\prefix_0.tmp
 ///				%TMP%\prefix_1.tmp 
-///			ÇüÅÂÀÇ ÀÌ¸§À» »ı¼ºÇÑ´Ù. (N ±îÁö¸¸ ½ÃµµÇØº¸°í ¾ÈµÇ¸é ¿¡·¯ Ã³¸®)
+///			í˜•íƒœì˜ ì´ë¦„ì„ ìƒì„±í•œë‹¤. (N ê¹Œì§€ë§Œ ì‹œë„í•´ë³´ê³  ì•ˆë˜ë©´ ì—ëŸ¬ ì²˜ë¦¬)
 bool 
 get_temp_fileW(
 	_In_ const wchar_t* prefix,	
@@ -4680,7 +4680,7 @@ get_temp_fileW(
 		}
 
 		//
-		//	%tmp%\prefix_10.tmp ÇüÅÂÀÇ °æ·Î¸¦ »ı¼º
+		//	%tmp%\prefix_10.tmp í˜•íƒœì˜ ê²½ë¡œë¥¼ ìƒì„±
 		//
 		out = ws + 
 			std::wstring(prefix) + 
@@ -4693,7 +4693,7 @@ get_temp_fileW(
 	return false;
 }
 
-/// @brief	·ÎµåµÈ module_name ÀÇ full path ¸¦ ±¸ÇÑ´Ù.
+/// @brief	ë¡œë“œëœ module_name ì˜ full path ë¥¼ êµ¬í•œë‹¤.
 bool
 get_module_path(
 	_In_ const wchar_t* module_name,
@@ -4710,8 +4710,8 @@ get_module_path(
 		ret = GetModuleFileNameW(GetModuleHandleW(module_name), buf, buf_len);
 		if (ret == buf_len)
 		{
-			// buf °¡ ÀÛÀº °æ¿ì buf_len ¸¸Å­ ¹öÆÛ°¡ Àß¸®°í, buf_len ¸®ÅÏ (¿¡·¯·Î °£ÁÖ)
-			// ¹öÆÛ »çÀÌÁî¸¦ 2¹è ´Ã·Á¼­ Àç ½Ãµµ
+			// buf ê°€ ì‘ì€ ê²½ìš° buf_len ë§Œí¼ ë²„í¼ê°€ ì˜ë¦¬ê³ , buf_len ë¦¬í„´ (ì—ëŸ¬ë¡œ ê°„ì£¼)
+			// ë²„í¼ ì‚¬ì´ì¦ˆë¥¼ 2ë°° ëŠ˜ë ¤ì„œ ì¬ ì‹œë„
 			free(buf);
 
 			buf_len *= 2;
@@ -4730,7 +4730,7 @@ get_module_path(
 }
 
 /**
- * @brief	ÇöÀç ¸ğµâÀÇ full path ¸¦ ±¸ÇÑ´Ù.
+ * @brief	í˜„ì¬ ëª¨ë“ˆì˜ full path ë¥¼ êµ¬í•œë‹¤.
 **/
 bool get_current_module_path(_Out_ std::wstring& module_path)
 {
@@ -4738,7 +4738,7 @@ bool get_current_module_path(_Out_ std::wstring& module_path)
 }
 
 /**
- * @brief	ÇöÀç ¸ğµâÀÇ ÆÄÀÏ¸íÀ» Á¦¿ÜÇÑ µğ·ºÅä¸® °æ·Î¸¦ ±¸ÇÑ´Ù. ('\' ¹®ÀÚ´Â Á¦¿Ü)
+ * @brief	í˜„ì¬ ëª¨ë“ˆì˜ íŒŒì¼ëª…ì„ ì œì™¸í•œ ë””ë ‰í† ë¦¬ ê²½ë¡œë¥¼ êµ¬í•œë‹¤. ('\' ë¬¸ìëŠ” ì œì™¸)
  * @return
 **/
 bool get_current_module_dir(_Out_ std::wstring& module_dir)
@@ -4767,7 +4767,7 @@ bool get_current_module_dir(_Out_ std::wstring& module_dir)
 }
 
 /**
- * @brief	ÇöÀç ¸ğµâÀÇ ÆÄÀÏ¸íÀ» ±¸ÇÑ´Ù. (°æ·ÎÁ¦¿Ü)
+ * @brief	í˜„ì¬ ëª¨ë“ˆì˜ íŒŒì¼ëª…ì„ êµ¬í•œë‹¤. (ê²½ë¡œì œì™¸)
 **/
 bool get_current_module_file(_Out_ std::wstring& module_file)
 {
@@ -4788,7 +4788,7 @@ bool get_current_module_file(_Out_ std::wstring& module_file)
 	return true;
 }
 
-/// @brief	·ÎµåµÈ module_name ÀÇ full path ¸¦ ±¸ÇÑ´Ù.
+/// @brief	ë¡œë“œëœ module_name ì˜ full path ë¥¼ êµ¬í•œë‹¤.
 std::wstring get_module_pathEx(_In_ const wchar_t* module_name)
 {
 	std::wstring out;
@@ -4802,7 +4802,7 @@ std::wstring get_module_pathEx(_In_ const wchar_t* module_name)
 	}
 }
 
-/// @brief	·ÎµåµÈ module_name ÀÇ µğ·ºÅä¸® °æ·Î¸¦ ¸®ÅÏÇÑ´Ù.
+/// @brief	ë¡œë“œëœ module_name ì˜ ë””ë ‰í† ë¦¬ ê²½ë¡œë¥¼ ë¦¬í„´í•œë‹¤.
 std::wstring get_module_dirEx(_In_ const wchar_t* module_name)
 {
 	std::wstring module_path = get_module_pathEx(module_name);
@@ -4812,7 +4812,7 @@ std::wstring get_module_dirEx(_In_ const wchar_t* module_name)
 
 
 /**
- * @brief	ÇöÀç ¸ğµâÀÇ full path ¸¦ ±¸ÇÑ´Ù.
+ * @brief	í˜„ì¬ ëª¨ë“ˆì˜ full path ë¥¼ êµ¬í•œë‹¤.
 **/
 std::wstring get_current_module_pathEx()
 {
@@ -4827,8 +4827,8 @@ std::wstring get_current_module_pathEx()
 	}
 }
 
-/// @brief	ÇöÀç ¸ğµâÀÇ ÆÄÀÏ¸íÀ» Á¦¿ÜÇÑ µğ·ºÅä¸® °æ·Î¸¦ ±¸ÇÑ´Ù. 
-///			('\' ¹®ÀÚ´Â Á¦¿Ü)
+/// @brief	í˜„ì¬ ëª¨ë“ˆì˜ íŒŒì¼ëª…ì„ ì œì™¸í•œ ë””ë ‰í† ë¦¬ ê²½ë¡œë¥¼ êµ¬í•œë‹¤. 
+///			('\' ë¬¸ìëŠ” ì œì™¸)
 std::wstring get_current_module_dirEx()
 {
 	std::wstring out;
@@ -4843,7 +4843,7 @@ std::wstring get_current_module_dirEx()
 }
 
 /**
- * @brief	ÇöÀç ¸ğµâÀÇ ÆÄÀÏ¸íÀ» ±¸ÇÑ´Ù. (°æ·ÎÁ¦¿Ü)
+ * @brief	í˜„ì¬ ëª¨ë“ˆì˜ íŒŒì¼ëª…ì„ êµ¬í•œë‹¤. (ê²½ë¡œì œì™¸)
 **/
 std::wstring get_current_module_fileEx()
 {
@@ -4858,7 +4858,7 @@ std::wstring get_current_module_fileEx()
 	}
 }
 
-/// @brief  nt_name ¿¡¼­ device name ºÎºĞ¸¸ ¶¼¾î³»¼­ ¸®ÅÏÇÑ´Ù.
+/// @brief  nt_name ì—ì„œ device name ë¶€ë¶„ë§Œ ë–¼ì–´ë‚´ì„œ ë¦¬í„´í•œë‹¤.
 ///
 ///         "\Device\HarddiskVolume4\Windows"    -> "\Device\HarddiskVolume4\"
 ///         "\Device\HarddiskVolume4"             -> "\Device\HarddiskVolume4"   (!)
@@ -4869,9 +4869,9 @@ std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name)
 	_ASSERTE(NULL != nt_name);
 	if (NULL == nt_name) return false;
 
-	// ¹®ÀÚ¿­ ±æÀÌ¸¦ °è»ê
+	// ë¬¸ìì—´ ê¸¸ì´ë¥¼ ê³„ì‚°
 	// input: \Device\HarddiskVolume4\
-    //        ^      ^               ^  : `\` ¸¦ 3¹ø ¸¸³¯¶§±îÁöÀÇ ±æÀÌ¸¦ ±¸ÇÑ´Ù. (¸¶Áö¸· `\` Æ÷ÇÔ)
+    //        ^      ^               ^  : `\` ë¥¼ 3ë²ˆ ë§Œë‚ ë•Œê¹Œì§€ì˜ ê¸¸ì´ë¥¼ êµ¬í•œë‹¤. (ë§ˆì§€ë§‰ `\` í¬í•¨)
 	uint32_t cmp_count = 0;
 	uint32_t met_count = 0;
 	uint32_t max_count = (uint32_t)wcslen(nt_name);
@@ -4884,7 +4884,7 @@ std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name)
 		}
 	}
 
-	// ±×³É ´ëÃæ Â¥ÀÚ...±ÍÂú..
+	// ê·¸ëƒ¥ ëŒ€ì¶© ì§œì...ê·€ì°®..
 	if (cmp_count < 256)
 	{
 		wchar_t buf[256] = { 0x00 };
@@ -4898,7 +4898,7 @@ std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name)
 	}
 }
 
-/// @brief	full path °æ·Î¸í¿¡¼­ `ÆÄÀÏ¸í.È®ÀåÀÚ:ADS` ºÎºĞ¸¸ ¶¼¾î³½´Ù. 
+/// @brief	full path ê²½ë¡œëª…ì—ì„œ `íŒŒì¼ëª….í™•ì¥ì:ADS` ë¶€ë¶„ë§Œ ë–¼ì–´ë‚¸ë‹¤. 
 std::wstring 
 file_name_from_file_pathw(
 	_In_ const wchar_t* file_path, 
@@ -4939,7 +4939,7 @@ file_name_from_file_patha(
 	}
 }
 
-/// @brief	full path °æ·Î¸í¿¡¼­ `ÆÄÀÏ¸í.È®ÀåÀÚ` ¸¦ Á¦¿ÜÇÑ µğ·ºÅä¸® ºÎºĞ¸¸ ¶¼¾î³½´Ù. 
+/// @brief	full path ê²½ë¡œëª…ì—ì„œ `íŒŒì¼ëª….í™•ì¥ì` ë¥¼ ì œì™¸í•œ ë””ë ‰í† ë¦¬ ë¶€ë¶„ë§Œ ë–¼ì–´ë‚¸ë‹¤. 
 std::wstring 
 directory_from_file_pathw(
 	_In_ const wchar_t* file_path
@@ -4959,7 +4959,7 @@ std::string directory_from_file_patha(_In_ const char* file_path)
 	return extract_last_tokenExA(file_path, "\\", true);
 }
 
-/// @brief	GUID ¸¦ »ı¼ºÇÑ´Ù. 
+/// @brief	GUID ë¥¼ ìƒì„±í•œë‹¤. 
 bool create_guid(_Out_ GUID& guid)
 {
 	return SUCCEEDED(CoCreateGuid(&guid));
@@ -5027,8 +5027,8 @@ guid_to_stringw(
 	wchar_t buf[40];
 
 	//
-	//	ret ´Â buf ¿¡ ¾²¿©Áø ¹®ÀÚÀÇ °¹¼ö + NULL 
-	//	Ãß°¡·Î NULL Terminate ÇÒ ÇÊ¿ä ¾ø´Ù. 
+	//	ret ëŠ” buf ì— ì“°ì—¬ì§„ ë¬¸ìì˜ ê°¯ìˆ˜ + NULL 
+	//	ì¶”ê°€ë¡œ NULL Terminate í•  í•„ìš” ì—†ë‹¤. 
 	// 
 	int ret = StringFromGUID2(guid, buf, sizeof(buf) / sizeof(wchar_t));
 	if (0 == ret)
@@ -5385,7 +5385,7 @@ bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32
 	_ASSERTE(0 < buf_len);
 	if (NULL == buf || 0 == buf_len) return false;
 
-	// !ÁÖÀÇ! - ÇÑ ¶óÀÎÀÌ line_dump º¸´Ù Å« °æ¿ì (¼³¸¶ ±×·±ÀÏÀÌ...?!) ¹®Á¦°¡ ¹ß»ı ÇÒ ¼ö ÀÖÀ½
+	// !ì£¼ì˜! - í•œ ë¼ì¸ì´ line_dump ë³´ë‹¤ í° ê²½ìš° (ì„¤ë§ˆ ê·¸ëŸ°ì¼ì´...?!) ë¬¸ì œê°€ ë°œìƒ í•  ìˆ˜ ìˆìŒ
 	char line_dump[1024];
 
 	if ((0 < buf_len) && (NULL != buf))
@@ -5554,10 +5554,10 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 		return true;
 	}
 		
-	//	[Âü°í]
-	//	AdjustToken() È£Ãâ ½Ã Thread token À» »ç¿ëÇÏ¸é process explorer 
-	//	µî¿¡¼­privilige enable/disable »óÅÂ°¡ º¸ÀÌÁö ¾Ê´Â´Ù (´ç¿¬È÷ 
-	//	Process token À» »ç¿ëÇÏ¸é º¸ÀÌ°í)
+	//	[ì°¸ê³ ]
+	//	AdjustToken() í˜¸ì¶œ ì‹œ Thread token ì„ ì‚¬ìš©í•˜ë©´ process explorer 
+	//	ë“±ì—ì„œprivilige enable/disable ìƒíƒœê°€ ë³´ì´ì§€ ì•ŠëŠ”ë‹¤ (ë‹¹ì—°íˆ 
+	//	Process token ì„ ì‚¬ìš©í•˜ë©´ ë³´ì´ê³ )
 	//	
 	HANDLE hToken;
 	if (TRUE != OpenThreadToken(GetCurrentThread(),
@@ -5568,16 +5568,16 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 		if (GetLastError() == ERROR_NO_TOKEN)
 		{
 			//
-			//    Impersonate µÇÁö ¾ÊÀº »óÅÂÀÎ °æ¿ì Thread ´Â Access token À» °¡Áö°í ÀÖÁö 
-			//    ¶§¹®¿¡ Ç×»ó ERROR_NO_TOKEN ÀÌ ¸®ÅÏÇÑ´Ù.
+			//    Impersonate ë˜ì§€ ì•Šì€ ìƒíƒœì¸ ê²½ìš° Thread ëŠ” Access token ì„ ê°€ì§€ê³  ìˆì§€ 
+			//    ë•Œë¬¸ì— í•­ìƒ ERROR_NO_TOKEN ì´ ë¦¬í„´í•œë‹¤.
 			//
-			//    ÀÌ °æ¿ì OpenProcessToken() À» È£ÃâÇØ¼­ ÇÁ·Î¼¼½ºÀÇ Access token À» ¾ò¾î¼­
-			//    ÇÁ·Î¼¼½ºÀÇ Privilige ¸¦ º¯°æÇÒ ¼ö ÀÖ´Ù. 
+			//    ì´ ê²½ìš° OpenProcessToken() ì„ í˜¸ì¶œí•´ì„œ í”„ë¡œì„¸ìŠ¤ì˜ Access token ì„ ì–»ì–´ì„œ
+			//    í”„ë¡œì„¸ìŠ¤ì˜ Privilige ë¥¼ ë³€ê²½í•  ìˆ˜ ìˆë‹¤. 
 			// 
-			//    ¾Æ´Ï¸é ImpersonateSelf() ¸¦ È£ÃâÇØ¼­ ÇöÀç ½º·¹µåÀÇ Access token À» »ı¼ºÇÏ°í
-			//    (»ı¼ºµÈ token Àº ÇöÀç ½º·¹µå¿¡¼­¸¸ À¯È¿) ÇöÀç ½º·¹µåÀÇ Privilege ¸¸ º¯°æÇÒ 
-			//    ¼ö ÀÖ´Ù. Privilege º¯°æ ÈÄ ÇÒÀÏÀÌ ³¡³ª¸é RevertToSelf() ¸¦ È£ÃâÇØ¼­ 
-			//    Impersion À» ³¡³¾ ¼ö ÀÖ´Ù.
+			//    ì•„ë‹ˆë©´ ImpersonateSelf() ë¥¼ í˜¸ì¶œí•´ì„œ í˜„ì¬ ìŠ¤ë ˆë“œì˜ Access token ì„ ìƒì„±í•˜ê³ 
+			//    (ìƒì„±ëœ token ì€ í˜„ì¬ ìŠ¤ë ˆë“œì—ì„œë§Œ ìœ íš¨) í˜„ì¬ ìŠ¤ë ˆë“œì˜ Privilege ë§Œ ë³€ê²½í•  
+			//    ìˆ˜ ìˆë‹¤. Privilege ë³€ê²½ í›„ í• ì¼ì´ ëë‚˜ë©´ RevertToSelf() ë¥¼ í˜¸ì¶œí•´ì„œ 
+			//    Impersion ì„ ëë‚¼ ìˆ˜ ìˆë‹¤.
 			//
 			if (ImpersonateSelf(SecurityImpersonation) != TRUE)
 			{
@@ -5608,7 +5608,7 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 	}
 		
 	//
-	//	Process token À» »ç¿ëÇÏ·Á¸é... 
+	//	Process token ì„ ì‚¬ìš©í•˜ë ¤ë©´... 
 	//
 	//if (!OpenProcessToken(GetCurrentProcess(),
 	//					  TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
@@ -5627,7 +5627,7 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 	});
 
 	//
-	//	ÇöÀç ÇÁ·Î¼¼½º¿¡ ¿äÃ»ÇÑ Privilige °¡ ÀÖ´ÂÁö È®ÀÎ
+	//	í˜„ì¬ í”„ë¡œì„¸ìŠ¤ì— ìš”ì²­í•œ Privilige ê°€ ìˆëŠ”ì§€ í™•ì¸
 	//
 	TOKEN_PRIVILEGES tp = { 0 };
 	tp.PrivilegeCount = 1;
@@ -5714,7 +5714,7 @@ DWORD get_active_console_session_id()
 
 /**
  * @brief	get session id of specified process.
- * @param	process_id ´Â PROCESS_QUERY_INFORMATION ±ÇÇÑÀÌ ÇÊ¿äÇÔ
+ * @param	process_id ëŠ” PROCESS_QUERY_INFORMATION ê¶Œí•œì´ í•„ìš”í•¨
  * @see
  * @remarks
  * @code
@@ -5733,7 +5733,7 @@ bool get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id)
 }
 
 /**
- * @brief	process_id °¡ ÄÜ¼Ö¼¼¼Ç¿¡¼­ ½ÇÇàÁßÀÎ °æ¿ì true ¸®ÅÏ
+ * @brief	process_id ê°€ ì½˜ì†”ì„¸ì…˜ì—ì„œ ì‹¤í–‰ì¤‘ì¸ ê²½ìš° true ë¦¬í„´
  * @param
  * @see
  * @remarks
@@ -5777,7 +5777,7 @@ bool get_current_session_id(_Out_ DWORD& session_id)
 	return true;
 }
 
-/// @brief	cmdline À» ½ÇÇàÇÏ´Â ÇÁ·Î¼¼½º¸¦ »ı¼ºÇÏ´Â CreateProcessW ÇÔ¼ö wrapper
+/// @brief	cmdline ì„ ì‹¤í–‰í•˜ëŠ” í”„ë¡œì„¸ìŠ¤ë¥¼ ìƒì„±í•˜ëŠ” CreateProcessW í•¨ìˆ˜ wrapper
 bool
 create_process(
 	_In_z_ const wchar_t* cmdline,
@@ -5789,9 +5789,9 @@ create_process(
 	_ASSERTE(nullptr != cmdline);
 	if (nullptr == cmdline) return false;
 
-	// CreateProcessW ÇÔ¼ö´Â cmdline ÀÌ ¾²±â °¡´ÉÇÑ ¹öÆÛÀÌ¾î¾ß ÇÑ´Ù. 
-	// µû¶ó¼­ ÀÔ·ÂÀ¸·Î ¹ŞÀº cmdline À» À§ÇÑ ¹öÆÛ¸¦ ÇÒ´çÇÏ°í, º¹»çÇØ¼­
-	// »ç¿ëÇÑ´Ù.
+	// CreateProcessW í•¨ìˆ˜ëŠ” cmdline ì´ ì“°ê¸° ê°€ëŠ¥í•œ ë²„í¼ì´ì–´ì•¼ í•œë‹¤. 
+	// ë”°ë¼ì„œ ì…ë ¥ìœ¼ë¡œ ë°›ì€ cmdline ì„ ìœ„í•œ ë²„í¼ë¥¼ í• ë‹¹í•˜ê³ , ë³µì‚¬í•´ì„œ
+	// ì‚¬ìš©í•œë‹¤.
 	size_t buf_size = ((wcslen(cmdline) + 1) * sizeof(wchar_t));
 	wchar_ptr cmdline_buf((wchar_t*)malloc(buf_size), [](wchar_t* p)
 	{
@@ -5838,8 +5838,8 @@ create_process(
 	return true;
 }
 
-/// @brief	ÇÁ·Î¼¼½º¸¦ »ı¼ºÇÏ°í, Á¾·á½Ã±îÁö ±â´Ù¸°´Ù. ¸¸¾à timeout_secs°¡ INFINITE(0xFFFFFFFF)ÀÏ °æ¿ì
-///			Á¾·áµÉ¶§±îÁö ¹«ÇÑÁ¤ ±â´Ù¸°´Ù.
+/// @brief	í”„ë¡œì„¸ìŠ¤ë¥¼ ìƒì„±í•˜ê³ , ì¢…ë£Œì‹œê¹Œì§€ ê¸°ë‹¤ë¦°ë‹¤. ë§Œì•½ timeout_secsê°€ INFINITE(0xFFFFFFFF)ì¼ ê²½ìš°
+///			ì¢…ë£Œë ë•Œê¹Œì§€ ë¬´í•œì • ê¸°ë‹¤ë¦°ë‹¤.
 bool
 create_process_and_wait(
 	_In_ const wchar_t* cmdline,
@@ -5891,8 +5891,8 @@ create_process_and_wait(
 		}
 
 		//
-		//	¾îÂîµÇ¾ú°Å³ª »ı¼ºµÈ ÇÁ·Î¼¼½º°¡ Á¤»óÁ¾·áµÇ¾ú´Ù´Â º¸ÀåÀÌ ¾øÀ¸¹Ç·Î
-		//	°­Á¦ Á¾·á ½ÃµµÇÑ´Ù. 
+		//	ì–´ì°Œë˜ì—ˆê±°ë‚˜ ìƒì„±ëœ í”„ë¡œì„¸ìŠ¤ê°€ ì •ìƒì¢…ë£Œë˜ì—ˆë‹¤ëŠ” ë³´ì¥ì´ ì—†ìœ¼ë¯€ë¡œ
+		//	ê°•ì œ ì¢…ë£Œ ì‹œë„í•œë‹¤. 
 		//
 		TerminateProcess(process_handle, 0xffffffff);
 	}
@@ -5900,7 +5900,7 @@ create_process_and_wait(
 	if (!GetExitCodeProcess(process_handle, &exit_code))
 	{
 		log_err "GetExitCodeProcess() failed. gle=%u", GetLastError() log_end;
-		exit_code = 0xffffffff;		// exit_code -1 ·Î °£ÁÖ
+		exit_code = 0xffffffff;		// exit_code -1 ë¡œ ê°„ì£¼
 	}
 
 	//
@@ -5910,8 +5910,8 @@ create_process_and_wait(
 	return true;
 }
 
-/// @brief	active console session ¿¡ ·Î±×ÀÎµÈ »ç¿ëÀÚ °èÁ¤À¸·Î ÇÁ·Î¼¼½º¸¦ »ı¼ºÇÑ´Ù.
-///	@remark ÀÌ°Ç ¿©·¯¸ğ·Î À§ÇèÇÑ ÇÔ¼öÀÌ¹Ç·Î ¾²Áö¸»ÀÚ. 
+/// @brief	active console session ì— ë¡œê·¸ì¸ëœ ì‚¬ìš©ì ê³„ì •ìœ¼ë¡œ í”„ë¡œì„¸ìŠ¤ë¥¼ ìƒì„±í•œë‹¤.
+///	@remark ì´ê±´ ì—¬ëŸ¬ëª¨ë¡œ ìœ„í—˜í•œ í•¨ìˆ˜ì´ë¯€ë¡œ ì“°ì§€ë§ì. 
 bool
 create_process_as_login_user(
 	_In_ uint32_t session_id,
@@ -5929,8 +5929,8 @@ create_process_as_login_user(
 	DWORD explorer_pid = 0xFFFFFFFF;
 
 	// 
-	//	Å¸°Ù ¼¼¼ÇÀÇ explorer.exe ÇÁ·Î¼¼½º¸¦ Ã£°í, 
-	//	ÇØ´ç ÇÁ·Î¼¼½ºÀÇ ÅäÅ«À¸·Î ÇÁ·Î¼¼½º¸¦ »ı¼ºÇÑ´Ù.
+	//	íƒ€ê²Ÿ ì„¸ì…˜ì˜ explorer.exe í”„ë¡œì„¸ìŠ¤ë¥¼ ì°¾ê³ , 
+	//	í•´ë‹¹ í”„ë¡œì„¸ìŠ¤ì˜ í† í°ìœ¼ë¡œ í”„ë¡œì„¸ìŠ¤ë¥¼ ìƒì„±í•œë‹¤.
 	// 
 	PROCESSENTRY32 proc_entry = { 0 };
 	DWORD creation_flag = NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE;
@@ -6036,7 +6036,7 @@ create_process_as_login_user(
 										sizeof(DWORD)))
 		{
 			//log_err L"SetTokenInformation(), gle=0x%08x", GetLastError() log_end		
-			// note - ÀÌ ¿¡·¯´Â ¹«½ÃÇØµµ µÈ´Ù. 
+			// note - ì´ ì—ëŸ¬ëŠ” ë¬´ì‹œí•´ë„ ëœë‹¤. 
 		}
 
 		if (TRUE != AdjustTokenPrivileges(duplicated_token,
@@ -6132,7 +6132,7 @@ create_process_as_login_user(
 }
 
 
-/// @brief	Æ¯Á¤ ¼¼¼Ç¿¡ ÇÁ·Î¼¼½º¸¦ »ı¼ºÇÑ´Ù. 
+/// @brief	íŠ¹ì • ì„¸ì…˜ì— í”„ë¡œì„¸ìŠ¤ë¥¼ ìƒì„±í•œë‹¤. 
 bool
 create_process_on_session(
 	_In_ uint32_t session_id,
@@ -6145,12 +6145,12 @@ create_process_on_session(
 	if (0xffffffff == session_id || nullptr == cmdline) return false;
 
 	//
-	//	ÇØ´ç ¼¼¼Ç¿¡ ·Î±×ÀÎÇÑ »ç¿ëÀÚÀÇ ÅäÅ«À» ±¸ÇÑ´Ù. 
+	//	í•´ë‹¹ ì„¸ì…˜ì— ë¡œê·¸ì¸í•œ ì‚¬ìš©ìì˜ í† í°ì„ êµ¬í•œë‹¤. 
 	// 
-	//	WTSQueryUserToken() À» ¼º°øÀûÀ¸·Î È£ÃâÇÏ±â À§ÇØ¼­´Â 
+	//	WTSQueryUserToken() ì„ ì„±ê³µì ìœ¼ë¡œ í˜¸ì¶œí•˜ê¸° ìœ„í•´ì„œëŠ” 
 	//		- Local system account 
 	//		- SE_TCB_NAME privilege 
-	//	Á¶°ÇÀ» ¸¸Á·ÇØ¾ß ÇÑ´Ù.
+	//	ì¡°ê±´ì„ ë§Œì¡±í•´ì•¼ í•œë‹¤.
 	//
 	if (!set_privilege(SE_TCB_NAME, true))
 	{
@@ -6219,8 +6219,8 @@ create_process_on_session(
 	si.lpDesktop = const_cast<wchar_t*>(L"winsta0\\default");
 
 	//
-	//	CreateProcessAsUserW() ÇÔ¼öÀÇ command line ÆÄ¶ó¹ÌÅÍ´Â ¾²±â °¡´ÉÇÑ 
-	//	¹öÆÛÀÌ¾î¾ß ÇÑ´Ù. input ÀÇ »çº»À» »ı¼ºÇØ¼­ È£ÃâÇÑ´Ù. 
+	//	CreateProcessAsUserW() í•¨ìˆ˜ì˜ command line íŒŒë¼ë¯¸í„°ëŠ” ì“°ê¸° ê°€ëŠ¥í•œ 
+	//	ë²„í¼ì´ì–´ì•¼ í•œë‹¤. input ì˜ ì‚¬ë³¸ì„ ìƒì„±í•´ì„œ í˜¸ì¶œí•œë‹¤. 
 	//
 	auto buffer = std::make_unique<wchar_t[]>(wcslen(cmdline) + 1);
 	RtlCopyMemory(buffer.get(), cmdline, wcslen(cmdline) * sizeof(wchar_t));
@@ -6247,7 +6247,7 @@ create_process_on_session(
 	return true;
 }
 
-/// @brief	Æ¯Á¤ ¼¼¼Ç¿¡ ÇÁ·Î¼¼½º¸¦ »ı¼ºÇÏ°í, ÇÁ·Î¼¼½ºÀÇ Á¾·á¸¦ ´ë±âÇÑ´Ù. 
+/// @brief	íŠ¹ì • ì„¸ì…˜ì— í”„ë¡œì„¸ìŠ¤ë¥¼ ìƒì„±í•˜ê³ , í”„ë¡œì„¸ìŠ¤ì˜ ì¢…ë£Œë¥¼ ëŒ€ê¸°í•œë‹¤. 
 bool 
 create_process_on_session_and_wait(
 	_In_ uint32_t session_id,
@@ -6302,8 +6302,8 @@ create_process_on_session_and_wait(
 		}
 
 		//
-		//	¾îÂîµÇ¾ú°Å³ª »ı¼ºµÈ ÇÁ·Î¼¼½º°¡ Á¤»óÁ¾·áµÇ¾ú´Ù´Â º¸ÀåÀÌ ¾øÀ¸¹Ç·Î
-		//	°­Á¦ Á¾·á ½ÃµµÇÑ´Ù. 
+		//	ì–´ì°Œë˜ì—ˆê±°ë‚˜ ìƒì„±ëœ í”„ë¡œì„¸ìŠ¤ê°€ ì •ìƒì¢…ë£Œë˜ì—ˆë‹¤ëŠ” ë³´ì¥ì´ ì—†ìœ¼ë¯€ë¡œ
+		//	ê°•ì œ ì¢…ë£Œ ì‹œë„í•œë‹¤. 
 		//
 		TerminateProcess(pi.hProcess, 0xffffffff);
 	}
@@ -6314,7 +6314,7 @@ create_process_on_session_and_wait(
 			"GetExitCodeProcess() failed. gle=%u", 
 			GetLastError() 
 			log_end;
-		exit_code = 0xffffffff;		// exit_code -1 ·Î °£ÁÖ
+		exit_code = 0xffffffff;		// exit_code -1 ë¡œ ê°„ì£¼
 	}
 
 	//
@@ -6325,8 +6325,8 @@ create_process_on_session_and_wait(
 	return true;	
 }
 
-/// @brief	¼­ºñ½º¿¡¼­ »ı¼ºÇÑ Ä¿³Î¿ÀºêÁ§Æ®¿¡ ·Î±×ÀÎ »ç¿ëÀÚ ÇÁ·Î±×·¥¿¡¼­ 
-///			Á¢±Ù°¡´ÉÇÏµµ·Ï DACL À» ¼³Á¤ÇÑ´Ù. 
+/// @brief	ì„œë¹„ìŠ¤ì—ì„œ ìƒì„±í•œ ì»¤ë„ì˜¤ë¸Œì íŠ¸ì— ë¡œê·¸ì¸ ì‚¬ìš©ì í”„ë¡œê·¸ë¨ì—ì„œ 
+///			ì ‘ê·¼ê°€ëŠ¥í•˜ë„ë¡ DACL ì„ ì„¤ì •í•œë‹¤. 
 /// 
 ///			Built-in guests are denied all access.
 ///			Anonymous logon is denied all access.
@@ -6395,7 +6395,7 @@ bool set_security_attributes_type1(_Out_ SECURITY_ATTRIBUTES& sa)
 	return true;
 }
 
-/// @brief	LOCAL_SYSTEM °èÁ¤À¸·Î¸¸ Á¢±Ù °¡´ÉÇÑ DACL À» »ı¼ºÇÑ´Ù. 
+/// @brief	LOCAL_SYSTEM ê³„ì •ìœ¼ë¡œë§Œ ì ‘ê·¼ ê°€ëŠ¥í•œ DACL ì„ ìƒì„±í•œë‹¤. 
 /// 
 ///			Built-in guests are denied all access.
 ///			Anonymous logon is denied all access.
@@ -6448,7 +6448,7 @@ bool set_security_attributes_type2(_Out_ SECURITY_ATTRIBUTES& sa)
 	return true;
 }
 
-/// @brief	Peer ÇÁ·Î¼¼½º°¡ »ì¾ÆÀÖÀ¸¸é true ¸¦¸®ÅÏÇÏ°í, ±×·¸Áö ¾ÊÀ¸¸é false ¸¦ ¸®ÅÏ
+/// @brief	Peer í”„ë¡œì„¸ìŠ¤ê°€ ì‚´ì•„ìˆìœ¼ë©´ true ë¥¼ë¦¬í„´í•˜ê³ , ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ false ë¥¼ ë¦¬í„´
 bool 
 is_process_alive(
 	_In_ const DWORD peer_pid,
@@ -6474,7 +6474,7 @@ is_process_alive(
 		if (!proc_handle)
 		{
 			//
-			//	ÀÌ¹Ì Á¾·áµÇ¾î, ÇÚµéÀ» ¿­¼ö°¡ ¾øÀ½
+			//	ì´ë¯¸ ì¢…ë£Œë˜ì–´, í•¸ë“¤ì„ ì—´ìˆ˜ê°€ ì—†ìŒ
 			//
 			break;
 		}
@@ -6483,7 +6483,7 @@ is_process_alive(
 		if (!GetExitCodeProcess(proc_handle.get(), &exit_code))
 		{
 			//
-			//	Á¾·áµÈ ÇÁ·Î¼¼½º·Î °£ÁÖ
+			//	ì¢…ë£Œëœ í”„ë¡œì„¸ìŠ¤ë¡œ ê°„ì£¼
 			//
 			break;
 		}
@@ -6615,10 +6615,10 @@ bool terminate_process_by_pid(_In_ DWORD pid, _In_ DWORD exit_code)
 	bool ret = terminate_process_by_handle(proc_handle, exit_code) ? true : false;
 
 	//
-	//	TerminateProcess() API ´Â asynchronous ÇÏ±â¶§¹®¿¡ È£Ãâ ÈÄ 
-	//	ÇÚµéÀ» Close ÇØÁÖ´Â°ÍÀÌ ¸Â´Ù. ÇÁ·Î¼¼½º°¡ Á¾·áµÇ¾ú´Ù¸é CloseHandle() À» 
-	//	È£ÃâÇÏÁö ¾Ê¾Æµµ µÇ°ÚÁö¸¸ ¾î¶² ÀÌÀ¯·Îµç TerminateProcess() °¡ ½ÇÆĞÇÑ °æ¿ì 
-	//	ÇÚµé Leak ÀÌ ¹ß»ıÇÒ ¼ö ÀÖ´Ù. 
+	//	TerminateProcess() API ëŠ” asynchronous í•˜ê¸°ë•Œë¬¸ì— í˜¸ì¶œ í›„ 
+	//	í•¸ë“¤ì„ Close í•´ì£¼ëŠ”ê²ƒì´ ë§ë‹¤. í”„ë¡œì„¸ìŠ¤ê°€ ì¢…ë£Œë˜ì—ˆë‹¤ë©´ CloseHandle() ì„ 
+	//	í˜¸ì¶œí•˜ì§€ ì•Šì•„ë„ ë˜ê² ì§€ë§Œ ì–´ë–¤ ì´ìœ ë¡œë“  TerminateProcess() ê°€ ì‹¤íŒ¨í•œ ê²½ìš° 
+	//	í•¸ë“¤ Leak ì´ ë°œìƒí•  ìˆ˜ ìˆë‹¤. 
 	//
 	CloseHandle(proc_handle);
 	return ret;
@@ -6687,7 +6687,7 @@ bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code)
 	return true;
 }
 
-/// @brief	ÇÁ·Î¼¼½ºÀÇ ½ÇÇà½Ã°£À» ±¸ÇÑ´Ù.
+/// @brief	í”„ë¡œì„¸ìŠ¤ì˜ ì‹¤í–‰ì‹œê°„ì„ êµ¬í•œë‹¤.
 bool
 get_process_creation_time(
 	_In_ DWORD pid,
@@ -6724,7 +6724,7 @@ get_process_creation_time(
 	return get_process_creation_time(process_handle, creation_time);
 }
 
-/// @brief	ÇÁ·Î¼¼½ºÀÇ ½ÇÇà½Ã°£À» ±¸ÇÑ´Ù.
+/// @brief	í”„ë¡œì„¸ìŠ¤ì˜ ì‹¤í–‰ì‹œê°„ì„ êµ¬í•œë‹¤.
 bool
 get_process_creation_time(
 	_In_ HANDLE process_handle,
@@ -7367,7 +7367,7 @@ psid_info get_sid_info(_In_ PSID sid)
 	}
 
 	//
-	//	sid_string ¹öÆÛ´Â ¹İµå½Ã LocalFree() ·Î ¼Ò¸êÇØ¾ß ÇÑ´Ù. 
+	//	sid_string ë²„í¼ëŠ” ë°˜ë“œì‹œ LocalFree() ë¡œ ì†Œë©¸í•´ì•¼ í•œë‹¤. 
 	//	
 	wchar_ptr sid_ptr(sid_str, [](wchar_t* p) {LocalFree(p); });
 
@@ -7417,10 +7417,10 @@ psid_info get_sid_info(_In_ PSID sid)
 								 &sid_name_use))
 	{
 		// 
-		//	·Î±×ÀÎ ¾îÄ«¿îÆ®¿Í ¸ÅÇÎµÇÁö ¾ÊÀº SID(e.g. logon SID)ÀÎ °æ¿ì ¶Ç´Â 
-		//	·Î±×ÀÎ ÀÌ¸§À» Ã£´Ù°¡ ³×Æ®¿öÅ© Å¸ÀÓ¾Æ¿ôÀÌ ¹ß»ıÇÑ °æ¿ì ¶Ç´Â ¸ÅÇÎµÈ ·Î±×ÀÎ °èÁ¤ÀÌ
-		//	¾ø´Â°æ¿ì(·Î±×ÀÎ °èÁ¤ÀÌ ¾ø´Â Group SID ÀÎ °æ¿ì) µî¿¡ ERROR_NONE_MAPPED ¸¦ 
-		//	¸®ÅÏÇÒ ¼ö ÀÖ´Ù. 
+		//	ë¡œê·¸ì¸ ì–´ì¹´ìš´íŠ¸ì™€ ë§¤í•‘ë˜ì§€ ì•Šì€ SID(e.g. logon SID)ì¸ ê²½ìš° ë˜ëŠ” 
+		//	ë¡œê·¸ì¸ ì´ë¦„ì„ ì°¾ë‹¤ê°€ ë„¤íŠ¸ì›Œí¬ íƒ€ì„ì•„ì›ƒì´ ë°œìƒí•œ ê²½ìš° ë˜ëŠ” ë§¤í•‘ëœ ë¡œê·¸ì¸ ê³„ì •ì´
+		//	ì—†ëŠ”ê²½ìš°(ë¡œê·¸ì¸ ê³„ì •ì´ ì—†ëŠ” Group SID ì¸ ê²½ìš°) ë“±ì— ERROR_NONE_MAPPED ë¥¼ 
+		//	ë¦¬í„´í•  ìˆ˜ ìˆë‹¤. 
 		//
 		//log_err "LookupAccountSid() failed. gle=%u",
 		//	GetLastError()
@@ -7434,7 +7434,7 @@ psid_info get_sid_info(_In_ PSID sid)
 						sid_name_use);
 }
 
-/// @brief	pid ÇÁ·Î¼¼½ºÀÇ »ç¿ëÀÚ Á¤º¸¸¦ ±¸ÇÑ´Ù. 
+/// @brief	pid í”„ë¡œì„¸ìŠ¤ì˜ ì‚¬ìš©ì ì •ë³´ë¥¼ êµ¬í•œë‹¤. 
 psid_info
 get_process_user(
 	_In_ DWORD pid
@@ -7691,7 +7691,7 @@ get_privilege_info(
 							  privileges.Attributes);
 }
 
-/// @brief ÇÁ·Î¼¼½º ±ÇÇÑÀ» È¹µæ
+/// @brief í”„ë¡œì„¸ìŠ¤ ê¶Œí•œì„ íšë“
 bool
 get_process_privilege(
 	_In_ DWORD pid,
@@ -7802,7 +7802,7 @@ get_process_privilege(
 	return true;
 }
 
-/// @brief ÇÁ·Î¼¼½º integrity levelÀ» °¡Á®¿Â´Ù.
+/// @brief í”„ë¡œì„¸ìŠ¤ integrity levelì„ ê°€ì ¸ì˜¨ë‹¤.
 bool
 get_process_integrity_level(
 	_In_ DWORD pid,
@@ -7906,7 +7906,7 @@ get_process_integrity_level(
 	return true;
 }
 
-/// @brief ÇÁ·Î¼¼½º token elevation typeÀ» °¡Á®¿Â´Ù.
+/// @brief í”„ë¡œì„¸ìŠ¤ token elevation typeì„ ê°€ì ¸ì˜¨ë‹¤.
 bool
 get_process_token_elevation_type(
 	_In_ DWORD pid,
@@ -7976,7 +7976,7 @@ get_process_token_elevation_type(
 
 	return true;
 }
-/// @brief ÇÁ·Î¼¼½º toekn elevationÀ» °¡Á®¿Â´Ù.
+/// @brief í”„ë¡œì„¸ìŠ¤ toekn elevationì„ ê°€ì ¸ì˜¨ë‹¤.
 bool
 get_process_token_elevated(
 	_In_ DWORD pid,
@@ -8051,7 +8051,7 @@ get_process_token_elevated(
 	return true;
 }
 
-/// @brief ¼³Ä¡µÈ ÇÁ·Î±×·¥ÀÇ Á¤º¸(ÇÁ·Î±×·¥¸í, ¹öÀü, Á¦Á¶»ç) ÀĞ¾î ¿Â´Ù.
+/// @brief ì„¤ì¹˜ëœ í”„ë¡œê·¸ë¨ì˜ ì •ë³´(í”„ë¡œê·¸ë¨ëª…, ë²„ì „, ì œì¡°ì‚¬) ì½ì–´ ì˜¨ë‹¤.
 ///
 pprogram
 get_installed_program_info(
@@ -8066,10 +8066,10 @@ get_installed_program_info(
 	if (1 == is_system_component)
 	{
 		//
-		// SystemComponent flags°¡ ¼³Á¤µÈ °æ¿ì ÇÁ·Î±×·¥ Ãß°¡/Á¦°Å
-		// È¤Àº App & featuresÀÇ ¸ñ·Ï¿¡¼­ º¸ÀÌÁö ¾Ê´Â´Ù. ÇöÀç ÇÁ·Î±×·¥
-		// Ãß°¡/Á¦°Å È¤Àº App & features ¸ñ·Ï ±âÁØÀ¸·Î ¼öÁıÀ» ÇÏ±â ¶§
-		// ¹®¿¡ ÇØ´ç ÇÃ·¡±×°¡ ¼³Á¤µÈ °æ¿ì ¼öÁı ÇÏÁö ¾Ê´Â´Ù.
+		// SystemComponent flagsê°€ ì„¤ì •ëœ ê²½ìš° í”„ë¡œê·¸ë¨ ì¶”ê°€/ì œê±°
+		// í˜¹ì€ App & featuresì˜ ëª©ë¡ì—ì„œ ë³´ì´ì§€ ì•ŠëŠ”ë‹¤. í˜„ì¬ í”„ë¡œê·¸ë¨
+		// ì¶”ê°€/ì œê±° í˜¹ì€ App & features ëª©ë¡ ê¸°ì¤€ìœ¼ë¡œ ìˆ˜ì§‘ì„ í•˜ê¸° ë•Œ
+		// ë¬¸ì— í•´ë‹¹ í”Œë˜ê·¸ê°€ ì„¤ì •ëœ ê²½ìš° ìˆ˜ì§‘ í•˜ì§€ ì•ŠëŠ”ë‹¤.
 		//
 		return nullptr;
 	}
@@ -8125,7 +8125,7 @@ get_installed_program_info(
 		if (true == name.empty())
 		{
 			//
-			// ÇÁ·Î±×·¥¸íÀ» ¾Ë ¼ö ¾ø´Â °æ¿ì¿¡´Â Ã³¸® ÇÏÁö ¾Ê´Â´Ù.
+			// í”„ë¡œê·¸ë¨ëª…ì„ ì•Œ ìˆ˜ ì—†ëŠ” ê²½ìš°ì—ëŠ” ì²˜ë¦¬ í•˜ì§€ ì•ŠëŠ”ë‹¤.
 			//
 			return nullptr;
 		}
@@ -8142,7 +8142,7 @@ get_installed_program_info(
 	return nullptr;
 }
 
-/// @brief ¼³Ä¡µÈ ÇÁ·Î±×·¥ÀÇ Á¤º¸¸¦ ÀĞ¾î ¿À±â À§ÇÑ `callback` ÇÔ¼ö ÀÌ´Ù.
+/// @brief ì„¤ì¹˜ëœ í”„ë¡œê·¸ë¨ì˜ ì •ë³´ë¥¼ ì½ì–´ ì˜¤ê¸° ìœ„í•œ `callback` í•¨ìˆ˜ ì´ë‹¤.
 ///
 bool
 sub_key_iterate_callback(
@@ -8159,7 +8159,7 @@ sub_key_iterate_callback(
 	std::list<pprogram>* softwares = (std::list<pprogram>*)tag;
 
 	//
-	// sub keyÀÇ ÀüÃ¼ °æ·Î¸¦ ¸¸µç´Ù.
+	// sub keyì˜ ì „ì²´ ê²½ë¡œë¥¼ ë§Œë“ ë‹¤.
 	// eg. base name: HKLM\SoftwareL\Software\Microsoft
 	//                 \Windows\CurrentVersion\Uninstall\
 	//     sub_key_name: Everything
@@ -8192,7 +8192,7 @@ sub_key_iterate_callback(
 }
 
 
-/// @brief ¼³Ä¡µÈ ÇÁ·Î±×·¥ Á¤º¸¸¦ ÀĞ¾î ¿Â´Ù.
+/// @brief ì„¤ì¹˜ëœ í”„ë¡œê·¸ë¨ ì •ë³´ë¥¼ ì½ì–´ ì˜¨ë‹¤.
 ///
 bool
 get_installed_programs(
@@ -8201,9 +8201,9 @@ get_installed_programs(
 {
 	//
 	// HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\
-	// ¿¡ ÀÖ´Â ÇÁ·Î±×·¥ Á¤º¸¸¦ ÀĞ¾î ¿Â´Ù.
-	// 64bit ¿î¿µÃ¼Á¦ÀÎ °æ¿ì ÇØ´ç °æ·Î¿¡ ÀÖ´Â ¾îÇÃ¸®ÄÉÀÌ¼Ç Á¤º¸´Â 64ºñÆ®
-	// ÇÁ·Î±×·¥¿¡ °üÇÑ Á¤º¸ ÀÌ´Ù.
+	// ì— ìˆëŠ” í”„ë¡œê·¸ë¨ ì •ë³´ë¥¼ ì½ì–´ ì˜¨ë‹¤.
+	// 64bit ìš´ì˜ì²´ì œì¸ ê²½ìš° í•´ë‹¹ ê²½ë¡œì— ìˆëŠ” ì–´í”Œë¦¬ì¼€ì´ì…˜ ì •ë³´ëŠ” 64ë¹„íŠ¸
+	// í”„ë¡œê·¸ë¨ì— ê´€í•œ ì •ë³´ ì´ë‹¤.
 	//
 	HKEY key_handle = RUOpenKey(HKEY_LOCAL_MACHINE,
 								sub_key_uninstall,
@@ -8218,8 +8218,8 @@ get_installed_programs(
 	}
 
 	//
-	// ¼³Ä¡µÈ ÇÁ·Î±×·¥¸¦ ¹ŞÀ» list¿Í base_key(`sub_key_uninstall`)
-	// ¸¦ Äİ¹é ÇÔ¼ö¿¡ ³Ñ±ä´Ù.
+	// ì„¤ì¹˜ëœ í”„ë¡œê·¸ë¨ë¥¼ ë°›ì„ listì™€ base_key(`sub_key_uninstall`)
+	// ë¥¼ ì½œë°± í•¨ìˆ˜ì— ë„˜ê¸´ë‹¤.
 	//
 	reg_enum_key_values(key_handle,
 						sub_key_uninstall,
@@ -8231,10 +8231,10 @@ get_installed_programs(
 
 	//
 	// HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\
-	// °æ·Î°¡ Á¸Àç ÇÏ´Â °æ¿ì ÇØ´ç Á¤º¸¸¦ ÀĞ¾î ¿Â´Ù. `WOW6432Node`¿¡ ÀÖ´Â ¾îÇÃ¸®ÄÉÀÌ¼Ç
-	// Á¤º¸´Â 64ºñÆ® ¿î¿µÃ¼Á¦¿¡¼­ 32ºñÆ® ÇÁ·Î±×·¥ Á¤º¸¸¦ ÀúÀå ÇÏ°í ÀÖ´Â °æ·ÎÀÌ´Ù.
-	// 64ºñÆ® ¿î¿µÃ¼Á¦ÀÎ °æ¿ì ¸ÕÀú ÇØ´ç °æ·Î Á¸Àç À¯¹«¸¦ Ã¼Å© ÇÑ ÈÄ ÀÖÀ¸¸é ÀĞ°í ³­ ÈÄ
-	// 64ºñÆ® ÇÁ·Î±×·¥ Á¤º¸¸¦ ÀĞ¾î ¿Â´Ù.
+	// ê²½ë¡œê°€ ì¡´ì¬ í•˜ëŠ” ê²½ìš° í•´ë‹¹ ì •ë³´ë¥¼ ì½ì–´ ì˜¨ë‹¤. `WOW6432Node`ì— ìˆëŠ” ì–´í”Œë¦¬ì¼€ì´ì…˜
+	// ì •ë³´ëŠ” 64ë¹„íŠ¸ ìš´ì˜ì²´ì œì—ì„œ 32ë¹„íŠ¸ í”„ë¡œê·¸ë¨ ì •ë³´ë¥¼ ì €ì¥ í•˜ê³  ìˆëŠ” ê²½ë¡œì´ë‹¤.
+	// 64ë¹„íŠ¸ ìš´ì˜ì²´ì œì¸ ê²½ìš° ë¨¼ì € í•´ë‹¹ ê²½ë¡œ ì¡´ì¬ ìœ ë¬´ë¥¼ ì²´í¬ í•œ í›„ ìˆìœ¼ë©´ ì½ê³  ë‚œ í›„
+	// 64ë¹„íŠ¸ í”„ë¡œê·¸ë¨ ì •ë³´ë¥¼ ì½ì–´ ì˜¨ë‹¤.
 	//
 	if (true == RUIsKeyExists(HKEY_LOCAL_MACHINE,
 							  sub_key_uninstall_x64))
@@ -8252,8 +8252,8 @@ get_installed_programs(
 		}
 
 		//
-		// ¼³Ä¡µÈ ÇÁ·Î±×·¥¸¦ ¹ŞÀ» list¿Í base_key(`sub_key_uninstall_x64`)
-		// ¸¦ Äİ¹é ÇÔ¼ö¿¡ ³Ñ±ä´Ù.
+		// ì„¤ì¹˜ëœ í”„ë¡œê·¸ë¨ë¥¼ ë°›ì„ listì™€ base_key(`sub_key_uninstall_x64`)
+		// ë¥¼ ì½œë°± í•¨ìˆ˜ì— ë„˜ê¸´ë‹¤.
 		//
 		reg_enum_key_values(wow64_key_handle,
 							sub_key_uninstall_x64,
@@ -8268,8 +8268,8 @@ get_installed_programs(
 	return true;
 }
 
-/// @brief	ÆÄÀÏÀÇ º¸¾È Á¤º¸¸¦ ±¸ÇÑ´Ù. 
-///			(¹İÈ¯ µÈ psid_info´Â ¹İµå½Ã ÇØÁöÇØ¾ßÇÑ´Ù.)
+/// @brief	íŒŒì¼ì˜ ë³´ì•ˆ ì •ë³´ë¥¼ êµ¬í•œë‹¤. 
+///			(ë°˜í™˜ ëœ psid_infoëŠ” ë°˜ë“œì‹œ í•´ì§€í•´ì•¼í•œë‹¤.)
 psid_info
 get_file_owner(
 	_In_ const wchar_t* file_name
@@ -8342,7 +8342,7 @@ get_file_owner(
 	return get_sid_info(owner_sid);
 }
 
-/// @brief	 Windows Error Reporting È¯°æ ¼³Á¤
+/// @brief	 Windows Error Reporting í™˜ê²½ ì„¤ì •
 bool setup_wer(_In_ const wchar_t* dump_dir)
 {
 	_ASSERTE(nullptr != dump_dir);
@@ -8355,13 +8355,13 @@ bool setup_wer(_In_ const wchar_t* dump_dir)
 	//	Setup WER(Windows Error Reporting)
 	//	"/wer c:\dump"
 	//
-	//	option::DumpType(2:FullDump)·Î ¼³Á¤
+	//	option::DumpType(2:FullDump)ë¡œ ì„¤ì •
 	//		0 : CustomDump
 	//		1 : MiniDump (default)
 	//		2 : FullDump
 	//
 	//	option::DumpFolder
-	//		´ıÇÁ ÆÄÀÏ °æ·Î(ÀÔ·ÂµÈ °æ·Î·Î ¼³Á¤)
+	//		ë¤í”„ íŒŒì¼ ê²½ë¡œ(ì…ë ¥ëœ ê²½ë¡œë¡œ ì„¤ì •)
 	// 
 	std::wstring key_path;
 	key_path = L"Software\\Microsoft\\Windows\\Windows Error Reporting\\LocalDumps";
@@ -8400,7 +8400,7 @@ bool setup_wer(_In_ const wchar_t* dump_dir)
 		return false;
 	}
 
-	//	Æú´õ°¡ ¾øÀ¸¸é »ı¼ºÇÑ´Ù. 
+	//	í´ë”ê°€ ì—†ìœ¼ë©´ ìƒì„±í•œë‹¤. 
 	if (!WUCreateDirectory(dump_dir))
 	{
 		log_err "WUCreateDirectory() failed. dir=%ws",
@@ -8449,21 +8449,21 @@ COORD GetCurCoords(void)
 	return csbi.dwCursorPosition;
 }
 
-/// @brief	 ÄÜ¼ÖÀ» »ı¼ºÇÑ´Ù.
+/// @brief	 ì½˜ì†”ì„ ìƒì„±í•œë‹¤.
 bool attach_console(_In_ bool create)
 {
 	//
-	//	ºÎ¸ğ ÇÁ·Î¼¼½ºÀÇ ÄÜ¼ÖÇÚµé¿¡ ¿¬°á½ÃµµÇÑ´Ù.
+	//	ë¶€ëª¨ í”„ë¡œì„¸ìŠ¤ì˜ ì½˜ì†”í•¸ë“¤ì— ì—°ê²°ì‹œë„í•œë‹¤.
 	//
 	if (AttachConsole(ATTACH_PARENT_PROCESS))
 	{
 		//
-		//	Console Attach ÇÑ °æ¿ì ÇÁ·ÒÇÁÆ®ÀÇ ³¡ºÎºĞ¿¡¼­ ¹Ù·Î Ãâ·ÂÀÌ ½ÃÀÛµÇ¾î
-		//	¾Æ·¡Ã³·³ Á» ¾î»öÇÏ±â ¶§¹®¿¡, 
+		//	Console Attach í•œ ê²½ìš° í”„ë¡¬í”„íŠ¸ì˜ ëë¶€ë¶„ì—ì„œ ë°”ë¡œ ì¶œë ¥ì´ ì‹œì‘ë˜ì–´
+		//	ì•„ë˜ì²˜ëŸ¼ ì¢€ ì–´ìƒ‰í•˜ê¸° ë•Œë¬¸ì—, 
 		//
 		//	C:\x64_release>[INFO] Monster.
 		//
-		//	°­Á¦·Î \n À» ÇÑ¹ø Ãß°¡ÇØÁØ´Ù.
+		//	ê°•ì œë¡œ \n ì„ í•œë²ˆ ì¶”ê°€í•´ì¤€ë‹¤.
 		//
 		write_to_console(fc_none, "\n");
 		return true;
@@ -8472,13 +8472,13 @@ bool attach_console(_In_ bool create)
 	if (create == true)
 	{
 		//
-		//	ºÎ¸ğ ÇÁ·Î¼¼½º¿¡ console handle ÀÌ ¾ø´Â °æ¿ì »ı¼ºÇÑ´Ù.
+		//	ë¶€ëª¨ í”„ë¡œì„¸ìŠ¤ì— console handle ì´ ì—†ëŠ” ê²½ìš° ìƒì„±í•œë‹¤.
 		//
 		HANDLE h_console = GetStdHandle(STD_OUTPUT_HANDLE);
 		if (NULL == h_console)
 		{
 			//
-			//	Console ÀÌ ¾ø´Â, service ¶Ç´Â gui ÀÎ °æ¿ì NULL À» ¸®ÅÏ
+			//	Console ì´ ì—†ëŠ”, service ë˜ëŠ” gui ì¸ ê²½ìš° NULL ì„ ë¦¬í„´
 			//	
 
 			if (!AllocConsole())
@@ -8537,8 +8537,8 @@ void write_to_console(_In_ console_font_color color, _In_z_ const char* log_mess
 		if (NULL == con_stdout_handle || INVALID_HANDLE_VALUE == con_stdout_handle)
 		{
 			//
-			//	NULL : console handle ÀÌ ¾ø´Â ÇÁ·Î¼¼½º 
-			//	INVALID_HANDLE_VALUE : GetStdHandle() ¿¡·¯ 
+			//	NULL : console handle ì´ ì—†ëŠ” í”„ë¡œì„¸ìŠ¤ 
+			//	INVALID_HANDLE_VALUE : GetStdHandle() ì—ëŸ¬ 
 			// 
 			return;
 		}
@@ -8607,8 +8607,8 @@ void clear_console()
 	SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
-/// @brief	ÆÄÀÏÀÌ ½ÇÇàÆÄÀÏÀÎÁö ¾Æ´ÑÁö È®ÀÎÇÑ´Ù. 
-/// @return	¼º°ø½Ã true
+/// @brief	íŒŒì¼ì´ ì‹¤í–‰íŒŒì¼ì¸ì§€ ì•„ë‹Œì§€ í™•ì¸í•œë‹¤. 
+/// @return	ì„±ê³µì‹œ true
 IMAGE_TYPE get_image_type(_In_ const wchar_t* path)
 {
 	_ASSERTE(nullptr != path);
@@ -8680,8 +8680,8 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 	SmrtView sfView(ImageView);
 
 	//
-	// PE ³» offset °ªµéÀ» ½Å·ÚÇÒ ¼ö ¾ø±â ¶§¹®¿¡ SEH ¸¦ ÀÌ¿ëÇÑ´Ù. 
-	// ±âÁ¸¿¡ IsBadReadPtr() ÇÔ¼öµéÀº ´õ ÀÌ»ó »ç¿ëÇÏÁö ¾Ê´Â´Ù. 
+	// PE ë‚´ offset ê°’ë“¤ì„ ì‹ ë¢°í•  ìˆ˜ ì—†ê¸° ë•Œë¬¸ì— SEH ë¥¼ ì´ìš©í•œë‹¤. 
+	// ê¸°ì¡´ì— IsBadReadPtr() í•¨ìˆ˜ë“¤ì€ ë” ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. 
 	//
 	try
 	{
@@ -8695,7 +8695,7 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 		}
 
 		//
-		//	PE »ó¿¡ ±â·ÏµÈ PE ÆÄÀÏÀÇ »çÀÌÁî¿Í ½ÇÁ¦ ÆÄÀÏ »çÀÌÁî¸¦ ºñ±³
+		//	PE ìƒì— ê¸°ë¡ëœ PE íŒŒì¼ì˜ ì‚¬ì´ì¦ˆì™€ ì‹¤ì œ íŒŒì¼ ì‚¬ì´ì¦ˆë¥¼ ë¹„êµ
 		// 
 		DWORD dosSize = (idh->e_cp * 512);
 		if (dosSize > fileSize.QuadPart)
@@ -8705,7 +8705,7 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 		}
 
 		//
-		//	IMAGE_NT_HEADER Æ÷ÀÎÅÍ°¡ PE ÆÄÀÏ ¿µ¿ª(+/- ¹æÇâ ¸ğµÎ)¿¡ ÀÖ´ÂÁö È®ÀÎ
+		//	IMAGE_NT_HEADER í¬ì¸í„°ê°€ PE íŒŒì¼ ì˜ì—­(+/- ë°©í–¥ ëª¨ë‘)ì— ìˆëŠ”ì§€ í™•ì¸
 		//
 #define IMAGE_DOS_SIGNATURE_SIZE 2
 		PIMAGE_NT_HEADERS inh = (PIMAGE_NT_HEADERS)((uintptr_t)idh + idh->e_lfanew);
@@ -8716,7 +8716,7 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 		}
 
 		//
-		//	IMAGE_NT_HEADER ±¸Á¶Ã¼°¡ PE ÆÄÀÏ ¹üÀÌ³»¿¡ ¸ğµÎ ÀÖ´ÂÁö È®ÀÎ
+		//	IMAGE_NT_HEADER êµ¬ì¡°ì²´ê°€ PE íŒŒì¼ ë²”ì´ë‚´ì— ëª¨ë‘ ìˆëŠ”ì§€ í™•ì¸
 		//
 		if ((uintptr_t)inh > (uintptr_t)idh + fileSize.QuadPart ||
 			(uintptr_t)inh + sizeof(IMAGE_NT_HEADERS) > (uintptr_t)idh + fileSize.QuadPart)
@@ -8993,7 +8993,7 @@ bool str_to_uint32(_In_ const char* uint32_string, _Out_ uint32_t& uint32_val)
 {
 	if (NULL == uint32_string) return false;
 
-	//> ¹®ÀÚ¿­ ¾çÂÊ °ø¹é ¸ğµÎ Á¦°Å, '-' ·Î ½ÃÀÛÇÏ´Â °æ¿ì ¿¡·¯Ã³¸®
+	//> ë¬¸ìì—´ ì–‘ìª½ ê³µë°± ëª¨ë‘ ì œê±°, '-' ë¡œ ì‹œì‘í•˜ëŠ” ê²½ìš° ì—ëŸ¬ì²˜ë¦¬
 	std::string str = uint32_string;
 	trima(str);
 	if (str[0] == '-') return false;
@@ -9012,10 +9012,10 @@ bool str_to_int64(_In_ const char* int64_string, _Out_ int64_t& int64_val)
 	int64_val = _strtoi64(int64_string, NULL, 10);
 	if (ERANGE == errno)
 	{
-		// msdn ¿¡´Â ERANGE ¸¦ ¸®ÅÏÇÑ´Ù´Â ³»¿ëÀÌ ¾ø°í, _I64_MAX, _I64_MIN ¸¦ ¸®ÅÏÇÑ´Ù°í ÇÏ´Âµ¥,
-		// ½ÇÁ¦·Î ¹üÀ§¸¦ ³Ñ´Â input À» ³Ö¾îº¸¸é ERANGE ¸¦ ¸®ÅÏÇÔÀ» È®ÀÎÇßÀ½
+		// msdn ì—ëŠ” ERANGE ë¥¼ ë¦¬í„´í•œë‹¤ëŠ” ë‚´ìš©ì´ ì—†ê³ , _I64_MAX, _I64_MIN ë¥¼ ë¦¬í„´í•œë‹¤ê³  í•˜ëŠ”ë°,
+		// ì‹¤ì œë¡œ ë²”ìœ„ë¥¼ ë„˜ëŠ” input ì„ ë„£ì–´ë³´ë©´ ERANGE ë¥¼ ë¦¬í„´í•¨ì„ í™•ì¸í–ˆìŒ
 		//
-		// test_str_to_xxx() Å×½ºÆ® È®ÀÎ		
+		// test_str_to_xxx() í…ŒìŠ¤íŠ¸ í™•ì¸		
 		return false;
 	}
 
@@ -9031,7 +9031,7 @@ bool str_to_uint64(_In_ const char* uint64_string, _Out_ uint64_t& uint64_val)
 {
 	if (NULL == uint64_string) return false;
 
-	//> ¹®ÀÚ¿­ ¾çÂÊ °ø¹é ¸ğµÎ Á¦°Å, '-' ·Î ½ÃÀÛÇÏ´Â °æ¿ì ¿¡·¯Ã³¸®
+	//> ë¬¸ìì—´ ì–‘ìª½ ê³µë°± ëª¨ë‘ ì œê±°, '-' ë¡œ ì‹œì‘í•˜ëŠ” ê²½ìš° ì—ëŸ¬ì²˜ë¦¬
 	std::string str = uint64_string;
 	trima(str);
 	if (str[0] == '-') return false;
@@ -9040,10 +9040,10 @@ bool str_to_uint64(_In_ const char* uint64_string, _Out_ uint64_t& uint64_val)
 	uint64_val = _strtoui64(str.c_str(), NULL, 10);
 	if (ERANGE == errno)
 	{
-		// msdn ¿¡´Â ERANGE ¸¦ ¸®ÅÏÇÑ´Ù´Â ³»¿ëÀÌ ¾ø°í, _UI64_MAX ¸¦ ¸®ÅÏÇÑ´Ù°í ÇÏ´Âµ¥,
-		// ½ÇÁ¦·Î ¹üÀ§¸¦ ³Ñ´Â input À» ³Ö¾îº¸¸é ERANGE ¸¦ ¸®ÅÏÇÔÀ» È®ÀÎÇßÀ½
+		// msdn ì—ëŠ” ERANGE ë¥¼ ë¦¬í„´í•œë‹¤ëŠ” ë‚´ìš©ì´ ì—†ê³ , _UI64_MAX ë¥¼ ë¦¬í„´í•œë‹¤ê³  í•˜ëŠ”ë°,
+		// ì‹¤ì œë¡œ ë²”ìœ„ë¥¼ ë„˜ëŠ” input ì„ ë„£ì–´ë³´ë©´ ERANGE ë¥¼ ë¦¬í„´í•¨ì„ í™•ì¸í–ˆìŒ
 		//
-		// test_str_to_xxx() Å×½ºÆ® È®ÀÎ
+		// test_str_to_xxx() í…ŒìŠ¤íŠ¸ í™•ì¸
 		errno = 0;
 		return false;
 	}
@@ -9083,10 +9083,10 @@ bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ uint64_t& uint64_va
 }
 
 /**
-* @brief	cpu Á¤º¸¸¦ ¼öÁıÇÑ´Ù.
+* @brief	cpu ì •ë³´ë¥¼ ìˆ˜ì§‘í•œë‹¤.
 * @param
 * @see
-* @remarks  xp sp3 ÀÌ»ó¿¡¼­¸¸ »ç¿ë °¡´É
+* @remarks  xp sp3 ì´ìƒì—ì„œë§Œ ì‚¬ìš© ê°€ëŠ¥
 * @code
 * @endcode
 * @return

@@ -29,8 +29,8 @@ extern "C" {
 
 
 /* 
-	_x86_ ÀÌ ºÙÀº ÀÚ·á±¸Á¶´Â x86/x64 ÀÇ »çÀÌÁî°¡ ´Ù¸§
-	_x64_ Æ÷ÆÃÇÒ ¶§ Âü°í
+	_x86_ ì´ ë¶™ì€ ìë£Œêµ¬ì¡°ëŠ” x86/x64 ì˜ ì‚¬ì´ì¦ˆê°€ ë‹¤ë¦„
+	_x64_ í¬íŒ…í•  ë•Œ ì°¸ê³ 
 */
 
 
@@ -53,7 +53,7 @@ typedef struct _X86_EFLAGS
 			unsigned AF				:  1; //  4, Auxiliary Carry Flag
 			unsigned default_5		:  1; //  5, 0
 			unsigned ZF				:  1; //  6, Zero Flag
-			unsigned SF				:  1; //  7, Sign Flag  << ¿©±â ±îÁö°¡ Status Flag
+			unsigned SF				:  1; //  7, Sign Flag  << ì—¬ê¸° ê¹Œì§€ê°€ Status Flag
 
 			unsigned TF				:  1; //  8, Trap Flag
 			unsigned IF				:  1; //  9, Interrupt enable Flag
@@ -90,7 +90,7 @@ typedef struct _X64_RFLAGS
 			UINT64 AF				:  1; //  4, Auxiliary Carry Flag
 			UINT64 default_5		:  1; //  5, 0
 			UINT64 ZF				:  1; //  6, Zero Flag
-			UINT64 SF				:  1; //  7, Sign Flag  << ¿©±â ±îÁö°¡ Status Flag
+			UINT64 SF				:  1; //  7, Sign Flag  << ì—¬ê¸° ê¹Œì§€ê°€ Status Flag
 
 			UINT64 TF				:  1; //  8, Trap Flag
 			UINT64 IF				:  1; //  9, Interrupt enable Flag
@@ -112,7 +112,7 @@ typedef struct _X64_RFLAGS
 	};
 } X64_RFLAGS, *PX64_RFLAGS;
 
-//> cr0 ·¹Áö½ºÅÍ 
+//> cr0 ë ˆì§€ìŠ¤í„° 
 //	contains system control flags that control operating mode and state of the processor
 typedef struct _X86_CR0
 {
@@ -183,7 +183,7 @@ typedef struct _X64_CR0
 #define X86_CR0_PG              0x80000000      /* Paging                   (RW) */
 
 
-//> cr3 ·¹Áö½ºÅÍ (Page-Directory Base Register, PDBR)
+//> cr3 ë ˆì§€ìŠ¤í„° (Page-Directory Base Register, PDBR)
 typedef struct _X86_CR3 
 {
 	union
@@ -224,7 +224,7 @@ typedef struct _X64_CR3
 	};
 } X64_CR3;
 
-//> cr4 ·¹Áö½ºÅÍ 
+//> cr4 ë ˆì§€ìŠ¤í„° 
 //	contains a group of flags that enable several architectural extenstions 
 //	and indicate operating system or executive support for specific processor capabilities.
 typedef struct _X86_CR4
@@ -360,7 +360,7 @@ typedef struct _X64_IDTR
 	#error !need to write code for this architecture
 #endif
 
-//> segment selector (x86, x64 »çÀÌÁî µ¿ÀÏ)
+//> segment selector (x86, x64 ì‚¬ì´ì¦ˆ ë™ì¼)
 //> vol3. 3.4.2
 typedef struct _SEGMENT_SELECTOR
 {
@@ -421,9 +421,9 @@ typedef struct SEGMENT_DESCRIPTOR
 
 } *PSEGMENT_DESCRIPTOR;
 
-//> PSEGMENT_DESCRIPTOR ¼³Á¤À» ÀĞ±â ½±°Ô ÇÏ±â À§ÇØ Á¤ÀÇÇÑ »ó¼ö 
+//> PSEGMENT_DESCRIPTOR ì„¤ì •ì„ ì½ê¸° ì‰½ê²Œ í•˜ê¸° ìœ„í•´ ì •ì˜í•œ ìƒìˆ˜ 
 //  e.g. 
-//	SEGMENT_DESCRIPTOR::s2::attr0 & LA_STANDARD ( = 10000b ) : s1::S ºñÆ®¸¦ Ã¼Å©, false = system , true = code or data
+//	SEGMENT_DESCRIPTOR::s2::attr0 & LA_STANDARD ( = 10000b ) : s1::S ë¹„íŠ¸ë¥¼ ì²´í¬, false = system , true = code or data
 #define LA_ACCESSED		0x01
 #define LA_READABLE		0x02    // for code segments
 #define LA_WRITABLE		0x02    // for data segments
@@ -605,7 +605,7 @@ typedef struct _X86_PDE
 			UINT32 pcd		: 1;	// [4], page-level cache disabled
 			UINT32 a		: 1;	// [5], accessed
 			UINT32 d_ignored: 1;	// [6], dirty (ignored)
-			UINT32 ps		: 1;	// [7], page size (0 : 4kb page) ( CR4.pse == 1 ÀÌ¸é ¹İµå½Ã 1 -> 4mb page)
+			UINT32 ps		: 1;	// [7], page size (0 : 4kb page) ( CR4.pse == 1 ì´ë©´ ë°˜ë“œì‹œ 1 -> 4mb page)
 			UINT32 g		: 1;	// [8], global page
 			UINT32 avail	: 3;	// [9 -11], available to programmer
 			UINT32 pfn		: 20;	// [12-31], page frame number

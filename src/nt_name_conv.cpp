@@ -48,7 +48,7 @@ bool NameConverter::load(_In_ bool force_reload)
 	return _loaded;
 }
 
-/// @brief  nt path name À» dos path name À¸·Î º¯È¯ÇÑ´Ù. 
+/// @brief  nt path name ì„ dos path name ìœ¼ë¡œ ë³€í™˜í•œë‹¤. 
 ///
 ///			\??\c:\windows\system32\abc.exe->c:\windows\system32\abc.exe
 ///			\Systemroot\abc.exe->C:\WINDOWS\abc.exe
@@ -75,8 +75,8 @@ bool NameConverter::load(_In_ bool force_reload)
 ///		
 ///			\Device\HarddiskVolumeShadowCopy222 -> \Device\HarddiskVolumeShadowCopy222
 ///
-///			º¼·ı ³×ÀÓ ¶Ç´Â µğ¹ÙÀÌ½º ³×ÀÓÀÌ ¾ø´Â root °æ·Î Á¢±ÙÀÎ °æ¿ì %SystemDrive% ¸¦ ºÙ¿©ÁØ´Ù. 
-///			(¾ËÁö ¸øÇÏ´Â ÇüÅÂÀÌ°í, `\` ·Î ½ÃÀÛÇÏ´Â °æ·Î¸íÀÇ °æ¿ì)
+///			ë³¼ë¥¨ ë„¤ì„ ë˜ëŠ” ë””ë°”ì´ìŠ¤ ë„¤ì„ì´ ì—†ëŠ” root ê²½ë¡œ ì ‘ê·¼ì¸ ê²½ìš° %SystemDrive% ë¥¼ ë¶™ì—¬ì¤€ë‹¤. 
+///			(ì•Œì§€ ëª»í•˜ëŠ” í˜•íƒœì´ê³ , `\` ë¡œ ì‹œì‘í•˜ëŠ” ê²½ë¡œëª…ì˜ ê²½ìš°)
 ///				\Users\ -> c:\users
 ///				\UnknownPath -> c:\UnknownPath
 ///				\Program Files -> c:\Program Files
@@ -174,8 +174,8 @@ NameConverter::get_canon_name(
     }
 
 	//
-	//	º¼·ı³×ÀÓ ¶Ç´Â µğ¹ÙÀÌ½º ³×ÀÓ ¾ø´Â root °æ·Î Á¢±ÙÀº
-	//	%SystemDrive% ¸¦ ºÙ¿©ÁØ´Ù. 
+	//	ë³¼ë¥¨ë„¤ì„ ë˜ëŠ” ë””ë°”ì´ìŠ¤ ë„¤ì„ ì—†ëŠ” root ê²½ë¡œ ì ‘ê·¼ì€
+	//	%SystemDrive% ë¥¼ ë¶™ì—¬ì¤€ë‹¤. 
 	//
 	//	\windows -> c:\windows
 	//	\Program Files, \Program Files (x86) -> c:\Program Files...
@@ -197,8 +197,8 @@ NameConverter::get_canon_name(
 }
 
 /// @brief  nt_name( ex. \Device\HarddiskVolume4\Windows\...\MicrosoftEdge.exe ) 
-///         ÀÌ removeable drive ÀÌ¸é true ¸¦ ¸®ÅÏÇÑ´Ù.
-///			¸¸ÀÏ nt_name ÀÌ ¾Ë¼ö ¾ø´Â ÀÌ¸§ÀÌ¶ó¸é  false ¸¦ ¸®ÅÏÇÑ´Ù. 
+///         ì´ removeable drive ì´ë©´ true ë¥¼ ë¦¬í„´í•œë‹¤.
+///			ë§Œì¼ nt_name ì´ ì•Œìˆ˜ ì—†ëŠ” ì´ë¦„ì´ë¼ë©´  false ë¥¼ ë¦¬í„´í•œë‹¤. 
 bool
 NameConverter::is_removable_drive(
 	_In_ const wchar_t* nt_name
@@ -210,10 +210,10 @@ NameConverter::is_removable_drive(
 	if (!load(false)) return false;
 
 	//
-	//	ºñ±³ÇÒ ¹®ÀÚ¿­ ±æÀÌ¸¦ °è»ê
+	//	ë¹„êµí•  ë¬¸ìì—´ ê¸¸ì´ë¥¼ ê³„ì‚°
 	//	input: \Device\HarddiskVolume4\
-	//        ^      ^               ^  : `\` ¸¦ 3¹ø ¸¸³¯¶§±îÁöÀÇ ±æÀÌ¸¦ ±¸ÇÑ´Ù. (`\` Æ÷ÇÔ)
-	//                                    `\' ¸¦ »©¸é Volume44 == Volume4 °¡ µ¿ÀÏÇÔÀ¸·Î ÀÎ½ÄµÉ ¼ö ÀÖÀ½
+	//        ^      ^               ^  : `\` ë¥¼ 3ë²ˆ ë§Œë‚ ë•Œê¹Œì§€ì˜ ê¸¸ì´ë¥¼ êµ¬í•œë‹¤. (`\` í¬í•¨)
+	//                                    `\' ë¥¼ ë¹¼ë©´ Volume44 == Volume4 ê°€ ë™ì¼í•¨ìœ¼ë¡œ ì¸ì‹ë  ìˆ˜ ìˆìŒ
 	//
 	//	ex) \\Device\\HarddiskVolume4\\Windows -> \\Device\\HarddiskVolume4\\
 	//      \\Device\\HarddiskVolume4          -> \\Device\\HarddiskVolume4
@@ -248,8 +248,8 @@ NameConverter::is_removable_drive(
 }
 
 /// @brief  nt_name( ex. \\Device\\Mup\\192.168.153.144\\sfr022\\ ) 
-///         ÀÌ network ÀÌ¸é true ¸¦ ¸®ÅÏÇÑ´Ù.
-///			¸¸ÀÏ nt_name ÀÌ ¾Ë¼ö ¾ø´Â ÀÌ¸§ÀÌ¶ó¸é  false ¸¦ ¸®ÅÏÇÑ´Ù. 
+///         ì´ network ì´ë©´ true ë¥¼ ë¦¬í„´í•œë‹¤.
+///			ë§Œì¼ nt_name ì´ ì•Œìˆ˜ ì—†ëŠ” ì´ë¦„ì´ë¼ë©´  false ë¥¼ ë¦¬í„´í•œë‹¤. 
 bool
 NameConverter::is_network_path(
 	_In_ const wchar_t* nt_name
@@ -276,9 +276,9 @@ NameConverter::is_network_path(
 	return false;
 }
 
-/// @brief	DosDevice ¸¦ iterate ÇÑ´Ù.
-///			callback ÇÔ¼ö°¡ false ¸¦ ¸®ÅÏÇÏ¸é iterate ¸¦ ÁßÁöÇÏ°í
-///			¸®ÅÏÇÑ´Ù. 
+/// @brief	DosDevice ë¥¼ iterate í•œë‹¤.
+///			callback í•¨ìˆ˜ê°€ false ë¥¼ ë¦¬í„´í•˜ë©´ iterate ë¥¼ ì¤‘ì§€í•˜ê³ 
+///			ë¦¬í„´í•œë‹¤. 
 bool 
 NameConverter::iterate_dos_devices(
 	_In_ iterate_dos_device_callback callback,
@@ -302,11 +302,11 @@ NameConverter::iterate_dos_devices(
 	return true;
 }
 
-/// @brief	c:\windows\system32\test.txt -> \Device\HarddiskVolume1\windows\test.txt ·Î º¯È¯
+/// @brief	c:\windows\system32\test.txt -> \Device\HarddiskVolume1\windows\test.txt ë¡œ ë³€í™˜
 ///
 ///			[warning]
-///			c: (drive letter) -> \Device\HardDiskVolume1 (Device name) º¯È¯Àº 
-///			get_device_name_by_drive_name() ¸Ş¼Òµå ÀÌ¿ë
+///			c: (drive letter) -> \Device\HardDiskVolume1 (Device name) ë³€í™˜ì€ 
+///			get_device_name_by_drive_name() ë©”ì†Œë“œ ì´ìš©
 bool
 NameConverter::get_nt_path_by_dos_path(
 	_In_ const wchar_t* dos_path, 
@@ -319,7 +319,7 @@ NameConverter::get_nt_path_by_dos_path(
 	if (!load(false)) return false;
 
 	// 
-	// dos_path ´Â ÃÖ¼ÒÇÑ `c:\` Çü½ÄÀÌ¾î¾ß ÇÑ´Ù. 
+	// dos_path ëŠ” ìµœì†Œí•œ `c:\` í˜•ì‹ì´ì–´ì•¼ í•œë‹¤. 
 	// 
 	if (3 > wcslen(dos_path) || dos_path[2] != L'\\')
 	{
@@ -336,7 +336,7 @@ NameConverter::get_nt_path_by_dos_path(
 		for (const auto& ddi : _dos_devices)
 		{
 			//
-			//	`c:` µÎ ±ÛÀÚ¸¸ ºñ±³
+			//	`c:` ë‘ ê¸€ìë§Œ ë¹„êµ
 			// 
 			if (0 == _wcsnicmp(ddi->_logical_drive.c_str(), dos_path, 2))
 			{
@@ -364,7 +364,7 @@ NameConverter::get_nt_path_by_dos_path(
 	return true;
 }
 
-/// @brief	c: (drive letter) -> \Device\HardDiskVolume1 (Device name) º¯È¯
+/// @brief	c: (drive letter) -> \Device\HardDiskVolume1 (Device name) ë³€í™˜
 bool 
 NameConverter::get_device_name_by_drive_letter(
 	_In_ const wchar_t* drive_letter,
@@ -377,7 +377,7 @@ NameConverter::get_device_name_by_drive_letter(
 	if (!load(false)) return false;
 
 	// 
-	// drive_letter ´Â ¹İµå½Ã `c:` Çü½ÄÀÌ¾î¾ß ÇÑ´Ù. 
+	// drive_letter ëŠ” ë°˜ë“œì‹œ `c:` í˜•ì‹ì´ì–´ì•¼ í•œë‹¤. 
 	// 
 	if (2 != wcslen(drive_letter) || drive_letter[1] != L':')
 	{
@@ -393,13 +393,13 @@ NameConverter::get_device_name_by_drive_letter(
 		for (const auto& ddi : _dos_devices)
 		{
 			//
-			//	`c:` µÎ ±ÛÀÚ¸¸ ºñ±³
+			//	`c:` ë‘ ê¸€ìë§Œ ë¹„êµ
 			// 
 			if (0 == _wcsnicmp(ddi->_logical_drive.c_str(), drive_letter, 2))
 			{
 				//
-				//	ddi._device_name Àº Ç×»ó `\` Á¾·áµÇ±â ¶§¹®¿¡ ¸¶Áö¸· `\` ¹®ÀÚ¸¦
-				//	Á¦°ÅÇØ¼­ ¸®ÅÏÇÑ´Ù. 
+				//	ddi._device_name ì€ í•­ìƒ `\` ì¢…ë£Œë˜ê¸° ë•Œë¬¸ì— ë§ˆì§€ë§‰ `\` ë¬¸ìë¥¼
+				//	ì œê±°í•´ì„œ ë¦¬í„´í•œë‹¤. 
 				//
 				device_name = ddi->_device_name.substr(0, 
 													   ddi->_device_name.size() - 1);
@@ -420,14 +420,14 @@ NameConverter::get_device_name_by_drive_letter(
 	return true;
 }
 
-/// @brief	nt device name ¹®ÀÚ¿­À» ¹Ş¾Æ¼­ drive letter ¸¦ ¸®ÅÏÇÑ´Ù. 
+/// @brief	nt device name ë¬¸ìì—´ì„ ë°›ì•„ì„œ drive letter ë¥¼ ë¦¬í„´í•œë‹¤. 
 ///	@param	device_name		
 ///				1) \Device\HardDiskVolume1\windows\system32\calc.exe
 ///				2) \Device\HardDiskVolume1\
 ///				3) \Device\HardDiskVolume1
-///				ÇüÅÂÀÇ ÀÔ·ÂÀ» ¸ğµÎ ¼ö¿ëÇÑ´Ù. 
-///				1), 2) ÇüÅÂ ÀÔ·ÂÀÎ °æ¿ì `\Device\HardDiskVolume1\` ºÎºĞ¸¸ »ç¿ëÇÑ´Ù. 
-/// @prarm	device_name ¿¡ ¸ÅÄªµÇ´Â `c:` ÇüÅÂÀÇ µå¶óÀÌºê ·¹ÅÍ¸¦ ¸®ÅÏÇÑ´Ù.
+///				í˜•íƒœì˜ ì…ë ¥ì„ ëª¨ë‘ ìˆ˜ìš©í•œë‹¤. 
+///				1), 2) í˜•íƒœ ì…ë ¥ì¸ ê²½ìš° `\Device\HardDiskVolume1\` ë¶€ë¶„ë§Œ ì‚¬ìš©í•œë‹¤. 
+/// @prarm	device_name ì— ë§¤ì¹­ë˜ëŠ” `c:` í˜•íƒœì˜ ë“œë¼ì´ë¸Œ ë ˆí„°ë¥¼ ë¦¬í„´í•œë‹¤.
 bool 
 NameConverter::get_drive_letter_by_device_name(
 	_In_ const wchar_t* device_name,
@@ -440,12 +440,12 @@ NameConverter::get_drive_letter_by_device_name(
 	if (!load(false)) return false;
 
 	// 
-	//	device name À» Á¤±ÔÈ­ÇÑ´Ù.
+	//	device name ì„ ì •ê·œí™”í•œë‹¤.
 	// 
-	//  - \Device, Device µî '\' °¡ 2°³ ¹Ì¸¸ÀÌ¸é invalid input
-	//	- \Device\HarddiskVolume4 ¶ó¸é \Device\HarddiskVolume4\ ·Î º¯È¯
-	//  - \Device\HarddiskVolume4\, \Device\HarddiskVolume4\aaa ¶ó¸é 
-	//	  \Device\HarddiskVolume4\ ±îÁö¸¸ »ç¿ë
+	//  - \Device, Device ë“± '\' ê°€ 2ê°œ ë¯¸ë§Œì´ë©´ invalid input
+	//	- \Device\HarddiskVolume4 ë¼ë©´ \Device\HarddiskVolume4\ ë¡œ ë³€í™˜
+	//  - \Device\HarddiskVolume4\, \Device\HarddiskVolume4\aaa ë¼ë©´ 
+	//	  \Device\HarddiskVolume4\ ê¹Œì§€ë§Œ ì‚¬ìš©
 	//
 	int32_t back_slash_count = 0;
 	int32_t compare_count = 0;
@@ -476,9 +476,9 @@ NameConverter::get_drive_letter_by_device_name(
 		}
 
 		// 
-		//	compare_count ¸¸Å­¸¸ ºñ±³ÇÏ±â ¶§¹®¿¡ \Device\HarddiskVolume4 ÇüÅÂÀÇ ÀÔ·ÂÀÎ °æ¿ì
-		//	\Device\HarddiskVolume4\ ¿Í \Device\HarddiskVolume44\ µÎ °³ ¸ğµÎ ¸ÅÄªµÉ ¼ö ÀÖ´Ù.
-		//	µû¶ó¼­ ÇöÀç ¸ÅÄªµÈ DosDeviceInfo::_device_name[compare_count+1] °¡ \ ÀÎÁö È®ÀÎÇØ¾ß ÇÑ´Ù.
+		//	compare_count ë§Œí¼ë§Œ ë¹„êµí•˜ê¸° ë•Œë¬¸ì— \Device\HarddiskVolume4 í˜•íƒœì˜ ì…ë ¥ì¸ ê²½ìš°
+		//	\Device\HarddiskVolume4\ ì™€ \Device\HarddiskVolume44\ ë‘ ê°œ ëª¨ë‘ ë§¤ì¹­ë  ìˆ˜ ìˆë‹¤.
+		//	ë”°ë¼ì„œ í˜„ì¬ ë§¤ì¹­ëœ DosDeviceInfo::_device_name[compare_count+1] ê°€ \ ì¸ì§€ í™•ì¸í•´ì•¼ í•œë‹¤.
 		// 
 		if (back_slash_count == 2)
 		{
@@ -508,14 +508,14 @@ NameConverter::get_drive_letter_by_device_name(
 	return true;
 }
 
-/// @brief  device prefix ¸¦ ÀÎ½Ä, ÀûÀıÈ÷ º¯È¯ÇØ¼­ ¸®ÅÏÇÑ´Ù. 
-/// @remark dos_device prefix ÀÇ °æ¿ì
+/// @brief  device prefix ë¥¼ ì¸ì‹, ì ì ˆíˆ ë³€í™˜í•´ì„œ ë¦¬í„´í•œë‹¤. 
+/// @remark dos_device prefix ì˜ ê²½ìš°
 ///             \device\harddiskvolume1\abc.exe -> c:\abc.exe
 ///
-///          local drive ·Î ¸ÅÇÎµÈ °æ¿ì (DRIVE_REMOTE Å¸ÀÔ µå¶óÀÌºêÀÎ °æ¿ì)
+///          local drive ë¡œ ë§¤í•‘ëœ ê²½ìš° (DRIVE_REMOTE íƒ€ì… ë“œë¼ì´ë¸Œì¸ ê²½ìš°)
 ///             x: -> \\192.168.153.144\share 
 ///             
-///         mup_device ÀÇ °æ¿ì
+///         mup_device ì˜ ê²½ìš°
 ///             \device\mup\1.1.1.1\share\abc.exe -> \\1.1.1.1\share\abc.exe
 bool 
 NameConverter::resolve_device_prefix(
@@ -527,11 +527,11 @@ NameConverter::resolve_device_prefix(
 	if (NULL == file_name || file_name[0] != L'\\') return false;
 
 
-	// file_name ¹®ÀÚ¿­ Á¤±ÔÈ­ 
+	// file_name ë¬¸ìì—´ ì •ê·œí™” 
 	//
-	//  \\Device, Device µî '\' °¡ 2°³ ¹Ì¸¸ÀÌ¸é invalid input
-	//  \\Device\\HarddiskVolume4    ¶ó¸é \\Device\\HarddiskVolume4\\ ·Î º¯È¯
-	//  \\Device\\HarddiskVolume4\\, \\Device\\HarddiskVolume4\\aaa ¶ó¸é ±×´ë·Î »ç¿ë
+	//  \\Device, Device ë“± '\' ê°€ 2ê°œ ë¯¸ë§Œì´ë©´ invalid input
+	//  \\Device\\HarddiskVolume4    ë¼ë©´ \\Device\\HarddiskVolume4\\ ë¡œ ë³€í™˜
+	//  \\Device\\HarddiskVolume4\\, \\Device\\HarddiskVolume4\\aaa ë¼ë©´ ê·¸ëŒ€ë¡œ ì‚¬ìš©
 	uint32_t cmp_count = 0;
 	uint32_t met_count = 0;
 	uint32_t max_count = (uint32_t)wcslen(file_name);
@@ -552,7 +552,7 @@ NameConverter::resolve_device_prefix(
 		log_err "invalid nt_name, nt_name=%ws", file_name log_end;
 		return false;
 	case 2:
-		// '\' ÇÏ³ª ´õ ºÙ¿©ÁØ´Ù.            
+		// '\' í•˜ë‚˜ ë” ë¶™ì—¬ì¤€ë‹¤.            
 		strm << file_name << L"\\";
 		break;
 	case 3:
@@ -565,7 +565,7 @@ NameConverter::resolve_device_prefix(
 	to_lower_string(small_rfn);
 
 	//
-	// #0, \Device\HarddiskVolumeShadowCopy ¶ó¸é ±×´ë·Î ¸®ÅÏÇÑ´Ù.
+	// #0, \Device\HarddiskVolumeShadowCopy ë¼ë©´ ê·¸ëŒ€ë¡œ ë¦¬í„´í•œë‹¤.
 	//
 	if (lstrnicmp(L"\\Device\\HarddiskVolumeShadowCopy", small_rfn.c_str(), true))
 	{
@@ -581,8 +581,8 @@ NameConverter::resolve_device_prefix(
     for (const auto& dos_device : _dos_devices)
     {
 		// 
-        //	\Device\HarddiskVolume1, \Device\HarddiskVolume11 ÀÌ ¸ÅÄªµÇÁö ¾Êµµ·Ï
-        //	dos_device._device_name ÇÊµå´Â `\Device\HarddiskVolume1\` Ã³·³ `\` ·Î ³¡³­´Ù.
+        //	\Device\HarddiskVolume1, \Device\HarddiskVolume11 ì´ ë§¤ì¹­ë˜ì§€ ì•Šë„ë¡
+        //	dos_device._device_name í•„ë“œëŠ” `\Device\HarddiskVolume1\` ì²˜ëŸ¼ `\` ë¡œ ëë‚œë‹¤.
 		//
 
 		std::wstring smal_dn = dos_device->_device_name;
@@ -613,12 +613,12 @@ NameConverter::resolve_device_prefix(
 
 	//
 	//	#2. is this a mup device? (network providers)
-	//  ';' °¡ 0°³ÀÎ °æ¿ì mup prefix¸¸ Á¦°Å
+	//  ';' ê°€ 0ê°œì¸ ê²½ìš° mup prefixë§Œ ì œê±°
 	//				ex)	\Device\Mup\192.168.0.1\						->\\192.168.0.1\
-	//		   1°³ÀÎ °æ¿ì ¾Õ¿¡ \\Device prefix Ãß°¡
+	//		   1ê°œì¸ ê²½ìš° ì•ì— \\Device prefix ì¶”ê°€
 	//				ex)	\Device\Mup\; WebDavRedirector\					-> \Device\WebDavRedirector\
 	//				ex)	\Device\Mup\;      WebDavRedirector\			-> \Device\WebDavRedirector\
-	//		   2°³ÀÎ °æ¿ì ¾Õ¿¡ \\Device prefix Ãß°¡
+	//		   2ê°œì¸ ê²½ìš° ì•ì— \\Device prefix ì¶”ê°€
 	//				ex)	\Device\Mup\; RdpDr\; :1\192.168.59.134\IPC$\	-> \\192.168.59.134\IPC$\
 	//				ex)	\Device\Mup\; RdpDr\; :xxxx\192.168.59.134\IPC$\-> \\192.168.59.134\IPC$\
 	//
@@ -693,7 +693,7 @@ bool NameConverter::load_env_values()
 	std::wstring value;
 
 	//
-	//	%SystemDrive% È¯°æº¯¼ö ÀĞ±â
+	//	%SystemDrive% í™˜ê²½ë³€ìˆ˜ ì½ê¸°
 	// 
 	if (get_environment_value(L"%SystemDrive%", value))
 	{
@@ -722,16 +722,16 @@ bool NameConverter::update_dos_device_prefixes()
 	//
 	_dos_devices.clear();
 
-	// ½Ã½ºÅÛ¿¡ ¸ÅÇÎµÇ¾îÀÖ´Â µå¶óÀÌºê ¸ñ·ÏÀ» ±¸ÇÑ´Ù. 
+	// ì‹œìŠ¤í…œì— ë§¤í•‘ë˜ì–´ìˆëŠ” ë“œë¼ì´ë¸Œ ëª©ë¡ì„ êµ¬í•œë‹¤. 
 	// 
 	// 0               4               8               12
 	// +---+---+---+---+---+---+---+---+---+---+---+---+
 	// | A | : | \ |NUL| C | : | \ |NUL| D | : | \ |NUL|
 	//  "A:\"           "C:\"           "D:\"
 	// 
-	// ¸ÅÇÎµÈ µå¶óÀÌºê¸¦ ³ªÅ¸³»´Â ¹®ÀÚ¿­ ¹öÆÛ´Â 
-	// 26 (¾ËÆÄºª) * 4 (µå¶óÀÌºê ¸í) = 104 ¹ÙÀÌÆ®¸é ÃæºĞÇÔ
-	// À¯´ÏÄÚµåÀÎ °æ¿ì 208¹ÙÀÌÆ® 	
+	// ë§¤í•‘ëœ ë“œë¼ì´ë¸Œë¥¼ ë‚˜íƒ€ë‚´ëŠ” ë¬¸ìì—´ ë²„í¼ëŠ” 
+	// 26 (ì•ŒíŒŒë²³) * 4 (ë“œë¼ì´ë¸Œ ëª…) = 104 ë°”ì´íŠ¸ë©´ ì¶©ë¶„í•¨
+	// ìœ ë‹ˆì½”ë“œì¸ ê²½ìš° 208ë°”ì´íŠ¸ 	
     wchar_t drive_string[128 + 1] = { 0 };
     DWORD length = GetLogicalDriveStringsW(128, drive_string);
     if (0 == length)
@@ -744,14 +744,14 @@ bool NameConverter::update_dos_device_prefixes()
     }
 
 	//
-    // ¸ÅÇÎµÈ °¢ µå¶óÀÌºêÀÇ device name À» ±¸ÇÑ´Ù. 
+    // ë§¤í•‘ëœ ê° ë“œë¼ì´ë¸Œì˜ device name ì„ êµ¬í•œë‹¤. 
 	// 
     for (DWORD i = 0; i < length / 4; ++i)
     {
         wchar_t* dos_device_name = &(drive_string[i * 4]);
-        dos_device_name[2] = 0x0000;	// `c:` ÇüÅÂ·Î ¸¸µë
-                                        // floppy ´Â ¹«½ÃÇÑ´Ù. ¾È±×·¯¸é ¸Ş¼¼Áö ¹Ú½º ¶°¼­ 
-										// ¹¹ ÁØºñ°¡ ¾ÈµÇ¾ú´À´Ï ¾îÂ¼´À´Ï ÇÔ.
+        dos_device_name[2] = 0x0000;	// `c:` í˜•íƒœë¡œ ë§Œë“¬
+                                        // floppy ëŠ” ë¬´ì‹œí•œë‹¤. ì•ˆê·¸ëŸ¬ë©´ ë©”ì„¸ì§€ ë°•ìŠ¤ ë– ì„œ 
+										// ë­ ì¤€ë¹„ê°€ ì•ˆë˜ì—ˆëŠë‹ˆ ì–´ì©ŒëŠë‹ˆ í•¨.
         if (dos_device_name[0] == 'A' || dos_device_name[0] == 'a') 
 		{ 
 			continue; 
@@ -769,7 +769,7 @@ bool NameConverter::update_dos_device_prefixes()
         }
         nt_device += L"\\";
 
-        // drive type À» ±¸ÇÑ´Ù. 
+        // drive type ì„ êµ¬í•œë‹¤. 
         std::wstring network_name;
         std::wstring drive_root = dos_device_name;
         drive_root += L"\\";
@@ -798,7 +798,7 @@ bool NameConverter::update_dos_device_prefixes()
             }
         }
 
-        // _drive_table ¿¡ µî·ÏÇÑ´Ù. 
+        // _drive_table ì— ë“±ë¡í•œë‹¤. 
 		_dos_devices.push_back(
 			std::make_unique<DosDeviceInfo>(dos_device_name,
 											nt_device.c_str(),
@@ -810,7 +810,7 @@ bool NameConverter::update_dos_device_prefixes()
     return true;
 }
 
-/// @brief  µî·ÏµÈ MUP device ÀÌ¸§µéÀ» ÀĞ¾î¿Â´Ù. 
+/// @brief  ë“±ë¡ëœ MUP device ì´ë¦„ë“¤ì„ ì½ì–´ì˜¨ë‹¤. 
 ///         https://msdn.microsoft.com/windows/hardware/drivers/ifs/support-for-unc-naming-and-mup
 bool NameConverter::update_mup_device_prefixes()
 {
@@ -824,7 +824,7 @@ bool NameConverter::update_mup_device_prefixes()
 		L"\\NetworkProvider\\Order";
     
 	// #1, HKLM\System\CurrentControlSet\Control\NetworkProvider\Order 
-	//		::ProviderOrder (REG_SZ) °ªÀ» ÀĞ´Â´Ù. 
+	//		::ProviderOrder (REG_SZ) ê°’ì„ ì½ëŠ”ë‹¤. 
     std::wstring provider_order;
 	{
 		hkey_ptr key_ptr(RUOpenKey(HKEY_LOCAL_MACHINE,
@@ -855,7 +855,7 @@ bool NameConverter::update_mup_device_prefixes()
 
     _mup_devices.push_back(L"\\Device\\Mup");       // default mup device
 
-    // #2, provider ÀÇ device ÀÌ¸§À» °¡Á®¿Â´Ù. 
+    // #2, provider ì˜ device ì´ë¦„ì„ ê°€ì ¸ì˜¨ë‹¤. 
     // 
     //  provider_order = RDPNP, LanmanWorkstation, webclient
     // 
@@ -910,7 +910,7 @@ bool NameConverter::update_mup_device_prefixes()
     return true;
 }
 
-/// @brief	NameConverter ÀÎ½ºÅÏ½ºÀÇ ref count ¸¦ Áõ°¡½ÃÅ²´Ù.
+/// @brief	NameConverter ì¸ìŠ¤í„´ìŠ¤ì˜ ref count ë¥¼ ì¦ê°€ì‹œí‚¨ë‹¤.
 bool nc_initialize()
 {
 	NameConverter* nc = Singleton<NameConverter>::GetInstancePointer();
@@ -921,7 +921,7 @@ bool nc_initialize()
 	return true;
 }
 
-/// @brief	NameConverter ÀÎ½ºÅÏ½ºÀÇ ref count ¸¦ °¨¼Ò½ÃÅ²´Ù.
+/// @brief	NameConverter ì¸ìŠ¤í„´ìŠ¤ì˜ ref count ë¥¼ ê°ì†Œì‹œí‚¨ë‹¤.
 void nc_finalize()
 {
 	Singleton<NameConverter>::ReleaseInstance();

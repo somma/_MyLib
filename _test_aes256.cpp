@@ -4,7 +4,7 @@
 #include "_MyLib/src/Win32Utils.h"
 
 /**
-* @brief	test_aes256()¿¡¼­ ¼³Á¤ÇÑ °æ·Î¿¡ »ùÇÃ ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
+* @brief	test_aes256()ì—ì„œ ì„¤ì •í•œ ê²½ë¡œì— ìƒ˜í”Œ íŒŒì¼ì„ ìƒì„±í•œë‹¤.
 */
 bool create_test_sample(_In_ const std::wstring& target_file_path)
 {
@@ -25,7 +25,7 @@ bool create_test_sample(_In_ const std::wstring& target_file_path)
 		return false;
 	}
 
-	//Å×½ºÆ®ÇÒ µğ·ºÅä¸® È®ÀÎ
+	//í…ŒìŠ¤íŠ¸í•  ë””ë ‰í† ë¦¬ í™•ì¸
 	if (!is_dir(directory.c_str()))
 	{
 		log_info "create directory(%ws)!!", directory.c_str() log_end;
@@ -36,14 +36,14 @@ bool create_test_sample(_In_ const std::wstring& target_file_path)
 		}
 	}
 	
-	//ÆÄÀÏÀÌ Á¸ÀçÇÏ¸é »ı¼ºÇÒ ÇÊ¿ä°¡ ¾øÀ½
+	//íŒŒì¼ì´ ì¡´ì¬í•˜ë©´ ìƒì„±í•  í•„ìš”ê°€ ì—†ìŒ
 	if (is_file_existsW(target_file_path.c_str()))
 	{
 		log_info "%ws file exists!!", target_file_path.c_str() log_end;
 		return true;
 	}
 
-	//Å×½ºÆ® ÆÄÀÏ »ı¼º
+	//í…ŒìŠ¤íŠ¸ íŒŒì¼ ìƒì„±
 	HANDLE create_file = CreateFileW(target_file_path.c_str(),
 									 GENERIC_WRITE,
 									 NULL,
@@ -76,8 +76,8 @@ bool create_test_sample(_In_ const std::wstring& target_file_path)
 }
 
 /**
-* @brief	target_file_path, encrypt_file_path, decrypt_file_path ´Â Àı´ë °æ·Î·Î ¼³Á¤ÇÑ´Ù.
-			C:\\_test_aes256 ¿¡ Æú´õ¿Í ÆÄÀÏÀ» »ı¼ºÇÏ¸ç, °á°úµµ C:\\_test_aes256¿¡ »ı¼ºÀÌ µÈ´Ù.
+* @brief	target_file_path, encrypt_file_path, decrypt_file_path ëŠ” ì ˆëŒ€ ê²½ë¡œë¡œ ì„¤ì •í•œë‹¤.
+			C:\\_test_aes256 ì— í´ë”ì™€ íŒŒì¼ì„ ìƒì„±í•˜ë©°, ê²°ê³¼ë„ C:\\_test_aes256ì— ìƒì„±ì´ ëœë‹¤.
 */
 
 bool test_aes256()
@@ -87,7 +87,7 @@ bool test_aes256()
 	std::wstring decrypt_file_path = L"C:\\_test_aes256\\ase256_test_after.conf";
 	unsigned char origin_key[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890*!=&?&/";
 
-	//Å×½ºÆ® »ùÇÃ »ı¼º
+	//í…ŒìŠ¤íŠ¸ ìƒ˜í”Œ ìƒì„±
 	if (!create_test_sample(target_file_path))
 	{
 		log_err "create_test_sample failed." log_end;
@@ -96,14 +96,14 @@ bool test_aes256()
 		return false;
 	}
 
-	//ÀÌ¹Ì ¾ÏÈ£È­ ÆÄÀÏÀÌ Á¸ÀçÇÏ¸é »èÁ¦
+	//ì´ë¯¸ ì•”í˜¸í™” íŒŒì¼ì´ ì¡´ì¬í•˜ë©´ ì‚­ì œ
 	if (is_file_existsW(encrypt_file_path.c_str()))
 	{
 		log_err "encrypt file exits, encrypt file delete!!" log_end;
 		::DeleteFileW(encrypt_file_path.c_str());
 	}
 
-	//aes256 ¾ÏÈ£È­
+	//aes256 ì•”í˜¸í™”
 	if (!aes256_encrypt(origin_key, 
 						target_file_path, 
 						encrypt_file_path))
@@ -112,14 +112,14 @@ bool test_aes256()
 		return false;
 	}
 
-	//aes256 º¹È£È­ ÆÄÀÏ Á¸ÀçÇÏ¸é »èÁ¦
+	//aes256 ë³µí˜¸í™” íŒŒì¼ ì¡´ì¬í•˜ë©´ ì‚­ì œ
 	if (is_file_existsW(decrypt_file_path.c_str()))
 	{
 		log_err "decrypt file exits, decrypt file delete!!" log_end;
 		::DeleteFileW(decrypt_file_path.c_str());
 	}
 
-	//aes256 º¹È£È­
+	//aes256 ë³µí˜¸í™”
 	if (!aes256_decrypt(origin_key, 
 						encrypt_file_path, 
 						decrypt_file_path))

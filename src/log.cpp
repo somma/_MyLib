@@ -1,13 +1,13 @@
 /**
  * @file    Logging module
- * @brief   initialize_log() ÇÔ¼ö¸¦ ¸í½ÃÀûÀ¸·Î È£ÃâÇÏ¸é, log level, log target
- *			(file, debugger, console, etc) ÁöÁ¤/º¯°æ °¡´É
+ * @brief   initialize_log() í•¨ìˆ˜ë¥¼ ëª…ì‹œì ìœ¼ë¡œ í˜¸ì¶œí•˜ë©´, log level, log target
+ *			(file, debugger, console, etc) ì§€ì •/ë³€ê²½ ê°€ëŠ¥
  *
- *			log format ÁöÁ¤/º¯°æ °¡´É
+ *			log format ì§€ì •/ë³€ê²½ ê°€ëŠ¥
  *
- *			multi thread È¯°æ¿¡¼­ serialization ÀÌ µÊ
+ *			multi thread í™˜ê²½ì—ì„œ serialization ì´ ë¨
  *
- *			log_err, log_err °°Àº ¸ÅÅ©·Î¸¸ »ç¿ëÇÏ¸é debugger, console ·Î ¸Ş¼¼Áö Ãâ·Â °¡´É
+ *			log_err, log_err ê°™ì€ ë§¤í¬ë¡œë§Œ ì‚¬ìš©í•˜ë©´ debugger, console ë¡œ ë©”ì„¸ì§€ ì¶œë ¥ ê°€ëŠ¥
  * @ref
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2015/01/12 created.
@@ -36,7 +36,7 @@ static uint32_t			_log_level = log_level_info;
 static uint32_t			_log_to = log_to_ods;
 
 /**
- * @brief	log ¸ğµâÀ» ÃÊ±âÈ­ÇÑ´Ù.
+ * @brief	log ëª¨ë“ˆì„ ì´ˆê¸°í™”í•œë‹¤.
  * @param
  * @see
  * @remarks
@@ -95,7 +95,7 @@ initialize_log(
 	}
 
 	//
-	//	ÆÄÀÏ ·Î±×°¡ È°¼ºÈ­µÈ °æ¿ì ·Î±×ÆÄÀÏ¿¡ ·Î±× Çì´õ¸¦ ±â·ÏÇÑ´Ù.
+	//	íŒŒì¼ ë¡œê·¸ê°€ í™œì„±í™”ëœ ê²½ìš° ë¡œê·¸íŒŒì¼ì— ë¡œê·¸ í—¤ë”ë¥¼ ê¸°ë¡í•œë‹¤.
 	// 	
 	//if (nullptr != log_file_path && FlagOn(log_to, log_to_file))
 	//{
@@ -172,7 +172,7 @@ get_log_format(
 	show_function_name = _show_function_name;
 }
 
-/// @brief	log ¼³Á¤ °»½Å
+/// @brief	log ì„¤ì • ê°±ì‹ 
 void
 set_log_env(
 	_In_ uint32_t mask,
@@ -397,7 +397,7 @@ log_write_fmt(
 
 	if (S_OK != hRes)
 	{
-		// invalid character °¡ ³¢¾îÀÖ´Â °æ¿ì ¹ß»ı ÇÒ ¼ö ÀÖÀ½
+		// invalid character ê°€ ë¼ì–´ìˆëŠ” ê²½ìš° ë°œìƒ í•  ìˆ˜ ìˆìŒ
 		StringCbPrintfExA(pos,
 						  remain,
 						  &pos,
@@ -479,7 +479,7 @@ log_write_fmt_without_deco(
 
 	if (S_OK != hRes)
 	{
-		// invalid character °¡ ³¢¾îÀÖ´Â °æ¿ì ¹ß»ı ÇÒ ¼ö ÀÖÀ½
+		// invalid character ê°€ ë¼ì–´ìˆëŠ” ê²½ìš° ë°œìƒ í•  ìˆ˜ ìˆìŒ
 		StringCbPrintfExA(pos,
 						  remain,
 						  &pos,
@@ -577,8 +577,8 @@ bool slogger::slog_start()
 	if (FlagOn(_log_to, log_to_file) && !_log_file_path.empty())
 	{
 		//
-		// ·Î±× ÆÄÀÏ¸íÀÌ ¸í½ÃµÇ¾ú°í, ÆÄÀÏÀÇ È®ÀåÀÚ°¡ ¾ø´Â °æ¿ì 
-		// °­Á¦·Î .log È®ÀåÀÚ¸¦ ºÙ¿©ÁØ´Ù. (È®ÀåÀÚ ¾ø´Â ÆÄÀÏÀÌ ±×³É ½È¾î¼­)
+		// ë¡œê·¸ íŒŒì¼ëª…ì´ ëª…ì‹œë˜ì—ˆê³ , íŒŒì¼ì˜ í™•ì¥ìê°€ ì—†ëŠ” ê²½ìš° 
+		// ê°•ì œë¡œ .log í™•ì¥ìë¥¼ ë¶™ì—¬ì¤€ë‹¤. (í™•ì¥ì ì—†ëŠ” íŒŒì¼ì´ ê·¸ëƒ¥ ì‹«ì–´ì„œ)
 		// 
 		std::wstring ext;
 		if (false == get_file_extensionw(_log_file_path.c_str(), ext))
@@ -589,7 +589,7 @@ bool slogger::slog_start()
 		}
 
 		//
-		// ÀÌ¹Ì Á¸ÀçÇÏ´Â ·ÎÅ×ÀÌÆÃ µÈ ·Î±× ÆÄÀÏ ¸ñ·ÏÀ» »ı¼º ½Ã°£ ¼øÀ¸·Î »ı¼ºÇÑ´Ù.
+		// ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ë¡œí…Œì´íŒ… ëœ ë¡œê·¸ íŒŒì¼ ëª©ë¡ì„ ìƒì„± ì‹œê°„ ìˆœìœ¼ë¡œ ìƒì„±í•œë‹¤.
 		//
 		if (true != enum_old_log_files())
 		{
@@ -597,7 +597,7 @@ bool slogger::slog_start()
 		}
 
 		//
-		//	ÀÌÀü¿¡ ÀÖ´ø ·Î±× ÆÄÀÏÀ» ·ÎÅ×ÀÌÆÃ ÇÑ´Ù. 
+		//	ì´ì „ì— ìˆë˜ ë¡œê·¸ íŒŒì¼ì„ ë¡œí…Œì´íŒ… í•œë‹¤. 
 		//
 		if (true != rotate_log_file(_log_file_path.c_str()))
 		{
@@ -606,7 +606,7 @@ bool slogger::slog_start()
 		_ASSERTE(INVALID_HANDLE_VALUE != _log_file_handle);
 
 		//
-		// ¿À·¡µÈ ·Î±× ÆÄÀÏÀÌ ÀÖ´Ù¸é »èÁ¦ÇÑ´Ù. 
+		// ì˜¤ë˜ëœ ë¡œê·¸ íŒŒì¼ì´ ìˆë‹¤ë©´ ì‚­ì œí•œë‹¤. 
 		//
 		remove_old_log_files();
 	}
@@ -645,7 +645,7 @@ void slogger::slog_stop()
 }
 
 /**
- * @brief	log Å¥¿¡ ·Î±×¸¦ push ÇÑ´Ù.
+ * @brief	log íì— ë¡œê·¸ë¥¼ push í•œë‹¤.
 */
 void
 slogger::slog_write(
@@ -670,8 +670,8 @@ slogger::slog_write(
 bool slogger::rotate_log_file(_In_ const wchar_t* log_file_path)
 {
 	//
-	// Àü rotate_log_file() ÇÔ¼ö°¡ ½ÇÆĞÇßÀ» ¼öµµ ÀÖ±â¶§¹®¿¡
-	// ·Î±×ÆÄÀÏÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÑ´Ù. 
+	// ì „ rotate_log_file() í•¨ìˆ˜ê°€ ì‹¤íŒ¨í–ˆì„ ìˆ˜ë„ ìˆê¸°ë•Œë¬¸ì—
+	// ë¡œê·¸íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤. 
 	//
 	if (true == is_file_existsW(log_file_path))
 	{
@@ -712,10 +712,10 @@ bool slogger::rotate_log_file(_In_ const wchar_t* log_file_path)
 		}
 
 		//
-		// ·ÎÅ×ÀÌÆ® µÈ ÆÄÀÏÀ» ¸ñ·Ï¿¡ Ãß°¡ÇÑ´Ù.
-		// _log_files ¸®½ºÆ®´Â ¿À·¡µÈ ÆÄÀÏ ¼ø¼­·Î ¸ñ·ÏÀÌ ¸¸µé¾îÁö¹Ç·Î
-		// ÃÖÃÊ ¸ñ·ÏÀ» »ı¼ºÇÏ´Â ½ÃÁ¡ (enum_old_log_files()ÇÔ¼ö)À» Á¦¿ÜÇÑ ³ª¸ÓÁö¿¡¼­´Â
-		// file ÀÇ ctime À» Á¤È®È÷ ±¸ÇÒ ÇÊ¿ä¾ø´Ù. 
+		// ë¡œí…Œì´íŠ¸ ëœ íŒŒì¼ì„ ëª©ë¡ì— ì¶”ê°€í•œë‹¤.
+		// _log_files ë¦¬ìŠ¤íŠ¸ëŠ” ì˜¤ë˜ëœ íŒŒì¼ ìˆœì„œë¡œ ëª©ë¡ì´ ë§Œë“¤ì–´ì§€ë¯€ë¡œ
+		// ìµœì´ˆ ëª©ë¡ì„ ìƒì„±í•˜ëŠ” ì‹œì  (enum_old_log_files()í•¨ìˆ˜)ì„ ì œì™¸í•œ ë‚˜ë¨¸ì§€ì—ì„œëŠ”
+		// file ì˜ ctime ì„ ì •í™•íˆ êµ¬í•  í•„ìš”ì—†ë‹¤. 
 		// 
 		FILETIME now; GetSystemTimeAsFileTime(&now);		
 		log_file_and_ctime fc(path.str().c_str(), now);
@@ -746,9 +746,9 @@ bool slogger::rotate_log_file(_In_ const wchar_t* log_file_path)
 	return true;
 }
 
-/// @brief	ÀÌ¹Ì ·ÎÅ×ÀÌÆ® µÈ ·Î±× ÆÄÀÏÀÌ ÀÖ´Ù¸é ctime ±âÁØÀ¸·Î ¸ñ·ÏÀ» »ı¼ºÇÑ´Ù.
-///			`ÆÄÀÏ¸í.2018-11-12_23-55-12.È®ÀåÀÚ` ÇüÅÂ·Î ¸¸µé¾îÁö¹Ç·Î 
-///			`ÆÄÀÏ¸í.*.È®ÀåÀÚ` ÇüÅÂÀÇ ÆÄÀÏÀ» ¸ğµÎ ·ÎÅ×ÀÌÆÃ µÈ ·Î±×ÆÄÀÏ·Î °£ÁÖÇÑ´Ù. 
+/// @brief	ì´ë¯¸ ë¡œí…Œì´íŠ¸ ëœ ë¡œê·¸ íŒŒì¼ì´ ìˆë‹¤ë©´ ctime ê¸°ì¤€ìœ¼ë¡œ ëª©ë¡ì„ ìƒì„±í•œë‹¤.
+///			`íŒŒì¼ëª….2018-11-12_23-55-12.í™•ì¥ì` í˜•íƒœë¡œ ë§Œë“¤ì–´ì§€ë¯€ë¡œ 
+///			`íŒŒì¼ëª….*.í™•ì¥ì` í˜•íƒœì˜ íŒŒì¼ì„ ëª¨ë‘ ë¡œí…Œì´íŒ… ëœ ë¡œê·¸íŒŒì¼ë¡œ ê°„ì£¼í•œë‹¤. 
 bool slogger::enum_old_log_files()
 {
 	std::wstring ext;
@@ -786,7 +786,7 @@ bool slogger::enum_old_log_files()
 		if (INVALID_HANDLE_VALUE == f.get())
 		{
 			//
-			// ÆÄÀÏÀ» ¿­±â ¿¡·¯ 
+			// íŒŒì¼ì„ ì—´ê¸° ì—ëŸ¬ 
 			// 
 			return false;
 		}
@@ -795,7 +795,7 @@ bool slogger::enum_old_log_files()
 		if (!GetFileTime(f.get(), &ctime, nullptr, nullptr))
 		{
 			//
-			// ÆÄÀÏ »ı¼º½Ã°¢À» ±¸ÇÏÁö ¸øÇÏ¸é, Ã³¸® ºÒ°¡´É
+			// íŒŒì¼ ìƒì„±ì‹œê°ì„ êµ¬í•˜ì§€ ëª»í•˜ë©´, ì²˜ë¦¬ ë¶ˆê°€ëŠ¥
 			//
 			return false;
 		}
@@ -807,7 +807,7 @@ bool slogger::enum_old_log_files()
 	if (ret)
 	{
 		//
-		// log file ¸®½ºÆ®¸¦ ctime ±âÁØÀ¸·Î Á¤·ÄÇÑ´Ù.
+		// log file ë¦¬ìŠ¤íŠ¸ë¥¼ ctime ê¸°ì¤€ìœ¼ë¡œ ì •ë ¬í•œë‹¤.
 		//
 		_log_files.sort([](log_file_and_ctime& lhs, log_file_and_ctime& rhs) {
 			if (file_time_to_int(&lhs.ctime) < file_time_to_int(&rhs.ctime))
@@ -823,14 +823,14 @@ bool slogger::enum_old_log_files()
 	else
 	{
 		//
-		// ·ÎÅ×ÀÌÆÃ µÈ ÆÄÀÏ ¸®½ºÆ®¾÷¿¡ ½ÇÆĞÇß´Ù ÇÏ´õ¶óµµ ·Î±×¸ğµâ ±¸µ¿À» ½ÇÆĞÇÏ°Ô 
-		// ¸¸µéÁö´Â ¾Ê´Â´Ù. 
+		// ë¡œí…Œì´íŒ… ëœ íŒŒì¼ ë¦¬ìŠ¤íŠ¸ì—…ì— ì‹¤íŒ¨í–ˆë‹¤ í•˜ë”ë¼ë„ ë¡œê·¸ëª¨ë“ˆ êµ¬ë™ì„ ì‹¤íŒ¨í•˜ê²Œ 
+		// ë§Œë“¤ì§€ëŠ” ì•ŠëŠ”ë‹¤. 
 		//
 	}		
 	return true;
 }
 
-/// @brief	log ÆÄÀÏÀÇ °¹¼ö°¡ ¼³Á¤ °ª º¸´Ù ¸¹Àº °æ¿ì °¡Àå ¿À·¡µÈ ·Î±×ÆÄÀÏºÎÅÍ »èÁ¦ÇÑ´Ù.
+/// @brief	log íŒŒì¼ì˜ ê°¯ìˆ˜ê°€ ì„¤ì • ê°’ ë³´ë‹¤ ë§ì€ ê²½ìš° ê°€ì¥ ì˜¤ë˜ëœ ë¡œê·¸íŒŒì¼ë¶€í„° ì‚­ì œí•œë‹¤.
 void slogger::remove_old_log_files()
 {
 	int count_to_remove = (int)(_log_files.size() - _max_log_files);
@@ -891,12 +891,12 @@ void slogger::slog_thread()
 			if (_log_count >= _max_log_count)
 			{
 				//
-				//	rotate_log_file() °¡ ½ÇÆĞÇÏ¸é _log_count ´Â ÃÊ±âÈ­µÇÁö ¾Ê´Â´Ù. 
-				//	¾î¶² ÀÌÀ¯·Îµç rotate_log_file() ½ÇÆĞÇÑ °æ¿ì _log_count °¡ 
-				//	ÃÊ±âÈ­ µÇÁö ¾Ê¾Ò±â ¶§¹®¿¡ °è¼Ó Àç ½ÃµµÇÏ°Ô µÈ´Ù. 
+				//	rotate_log_file() ê°€ ì‹¤íŒ¨í•˜ë©´ _log_count ëŠ” ì´ˆê¸°í™”ë˜ì§€ ì•ŠëŠ”ë‹¤. 
+				//	ì–´ë–¤ ì´ìœ ë¡œë“  rotate_log_file() ì‹¤íŒ¨í•œ ê²½ìš° _log_count ê°€ 
+				//	ì´ˆê¸°í™” ë˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì— ê³„ì† ì¬ ì‹œë„í•˜ê²Œ ëœë‹¤. 
 				// 
-				//	rotate_log_file() °¡ ½ÇÆĞÇÒ¶§ ¸¶´Ù file log ÇÑ°³¾¿ À¯½ÇµÇÁö¸¸
-				//	±×Á¤µµ´Â ±×³É Æ÷±âÇÑ´Ù.
+				//	rotate_log_file() ê°€ ì‹¤íŒ¨í• ë•Œ ë§ˆë‹¤ file log í•œê°œì”© ìœ ì‹¤ë˜ì§€ë§Œ
+				//	ê·¸ì •ë„ëŠ” ê·¸ëƒ¥ í¬ê¸°í•œë‹¤.
 				// 
 
 				if (true != rotate_log_file(_log_file_path.c_str()))
@@ -910,12 +910,12 @@ void slogger::slog_thread()
 				else
 				{
 					//
-					// ¿À·¡µÈ ·Î±× ÆÄÀÏÀÌ ÀÖ´Ù¸é »èÁ¦ÇÑ´Ù.
+					// ì˜¤ë˜ëœ ë¡œê·¸ íŒŒì¼ì´ ìˆë‹¤ë©´ ì‚­ì œí•œë‹¤.
 					//
 					remove_old_log_files();
 
 					//
-					// »õ·Î¿î ·Î±× ÆÄÀÏ¿¡ ·Î±×¸¦ ¾´´Ù.
+					// ìƒˆë¡œìš´ ë¡œê·¸ íŒŒì¼ì— ë¡œê·¸ë¥¼ ì“´ë‹¤.
 					//
 					_log_count++;
 					write_to_filea(_log_file_handle, "%s", log->_msg.c_str());
@@ -924,7 +924,7 @@ void slogger::slog_thread()
 			else
 			{
 				//
-				// ÀÌ ½ÃÁ¡¿¡¼­ _log_file_handle Àº Ç×»ó À¯È¿ÇÏ´Ù. 
+				// ì´ ì‹œì ì—ì„œ _log_file_handle ì€ í•­ìƒ ìœ íš¨í•˜ë‹¤. 
 				//
 				_ASSERTE(INVALID_HANDLE_VALUE != _log_file_handle);
 				_log_count++;
@@ -932,7 +932,7 @@ void slogger::slog_thread()
 			}
 
 			//
-			//	30 ÃÊ ¸¶´Ù File À» Flush ÇÑ´Ù. 
+			//	30 ì´ˆ ë§ˆë‹¤ File ì„ Flush í•œë‹¤. 
 			//
 			FILETIME now; GetSystemTimeAsFileTime(&now);
 			if (file_time_delta_sec(&now, &prev_flushed) > 30)
@@ -951,9 +951,9 @@ void slogger::slog_thread()
 	}
 
 	//
-	//	logger Á¾·á ¿äÃ»À» ¹ŞÀº »óÅÂ.
-	//	·Î±× Å¥¿¡ ÀÖ´Â ·Î±×µéÀ» ÆÄÀÏ¿¡ ¸ğµÎ ¾´´Ù(log_to_file ÀÌ ¼³Á¤µÈ °æ¿ì).
-	//	console, ods µîÀº ±×³É ¹ö¸°´Ù.
+	//	logger ì¢…ë£Œ ìš”ì²­ì„ ë°›ì€ ìƒíƒœ.
+	//	ë¡œê·¸ íì— ìˆëŠ” ë¡œê·¸ë“¤ì„ íŒŒì¼ì— ëª¨ë‘ ì“´ë‹¤(log_to_file ì´ ì„¤ì •ëœ ê²½ìš°).
+	//	console, ods ë“±ì€ ê·¸ëƒ¥ ë²„ë¦°ë‹¤.
 	//
 	{
 		boost::lock_guard< boost::mutex > lock(_lock);
@@ -966,12 +966,12 @@ void slogger::slog_thread()
 				if (_log_count >= _max_log_count)
 				{
 					//
-					//	rotate_log_file() °¡ ½ÇÆĞÇÏ¸é _log_count ´Â ÃÊ±âÈ­µÇÁö ¾Ê´Â´Ù. 
-					//	¾î¶² ÀÌÀ¯·Îµç rotate_log_file() ½ÇÆĞÇÑ °æ¿ì _log_count °¡ 
-					//	ÃÊ±âÈ­ µÇÁö ¾Ê¾Ò±â ¶§¹®¿¡ °è¼Ó Àç ½ÃµµÇÏ°Ô µÈ´Ù. 
+					//	rotate_log_file() ê°€ ì‹¤íŒ¨í•˜ë©´ _log_count ëŠ” ì´ˆê¸°í™”ë˜ì§€ ì•ŠëŠ”ë‹¤. 
+					//	ì–´ë–¤ ì´ìœ ë¡œë“  rotate_log_file() ì‹¤íŒ¨í•œ ê²½ìš° _log_count ê°€ 
+					//	ì´ˆê¸°í™” ë˜ì§€ ì•Šì•˜ê¸° ë•Œë¬¸ì— ê³„ì† ì¬ ì‹œë„í•˜ê²Œ ëœë‹¤. 
 					// 
-					//	rotate_log_file() °¡ ½ÇÆĞÇÒ¶§ ¸¶´Ù file log ÇÑ°³¾¿ À¯½ÇµÇÁö¸¸
-					//	±×Á¤µµ´Â ±×³É Æ÷±âÇÑ´Ù.
+					//	rotate_log_file() ê°€ ì‹¤íŒ¨í• ë•Œ ë§ˆë‹¤ file log í•œê°œì”© ìœ ì‹¤ë˜ì§€ë§Œ
+					//	ê·¸ì •ë„ëŠ” ê·¸ëƒ¥ í¬ê¸°í•œë‹¤.
 					// 
 
 					if (true != rotate_log_file(_log_file_path.c_str()))
@@ -985,12 +985,12 @@ void slogger::slog_thread()
 					else
 					{
 						//
-						// ¿À·¡µÈ ·Î±× ÆÄÀÏÀÌ ÀÖ´Ù¸é »èÁ¦ÇÑ´Ù.
+						// ì˜¤ë˜ëœ ë¡œê·¸ íŒŒì¼ì´ ìˆë‹¤ë©´ ì‚­ì œí•œë‹¤.
 						//
 						remove_old_log_files();
 						
 						//
-						// »õ·Î¿î ·Î±× ÆÄÀÏ¿¡ ·Î±×¸¦ ¾´´Ù.
+						// ìƒˆë¡œìš´ ë¡œê·¸ íŒŒì¼ì— ë¡œê·¸ë¥¼ ì“´ë‹¤.
 						//
 						_log_count++;
 						write_to_filea(_log_file_handle, "%s", log->_msg.c_str());
@@ -999,7 +999,7 @@ void slogger::slog_thread()
 				else
 				{
 					//
-					// ÀÌ ½ÃÁ¡¿¡¼­ _log_file_handle Àº Ç×»ó À¯È¿ÇÏ´Ù. 
+					// ì´ ì‹œì ì—ì„œ _log_file_handle ì€ í•­ìƒ ìœ íš¨í•˜ë‹¤. 
 					//
 					_ASSERTE(INVALID_HANDLE_VALUE != _log_file_handle);
 					_log_count++;

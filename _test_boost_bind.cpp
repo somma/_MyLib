@@ -26,21 +26,21 @@ int g(int a, int b, int c)
 
 bool boost_bind()
 {
-    std::cout << boost::bind(f, 1, 2)() << std::endl;           // f(1,2) ¿Í µ¿ÀÏÇÑ ÇÔ¼ö°´Ã¼
-    std::cout << boost::bind(g, 1,2,3)() << std::endl;          // g(1,2,3) °ú µ¿ÀÏÇÑ ÇÔ¼ö°´Ã¼
+    std::cout << boost::bind(f, 1, 2)() << std::endl;           // f(1,2) ì™€ ë™ì¼í•œ í•¨ìˆ˜ê°ì²´
+    std::cout << boost::bind(g, 1,2,3)() << std::endl;          // g(1,2,3) ê³¼ ë™ì¼í•œ í•¨ìˆ˜ê°ì²´
 
-    // boost::function À» »ç¿ëÇÏ¸é bind() µÈ ÇÔ¼ö°´Ã¼¸¦ ÀúÀåÇÒ ¼ö ÀÖ´Ù!!
+    // boost::function ì„ ì‚¬ìš©í•˜ë©´ bind() ëœ í•¨ìˆ˜ê°ì²´ë¥¼ ì €ì¥í•  ìˆ˜ ìˆë‹¤!!
     //
 	boost::function<int (int, int)> ff = boost::bind(f, 1, 2);
     std::cout	<< "ff(1,2) = "					<< ff(1,2) 
 				<< "boost::bind(f, 1, 2)() = "	<< boost::bind(f, 1, 2)() 
 				<< std::endl;
 
-	// <Â¯ Áß¿ä!!>
-	// f ÇÔ¼ö´Â int(int, int) Å¸ÀÔÀÌÁö¸¸
-	// boost::bind(f, 1, _1) ·Î ÆÄ¶ó¹ÌÅÍ¸¦ °íÁ¤ÇØ¼­ f(val) ÇüÅÂ·Î È£ÃâÀÌ °¡´ÉÇÏ°í, 
-	// Ç×»ó (1+ val) ¸¦ ¸®ÅÏÇÏ°Ô µÈ´Ù. ÀÌ·± Æ¯Â¡À» ÀÌ¿ëÇØ¼­ callback ÇÔ¼ö¿¡ ºÎ°¡ÀûÀÎ 
-	// ÆÄ¶ó¹ÌÅÍ¸¦ Àü´ŞÇÏ°Å³ª, ÆÄ¶ó¹ÌÅÍ ¼ø¼­¸¦ Á¶ÀÛÇÏ´Â µîÀÇ ÀÏÀ» ÇÒ ¼ö ÀÖ´Ù.
+	// <ì§± ì¤‘ìš”!!>
+	// f í•¨ìˆ˜ëŠ” int(int, int) íƒ€ì…ì´ì§€ë§Œ
+	// boost::bind(f, 1, _1) ë¡œ íŒŒë¼ë¯¸í„°ë¥¼ ê³ ì •í•´ì„œ f(val) í˜•íƒœë¡œ í˜¸ì¶œì´ ê°€ëŠ¥í•˜ê³ , 
+	// í•­ìƒ (1+ val) ë¥¼ ë¦¬í„´í•˜ê²Œ ëœë‹¤. ì´ëŸ° íŠ¹ì§•ì„ ì´ìš©í•´ì„œ callback í•¨ìˆ˜ì— ë¶€ê°€ì ì¸ 
+	// íŒŒë¼ë¯¸í„°ë¥¼ ì „ë‹¬í•˜ê±°ë‚˜, íŒŒë¼ë¯¸í„° ìˆœì„œë¥¼ ì¡°ì‘í•˜ëŠ” ë“±ì˜ ì¼ì„ í•  ìˆ˜ ìˆë‹¤.
 	boost::function<int (int, int)> xf = boost::bind(f, 1, _1);
     std::cout	<< "xf(1, 2) = "					<< ff(1, 2) 
 				<< "boost::bind(f, 1, _1)(2) = "	<< boost::bind(f, 1, _1)(2) 
@@ -69,7 +69,7 @@ bool boost_bind()
 
 
 /**
-* @brief	boost::bind() - part 2 ÇÔ¼ö°´Ã¼ ¹ÙÀÎµå
+* @brief	boost::bind() - part 2 í•¨ìˆ˜ê°ì²´ ë°”ì¸ë“œ
 */
 struct F
 {
@@ -93,10 +93,10 @@ bool boost_bind2()
 
 
 /**
-* @brief    boost::bind() - part 3 ÇÔ¼ö°´Ã¼ ¹ÙÀÎµå, ÇÔ¼ö °´Ã¼ »óÅÂ Ã³¸®
-            - ³»ºÎ º¯¼ö°¡ ÀÖ´Â °æ¿ì result_type À» ÀçÁ¤ÀÇ ¾ÈÇÏ¸é ¿¡·¯³ª³×?
-            - »óÅÂ¸¦ º¸Á¸ÇÏ°í ½ÍÀº °æ¿ì boost::ref() ¸¦ ÅëÇØ ·¹ÆÛ·±½º·Î ³Ñ°Ü¾ß ÇÔ 
-            - µğÆúÆ®·Î ÇÔ¼ö°´Ã¼¸¦ bind() °¡ º¹»çÇØ¼­ °¡Áö°í ÀÖÀ½
+* @brief    boost::bind() - part 3 í•¨ìˆ˜ê°ì²´ ë°”ì¸ë“œ, í•¨ìˆ˜ ê°ì²´ ìƒíƒœ ì²˜ë¦¬
+            - ë‚´ë¶€ ë³€ìˆ˜ê°€ ìˆëŠ” ê²½ìš° result_type ì„ ì¬ì •ì˜ ì•ˆí•˜ë©´ ì—ëŸ¬ë‚˜ë„¤?
+            - ìƒíƒœë¥¼ ë³´ì¡´í•˜ê³  ì‹¶ì€ ê²½ìš° boost::ref() ë¥¼ í†µí•´ ë ˆí¼ëŸ°ìŠ¤ë¡œ ë„˜ê²¨ì•¼ í•¨ 
+            - ë””í´íŠ¸ë¡œ í•¨ìˆ˜ê°ì²´ë¥¼ bind() ê°€ ë³µì‚¬í•´ì„œ ê°€ì§€ê³  ìˆìŒ
 */
 struct FF
 {
@@ -119,7 +119,7 @@ bool boost_bind3()
 
 
 /**
-* @brief	boost::bind() - part 4 Å¬·¡½º ¸Ş¼Òµå ¹ÙÀÎµù
+* @brief	boost::bind() - part 4 í´ë˜ìŠ¤ ë©”ì†Œë“œ ë°”ì¸ë”©
 */
 typedef class A
 {
@@ -152,8 +152,8 @@ bool boost_bind4()
     }
 
     /* 
-    - class method ¹ÙÀÎµù
-    - ¾Æ·¡ ÄÚµå¿Í µ¿ÀÏ
+    - class method ë°”ì¸ë”©
+    - ì•„ë˜ ì½”ë“œì™€ ë™ì¼
         std::vector<int>::iterator it = vint.begin();
         for(; vint.end(); ++it)
         {
@@ -167,18 +167,18 @@ bool boost_bind4()
     
     
     /*    
-    - class method ¹ÙÀÎµùÇÒ¶§´Â Ã¹¹øÂ° ÆÄ¶ó¹ÌÅÍ°¡ class instance ÀÌ¾î¾ß ÇÔ
-    - std::vector<PA> ÀÏ¶§³ª std::vector<A> ÀÏ¶§³ª functor °¡ Àß µ¿ÀÛÇÔ
+    - class method ë°”ì¸ë”©í• ë•ŒëŠ” ì²«ë²ˆì§¸ íŒŒë¼ë¯¸í„°ê°€ class instance ì´ì–´ì•¼ í•¨
+    - std::vector<PA> ì¼ë•Œë‚˜ std::vector<A> ì¼ë•Œë‚˜ functor ê°€ ì˜ ë™ì‘í•¨
 
-    - ¾Æ·¡ ÄÚµå¿Í µ¿ÀÏÇÔ
+    - ì•„ë˜ ì½”ë“œì™€ ë™ì¼í•¨
         std::vector<PA>::iterator it = vA.begin();
         for(; it != vA.end(); ++it)
         {
             it->start();
         }
 
-    - std::for_each( ) ´Â [ vA.begin(), vA.end() ) ¸¦ boost::bind(&A::start, _1)(it) ·Î È£ÃâÀÌ¹Ç·Î
-      it::start() ¿Í µ¿ÀÏÇÔ
+    - std::for_each( ) ëŠ” [ vA.begin(), vA.end() ) ë¥¼ boost::bind(&A::start, _1)(it) ë¡œ í˜¸ì¶œì´ë¯€ë¡œ
+      it::start() ì™€ ë™ì¼í•¨
     */
     std::vector<PA> vA;
     for (int i = 0; i < 10; ++i)
@@ -204,9 +204,9 @@ bool boost_bind4()
 }
 
 //=============================================================================
-// boost bind ¸¦ ÀÌ¿ëÇÑ Äİ¹éÇÔ¼ö Ã³¸® ¿¹Á¦
-// ÀÏ¹İ ÇÔ¼ö Æ÷ÀÎÅÍ¸¦ ¼±¾ğÇÏ¸é boost::bind() ·Î Ã³¸®°¡ ¾ÈµÊ
-// boost::function À¸·Î ¼±¾ğÇØÁÖ¾î¾ß ÇÔ
+// boost bind ë¥¼ ì´ìš©í•œ ì½œë°±í•¨ìˆ˜ ì²˜ë¦¬ ì˜ˆì œ
+// ì¼ë°˜ í•¨ìˆ˜ í¬ì¸í„°ë¥¼ ì„ ì–¸í•˜ë©´ boost::bind() ë¡œ ì²˜ë¦¬ê°€ ì•ˆë¨
+// boost::function ìœ¼ë¡œ ì„ ì–¸í•´ì£¼ì–´ì•¼ í•¨
 // 
 
 class A5

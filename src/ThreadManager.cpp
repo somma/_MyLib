@@ -73,8 +73,8 @@ void DestroyThreadContext(IN PDTTHREAD_CONTEXT& ctx)
     if (NULL == ctx || NULL == ctx->KillEvent || NULL == ctx->ThreadHandle) return;
 
 
-    // DAED-LOCK Ã¼Å©
-    //  - thread procedure ³»¿¡¼­ DestroyThreadContext() ¸¦ È£ÃâÇÑ °æ¿ì 
+    // DAED-LOCK ì²´í¬
+    //  - thread procedure ë‚´ì—ì„œ DestroyThreadContext() ë¥¼ í˜¸ì¶œí•œ ê²½ìš° 
     // 
     if (GetCurrentThreadId() == ctx->ThreadId)
     {
@@ -82,18 +82,18 @@ void DestroyThreadContext(IN PDTTHREAD_CONTEXT& ctx)
         return;
     }
 
-    // thread Á¾·á ÀÌº¥Æ® ½Ã±×³Î
+    // thread ì¢…ë£Œ ì´ë²¤íŠ¸ ì‹œê·¸ë„
     // 
     SetEvent(ctx->KillEvent);
     
-    // thread °¡ Á¾·áµÈ °æ¿ì ctx ¸®¼Ò½º¸¦ ÇØÁ¦
+    // thread ê°€ ì¢…ë£Œëœ ê²½ìš° ctx ë¦¬ì†ŒìŠ¤ë¥¼ í•´ì œ
     // 
     DWORD ExitCode=STILL_ACTIVE;
     if (TRUE != GetExitCodeThread(ctx->ThreadHandle, &ExitCode))
     {
         log_err "GetExitCodeThread(tid=0x%08x, handle=0x%08x) failed, gle = %u", ctx->ThreadId, ctx->ThreadHandle, GetLastError() log_end
 
-        // progream ÀÌ Å©·¡½Ã µÇµµ º° ¼ö ¾ø´Ù. 
+        // progream ì´ í¬ëž˜ì‹œ ë˜ë„ ë³„ ìˆ˜ ì—†ë‹¤. 
         // 
         CloseHandle(ctx->KillEvent);
         free(ctx);
@@ -102,7 +102,7 @@ void DestroyThreadContext(IN PDTTHREAD_CONTEXT& ctx)
 
     if (STILL_ACTIVE != ExitCode)
     {
-        // ÀÌ¹Ì ½º·¹µå°¡ Á¾·áµÈ °æ¿ì¶ó¸é ±×³É ÇÚµé¸¸ ´Ý¾Æ¹ö·Áµµ µÈ´Ù.
+        // ì´ë¯¸ ìŠ¤ë ˆë“œê°€ ì¢…ë£Œëœ ê²½ìš°ë¼ë©´ ê·¸ëƒ¥ í•¸ë“¤ë§Œ ë‹«ì•„ë²„ë ¤ë„ ëœë‹¤.
         // 
         CloseHandle(ctx->KillEvent);
         free(ctx);

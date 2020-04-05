@@ -15,25 +15,25 @@
 
 
 //
-//	ÁÖÀÇ »çÇ×
+//	ì£¼ì˜ ì‚¬í•­
 // 
-//	cURL ¶óÀÌºê·¯¸®¸¦ »ç¿ëÇÏ±â Àü¿¡ curl_global_init() ÇÔ¼ö¸¦ È£ÃâÇÏ°í,
-//	Á¾·á ½Ã curl_global_cleanup() ÇÔ¼ö¸¦ È£ÃâÇØ ÁÖ¾î¾ß ÇÑ´Ù. 
-//	curl_global_init() ÇÔ¼öÀÇ °æ¿ì curl_easy_init() ¿¡¼­ ÀÚµ¿À¸·Î È£Ãâ µÊ
+//	cURL ë¼ì´ë¸ŒëŸ¬ë¦¬ë¥¼ ì‚¬ìš©í•˜ê¸° ì „ì— curl_global_init() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê³ ,
+//	ì¢…ë£Œ ì‹œ curl_global_cleanup() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ ì£¼ì–´ì•¼ í•œë‹¤. 
+//	curl_global_init() í•¨ìˆ˜ì˜ ê²½ìš° curl_easy_init() ì—ì„œ ìë™ìœ¼ë¡œ í˜¸ì¶œ ë¨
 //
-//	¹®Á¦´Â curl_global_init() È£Ãâ ÈÄ curl_global_cleanup() À» È£ÃâÇØµµ
-//	_CrtMemDumpAllObjectsSince() µîÀÇ ÇÔ¼ö¿¡¼­ memory leak ÀÌ °¨ÁöµÈ´Ù. 
-//	ÀÎÅÍ³İ¿¡ °ü·ÃµÈ Áú¹®µéÀº ¸¹ÀÌ ÀÖÀ¸³ª OpenSSL °ü·Ã ¸Ş¸ğ¸® ¸¯ÀÌ¶ó´Â °Í Á¤µµ»Ó
-//	¸íÄèÇÑ ÇØ°áÃ¥ÀÌ ¾ø´Ù. 
+//	ë¬¸ì œëŠ” curl_global_init() í˜¸ì¶œ í›„ curl_global_cleanup() ì„ í˜¸ì¶œí•´ë„
+//	_CrtMemDumpAllObjectsSince() ë“±ì˜ í•¨ìˆ˜ì—ì„œ memory leak ì´ ê°ì§€ëœë‹¤. 
+//	ì¸í„°ë„·ì— ê´€ë ¨ëœ ì§ˆë¬¸ë“¤ì€ ë§ì´ ìˆìœ¼ë‚˜ OpenSSL ê´€ë ¨ ë©”ëª¨ë¦¬ ë¦­ì´ë¼ëŠ” ê²ƒ ì •ë„ë¿
+//	ëª…ì¾Œí•œ í•´ê²°ì±…ì´ ì—†ë‹¤. 
 // 
-//	cURL ¶óÀÌºê·¯¸® »ç¿ë Áß ¸Ş¸ğ¸®°¡ Áõ°¡ÇÏ´Â Çö»óÀº ¾ø±â ¶§¹®¿¡ Å©°Ô ¹®Á¦µÇÁö´Â 
-//	¾Ê´Â´Ù. ÇÏÁö¸¸ _Crtxxx() °ü·Ã ÇÔ¼öµéÀÇ ¸®Æ÷ÆÃÀ» ¹æÁö ÇÏ±â À§ÇØ¼­´Â 
-//	_CrtMemCheckpoint() È£Ãâ ÀÌÀü¿¡ curl_global_init() À» È£ÃâÇÏ°í, 
-//	_CrtMemDumpAllObjectsSince() ÀÌÈÄ¿¡ curl_global_cleanup() À» È£ÃâÇØ¾ß ÇÑ´Ù. 
+//	cURL ë¼ì´ë¸ŒëŸ¬ë¦¬ ì‚¬ìš© ì¤‘ ë©”ëª¨ë¦¬ê°€ ì¦ê°€í•˜ëŠ” í˜„ìƒì€ ì—†ê¸° ë•Œë¬¸ì— í¬ê²Œ ë¬¸ì œë˜ì§€ëŠ” 
+//	ì•ŠëŠ”ë‹¤. í•˜ì§€ë§Œ _Crtxxx() ê´€ë ¨ í•¨ìˆ˜ë“¤ì˜ ë¦¬í¬íŒ…ì„ ë°©ì§€ í•˜ê¸° ìœ„í•´ì„œëŠ” 
+//	_CrtMemCheckpoint() í˜¸ì¶œ ì´ì „ì— curl_global_init() ì„ í˜¸ì¶œí•˜ê³ , 
+//	_CrtMemDumpAllObjectsSince() ì´í›„ì— curl_global_cleanup() ì„ í˜¸ì¶œí•´ì•¼ í•œë‹¤. 
 // 
-//	¶ÇÇÑ curl_global_init(), curl_global_cleanup() ÇÔ¼ö´Â thread safe ÇÏÁö 
-//	¾Ê±â ¶§¹®¿¡ curl_client ÀÇ »ı¼º/¼Ò¸ê½Ã È£ÃâÇÏ´Â °ÍÀº À§ÇèÇÏ°í, main ÇÔ¼öµî¿¡¼­
-//	È£ÃâÇÏ´Â °ÍÀÌ ¾ÈÀüÇÏ´Ù. 
+//	ë˜í•œ curl_global_init(), curl_global_cleanup() í•¨ìˆ˜ëŠ” thread safe í•˜ì§€ 
+//	ì•Šê¸° ë•Œë¬¸ì— curl_client ì˜ ìƒì„±/ì†Œë©¸ì‹œ í˜¸ì¶œí•˜ëŠ” ê²ƒì€ ìœ„í—˜í•˜ê³ , main í•¨ìˆ˜ë“±ì—ì„œ
+//	í˜¸ì¶œí•˜ëŠ” ê²ƒì´ ì•ˆì „í•˜ë‹¤. 
 // 
 //
 //		int main()
@@ -91,10 +91,10 @@ public:
 		_Out_  std::string& response);
 
 	//
-	// http_file_upload ÇÔ¼ö¸¦ »ç¿ëÇÏ¸é, ÆÄÀÏ ÀÌ¸§Àº ¼­¹ö·Î Àü¼ÛµÈ´Ù.
-	// ¸¸¾à, Ãß°¡ÀûÀ¸·Î Àü¼ÛÇÒ µ¥ÀÌÅÍ°¡ ÀÖ´Ù¸é forms¸¦ »ç¿ëÇÑ´Ù.
+	// http_file_upload í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ë©´, íŒŒì¼ ì´ë¦„ì€ ì„œë²„ë¡œ ì „ì†¡ëœë‹¤.
+	// ë§Œì•½, ì¶”ê°€ì ìœ¼ë¡œ ì „ì†¡í•  ë°ì´í„°ê°€ ìˆë‹¤ë©´ formsë¥¼ ì‚¬ìš©í•œë‹¤.
 	//
-#pragma todo("Forms °´Ã¼¸¦ ÆÄ¶ó¹ÌÅÍ·Î ¹ŞÁö ¾Ê°Ô. add_form() ÇüÅÂ·Î ¸®ÆÑÅä¸µ")
+#pragma todo("Forms ê°ì²´ë¥¼ íŒŒë¼ë¯¸í„°ë¡œ ë°›ì§€ ì•Šê²Œ. add_form() í˜•íƒœë¡œ ë¦¬íŒ©í† ë§")
 	typedef std::map<std::string, std::string> Forms;
 	bool http_file_upload(
 		_In_z_ const char* url,
@@ -147,7 +147,7 @@ private:
 
 	bool perform(_Out_ long& http_response_code);
 
-	// multipart/form typeÀ» request body data¿¡ ¼³Á¤ÇÑ ÈÄ Àü¼ÛÇÏ´Â ÇÔ¼ö
+	// multipart/form typeì„ request body dataì— ì„¤ì •í•œ í›„ ì „ì†¡í•˜ëŠ” í•¨ìˆ˜
 	bool perform(
 		_In_ const char* file_path, 
 		_In_ Forms& forms, 

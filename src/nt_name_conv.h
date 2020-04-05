@@ -45,12 +45,12 @@ public:
                                     // DRIVE_REMOTE(4),
                                     // DRIVE_CDROM(5),
                                     // DRIVE_RAMDISK(6)
-    std::wstring    _network_name;  // _drive_type == DRIVE_REMOTE ÀÎ °æ¿ì ³×Æ®¿öÅ© ¸®¼Ò½º ÀÌ¸§
+    std::wstring    _network_name;  // _drive_type == DRIVE_REMOTE ì¸ ê²½ìš° ë„¤íŠ¸ì›Œí¬ ë¦¬ì†ŒìŠ¤ ì´ë¦„
                                     // e.x) \\192.168.153.129\share\
 
 } *PDosDeviceInfo;
 
-/// @brief	iterate callback, callback ÇÔ¼ö°¡ false ¸¦ ¸®ÅÏÇÏ¸é iterate ¸¦ ÁßÁöÇÑ´Ù. 
+/// @brief	iterate callback, callback í•¨ìˆ˜ê°€ false ë¥¼ ë¦¬í„´í•˜ë©´ iterate ë¥¼ ì¤‘ì§€í•œë‹¤. 
 typedef bool(*iterate_dos_device_callback)(_In_ const DosDeviceInfo* ddi, 
 										   _In_ ULONG_PTR tag);
 
@@ -89,14 +89,14 @@ private:
 
 	//	%SystemDrive% (e.g. c: )
 	//
-	//	`/Program Files`, `/Windows` ÇüÅÂ·Î drive ¸¦ Á¦¿ÜÇÏ°í, »ó´ë root °æ·Î·Î
-	//	Á¢±ÙÇÏ´Â °æ¿ì (¿¹. cd \dbg °°Àº °æ¿ì), current drive ÀÇ root °æ·Î¿¡ ´ëÇÑ 
-	//	Á¢±ÙÀÌ´Ù. ±×·¯³ª current drive ¸¦ ¾Ë ¼ö ¾ø´Â °æ¿ì°¡ ´ëºÎºĞÀÌ±â ¶§¹®¿¡, 
-	//	Á¤È®ÇÑ º¯È¯Àº ¾î·Æ´Ù. ÀÌ·± °æ¿ì ±×³ª¸¶ °¡Àå È®·üÀÌ ³ôÀº %SystemDrive% ¸¦ ºÙ¿©ÁØ´Ù. 
-	//	_system_drive ´Â Ç×»ó ¼Ò¹®ÀÚ¸¦ »ç¿ë ÇÔ
+	//	`/Program Files`, `/Windows` í˜•íƒœë¡œ drive ë¥¼ ì œì™¸í•˜ê³ , ìƒëŒ€ root ê²½ë¡œë¡œ
+	//	ì ‘ê·¼í•˜ëŠ” ê²½ìš° (ì˜ˆ. cd \dbg ê°™ì€ ê²½ìš°), current drive ì˜ root ê²½ë¡œì— ëŒ€í•œ 
+	//	ì ‘ê·¼ì´ë‹¤. ê·¸ëŸ¬ë‚˜ current drive ë¥¼ ì•Œ ìˆ˜ ì—†ëŠ” ê²½ìš°ê°€ ëŒ€ë¶€ë¶„ì´ê¸° ë•Œë¬¸ì—, 
+	//	ì •í™•í•œ ë³€í™˜ì€ ì–´ë µë‹¤. ì´ëŸ° ê²½ìš° ê·¸ë‚˜ë§ˆ ê°€ì¥ í™•ë¥ ì´ ë†’ì€ %SystemDrive% ë¥¼ ë¶™ì—¬ì¤€ë‹¤. 
+	//	_system_drive ëŠ” í•­ìƒ ì†Œë¬¸ìë¥¼ ì‚¬ìš© í•¨
 	//
-	//	current path Á¤º¸´Â ÇÁ·Î¼¼½ºÀÇ PEB ¸¦ ÀĞÀ¸¸é ¾Ë¾Æ³¾ ¼ö´Â ÀÖÀ¸³ª 
-	//	±×·¸°Ô±îÁö ÇÒ ÇÊ¿ä´Â ¾ø¾îº¸¿©¼­, ÀÌÁ¤µµ¸¸...
+	//	current path ì •ë³´ëŠ” í”„ë¡œì„¸ìŠ¤ì˜ PEB ë¥¼ ì½ìœ¼ë©´ ì•Œì•„ë‚¼ ìˆ˜ëŠ” ìˆìœ¼ë‚˜ 
+	//	ê·¸ë ‡ê²Œê¹Œì§€ í•  í•„ìš”ëŠ” ì—†ì–´ë³´ì—¬ì„œ, ì´ì •ë„ë§Œ...
 	std::wstring _system_drive;
 
 	// %SystemRoot% (e.g. c:\windows )	
@@ -115,10 +115,10 @@ private:
 
 
 //
-//	Singleton °´Ã¼¸¦ ÀÌ¿ëÇÑ C api 
+//	Singleton ê°ì²´ë¥¼ ì´ìš©í•œ C api 
 // 
-//	nc_xxxx() API ¸¦ »ç¿ëÇÏ±â Àü¿¡ ¹İµå½Ã nc_initialize() ¸¦ È£ÃâÇÏ°í, 
-//	API ¸¦ ´õÀÌ»ó »ç¿ëÇÏÁö ¾ÊÀ» °æ¿ì nc_finalize() ¸¦ È£ÃâÇØ ÁÖ¾î¾ß ÇÑ´Ù.
+//	nc_xxxx() API ë¥¼ ì‚¬ìš©í•˜ê¸° ì „ì— ë°˜ë“œì‹œ nc_initialize() ë¥¼ í˜¸ì¶œí•˜ê³ , 
+//	API ë¥¼ ë”ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•Šì„ ê²½ìš° nc_finalize() ë¥¼ í˜¸ì¶œí•´ ì£¼ì–´ì•¼ í•œë‹¤.
 // 
 
 bool nc_initialize();

@@ -12,13 +12,13 @@
 
 
 //
-//	¿¹¾àµÈ IP ÁÖ¼Ò ¸ñ·Ï
+//	ì˜ˆì•½ëœ IP ì£¼ì†Œ ëª©ë¡
 //
 //	Ref #1: Address Allocation for Private Internets, https://tools.ietf.org/html/rfc1918
 //	Ref #2: https://github.com/google/ipaddr-py/blob/master/ipaddr.py
 //	Ref #3: https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml
 //
-//	Ref #2 ÄÚµå¸¦ ±â¹İÀ¸·Î ¾Æ·¡ ¸ñ·Ï ÀÛ¼º
+//	Ref #2 ì½”ë“œë¥¼ ê¸°ë°˜ìœ¼ë¡œ ì•„ë˜ ëª©ë¡ ì‘ì„±
 //
 static const struct net_and_mask 
 {
@@ -52,10 +52,10 @@ static const uint32_t __crnam = sizeof(__reserved_net_and_masks) / sizeof(net_an
 
 
 
-/// @brief	Winsock À» ÃÊ±âÈ­ÇÑ´Ù.
+/// @brief	Winsock ì„ ì´ˆê¸°í™”í•œë‹¤.
 ///			
-///			!!ÁÖÀÇ!!
-///			WSAStartup() / WSACleanup() ÀÇ È£ÃâÈ½¼ö´Â Á¤È®È÷ ÀÏÄ¡ÇØ¾ß ÇÑ´Ù. 
+///			!!ì£¼ì˜!!
+///			WSAStartup() / WSACleanup() ì˜ í˜¸ì¶œíšŸìˆ˜ëŠ” ì •í™•íˆ ì¼ì¹˜í•´ì•¼ í•œë‹¤. 
 bool init_net_util()
 {
 	WSADATA wsaData;
@@ -72,10 +72,10 @@ bool init_net_util()
 	return true;
 }
 
-/// @brief	Winsock À» Á¾·áÇÑ´Ù. 
+/// @brief	Winsock ì„ ì¢…ë£Œí•œë‹¤. 
 ///			
-///			!!ÁÖÀÇ!!
-///			WSAStartup() / WSACleanup() ÀÇ È£ÃâÈ½¼ö´Â Á¤È®È÷ ÀÏÄ¡ÇØ¾ß ÇÑ´Ù. 
+///			!!ì£¼ì˜!!
+///			WSAStartup() / WSACleanup() ì˜ í˜¸ì¶œíšŸìˆ˜ëŠ” ì •í™•íˆ ì¼ì¹˜í•´ì•¼ í•œë‹¤. 
 void cleanup_net_util()
 {
 	WSACleanup();
@@ -129,9 +129,9 @@ get_inet_adapters(
 )
 {
 	//
-	//	flag °¡ 0 ÀÏ¶§ unicast, anycast, multicast Á¤º¸¸¦ °¡Á®¿Â´Ù. 
-	//	¿©±â¿¡ include, exclude flag ¸¦ Á¶ÇÕÇØ¼­ »ç¿ëÇÒ ¼ö ÀÖ°Ô ÇÑ°Í °°Àºµ¥, 
-	//	include, exclude °¡ ¼¯ÀÌ¸é ¹º°¡ »ı°¢ÇÑ ´ë·Î °á°ú°¡ ¾È³ª¿È
+	//	flag ê°€ 0 ì¼ë•Œ unicast, anycast, multicast ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤. 
+	//	ì—¬ê¸°ì— include, exclude flag ë¥¼ ì¡°í•©í•´ì„œ ì‚¬ìš©í•  ìˆ˜ ìˆê²Œ í•œê²ƒ ê°™ì€ë°, 
+	//	include, exclude ê°€ ì„ì´ë©´ ë­”ê°€ ìƒê°í•œ ëŒ€ë¡œ ê²°ê³¼ê°€ ì•ˆë‚˜ì˜´
 	//
 
 	ULONG flags = GAA_FLAG_INCLUDE_GATEWAYS;
@@ -183,14 +183,14 @@ get_inet_adapters(
 	PIP_ADAPTER_ADDRESSES cur = address;
 	while (nullptr != cur)
 	{
-		///	IF_TYPE_SOFTWARE_LOOPBACK ÀÎÅÍÆäÀÌ½º Á¤º¸´Â Á¦¿Ü
+		///	IF_TYPE_SOFTWARE_LOOPBACK ì¸í„°í˜ì´ìŠ¤ ì •ë³´ëŠ” ì œì™¸
 		if (cur->IfType == IF_TYPE_SOFTWARE_LOOPBACK)
 		{
 			goto _next;
 		}
 
 		//
-		// È°¼ºÈ­µÇÁö ¾ÊÀº ÀÎÅÍÆäÀÌ½º¿¡ ´ëÇÑ Á¤º¸µµ ¼öÁıÇÑ´Ù. 
+		// í™œì„±í™”ë˜ì§€ ì•Šì€ ì¸í„°í˜ì´ìŠ¤ì— ëŒ€í•œ ì •ë³´ë„ ìˆ˜ì§‘í•œë‹¤. 
 		//
 		//if (IfOperStatusUp != cur->OperStatus)
 		//{
@@ -198,7 +198,7 @@ get_inet_adapters(
 		//}
 
 		//
-		//	InetAdapter °´Ã¼¸¦ »ı¼ºÇÏ°í, ¸®½ºÆ®¿¡ Ãß°¡ÇÑ´Ù. 
+		//	InetAdapter ê°ì²´ë¥¼ ìƒì„±í•˜ê³ , ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€í•œë‹¤. 
 		//
 		adapter = new InetAdapter(cur->IfType);
 		if (nullptr == adapter)
@@ -226,7 +226,7 @@ get_inet_adapters(
 		}
 
 		//	Physical address
-		//	data link layer ÀÎÅÍÆäÀÌ½º°¡ ¾Æ´Ñ °æ¿ì 0 ÀÏ ¼ö ÀÖ´Ù. 
+		//	data link layer ì¸í„°í˜ì´ìŠ¤ê°€ ì•„ë‹Œ ê²½ìš° 0 ì¼ ìˆ˜ ìˆë‹¤. 
 		if (cur->PhysicalAddressLength == 6)
 		{
 			RtlCopyMemory(adapter->physical_address,
@@ -240,7 +240,7 @@ get_inet_adapters(
 		{
 			//
 			//	subnet mask
-			//	PrefixLength¸¦ ÀÌ¿ëÇØ¼­ subnet mask¸¦ ±¸ÇÑ´Ù.
+			//	PrefixLengthë¥¼ ì´ìš©í•´ì„œ subnet maskë¥¼ êµ¬í•œë‹¤.
 			//
 			_ASSERTE(AF_INET == unicast_addr->Address.lpSockaddr->sa_family);
 			if (AF_INET != unicast_addr->Address.lpSockaddr->sa_family){continue;}
@@ -284,7 +284,7 @@ get_inet_adapters(
 		}
 
 		//
-		//	¾î´ğÅÍ °´Ã¼ Ãß°¡
+		//	ì–´ëŒ‘í„° ê°ì²´ ì¶”ê°€
 		//
 		adapters.push_back(adapter);
 	_next:
@@ -308,8 +308,8 @@ SocketAddressToStr(
 }
 
 /// @brief	Socket address to string
-///	@remark	WSAAddressToStringA ÇÔ¼ö´Â deprecated µÇ¾ú±â ¶§¹®¿¡ W ¹öÀü ÇÔ¼ö¸¦ »ç¿ëÇÏ°í, 
-///			address string ¹®ÀÚ¿­À» º¯È¯ÇÑ´Ù.
+///	@remark	WSAAddressToStringA í•¨ìˆ˜ëŠ” deprecated ë˜ì—ˆê¸° ë•Œë¬¸ì— W ë²„ì „ í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ê³ , 
+///			address string ë¬¸ìì—´ì„ ë³€í™˜í•œë‹¤.
 bool
 SocketAddressToStr(
 	_In_ const SOCKADDR* addr,
@@ -320,7 +320,7 @@ SocketAddressToStr(
 	if (nullptr == addr) return false;
 
 	//
-	//	ÇÊ¿äÇÑ »çÀÌÁî¸¦ °è»ê
+	//	í•„ìš”í•œ ì‚¬ì´ì¦ˆë¥¼ ê³„ì‚°
 	//
 	DWORD buf_len = 0;
 	int ret = WSAAddressToStringW(
@@ -336,7 +336,7 @@ SocketAddressToStr(
 	}
 
 	//
-	//	¹öÆÛ ÇÒ´ç
+	//	ë²„í¼ í• ë‹¹
 	//
 	_ASSERTE(buf_len > 0);
 	wchar_ptr buf((wchar_t*)malloc((buf_len + 1) * sizeof(wchar_t)), [](wchar_t* p)
@@ -352,7 +352,7 @@ SocketAddressToStr(
 	}
 
 	//
-	//	º¯È¯½Ãµµ
+	//	ë³€í™˜ì‹œë„
 	//
 	ret = WSAAddressToStringW(
 		(LPSOCKADDR)addr,
@@ -369,7 +369,7 @@ SocketAddressToStr(
 	}
 
 	//
-	//	wchar -> char ·Î º¯È¯ÇÏ°í, ¸®ÅÏ
+	//	wchar -> char ë¡œ ë³€í™˜í•˜ê³ , ë¦¬í„´
 	//
 	addr_str = WcsToMbsEx(buf.get());
 	return true;
@@ -377,7 +377,7 @@ SocketAddressToStr(
 
 ///	@brief	
 /*
-	¼öµ¿À¸·Î ip -> DNS Á¶È¸ Å×½ºÆ® ÇØº¸±â
+	ìˆ˜ë™ìœ¼ë¡œ ip -> DNS ì¡°íšŒ í…ŒìŠ¤íŠ¸ í•´ë³´ê¸°
 
 	> nslookup
 	> set type=PTR
@@ -454,28 +454,28 @@ ip_to_dns(
 
 	//-------------------------------------------------------------------------
 	//
-	// DNS_QUERY_STANDARD ¿É¼ÇÀ» »ç¿ëÇÑ °æ¿ì 
-	//	- local cache -> query with UDP -> query with TCP (ÀÀ´äµ¥ÀÌÅÍ°¡ Àß¸°°æ¿ì)
-	//	- DNS_QUERY_NO_MULTICAST : DNS ¼­¹ö¿¡¸¸ ¿äÃ»À» Àü¼Û(À½?)
-	//	- DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE ¿É¼ÇÀ» ÁÖ¸é tcp ¸¦ ÅëÇÑ Àç½Ãµµ¸¦ 
-	//	  ¹æÁö ÇÔ
+	// DNS_QUERY_STANDARD ì˜µì…˜ì„ ì‚¬ìš©í•œ ê²½ìš° 
+	//	- local cache -> query with UDP -> query with TCP (ì‘ë‹µë°ì´í„°ê°€ ì˜ë¦°ê²½ìš°)
+	//	- DNS_QUERY_NO_MULTICAST : DNS ì„œë²„ì—ë§Œ ìš”ì²­ì„ ì „ì†¡(ìŒ?)
+	//	- DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE ì˜µì…˜ì„ ì£¼ë©´ tcp ë¥¼ í†µí•œ ì¬ì‹œë„ë¥¼ 
+	//	  ë°©ì§€ í•¨
 	//
 	//--------------------------------------------------------------------------------
 	//
-	//	DNS_QUERY_STANDARD vs DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE ¼º´É ºñ±³
-	//	ipconfig /flushdns ¸í·ÉÀ¸·Î cache ¸¦ ºñ¿ì°í 188 °³ÀÇ ip ¸¦ dns ·Î º¯È¯Å×½ºÆ®
+	//	DNS_QUERY_STANDARD vs DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE ì„±ëŠ¥ ë¹„êµ
+	//	ipconfig /flushdns ëª…ë ¹ìœ¼ë¡œ cache ë¥¼ ë¹„ìš°ê³  188 ê°œì˜ ip ë¥¼ dns ë¡œ ë³€í™˜í…ŒìŠ¤íŠ¸
 	//	
-	//	DNS_QUERY_STANDARD ¿É¼Ç »ç¿ë
+	//	DNS_QUERY_STANDARD ì˜µì…˜ ì‚¬ìš©
 	//		1st try) total=188, succ=70, cache=0,  wire=70, elapsed= 145830.484375 ms
 	//		2nd try) total=188, succ=70, cache=57, wire=13, elapsed= 137857.656250 ms
-	//	1st try ¿Í 2nd try °£ Â÷ÀÌ°¡ Å©Áö ¾Ê´Ù(10ÃÊ). DNS ÀÌ¸§ÀÌ ¾ø´Â IP µéÀÌ ´ëºÎºĞÀÇ 
-	//	½Ã°£À» Àâ¾Æ¸Ô±â ¶§¹®
+	//	1st try ì™€ 2nd try ê°„ ì°¨ì´ê°€ í¬ì§€ ì•Šë‹¤(10ì´ˆ). DNS ì´ë¦„ì´ ì—†ëŠ” IP ë“¤ì´ ëŒ€ë¶€ë¶„ì˜ 
+	//	ì‹œê°„ì„ ì¡ì•„ë¨¹ê¸° ë•Œë¬¸
 	// 
-	//	DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE ¿É¼Ç »ç¿ë
+	//	DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE ì˜µì…˜ ì‚¬ìš©
 	//		1st try) total=188, succ=70, cache=0, wire=70, elapsed=   33709.382813 ms
 	//		2nd try) total=188, succ=70, cache=69, wire=1, elapsed=   14285.799805 ms
-	//	ÀüÃ¼ÀûÀ¸·Î DNS_QUERY_STANDARD º¸´Ù ¾à 5¹è ºü¸£´Ù. DNS ÀÌ¸§ ¾ø´Â IP Á¶È¸ ½Ã°£ÀÌ »ó´ëÀûÀ¸·Î
-	//	ºü¸£±â ¶§¹®¿¡ 1st try, 2nd try °£ Â÷ÀÌ°¡ DNS_QUERY_STANDARD º¸´Ù ´õ Å­
+	//	ì „ì²´ì ìœ¼ë¡œ DNS_QUERY_STANDARD ë³´ë‹¤ ì•½ 5ë°° ë¹ ë¥´ë‹¤. DNS ì´ë¦„ ì—†ëŠ” IP ì¡°íšŒ ì‹œê°„ì´ ìƒëŒ€ì ìœ¼ë¡œ
+	//	ë¹ ë¥´ê¸° ë•Œë¬¸ì— 1st try, 2nd try ê°„ ì°¨ì´ê°€ DNS_QUERY_STANDARD ë³´ë‹¤ ë” í¼
 	//
 	//--------------------------------------------------------------------------------
 	DNS_STATUS status = 
@@ -490,7 +490,7 @@ ip_to_dns(
 		if (DNS_ERROR_RECORD_DOES_NOT_EXIST == status || DNS_ERROR_RCODE_NAME_ERROR == status)
 		{
 			//
-			//	dns ÀÌ¸§ ¾ø´Â °æ¿ì, ... ¹¹ ±×·±°Å´Ù... ¾ø´Ù.
+			//	dns ì´ë¦„ ì—†ëŠ” ê²½ìš°, ... ë­ ê·¸ëŸ°ê±°ë‹¤... ì—†ë‹¤.
 			//
 		}
 		else
@@ -520,7 +520,7 @@ ip_to_dns(
 	return true;
 }
 
-/// @brief	www.google.com -> 1.1.1.1 ·Î º¯È¯ÇÏ´Â ÇÔ¼ö
+/// @brief	www.google.com -> 1.1.1.1 ë¡œ ë³€í™˜í•˜ëŠ” í•¨ìˆ˜
 bool
 dns_to_ip(
 	_In_ const wchar_t* domain_name,
@@ -542,7 +542,7 @@ dns_to_ip(
 		if (DNS_ERROR_RECORD_DOES_NOT_EXIST == status || DNS_ERROR_RCODE_NAME_ERROR == status)
 		{
 			//
-			//	À¯È¿ÇÏÁö ¾ÊÀº µµ¸ŞÀÎ ³×ÀÓ
+			//	ìœ íš¨í•˜ì§€ ì•Šì€ ë„ë©”ì¸ ë„¤ì„
 			//
 			log_dbg "DnsQuery(cache_only=%s) failed. domain=%ws, status=%u",
 				true == cache_only ? "O" : "X",
@@ -796,25 +796,25 @@ get_broadcast_list_v4(
 	adapters.clear();
 
 	//
-	//	255.255.255.255(0xffffffff) Ãß°¡
+	//	255.255.255.255(0xffffffff) ì¶”ê°€
 	//
 	broadcast_list.push_back(0xffffffff);
 
 	return true;
 }
 
-/// @brief	Localhost ÀÇ ´ëÇ¥(?) ip ¸¦ ¸®ÅÏÇÑ´Ù. 
+/// @brief	Localhost ì˜ ëŒ€í‘œ(?) ip ë¥¼ ë¦¬í„´í•œë‹¤. 
 std::string
 get_representative_ip_v4(
 )
 {
 	//
-	//	1¼øÀ§: 
-	//		dns, gateway °¡ ¼³Á¤µÈ ¾î´ğÅÍÀÇ Ã¹¹øÂ° IP
-	//	2¼øÀ§:
-	//		gateway °¡ ¼³Á¤µÈ ¾î´ğÅÍÀÇ Ã¹¹øÂ° IP
-	//	3¼øÀ§: 
-	//		Ã¹¹øÂ° IP
+	//	1ìˆœìœ„: 
+	//		dns, gateway ê°€ ì„¤ì •ëœ ì–´ëŒ‘í„°ì˜ ì²«ë²ˆì§¸ IP
+	//	2ìˆœìœ„:
+	//		gateway ê°€ ì„¤ì •ëœ ì–´ëŒ‘í„°ì˜ ì²«ë²ˆì§¸ IP
+	//	3ìˆœìœ„: 
+	//		ì²«ë²ˆì§¸ IP
 	// 
 	std::vector<PInetAdapter> adapters;
 	if (true != get_inet_adapters(adapters))
@@ -827,7 +827,7 @@ get_representative_ip_v4(
 	do
 	{
 		//
-		//	1¼øÀ§ Ã£±â
+		//	1ìˆœìœ„ ì°¾ê¸°
 		//
 		for (const auto& adapter : adapters)
 		{
@@ -844,7 +844,7 @@ get_representative_ip_v4(
 		if (true != ip.empty()) break;
 
 		//
-		//	2¼øÀ§ Ã£±â
+		//	2ìˆœìœ„ ì°¾ê¸°
 		//
 		for (const auto& adapter : adapters)
 		{
@@ -858,7 +858,7 @@ get_representative_ip_v4(
 		if (true != ip.empty()) break;
 
 		//
-		//	3¼øÀ§
+		//	3ìˆœìœ„
 		//
 		for (const auto& adapter : adapters)
 		{
@@ -883,7 +883,7 @@ get_representative_ip_v4(
 	return (true != ip.empty()) ? ip : "127.0.0.1";
 }
 
-/// @brief  `ip_str` ÁÖ¼Ò¸¦ °¡Áø interface ÀÇ mac ÁÖ¼Ò¸¦ ¾Ë¾Æ³½´Ù. 
+/// @brief  `ip_str` ì£¼ì†Œë¥¼ ê°€ì§„ interface ì˜ mac ì£¼ì†Œë¥¼ ì•Œì•„ë‚¸ë‹¤. 
 std::string
 get_mac_by_ip_v4(
 	_In_ const char* ip_str
@@ -904,7 +904,7 @@ get_mac_by_ip_v4(
 	if (0xffffffff == ip) return "00-00-00-00-00-00";
 
 	//
-	//	¾î´ğÅÍ Á¤º¸¸¦ °¡Á®¿Â´Ù.
+	//	ì–´ëŒ‘í„° ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 	//
 	std::vector<PInetAdapter> adapters;
 	if (true != get_inet_adapters(adapters))
@@ -914,7 +914,7 @@ get_mac_by_ip_v4(
 	}
 
 	//
-	//	IP ¿Í ¸ÅÄªÇÑ´Ù.
+	//	IP ì™€ ë§¤ì¹­í•œë‹¤.
 	//
 	bool matched = false;
 	std::string mac;
@@ -955,7 +955,7 @@ get_mac_by_ip_v4(
 	return (true == mac.empty()) ? "00-00-00-00-00-00" : mac;
 }
 
-/// @brief	MAC ÁÖ¼Ò¸¦ ¹®ÀÚ¿­·Î º¯È¯ÇÑ´Ù.
+/// @brief	MAC ì£¼ì†Œë¥¼ ë¬¸ìì—´ë¡œ ë³€í™˜í•œë‹¤.
 std::string mac_to_str(_In_ const MacAddrType mac)
 {
 	char buf[(2 * 6) + 5 + 1] = { 0 };
@@ -973,11 +973,11 @@ std::string mac_to_str(_In_ const MacAddrType mac)
 	}
 }
 
-/// @brief	GetAddrInfoEx() wrapper ÇÔ¼ö  
-///			host_name ¿¡´Â ¾Æ·¡ÀÇ ÀÔ·ÂÇü½ÄÀ» Áö¿øÇÔ
+/// @brief	GetAddrInfoEx() wrapper í•¨ìˆ˜  
+///			host_name ì—ëŠ” ì•„ë˜ì˜ ì…ë ¥í˜•ì‹ì„ ì§€ì›í•¨
 ///				- FQDN (e.g. www.google.com)
-///				- È£½ºÆ® ÀÌ¸§ (e.g. DESKTOP-IQPVKKP)
-///			¼º°ø½Ã ÇØ´ç È£½ºÆ®¿¡ ÇÒ´çµÈ IPv4/IPv6 ÁÖ¼Ò ¸ñ·ÏÀ» ¸®ÅÏÇÑ´Ù.
+///				- í˜¸ìŠ¤íŠ¸ ì´ë¦„ (e.g. DESKTOP-IQPVKKP)
+///			ì„±ê³µì‹œ í•´ë‹¹ í˜¸ìŠ¤íŠ¸ì— í• ë‹¹ëœ IPv4/IPv6 ì£¼ì†Œ ëª©ë¡ì„ ë¦¬í„´í•œë‹¤.
 bool
 get_addr_infow(
 	_In_ const wchar_t* host_name,
@@ -1083,7 +1083,7 @@ get_addr_infow(
 
 
 
-/// @brief	¿¹¾àµÈ IP ÁÖ¼ÒÀÎ °æ¿ì true ¸¦ ¸®ÅÏÇÑ´Ù.
+/// @brief	ì˜ˆì•½ëœ IP ì£¼ì†Œì¸ ê²½ìš° true ë¥¼ ë¦¬í„´í•œë‹¤.
 bool
 is_reserved_ipv4(
 	_In_ uint32_t ip_netbyte_order

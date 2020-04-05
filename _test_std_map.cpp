@@ -54,8 +54,8 @@ bool test_std_map()
 	}
 
 	// 
-	//	map.erase() ¸¸ È£ÃâÇÏ¸é item ÀÇ ¼Ò¸êÀÚ´Â È£ÃâµÇÁö ¾ÊÀ¸¹Ç·Î 
-	//	erase È£Ãâ Àü¿¡ second °´Ã¼ÀÇ ¼Ò¸êÀÚ¸¦ È£ÃâÇØÁÖ¾î¾ß ÇÑ´Ù. 
+	//	map.erase() ë§Œ í˜¸ì¶œí•˜ë©´ item ì˜ ì†Œë©¸ìëŠ” í˜¸ì¶œë˜ì§€ ì•Šìœ¼ë¯€ë¡œ 
+	//	erase í˜¸ì¶œ ì „ì— second ê°ì²´ì˜ ì†Œë©¸ìë¥¼ í˜¸ì¶œí•´ì£¼ì–´ì•¼ í•œë‹¤. 
 	// 
 	std::map<DWORD, pmap_second_object>::iterator it = my_map.find(1);
 	delete it->second;
@@ -104,7 +104,7 @@ bool test_map_plus_algorithm_1()
 	mm["4"] = Elem("4", 4);
 	mm["5"] = Elem("5", 5);
 
-	// map ¿¡ ´ã±ä ¸ğµç elem.m_val À» ¾ò¾î³»°í ½Í´Ù!
+	// map ì— ë‹´ê¸´ ëª¨ë“  elem.m_val ì„ ì–»ì–´ë‚´ê³  ì‹¶ë‹¤!
 	std::vector<int> vi;
 	for(std::map<std::string, Elem>::iterator it = mm.begin(); it != mm.end(); ++it)
 	{
@@ -148,8 +148,8 @@ bool test_map_plus_algorithm_2()
 	mm["4"] = Elem("4", 4);
 	mm["5"] = Elem("5", 5);
 
-	// map ¿¡ ´ã±ä ¸ğµç elem.m_val À» ¾ò¾î³»°í ½Í´Ù!
-	// transform() ÀÌ¿ë
+	// map ì— ë‹´ê¸´ ëª¨ë“  elem.m_val ì„ ì–»ì–´ë‚´ê³  ì‹¶ë‹¤!
+	// transform() ì´ìš©
 	std::vector<int> vi(mm.size());
 	std::transform(mm.begin(), mm.end(), vi.begin(), ElemGetValueAdapter());
 	
@@ -190,8 +190,8 @@ bool test_map_plus_algorithm_3()
 	mm["4"] = Elem("4", 4);
 	mm["5"] = Elem("5", 5);
 
-	// mm ¿¡ ¼ÓÇÑ ¸ğµç Elem.Print ¸¦ È£ÃâÇÏ°í ½Í´Ù.
-	// transform() ÀÌ¿ë
+	// mm ì— ì†í•œ ëª¨ë“  Elem.Print ë¥¼ í˜¸ì¶œí•˜ê³  ì‹¶ë‹¤.
+	// transform() ì´ìš©
 	std::vector<int> vi(mm.size());
 	std::transform(mm.begin(), mm.end(), vi.begin(), ElemPrintAdaptor());
 
@@ -223,8 +223,8 @@ bool test_map_plus_algorithm_4()
 	mm["4"] = Elem("4", 4);
 	mm["5"] = Elem("5", 5);
 
-	// mm ¿¡ ¼ÓÇÑ ¸ğµç Elem.Print ¸¦ È£ÃâÇÏ°í ½Í´Ù.
-	// transform() ÀÌ¿ë
+	// mm ì— ì†í•œ ëª¨ë“  Elem.Print ë¥¼ í˜¸ì¶œí•˜ê³  ì‹¶ë‹¤.
+	// transform() ì´ìš©
 	std::vector<int> vi(mm.size());
 	std::transform(
 				mm.begin(), 
@@ -410,10 +410,10 @@ bool test_std_unordered_map_object()
     mymap[3] = p;
 
 
-    PMyP& pr = mymap[4];        // ÂüÁ¶ÀÚ·Î ¹ŞÀ» ¼öµµ ÀÖ´Ù.
+    PMyP& pr = mymap[4];        // ì°¸ì¡°ìë¡œ ë°›ì„ ìˆ˜ë„ ìˆë‹¤.
     _ASSERTE(NULL == pr);
     pr = new MyC(4);
-    // mymap[3] = p;            <= ÂüÁ¶ÀÚ·Î ¹Ş¾Ò±â¶«½Ã·Õ, °ªÀ» ´Ù½Ã ¼³Á¤ÇÒ ÇÊ¿ä¾ø´Ù.
+    // mymap[3] = p;            <= ì°¸ì¡°ìë¡œ ë°›ì•˜ê¸°ë•œì‹œë¡±, ê°’ì„ ë‹¤ì‹œ ì„¤ì •í•  í•„ìš”ì—†ë‹¤.
 
     
     // clear the rest of all
@@ -464,8 +464,8 @@ bool test_unorded_map_test_move()
 		PSomeClass o12 = new SomeClass(12); l1->push_back(o12);
 		PSomeClass o13 = new SomeClass(13); l1->push_back(o13);
 		PSomeClass o14 = new SomeClass(14); l1->push_back(o14);
-		// make_pair< RValueRef, RValueRef > °¡ ¿Í¾ß ÇÏ´Âµ¥, PSomeClassList ´Â lvalue ÀÌ¹Ç·Î
-		// ¿¡·¯³². LValue ¸¦ RValue ·Î º¯È¯ÇØÁÖ´Â std::move() ¸¦ ÀÌ¿ëÇØ¼­ PSomeClassList ¸¦ Àü´Ş
+		// make_pair< RValueRef, RValueRef > ê°€ ì™€ì•¼ í•˜ëŠ”ë°, PSomeClassList ëŠ” lvalue ì´ë¯€ë¡œ
+		// ì—ëŸ¬ë‚¨. LValue ë¥¼ RValue ë¡œ ë³€í™˜í•´ì£¼ëŠ” std::move() ë¥¼ ì´ìš©í•´ì„œ PSomeClassList ë¥¼ ì „ë‹¬
 		um.insert(std::make_pair<int, PSomeClassList>(1, std::move(l1)));
 
 
@@ -513,16 +513,16 @@ bool test_map_insert_swap()
 	str_map.insert(std::make_pair<int, std::string*>(2, new std::string("2222")));
 	
 	//
-	//	»õ·Î¿î ¿£Æ®¸®¸¦ Ãß°¡ÇÏ°í, ±âÁ¸ °´Ã¼ Á¦°ÅÇÏ±â 
+	//	ìƒˆë¡œìš´ ì—”íŠ¸ë¦¬ë¥¼ ì¶”ê°€í•˜ê³ , ê¸°ì¡´ ê°ì²´ ì œê±°í•˜ê¸° 
 	//
 	std::string* pstr = new std::string("3333");
 	std::swap(str_map[3], pstr);
-	_ASSERTE(pstr == nullptr);	// ¿£Æ®¸® Ãß°¡ÀÌ¹Ç·Î nullptr °ú ±³È¯ÇÏ°Ô µÊ
+	_ASSERTE(pstr == nullptr);	// ì—”íŠ¸ë¦¬ ì¶”ê°€ì´ë¯€ë¡œ nullptr ê³¼ êµí™˜í•˜ê²Œ ë¨
 
 
 	//
-	//	±âÁ¸ ¿£Æ®¸®¸¦ ´Ù¸¥ °´Ã¼·Î ¹Ù²ãÄ¡±âÇÏ°í,
-	//	±âÁ¸ °´Ã¼ Á¦°ÅÇÏ±â 
+	//	ê¸°ì¡´ ì—”íŠ¸ë¦¬ë¥¼ ë‹¤ë¥¸ ê°ì²´ë¡œ ë°”ê¿”ì¹˜ê¸°í•˜ê³ ,
+	//	ê¸°ì¡´ ê°ì²´ ì œê±°í•˜ê¸° 
 	//
 
 	_ASSERTE(pstr == nullptr);
@@ -530,7 +530,7 @@ bool test_map_insert_swap()
 	std::swap(str_map[1], pstr);
 	
 	//
-	// pstr ¿¡´Â ±âÁ¸ str_map[1] ¾ÆÀÌÅÛ Æ÷ÀÎÅÍ°¡ ÀÖÀ½
+	// pstr ì—ëŠ” ê¸°ì¡´ str_map[1] ì•„ì´í…œ í¬ì¸í„°ê°€ ìˆìŒ
 	//
 	_ASSERTE(nullptr != pstr);
 	_ASSERTE(0 == pstr->compare("1111"));
@@ -539,7 +539,7 @@ bool test_map_insert_swap()
 	
 
 	// 
-	//	¸®¼Ò½º Á¤¸®
+	//	ë¦¬ì†ŒìŠ¤ ì •ë¦¬
 	//
 	for (auto& entry : str_map)
 	{

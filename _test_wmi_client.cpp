@@ -44,7 +44,7 @@ bool query_wmi(_In_ const wchar_t* query)
         if (!SUCCEEDED(hr)) break;
         if (uReturn != 1)   break;
 
-        // current object ÀÇ ¸ğµç qualifier ¸¦ °¡Á®¿Â´Ù. 
+        // current object ì˜ ëª¨ë“  qualifier ë¥¼ ê°€ì ¸ì˜¨ë‹¤. 
         SAFEARRAY* names = NULL;
         hr = pclsObj->GetNames(NULL, WBEM_FLAG_ALWAYS | WBEM_FLAG_NONSYSTEM_ONLY, NULL, &names);
         if (!SUCCEEDED(hr))
@@ -53,12 +53,12 @@ bool query_wmi(_In_ const wchar_t* query)
             break;
         }
 
-        // names ÀÇ min/max ¸¦ ±¸ÇÑ´Ù. 
+        // names ì˜ min/max ë¥¼ êµ¬í•œë‹¤. 
         long lbound = 0, ubound = 0;
         hr = SafeArrayGetLBound(names, 1, &lbound);
         hr = SafeArrayGetUBound(names, 1, &ubound);
 
-        // names ¸¦ ¼øÈ¸ÇÏ¸é¼­ °¢ property ÀÇ °ªÀ» °¡Á®¿Â´Ù. 
+        // names ë¥¼ ìˆœíšŒí•˜ë©´ì„œ ê° property ì˜ ê°’ì„ ê°€ì ¸ì˜¨ë‹¤. 
         for (long i = lbound; i <= ubound; ++i)
         {
             wchar_t* name = NULL;
@@ -74,8 +74,8 @@ bool query_wmi(_In_ const wchar_t* query)
             VariantClear(&obj_prop_type);
             VariantClear(&obj_prop_value);
 
-            // ÇöÀç property ÀÇ Å¸ÀÔ/°ªÀ» ±¸ÇÑ´Ù. ½Ã½ºÅÛ ¼Ó¼ºÀÎ °æ¿ì Å¸ÀÔ¼ÂÀÌ Á¸ÀçÇÏÁö ¾Ê´Â´Ù. 
-            // Âü°í: http://serious-code.net/doku/doku.php?id=kb:wmiusingcpp
+            // í˜„ì¬ property ì˜ íƒ€ì…/ê°’ì„ êµ¬í•œë‹¤. ì‹œìŠ¤í…œ ì†ì„±ì¸ ê²½ìš° íƒ€ì…ì…‹ì´ ì¡´ì¬í•˜ì§€ ì•ŠëŠ”ë‹¤. 
+            // ì°¸ê³ : http://serious-code.net/doku/doku.php?id=kb:wmiusingcpp
             IWbemQualifierSet* objProperties = NULL;
             hr = pclsObj->GetPropertyQualifierSet(name, &objProperties);
             if (!SUCCEEDED(hr))
@@ -85,12 +85,12 @@ bool query_wmi(_In_ const wchar_t* query)
             }
 
 
-            // objProperties ¿¡´Â ¾î¶² ÇÁ·ÎÆÛÆ¼µéÀÌ ÀÖ³ª Ãâ·ÂÇØº»´Ù. 
-            // => CIMTYPE ¹Û¿¡ ¾ø´Ù. °¡²û key µµ ÀÖ±äÇÏÁö¸¸.
-            // => Âü°í) Standard WMI Qualifiers, https://msdn.microsoft.com/en-us/library/aa393651(v=vs.85).aspx
+            // objProperties ì—ëŠ” ì–´ë–¤ í”„ë¡œí¼í‹°ë“¤ì´ ìˆë‚˜ ì¶œë ¥í•´ë³¸ë‹¤. 
+            // => CIMTYPE ë°–ì— ì—†ë‹¤. ê°€ë” key ë„ ìˆê¸´í•˜ì§€ë§Œ.
+            // => ì°¸ê³ ) Standard WMI Qualifiers, https://msdn.microsoft.com/en-us/library/aa393651(v=vs.85).aspx
             // 
             //{
-            //    // objProperties ÀÇ name À» ¸ù¶¥ °¡Á®¿Íº¸ÀÚ.
+            //    // objProperties ì˜ name ì„ ëª½ë•… ê°€ì ¸ì™€ë³´ì.
             //    SAFEARRAY* names2 = NULL;
             //    hr = objProperties->GetNames(0, &names2);
             //    if (!SUCCEEDED(hr))
@@ -99,7 +99,7 @@ bool query_wmi(_In_ const wchar_t* query)
             //        break;
             //    }
             //
-            //    // names ÀÇ min/max ¸¦ ±¸ÇÑ´Ù. 
+            //    // names ì˜ min/max ë¥¼ êµ¬í•œë‹¤. 
             //    long lbound2 = 0, ubound2 = 0;
             //    hr = SafeArrayGetLBound(names2, 1, &lbound2);
             //    hr = SafeArrayGetUBound(names2, 1, &ubound2);
@@ -120,7 +120,7 @@ bool query_wmi(_In_ const wchar_t* query)
                 continue;
             }
 
-            // value °¡ ¾ø´Â °æ¿ìµµ ÀÖ´Ù. 
+            // value ê°€ ì—†ëŠ” ê²½ìš°ë„ ìˆë‹¤. 
             hr = pclsObj->Get(name, 0, &obj_prop_value, 0, 0);
             if (!SUCCEEDED(hr))
             {

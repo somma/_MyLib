@@ -23,7 +23,7 @@ file_copy_mmio(
 	)
 {
 	//
-	//	¼Ò½º ÆÄÀÏÀ» ÀĞ±â ¸ğµå·Î ¿ÀÇÂ/¸ÅÇÎÇÑ´Ù.
+	//	ì†ŒìŠ¤ íŒŒì¼ì„ ì½ê¸° ëª¨ë“œë¡œ ì˜¤í”ˆ/ë§¤í•‘í•œë‹¤.
 	// 
 	FileIoHelper srcFile;
 	if (!srcFile.OpenForRead(src_file))
@@ -49,7 +49,7 @@ file_copy_mmio(
 	log_info "dos_name=%ws", dos_name.c_str() log_end;
 
 	//
-	//	¸ñÀûÁö ÆÄÀÏÀ» ¼Ò½ºÆÄÀÏ »çÀÌÁî¿Í µ¿ÀÏÇÏ°Ô »ı¼ºÇÑ´Ù.
+	//	ëª©ì ì§€ íŒŒì¼ì„ ì†ŒìŠ¤íŒŒì¼ ì‚¬ì´ì¦ˆì™€ ë™ì¼í•˜ê²Œ ìƒì„±í•œë‹¤.
 	// 
 	FileIoHelper dstFile;
 	if (!dstFile.OpenForWrite(dst_file, srcFile.FileSize()))
@@ -59,7 +59,7 @@ file_copy_mmio(
 	}
 
 	// 
-	//	¼Ò½º ÆÄÀÏÀ» ¸ñÀûÁö ÆÄÀÏ·Î º¹Á¦ÇÑ´Ù. 
+	//	ì†ŒìŠ¤ íŒŒì¼ì„ ëª©ì ì§€ íŒŒì¼ë¡œ ë³µì œí•œë‹¤. 
 	// 
 	bool err = false;
 
@@ -71,8 +71,8 @@ file_copy_mmio(
 		if (err) break;
 
 		//
-		//	min() ÀÌ ¸®ÅÏÇÏ´Â °ªÀº Ç×»ó uint32_t ¹üÀ§³»ÀÇ °ªÀÌ¹Ç·Î 
-		//	°­Á¦ Ä³½ºÆÃÇØµµ ±¦Âú´Ù.
+		//	min() ì´ ë¦¬í„´í•˜ëŠ” ê°’ì€ í•­ìƒ uint32_t ë²”ìœ„ë‚´ì˜ ê°’ì´ë¯€ë¡œ 
+		//	ê°•ì œ ìºìŠ¤íŒ…í•´ë„ ê´œì°®ë‹¤.
 		//
 		uint32_t map_size = (uint32_t)min(block_size, file_size - pos);
 		uint8_t* dst_ptr = dstFile.GetFilePointer(false, pos, map_size);
@@ -89,7 +89,7 @@ file_copy_mmio(
 		dstFile.ReleaseFilePointer();
 
 		//
-		//	file offset °»½Å
+		//	file offset ê°±ì‹ 
 		//
 		pos += block_size;
 	}
@@ -152,20 +152,20 @@ bool test_file_io_helper()
 	
 	
 	// 
-	//	»ç¿ëÇÑ ¸®¼Ò½ºµéÀ» Á¤¸®ÇÑ´Ù.
+	//	ì‚¬ìš©í•œ ë¦¬ì†ŒìŠ¤ë“¤ì„ ì •ë¦¬í•œë‹¤.
 	// 
 
 	return true;
 }
 
-/// @brief	Å« »çÀÌÁîÀÇ MMF ÆÄÀÏÀ» »ı¼ºÇÏ°í, ÆÄÀÏ ÀüÃ¼¸¦ ¸ÅÇÎÇßÀ»¶§
-///			ÇÁ·Î¼¼½ºÀÇ ¸Ş¸ğ¸® Á¡À¯À²À» È®ÀÎÇØº¸±â À§ÇÑ Å×½ºÆ®
+/// @brief	í° ì‚¬ì´ì¦ˆì˜ MMF íŒŒì¼ì„ ìƒì„±í•˜ê³ , íŒŒì¼ ì „ì²´ë¥¼ ë§¤í•‘í–ˆì„ë•Œ
+///			í”„ë¡œì„¸ìŠ¤ì˜ ë©”ëª¨ë¦¬ ì ìœ ìœ¨ì„ í™•ì¸í•´ë³´ê¸° ìœ„í•œ í…ŒìŠ¤íŠ¸
 bool test_file_io_helper2()
 {
 	FileIoHelper mmf;
 
 	//
-	//	2GB Â¥¸® ÆÄÀÏ »ı¼º
+	//	2GB ì§œë¦¬ íŒŒì¼ ìƒì„±
 	//
 
 	uint32_t size = (1024 * 1024 * 1024); // 2gb

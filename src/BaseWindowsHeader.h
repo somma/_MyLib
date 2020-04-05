@@ -9,7 +9,7 @@
 **---------------------------------------------------------------------------*/
 #pragma once
 
-// std::string À» strsafe.h º¸´Ù ¸ÕÀú ¼±¾ğÇØÁà¾ß ¿ö´×ÀÌ ¾øÀ½
+// std::string ì„ strsafe.h ë³´ë‹¤ ë¨¼ì € ì„ ì–¸í•´ì¤˜ì•¼ ì›Œë‹ì´ ì—†ìŒ
 // 
 #include <string>
 #include <iostream>
@@ -34,7 +34,7 @@
 #endif//_DEBUG
 
 //
-//	include ¼ø¼­ ÁÖÀÇ (¹Ù²Ù¸é ¾ÈµÊ)
+//	include ìˆœì„œ ì£¼ì˜ (ë°”ê¾¸ë©´ ì•ˆë¨)
 // 
 #include <winioctl.h>
 #include <initguid.h>

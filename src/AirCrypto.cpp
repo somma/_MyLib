@@ -27,7 +27,7 @@
 
 
 /**
-* @brief	aes256 ÆÄÀÏ ¾ÏÈ£È­
+* @brief	aes256 íŒŒì¼ ì•”í˜¸í™”
 * @param 	target_file_path ex) C:\\test_folder\\a.txt
 *			encrypt_file_path ex) C:\\test_folder\\a.txt.crypto
 **/
@@ -116,7 +116,7 @@ aes256_encrypt(
 }
 
 /**
-* @brief	aes256 ÆÄÀÏ º¹È£È­
+* @brief	aes256 íŒŒì¼ ë³µí˜¸í™”
 * @param 	encrypt_file_path ex) C:\\test_folder\\a.txt.crypto
 *			decrypt_file_path ex) C:\\test_folder\\a.txt
 **/
@@ -406,7 +406,7 @@ AirCryptBuffer(
 	return true;
 }
 
-//AirCryptBuffer »ç¿ëÇÏÁö ¾Ê°í aes ¾ÏÈ£È­
+//AirCryptBuffer ì‚¬ìš©í•˜ì§€ ì•Šê³  aes ì•”í˜¸í™”
 //
 //
 //int main(int argc, char **argv)

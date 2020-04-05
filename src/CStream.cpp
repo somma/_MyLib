@@ -41,7 +41,7 @@ CMemoryStream::CMemoryStream(size_t size, const char* const read_only_ptr)
 	m_pMemory(const_cast<char*>(read_only_ptr)),
 	m_size(size),
 	m_pos(0),
-	_page_size(4096),// read_only ¸ğµå¿¡¼­´Â ÇÊ¿ä¾ø¾î¼­, ±âº»°ªÀ¸·Î ¼³Á¤
+	_page_size(4096),// read_only ëª¨ë“œì—ì„œëŠ” í•„ìš”ì—†ì–´ì„œ, ê¸°ë³¸ê°’ìœ¼ë¡œ ì„¤ì •
 	_read_only(true)
 {
 }
@@ -52,9 +52,9 @@ CMemoryStream::~CMemoryStream()
 	ClearStream();
 }
 
-/// @brief	¸Ş¸ğ¸® ¹öÆÛ¸¦ size ¸¸Å­ ¹Ì¸® ÇÒ´çÇØµĞ´Ù.
-///			¸Ş¸ğ¸® ¹öÆÛ°¡ ÀÌ¹Ì ÇÒ´çµÇ¾ú°í, »ç¿ëÁßÀÎ ½ºÆ®¸²¿¡ ´ëÇØ¼­´Â 
-///			Reserve() ¸¦ È£Ãâ ÇÒ ¼ö ¾ø´Ù. 
+/// @brief	ë©”ëª¨ë¦¬ ë²„í¼ë¥¼ size ë§Œí¼ ë¯¸ë¦¬ í• ë‹¹í•´ë‘”ë‹¤.
+///			ë©”ëª¨ë¦¬ ë²„í¼ê°€ ì´ë¯¸ í• ë‹¹ë˜ì—ˆê³ , ì‚¬ìš©ì¤‘ì¸ ìŠ¤íŠ¸ë¦¼ì— ëŒ€í•´ì„œëŠ” 
+///			Reserve() ë¥¼ í˜¸ì¶œ í•  ìˆ˜ ì—†ë‹¤. 
 bool CMemoryStream::Reserve(_In_ size_t size)
 {
 	if (_read_only)
@@ -72,9 +72,9 @@ bool CMemoryStream::Reserve(_In_ size_t size)
 	return (IncreseSize(size) >= size ? true : false);
 }
 
-/// @brief	³»ºÎ ¹öÆÛÀÇ ÀÇ Å©±â newSize ·Î Å°¿î´Ù. 
-///			¼º°ø½Ã º¯°æÇÑ »çÀÌÁî(newSize)¸¦ ¸®ÅÏÇÏ°í, 
-///			½ÇÆĞ½Ã 0 À» ¸®ÅÏÇÏ°í, ¿ø·¡ ³»ºÎ ¹öÆÛ´Â ±×´ë·Î µĞ´Ù.
+/// @brief	ë‚´ë¶€ ë²„í¼ì˜ ì˜ í¬ê¸° newSize ë¡œ í‚¤ìš´ë‹¤. 
+///			ì„±ê³µì‹œ ë³€ê²½í•œ ì‚¬ì´ì¦ˆ(newSize)ë¥¼ ë¦¬í„´í•˜ê³ , 
+///			ì‹¤íŒ¨ì‹œ 0 ì„ ë¦¬í„´í•˜ê³ , ì›ë˜ ë‚´ë¶€ ë²„í¼ëŠ” ê·¸ëŒ€ë¡œ ë‘”ë‹¤.
 size_t 
 CMemoryStream::IncreseSize(
 	_In_ size_t newSize
@@ -101,7 +101,7 @@ CMemoryStream::IncreseSize(
 	else
 	{
 		//
-		//	½ºÆ®¸²ÀÇ »çÀÌÁî¸¦ ÁÙÀÌ´Â °ÍÀº ºÒ°¡´ÉÇÔ
+		//	ìŠ¤íŠ¸ë¦¼ì˜ ì‚¬ì´ì¦ˆë¥¼ ì¤„ì´ëŠ” ê²ƒì€ ë¶ˆê°€ëŠ¥í•¨
 		//
 		if (m_pos > newSize)
 		{
@@ -109,7 +109,7 @@ CMemoryStream::IncreseSize(
 		}
 
 		//
-		//	¿äÃ»ÇÑ »çÀÌÁî¸¦ ÆäÀÌÁö »çÀÌÁî·Î ¿Ã¸²ÇÑ´Ù.
+		//	ìš”ì²­í•œ ì‚¬ì´ì¦ˆë¥¼ í˜ì´ì§€ ì‚¬ì´ì¦ˆë¡œ ì˜¬ë¦¼í•œë‹¤.
 		//
 		size_t new_size = newSize;
 		_ASSERTE(_page_size > 0);			
@@ -122,7 +122,7 @@ CMemoryStream::IncreseSize(
 		char *ptr = (char *) realloc(m_pMemory, new_size);
 		if (nullptr == ptr)
 		{
-			// ¸Ş¸ğ¸® ºÎÁ·, m_pMemory ´Â º¯°æµÇÁö ¾ÊÀ½. 
+			// ë©”ëª¨ë¦¬ ë¶€ì¡±, m_pMemory ëŠ” ë³€ê²½ë˜ì§€ ì•ŠìŒ. 
 			log_err
 				"No resources for stream. req size=%u",
 				new_size
@@ -139,9 +139,9 @@ CMemoryStream::IncreseSize(
 	return _capacity;
 }
 
-/// @brief	`size` ¸¸Å­ `Buffer` ¿¡ º¹»çÇÏ°í, ½ºÆ®¸² Æ÷Áö¼ÇÀ» size ¸¸Å­ ÀÌµ¿
-/// @return	¼º°ø½Ã `size` ¸¦ ¸®ÅÏÇÏ°í, ½ºÆ®¸²ÀÇ ÀĞ±â °¡´ÉÇÑ ¿µ¿ªÀÌ `size` º¸´Ù 
-///			ÀÛÀ¸¸é 0 (¿¡·¯)À» ¸®ÅÏ
+/// @brief	`size` ë§Œí¼ `Buffer` ì— ë³µì‚¬í•˜ê³ , ìŠ¤íŠ¸ë¦¼ í¬ì§€ì…˜ì„ size ë§Œí¼ ì´ë™
+/// @return	ì„±ê³µì‹œ `size` ë¥¼ ë¦¬í„´í•˜ê³ , ìŠ¤íŠ¸ë¦¼ì˜ ì½ê¸° ê°€ëŠ¥í•œ ì˜ì—­ì´ `size` ë³´ë‹¤ 
+///			ì‘ìœ¼ë©´ 0 (ì—ëŸ¬)ì„ ë¦¬í„´
 size_t 
 CMemoryStream::ReadFromStream(
 	_Out_ char* const Buffer, 
@@ -178,10 +178,10 @@ CMemoryStream::ReadFromStream(
 	return size;
 }
 
-/// @brief	`Buffer` ¿¡ ÇöÀç ½ºÆ®¸²ÀÇ Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÏ°í, `size` ¸¸Å­ ½ºÆ®¸² 
-///			Æ÷Áö¼ÇÀ» ÀÌµ¿
-/// @return	¼º°ø½Ã `size` ¸¦ ¸®ÅÏÇÏ°í, ½ºÆ®¸²ÀÇ ÀĞ±â °¡´ÉÇÑ ¿µ¿ªÀÌ `size` º¸´Ù 
-///			ÀÛÀ¸¸é 0 (¿¡·¯)À» ¸®ÅÏ
+/// @brief	`Buffer` ì— í˜„ì¬ ìŠ¤íŠ¸ë¦¼ì˜ í¬ì¸í„°ë¥¼ ë¦¬í„´í•˜ê³ , `size` ë§Œí¼ ìŠ¤íŠ¸ë¦¼ 
+///			í¬ì§€ì…˜ì„ ì´ë™
+/// @return	ì„±ê³µì‹œ `size` ë¥¼ ë¦¬í„´í•˜ê³ , ìŠ¤íŠ¸ë¦¼ì˜ ì½ê¸° ê°€ëŠ¥í•œ ì˜ì—­ì´ `size` ë³´ë‹¤ 
+///			ì‘ìœ¼ë©´ 0 (ì—ëŸ¬)ì„ ë¦¬í„´
 size_t
 CMemoryStream::RefFromStream(
 	_Out_ const char*& Buffer,
@@ -217,9 +217,9 @@ CMemoryStream::RefFromStream(
 }
 
 
-/// @brief	¹öÆÛ·ÎºÎÅÍ µ¥ÀÌÅÍ¸¦ ÀĞ¾î ½ºÆ®¸²ÀÇ ÇöÀç Æ÷Áö¼Ç¿¡ ¾´´Ù.
-///			¼º°ø½Ã Write ÇÑ ¹ÙÀÌÆ® ¼ö
-///			½ÇÆĞ½Ã 0
+/// @brief	ë²„í¼ë¡œë¶€í„° ë°ì´í„°ë¥¼ ì½ì–´ ìŠ¤íŠ¸ë¦¼ì˜ í˜„ì¬ í¬ì§€ì…˜ì— ì“´ë‹¤.
+///			ì„±ê³µì‹œ Write í•œ ë°”ì´íŠ¸ ìˆ˜
+///			ì‹¤íŒ¨ì‹œ 0
 size_t 
 CMemoryStream::WriteToStream(
 	const char* Buffer, 
@@ -260,14 +260,14 @@ CMemoryStream::WriteToStream(
 		}	  
 	}
 
-	return 0;	// write ÇÑ ¹ÙÀÌÆ®°¡ 0 ÀÌ¹Ç·Î
+	return 0;	// write í•œ ë°”ì´íŠ¸ê°€ 0 ì´ë¯€ë¡œ
 }
 
-/// @brief	½ºÆ®¸²¿¡ std::string À» ¾´´Ù.
+/// @brief	ìŠ¤íŠ¸ë¦¼ì— std::string ì„ ì“´ë‹¤.
 bool CMemoryStream::WriteString(_In_ const std::string& str)
 {
 	//
-	//	ºó string °´Ã¼¶ó¸é »çÀÌÁî(0) °ª¸¸ ½ºÆ®¸²¿¡ ¾´´Ù.
+	//	ë¹ˆ string ê°ì²´ë¼ë©´ ì‚¬ì´ì¦ˆ(0) ê°’ë§Œ ìŠ¤íŠ¸ë¦¼ì— ì“´ë‹¤.
 	//
 	if (str.empty())
 	{
@@ -275,7 +275,7 @@ bool CMemoryStream::WriteString(_In_ const std::string& str)
 	}
 
 	//
-	//	½ºÆ®¸²¿¡ string ÀÇ ¹ÙÀÌÆ® ¼ö¸¦ ¾´´Ù.
+	//	ìŠ¤íŠ¸ë¦¼ì— string ì˜ ë°”ì´íŠ¸ ìˆ˜ë¥¼ ì“´ë‹¤.
 	//	
 	if (true != WriteInt<size_t>(str.size() * sizeof(char)))
 	{
@@ -292,7 +292,7 @@ bool CMemoryStream::WriteString(_In_ const std::string& str)
 bool CMemoryStream::WriteWstring(_In_ const std::wstring& wstr)
 {
 	//
-	//	ºó string °´Ã¼¶ó¸é »çÀÌÁî(0) °ª¸¸ ½ºÆ®¸²¿¡ ¾´´Ù.
+	//	ë¹ˆ string ê°ì²´ë¼ë©´ ì‚¬ì´ì¦ˆ(0) ê°’ë§Œ ìŠ¤íŠ¸ë¦¼ì— ì“´ë‹¤.
 	//
 	if (wstr.empty())
 	{
@@ -300,7 +300,7 @@ bool CMemoryStream::WriteWstring(_In_ const std::wstring& wstr)
 	}
 
 	//
-	//	½ºÆ®¸²¿¡ string ÀÇ ¹ÙÀÌÆ® ¼ö¸¦ ¾´´Ù.
+	//	ìŠ¤íŠ¸ë¦¼ì— string ì˜ ë°”ì´íŠ¸ ìˆ˜ë¥¼ ì“´ë‹¤.
 	//	
 	if (true != WriteInt<size_t>(wstr.size() * sizeof(wchar_t)))
 	{
@@ -323,7 +323,7 @@ bool CMemoryStream::WriteString(_In_ const char* const str)
 	}
 
 	//
-	//	½ºÆ®¸²¿¡ string ÀÇ ¹ÙÀÌÆ® ¼ö¸¦ ¾´´Ù.
+	//	ìŠ¤íŠ¸ë¦¼ì— string ì˜ ë°”ì´íŠ¸ ìˆ˜ë¥¼ ì“´ë‹¤.
 	//		
 	if (true != WriteInt<size_t>(cc * sizeof(char)))
 	{
@@ -346,7 +346,7 @@ bool CMemoryStream::WriteWstring(_In_ const wchar_t* const wstr)
 	}
 
 	//
-	//	½ºÆ®¸²¿¡ string ÀÇ ¹ÙÀÌÆ® ¼ö¸¦ ¾´´Ù.
+	//	ìŠ¤íŠ¸ë¦¼ì— string ì˜ ë°”ì´íŠ¸ ìˆ˜ë¥¼ ì“´ë‹¤.
 	//		
 	if (true != WriteInt<size_t>(wcc * sizeof(wchar_t)))
 	{

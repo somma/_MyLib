@@ -94,7 +94,7 @@ bool test_NtCreateFile()
 
     for (int i = 0; i < sizeof(files) / sizeof(wchar_t*); ++i)
     {
-        // \Device\HarddiskVolume1 µð¹ÙÀÌ½º¸¦ ¿ÀÇÂ, ÇÚµéÀ» È¹µæÇÑ´Ù. 
+        // \Device\HarddiskVolume1 ë””ë°”ì´ìŠ¤ë¥¼ ì˜¤í”ˆ, í•¸ë“¤ì„ íšë“í•œë‹¤. 
         _RtlInitUnicodeString(&on, files[i]);
         InitializeObjectAttributes(&oa, &on, OBJ_CASE_INSENSITIVE, NULL, NULL);
         status = _NtOpenFile(&file_handle,

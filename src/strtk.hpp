@@ -20,7 +20,7 @@
 
 
 // by somma
-// - ÄÄÆÄÀÏ ¿¡·¯°¡ ¸¶±¸ ³¯¶© /D "NOMINMAX" ÀüÃ³¸®±â¸¦ ³Ö¾îÁÖ¼¼¿ä~
+// - ì»´íŒŒì¼ ì—ëŸ¬ê°€ ë§ˆêµ¬ ë‚ ë• /D "NOMINMAX" ì „ì²˜ë¦¬ê¸°ë¥¼ ë„£ì–´ì£¼ì„¸ìš”~
 //
 #pragma warning(disable: 4267)  // warning C4267: 'argument' : conversion from 'size_t' to 'const strtk::binary::writer::uint32_t', possible loss of data
 #pragma warning(disable: 4996)  // warning C4996: 'std::copy': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct. To disable this warning, use -D_SCL_SECURE_NO_WARNINGS. See documentation on how to use Visual C++ 'Checked Iterators'

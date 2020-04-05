@@ -29,7 +29,7 @@ protected:
 
 
 /**	-----------------------------------------------------------------------
-	CriticalSection Wrapper Å¬·¡½º
+	CriticalSection Wrapper í´ë˜ìŠ¤
 -------------------------------------------------------------------------*/
 typedef
 class AKCriticalSection: public CAbsSyncObjs
@@ -46,8 +46,8 @@ public:
 	AKCriticalSection(void): CAbsSyncObjs(), m_initialized(FALSE){}
 	~AKCriticalSection(void)
 	{
-		// Terminate() ¸Ş¼Òµå´Â virtual ÀÌ¹Ç·Î È£ÃâÇÏÁö ¾Ê°í, 
-		// Á÷Á¢ ±¸Çö (°Á Terminate() ¸Ş¼Òµå¸¦ ¾ø¾Ö¹ö¸±±î?)
+		// Terminate() ë©”ì†Œë“œëŠ” virtual ì´ë¯€ë¡œ í˜¸ì¶œí•˜ì§€ ì•Šê³ , 
+		// ì§ì ‘ êµ¬í˜„ (ê± Terminate() ë©”ì†Œë“œë¥¼ ì—†ì• ë²„ë¦´ê¹Œ?)
 		// 
 		if (TRUE == m_initialized)
 		{

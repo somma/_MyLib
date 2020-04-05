@@ -138,7 +138,7 @@ bool test_std_thread_with_lambda()
 		//	- class parameter by ref
 		//	- unique_ptr with custom delter that calls thread::join()
 		//
-		//	ÂØ±İ ´õ Á¤¸®µÈ ¹öÀü
+		//	ì¬ê¸ˆ ë” ì •ë¦¬ëœ ë²„ì „
 		{
 			using thread_ptr = std::unique_ptr<std::thread, void(*)(std::thread* t)>;
 			auto thread_deleter = [](std::thread* p) 
@@ -168,7 +168,7 @@ bool test_std_thread_with_lambda()
 		//	- class parameter by ref
 		//	- unique_ptr with custom delter that calls thread::join()
 		//
-		//	ÂØ±İ ´õ~´õ~ Á¤¸®µÈ ¹öÀü
+		//	ì¬ê¸ˆ ë”~ë”~ ì •ë¦¬ëœ ë²„ì „
 		{
 			using thread_ptr = std::unique_ptr<std::thread, void(*)(std::thread* t)>;
 			auto make_thread_ptr = [](std::thread*&& t)->thread_ptr

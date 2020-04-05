@@ -17,7 +17,7 @@
 #include "log.h"
 
 
-//	SteadyTimer callback, false ¸¦ ¸®ÅÏÇÏ¸é Å¸ÀÌ¸Ó¸¦ ÁßÁö
+//	SteadyTimer callback, false ë¥¼ ë¦¬í„´í•˜ë©´ íƒ€ì´ë¨¸ë¥¼ ì¤‘ì§€
 typedef boost::function<bool(DWORD_PTR tag)> SteadyTimerCallback;
 
 class SteadyTimer
@@ -52,7 +52,7 @@ public:
 		_callback = callback;
 
 		//
-		//	Å¸ÀÌ¸Ó °´Ã¼ »ı¼º 
+		//	íƒ€ì´ë¨¸ ê°ì²´ ìƒì„± 
 		//
 		_timer.expires_from_now(std::chrono::seconds(this->_interval));
 		_timer.async_wait(boost::bind(&SteadyTimer::internal_callback,
@@ -61,8 +61,8 @@ public:
 									 boost::ref(_timer)));
 
 		//
-		//	Å¸ÀÌ¸Ó ½ÃÀÛ, io_service_run() Àº blocking call ÀÌ¹Ç·Î 
-		//	¹é±×¶ó¿îµå ÅÂ½ºÅ©¸¦ ¸¸µé¾î¼­ ½ÇÇàÇÑ´Ù. 
+		//	íƒ€ì´ë¨¸ ì‹œì‘, io_service_run() ì€ blocking call ì´ë¯€ë¡œ 
+		//	ë°±ê·¸ë¼ìš´ë“œ íƒœìŠ¤í¬ë¥¼ ë§Œë“¤ì–´ì„œ ì‹¤í–‰í•œë‹¤. 
 		// 
 		_timer_task = Concurrency::create_task([&]()->void {
 			_io_service.run();
@@ -77,7 +77,7 @@ public:
 		if (true != _running){return;}
 
 		//
-		//	Å¸ÀÌ¸Ó Ãë¼Ò
+		//	íƒ€ì´ë¨¸ ì·¨ì†Œ
 		//	
 		_timer.cancel();
 		_timer_task.wait();
@@ -95,21 +95,21 @@ private:
 		if (0 == error.value())
 		{
 			//
-			//	callback È£Ãâ
+			//	callback í˜¸ì¶œ
 			//
 			_ASSERTE(true == _running);
 			_ASSERTE(true != _callback.empty());
 			if (true != _callback(_tag))
 			{
 				//
-				//	Å¸ÀÌ¸Ó Ãë¼Ò ¿äÃ»
+				//	íƒ€ì´ë¨¸ ì·¨ì†Œ ìš”ì²­
 				//
 				timer.cancel();
 			}
 			else
 			{
 				//
-				//	Å¸ÀÌ¸Ó Àç ½ÃÀÛ
+				//	íƒ€ì´ë¨¸ ì¬ ì‹œì‘
 				//				
 				timer.expires_from_now(std::chrono::seconds(this->_interval));
 				timer.async_wait(boost::bind(&SteadyTimer::internal_callback,
@@ -121,14 +121,14 @@ private:
 		else if (boost::asio::error::operation_aborted == error.value())
 		{
 			//
-			//	timer Ãë¼Ò
+			//	timer ì·¨ì†Œ
 			//	
 			log_dbg "timer stop requested." log_end;
 		}
 		else
 		{
 			//
-			//	¿¡·¯°¡ ³ªµµ Å¸ÀÌ¸Ó´Â Àç ½ÃÀÛÇÑ´Ù. 
+			//	ì—ëŸ¬ê°€ ë‚˜ë„ íƒ€ì´ë¨¸ëŠ” ì¬ ì‹œì‘í•œë‹¤. 
 			log_err "timer error, err=0x%08x", error.value() log_end;
 			timer.expires_from_now(std::chrono::seconds(1));
 			timer.async_wait(boost::bind(&SteadyTimer::internal_callback,
