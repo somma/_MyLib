@@ -83,11 +83,6 @@ bool test_curl_https_down_with_auth()
 			sw.GetDurationSecond()
 			log_end;
 
-		//
-		//	finalize download context
-		//
-		_ASSERTE(true == ctx.finalize());
-		
 		_ASSERTE(_cc != nullptr);
 		delete _cc; _cc = nullptr;
 	}
