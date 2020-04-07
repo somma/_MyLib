@@ -28,10 +28,39 @@ bool test_curl_https_down_with_auth()
 		std::cout << "PW : ";
 		std::cin >> pw;
 
+		
+		//
+		//	다운로드 임시파일 생성
+		//
 		std::wstring file_path = L"c:\\dbg\\download.dat";
+		handle_ptr temp_file(open_file_to_write(file_path.c_str()),
+							 [](HANDLE h) 
+		{
+			if (INVALID_HANDLE_VALUE != h)
+			{
+				CloseHandle(h);
+			}
+		});
+		if (temp_file.get() == INVALID_HANDLE_VALUE)
+		{
+			log_err
+				"Can not create file. path=%ws",
+				file_path.c_str()
+				log_end;
+			return false;
+		}
 
-		pcurl_client _cc = new curl_client();
-		if (nullptr == _cc)
+		//
+		//	creates a download context
+		//
+		http_download_ctx ctx(url.c_str(), temp_file.get());
+		
+
+		//
+		//	Create curl client
+		//
+		auto _cc = std::make_unique<curl_client>();
+		if (!_cc)
 		{
 			log_err "not enought memory" log_end;
 			return false;
@@ -49,12 +78,6 @@ bool test_curl_https_down_with_auth()
 		_cc->enable_auth(id.c_str(), pw.c_str());
 
 		StopWatch sw; sw.Start();
-
-		//
-		//	creates a download context
-		//
-		http_download_ctx ctx(url.c_str());
-		_ASSERTE(true == ctx.initialize(file_path.c_str()));
 
 		//
 		//	download
@@ -83,8 +106,7 @@ bool test_curl_https_down_with_auth()
 			sw.GetDurationSecond()
 			log_end;
 
-		_ASSERTE(_cc != nullptr);
-		delete _cc; _cc = nullptr;
+		_ASSERTE(!_cc);
 	}
 	_mem_check_end;
 	return true;
