@@ -72,17 +72,17 @@ http_download_ctx::update(
 	//
 	//	NOTE
 	//
-	//	¿ø·¡ÀÇ ±¸ÇöÀÇµµ´Â ÇöÀç ·çÆ¾¿¡¼­ Àü´Ş¹ŞÀº ¹öÆÛ¸¦ ÅëÇØ ÇØ½Ã°ªÀ» 
-	//	°°ÀÌ °è»êÇÏ´Â °ÍÀÌ¾úÀ¸³ª, ´Ù¿î·Îµå ½Ã°£ÀÌ ±²ÀåÈ÷ ±æ¾îÁö´Â ÀÌ½´°¡
-	//	¹ß»ıÇØ¼­, ¿©±â¼­´Â ÆÄÀÏ·Î ÀúÀå¸¸ÇÏ°í, ÇØ½Ã°ªÀ» °è»êÇÏ´Â °ÍÀº 
-	//	º°µµÀÇ ¸Ş¼Òµå¿¡¼­ ±¸ÇöÇÑ´Ù. 
+	//	ì›ë˜ì˜ êµ¬í˜„ì˜ë„ëŠ” í˜„ì¬ ë£¨í‹´ì—ì„œ ì „ë‹¬ë°›ì€ ë²„í¼ë¥¼ í†µí•´ í•´ì‹œê°’ì„ 
+	//	ê°™ì´ ê³„ì‚°í•˜ëŠ” ê²ƒì´ì—ˆìœ¼ë‚˜, ë‹¤ìš´ë¡œë“œ ì‹œê°„ì´ êµ‰ì¥íˆ ê¸¸ì–´ì§€ëŠ” ì´ìŠˆê°€
+	//	ë°œìƒí•´ì„œ, ì—¬ê¸°ì„œëŠ” íŒŒì¼ë¡œ ì €ì¥ë§Œí•˜ê³ , í•´ì‹œê°’ì„ ê³„ì‚°í•˜ëŠ” ê²ƒì€ 
+	//	ë³„ë„ì˜ ë©”ì†Œë“œì—ì„œ êµ¬í˜„í•œë‹¤. 
 	//	
 
 	FlushFileBuffers(_file_handle);
 	return true;
 }
 
-/// @brief	´Ù¿î·ÎµåÇÑ ÆÄÀÏÀÇ MD5 ÇØ½Ã °ªÀ» ±¸ÇÑ´Ù.
+/// @brief	ë‹¤ìš´ë¡œë“œí•œ íŒŒì¼ì˜ MD5 í•´ì‹œ ê°’ì„ êµ¬í•œë‹¤.
 bool http_download_ctx::get_md5(_Out_ std::string& value)
 {
 	if (INVALID_HANDLE_VALUE == _file_handle) return false;
@@ -105,7 +105,7 @@ bool http_download_ctx::get_md5(_Out_ std::string& value)
 									   nullptr);
 }
 
-/// @brief	´Ù¿î·ÎµåÇÑ ÆÄÀÏÀÇ SHA2 ÇØ½Ã °ªÀ» ±¸ÇÑ´Ù.
+/// @brief	ë‹¤ìš´ë¡œë“œí•œ íŒŒì¼ì˜ SHA2 í•´ì‹œ ê°’ì„ êµ¬í•œë‹¤.
 bool http_download_ctx::get_sha2(_Out_ std::string& value)
 {
 	if (INVALID_HANDLE_VALUE == _file_handle) return false;
@@ -129,14 +129,14 @@ bool http_download_ctx::get_sha2(_Out_ std::string& value)
 }
 
 ///	@brief	libcUrl Write Callback To Stream 
-///			µ¥ÀÌÅÍ ¼ö½Å½Ã È£ÃâµÇ´Â Äİ¹é ÇÔ¼ö·Î fread() ÇÔ¼ö Ã³·³ ±¸Á¶È­µÈ 
-///			IO ¸¦ À§ÇØ size, nmemb ¸¦ »ç¿ëÇÔ
-///	@param	ptr         ¼ö½ÅÇÑ µ¥ÀÌÅÍ
-///	@param	size        nmemb(¸Ş¸ğ¸® ºí·°) ÀÇ »çÀÌÁî / ¿¤¸®¸ÕÆ® »çÀÌÁî
-///	@param	nmemb       ¸Ş¸ğ¸® ºí·°ÀÇ °¹¼ö / ¿¤¸®¸ÕÅ© °¹¼ö
-///	@param	userdata    CURLOPT_WRITEDATA ¿É¼Ç ¼³Á¤ ½Ã ¼³Á¤ÇÑ µ¥ÀÌÅÍ Æ÷ÀÎÅÍ
-///	@return	Ã³¸®µÈ byte ¼ö, size * nmemb °ª°ú ´Ù¸¥ °ªÀÌ ¸®ÅÏµÇ¸é curl ÀÌ 
-///			¼¼¼ÇÀ» ÁßÁöÇÑ´Ù.
+///			ë°ì´í„° ìˆ˜ì‹ ì‹œ í˜¸ì¶œë˜ëŠ” ì½œë°± í•¨ìˆ˜ë¡œ fread() í•¨ìˆ˜ ì²˜ëŸ¼ êµ¬ì¡°í™”ëœ 
+///			IO ë¥¼ ìœ„í•´ size, nmemb ë¥¼ ì‚¬ìš©í•¨
+///	@param	ptr         ìˆ˜ì‹ í•œ ë°ì´í„°
+///	@param	size        nmemb(ë©”ëª¨ë¦¬ ë¸”ëŸ­) ì˜ ì‚¬ì´ì¦ˆ / ì—˜ë¦¬ë¨¼íŠ¸ ì‚¬ì´ì¦ˆ
+///	@param	nmemb       ë©”ëª¨ë¦¬ ë¸”ëŸ­ì˜ ê°¯ìˆ˜ / ì—˜ë¦¬ë¨¼í¬ ê°¯ìˆ˜
+///	@param	userdata    CURLOPT_WRITEDATA ì˜µì…˜ ì„¤ì • ì‹œ ì„¤ì •í•œ ë°ì´í„° í¬ì¸í„°
+///	@return	ì²˜ë¦¬ëœ byte ìˆ˜, size * nmemb ê°’ê³¼ ë‹¤ë¥¸ ê°’ì´ ë¦¬í„´ë˜ë©´ curl ì´ 
+///			ì„¸ì…˜ì„ ì¤‘ì§€í•œë‹¤.
 size_t
 curl_wcb_to_stream(
 	_In_ void* ptr,

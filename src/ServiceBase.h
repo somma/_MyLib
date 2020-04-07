@@ -79,12 +79,12 @@ protected:
 	// system shutting down.
 	virtual void OnShutdown();
 
-	//	RegisterDeviceNotification() ÄÝ¹é	 
+	//	RegisterDeviceNotification() ì½œë°±	 
 	//
-	//	PURPOSE: RegisterServiceCtrlHandlerEx( _handler_ex ) callbackÀÇ dwControlCode °ªÀÌ 
-	//	SERVICE_CONTROL_DEVICEEVENT ÀÎ °æ¿ì È£ÃâµÇ´Â °¡»óÇÔ¼ö.
+	//	PURPOSE: RegisterServiceCtrlHandlerEx( _handler_ex ) callbackì˜ dwControlCode ê°’ì´ 
+	//	SERVICE_CONTROL_DEVICEEVENT ì¸ ê²½ìš° í˜¸ì¶œë˜ëŠ” ê°€ìƒí•¨ìˆ˜.
 	//	
-	//	°¡´ÉÇÑ dwEventType Àº ¾Æ·¡¿Í °°´Ù. 
+	//	ê°€ëŠ¥í•œ dwEventType ì€ ì•„ëž˜ì™€ ê°™ë‹¤. 
 	//	https://msdn.microsoft.com/en-us/library/windows/desktop/ms683241(v=vs.85).aspx
 	// 
 	//		DBT_DEVICEARRIVAL
@@ -104,21 +104,21 @@ protected:
 			//
 			//	NOTE by somma (2017/3/29)
 			// 
-			//	¾Æ·¡ ÄÚµå´Â ´õÀÌ»ó »ç¿ëµÇÁö ¾ÊÀ¸³ª ÄÚ¸àÆ®¸¸ ³²°ÜµÒ.
+			//	ì•„ëž˜ ì½”ë“œëŠ” ë”ì´ìƒ ì‚¬ìš©ë˜ì§€ ì•Šìœ¼ë‚˜ ì½”ë©˜íŠ¸ë§Œ ë‚¨ê²¨ë‘ .
 			// 
-			//	CServiceBase::RunEx() ¸¦ ÅëÇØ¼­ RegisterDeviceNotification ¸¦ 
-			//	¼­ºñ½º¿¡¼­ È£Ãâ, device notification À» ¼­ºñ½º¿¡¼­ ¹ÞÀ» ¼ö ÀÖ´Ù. 
-			//	ÀÀ¿ëÇÁ·Î±×·¥¿¡¼­´Â DBT_DEVTYP_VOLUME À» ¹ÞÀ» ¼ö ÀÖÀ¸³ª 
-			//	¼­ºñ½º¿¡¼­´Â DBT_DEVTYP_VOLUME °¡ Àü´ÞµÇÁö ¾Ê´Â´Ù. 
-			//	(ÃÖ»óÀ§ À©µµ¿ì¿¡°Ô¸¸ À©µµ¿ì ¸Þ¼¼Áö¸¦ Àü¼ÛÇÏ±â ¶§¹®ÀÌ¶ó°í)
+			//	CServiceBase::RunEx() ë¥¼ í†µí•´ì„œ RegisterDeviceNotification ë¥¼ 
+			//	ì„œë¹„ìŠ¤ì—ì„œ í˜¸ì¶œ, device notification ì„ ì„œë¹„ìŠ¤ì—ì„œ ë°›ì„ ìˆ˜ ìžˆë‹¤. 
+			//	ì‘ìš©í”„ë¡œê·¸ëž¨ì—ì„œëŠ” DBT_DEVTYP_VOLUME ì„ ë°›ì„ ìˆ˜ ìžˆìœ¼ë‚˜ 
+			//	ì„œë¹„ìŠ¤ì—ì„œëŠ” DBT_DEVTYP_VOLUME ê°€ ì „ë‹¬ë˜ì§€ ì•ŠëŠ”ë‹¤. 
+			//	(ìµœìƒìœ„ ìœˆë„ìš°ì—ê²Œë§Œ ìœˆë„ìš° ë©”ì„¸ì§€ë¥¼ ì „ì†¡í•˜ê¸° ë•Œë¬¸ì´ë¼ê³ )
 			//	
-			//	DBT_DEVICEARRIVAL ¶Ç´Â DBT_DEVICEREMOVECOMPLETE ÀÌ ¹ß»ýÇßÀ»¶§
-			//	µå¶óÀÌºê ¸ñ·ÏÀ» °»½ÅÇÏ´Â ¹æ¹ýÀ» ÃëÇÒ ¼ö ÀÖÀ¸³ª ÇØ´ç ÀÌº¥Æ®°¡ µ¿ÀÏÀåÄ¡ 
-			//	¿¬°á ¹× ÇØÁ¦½Ã ¾î·¯¹ø ¹ß»ýÇÏ±â¶§¹®¿¡ Á¤È®ÇÑ Æ÷ÀÎÆ®¸¦ Àâ±â ¾î·Æ´Ù. 
+			//	DBT_DEVICEARRIVAL ë˜ëŠ” DBT_DEVICEREMOVECOMPLETE ì´ ë°œìƒí–ˆì„ë•Œ
+			//	ë“œë¼ì´ë¸Œ ëª©ë¡ì„ ê°±ì‹ í•˜ëŠ” ë°©ë²•ì„ ì·¨í•  ìˆ˜ ìžˆìœ¼ë‚˜ í•´ë‹¹ ì´ë²¤íŠ¸ê°€ ë™ì¼ìž¥ì¹˜ 
+			//	ì—°ê²° ë° í•´ì œì‹œ ì–´ëŸ¬ë²ˆ ë°œìƒí•˜ê¸°ë•Œë¬¸ì— ì •í™•í•œ í¬ì¸íŠ¸ë¥¼ ìž¡ê¸° ì–´ë µë‹¤. 
 			//
-			//	°á±¹ Monster ¼­ºñ½º¿¡¼­ device change ÀÌº¥Æ®¸¦ ¹Þ¾Æ¼­ Ã³¸®ÇÏ´Â ¹æ¹ýÀ»
-			//	»ç¿ëÇÏÁö ¾Ê±â·Î ÇÏ°í, »ç¿ëÀÚ ·Î±×ÀÎÀÌ ¼º°øÇÏ¸é ÇØ´ç ¼¼¼Ç¿¡ ÀÀ¿ëÇÁ·Î±×·¥À»
-			//	¶ç¿ì°í, ÀÀ¿ëÇÁ·Î±×·¥¿¡¼­ device change ÀÌº¥Æ®¸¦ ¹Þ¾Æ¼­ Ã³¸®ÇÏ±â·Î ÇÑ´Ù. 
+			//	ê²°êµ­ Monster ì„œë¹„ìŠ¤ì—ì„œ device change ì´ë²¤íŠ¸ë¥¼ ë°›ì•„ì„œ ì²˜ë¦¬í•˜ëŠ” ë°©ë²•ì„
+			//	ì‚¬ìš©í•˜ì§€ ì•Šê¸°ë¡œ í•˜ê³ , ì‚¬ìš©ìž ë¡œê·¸ì¸ì´ ì„±ê³µí•˜ë©´ í•´ë‹¹ ì„¸ì…˜ì— ì‘ìš©í”„ë¡œê·¸ëž¨ì„
+			//	ë„ìš°ê³ , ì‘ìš©í”„ë¡œê·¸ëž¨ì—ì„œ device change ì´ë²¤íŠ¸ë¥¼ ë°›ì•„ì„œ ì²˜ë¦¬í•˜ê¸°ë¡œ í•œë‹¤. 
 			// 
 			_ASSERTE(nullptr != lpEventData);
 			if (nullptr == lpEventData) return;
@@ -158,7 +158,7 @@ protected:
 		UNREFERENCED_PARAMETER(lpEventData);
 	}
 
-	//	SERVICE_CONTROL_SESSIONCHANGE ÄÝ¹é
+	//	SERVICE_CONTROL_SESSIONCHANGE ì½œë°±
 	// 
 	/*
 		void 
@@ -169,7 +169,7 @@ protected:
 		{
 		#ifdef _DEBUG
 			//
-			//	Æ¯º°È÷ »ç¿ëÇÏ°í ÀÖÁö ¾ÊÀ¸³ª ±×³É ³²°ÜµÒ
+			//	íŠ¹ë³„ížˆ ì‚¬ìš©í•˜ê³  ìžˆì§€ ì•Šìœ¼ë‚˜ ê·¸ëƒ¥ ë‚¨ê²¨ë‘ 
 			//
 			_ASSERTE(nullptr != lpEventData);
 			if (nullptr == lpEventData) return;
@@ -185,14 +185,14 @@ protected:
 			case WTS_SESSION_LOGON: 
 			{
 				//
-				//	·Î±×ÀÎ
+				//	ë¡œê·¸ì¸
 				// 
 				event_type = "WTS_SESSION_LOGON"; break;		
 			}
 			case WTS_SESSION_LOGOFF: 
 			{
 				//
-				//	·Î±×¾Æ¿ô
+				//	ë¡œê·¸ì•„ì›ƒ
 				// 
 				event_type = "WTS_SESSION_LOGOFF"; break;
 			}
@@ -200,7 +200,7 @@ protected:
 			case WTS_SESSION_LOCK: 
 			{
 				//
-				//	È­¸é Àá±Ý
+				//	í™”ë©´ ìž ê¸ˆ
 				// 
 				event_type = "WTS_SESSION_LOCK"; break;
 			}

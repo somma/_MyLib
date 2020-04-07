@@ -15,9 +15,9 @@
 /**
  * @brief	test for cprocess_tree class 
 			
-			Å×½ºÆ®¸¦ À§ÇØ¼­´Â 
-			cmd.exe -> procexp.exe -> procexp64.exe(ÀÚµ¿À¸·Î ¸¸µé¾îÁü) -> notepad.exe
-			¼ø¼­·Î ÇÁ·Î¼¼½º¸¦ »ı¼ºÇØ µÎ°í ÇØ¾ß ÇÑ´Ù. 
+			í…ŒìŠ¤íŠ¸ë¥¼ ìœ„í•´ì„œëŠ” 
+			cmd.exe -> procexp.exe -> procexp64.exe(ìë™ìœ¼ë¡œ ë§Œë“¤ì–´ì§) -> notepad.exe
+			ìˆœì„œë¡œ í”„ë¡œì„¸ìŠ¤ë¥¼ ìƒì„±í•´ ë‘ê³  í•´ì•¼ í•œë‹¤. 
 **/
 bool proc_tree_callback(_In_ const process* const process_info)
 {
@@ -37,7 +37,7 @@ bool test_iterate_process_tree()
 		cprocess_tree proc_tree;
 		if (!proc_tree.build_process_tree(true)) return false;
 
-		///	ºÎ¸ğ ÇÁ·Î¼¼½º°¡ ¾ø´Â ÇÁ·Î¼¼½º ¸ñ·ÏÀ» ¸ÕÀú »ı¼ºÇÑ´Ù. 
+		///	ë¶€ëª¨ í”„ë¡œì„¸ìŠ¤ê°€ ì—†ëŠ” í”„ë¡œì„¸ìŠ¤ ëª©ë¡ì„ ë¨¼ì € ìƒì„±í•œë‹¤. 
 		std::vector<const process*> top_level_procs;
 		proc_tree.iterate_process([&](_In_ const process* const process_info)->bool
 		{
@@ -50,7 +50,7 @@ bool test_iterate_process_tree()
 			return true;
 		});
 
-		/// top_level_proces ¿Í ±× ÀÚ½Ä ÇÁ·Î¼¼½ºµéÀ» ºÎ¸ğ->ÀÚ½Ä ¼øÀ¸·Î iterate ÇÑ´Ù. 
+		/// top_level_proces ì™€ ê·¸ ìì‹ í”„ë¡œì„¸ìŠ¤ë“¤ì„ ë¶€ëª¨->ìì‹ ìˆœìœ¼ë¡œ iterate í•œë‹¤. 
 		size_t count = 0;
 		for (auto& top_level_proc : top_level_procs)
 		{
@@ -87,7 +87,7 @@ bool test_process_tree()
 		cprocess_tree proc_tree;
 		if (!proc_tree.build_process_tree(true)) return false;
 
-		// ÇÁ·Î¼¼½º ¿­°Å Å×½ºÆ® (by callback)
+		// í”„ë¡œì„¸ìŠ¤ ì—´ê±° í…ŒìŠ¤íŠ¸ (by callback)
 		proc_tree.iterate_process(proc_tree_callback);
 		proc_tree.find_process(L"cmd.exe", 
 							   [&](_In_ const process* const process_info)->bool 
@@ -98,7 +98,7 @@ bool test_process_tree()
 		});
 		
 
-		// ÇÁ·Î¼¼½º ¿­°Å Å×½ºÆ® (by lambda)
+		// í”„ë¡œì„¸ìŠ¤ ì—´ê±° í…ŒìŠ¤íŠ¸ (by lambda)
 		proc_tree.iterate_process([](_In_ const process* const process_info)->bool
 		{
 			log_info "pid = %u, name = %ws, path = %ws",
@@ -109,7 +109,7 @@ bool test_process_tree()
 				return true;
 		});
 
-		// ÇÁ·Î¼¼½º ¿­°Å Å×½ºÆ® (by boost::function, lambda with capture)
+		// í”„ë¡œì„¸ìŠ¤ ì—´ê±° í…ŒìŠ¤íŠ¸ (by boost::function, lambda with capture)
 		int count = 0;
 		auto callback = [&count](_In_ const process* const process_info)->bool
 		{
@@ -124,7 +124,7 @@ bool test_process_tree()
 		proc_tree.iterate_process(callback);
 		_ASSERTE(count > 0);
 
-		// ÇÁ·Î¼¼½º ¿­°Å Å×½ºÆ® (by lambda with capture local variable)
+		// í”„ë¡œì„¸ìŠ¤ ì—´ê±° í…ŒìŠ¤íŠ¸ (by lambda with capture local variable)
 		count = 0;
 		proc_tree.iterate_process([&count](_In_ const process* const process_info)->bool
 		{

@@ -16,7 +16,7 @@ bool test_cstream()
 	{
 		CMemoryStream strm;
 
-		// ½ºÆ®¸²ÀÌ ¾ÆÁ÷ ÇÒ´çµÇÁö ¾ÊÀ½
+		// ìŠ¤íŠ¸ë¦¼ì´ ì•„ì§ í• ë‹¹ë˜ì§€ ì•ŠìŒ
 		_ASSERTE(!strm.SetPos(0));
 
 		_ASSERTE(true == strm.Reserve(1024));
@@ -25,7 +25,7 @@ bool test_cstream()
 		_ASSERTE(strm.GetSize() == strm.GetPos());
 
 		//
-		//	¹®ÀÚ¿­ ¾²±â
+		//	ë¬¸ìì—´ ì“°ê¸°
 		//
 		const char* test_string = "0123456789";
 		size_t size = strlen(test_string) * sizeof(char);
@@ -39,24 +39,24 @@ bool test_cstream()
 		_ASSERTE(strm.GetCapacity() >= pos);
 
 		//
-		//	Á¤¼öÇü ¾²±â/ÀĞ±â
+		//	ì •ìˆ˜í˜• ì“°ê¸°/ì½ê¸°
 		//
 		_ASSERTE(strm.WriteInt<uint8_t> (0x11));
 		_ASSERTE(strm.WriteInt<uint16_t>(0x1122));
 		_ASSERTE(strm.WriteInt<uint32_t>(0x11223344));
 		_ASSERTE(strm.WriteInt<uint64_t>(0x1122334411223344));
 
-		// ½ºÆ®¸² ¿µ¿ª ¹ÛÀ¸·Î ÀÌµ¿½Ã ½ÇÆĞ
+		// ìŠ¤íŠ¸ë¦¼ ì˜ì—­ ë°–ìœ¼ë¡œ ì´ë™ì‹œ ì‹¤íŒ¨
 		_ASSERTE(false == strm.SetPos(strm.GetPos() + 1));
 
 		//
-		//	ÀĞ±â & °ËÁõ (ÂüÁ¶, ÀĞ±â)
+		//	ì½ê¸° & ê²€ì¦ (ì°¸ì¡°, ì½ê¸°)
 		//
 		{
 			_ASSERTE(strm.SetPos(0));
 			size = strm.ReadInt<size_t>();
 
-			//	½ºÆ®¸² ¹®ÀÚ¿­ ÂüÁ¶
+			//	ìŠ¤íŠ¸ë¦¼ ë¬¸ìì—´ ì°¸ì¡°
 			pos = strm.GetPos();
 
 			const char* p = nullptr;
@@ -73,7 +73,7 @@ bool test_cstream()
 		}
 
 		//
-		//	ÀĞ±â & °ËÁõ (º¹»ç, ÀĞ±â)
+		//	ì½ê¸° & ê²€ì¦ (ë³µì‚¬, ì½ê¸°)
 		//
 		{
 			_ASSERTE(strm.SetPos(0));
@@ -109,7 +109,7 @@ bool test_cstream_read_only()
 	{
 		CMemoryStream strm(1024, (const char* const)GetModuleHandleW(nullptr));
 
-		// ½ºÆ®¸²ÀÌ ÇÒ´çµÇ¾úÀ¸¹Ç·Î SetPos °¡´É
+		// ìŠ¤íŠ¸ë¦¼ì´ í• ë‹¹ë˜ì—ˆìœ¼ë¯€ë¡œ SetPos ê°€ëŠ¥
 		_ASSERTE(strm.SetPos(1024));
 		_ASSERTE(!strm.SetPos(1024 + 1));
 		_ASSERTE(strm.SetPos(0));
@@ -120,7 +120,7 @@ bool test_cstream_read_only()
 		_ASSERTE(strm.GetSize() == 1024);
 
 		//
-		//	¹®ÀÚ¿­ ¾²±â ½ÇÆĞ
+		//	ë¬¸ìì—´ ì“°ê¸° ì‹¤íŒ¨
 		//
 		const char* test_string = "0123456789";
 		size_t size = strlen(test_string) * sizeof(char);
@@ -129,7 +129,7 @@ bool test_cstream_read_only()
 		_ASSERTE(size != strm.WriteToStream(test_string, size));
 
 		//
-		//	Á¤¼öÇü ¾²±â/ÀĞ±â ½ÇÆĞ 
+		//	ì •ìˆ˜í˜• ì“°ê¸°/ì½ê¸° ì‹¤íŒ¨ 
 		//
 		_ASSERTE(!strm.WriteInt<uint8_t>(0x11));
 		_ASSERTE(!strm.WriteInt<uint16_t>(0x1122));
@@ -137,7 +137,7 @@ bool test_cstream_read_only()
 		_ASSERTE(!strm.WriteInt<uint64_t>(0x1122334411223344));
 
 		//
-		//	ÀĞ±â & °ËÁõ
+		//	ì½ê¸° & ê²€ì¦
 		//
 		_ASSERTE(strm.SetPos(0));
 

@@ -22,17 +22,17 @@
 **/
 bool boost_lexical_cast()
 {
-    // ¼ıÀÚ -> ¹®ÀÚ
+    // ìˆ«ì -> ë¬¸ì
     //
 	std::string s = boost::lexical_cast<std::string>(1024);
     std::cout << boost::lexical_cast<std::string>(1024) << std::endl;
     std::wcout << boost::lexical_cast<std::wstring>(1024) << std::endl;
 
-    // ¹®ÀÚ¿­ -> ¼ıÀÚ
+    // ë¬¸ìì—´ -> ìˆ«ì
     // 
     std::cout << boost::lexical_cast<float>("3.14") << std::endl;
     
-    // Å¸ÀÔ º¯È¯ ¿À·ù
+    // íƒ€ì… ë³€í™˜ ì˜¤ë¥˜
     // 
     try
     {
@@ -47,7 +47,7 @@ bool boost_lexical_cast()
 }
 
 /**
- * @brief		shared_ptr ·Î void * Ã³¸®ÇÏ±â (HANDLE °ú µ¿ÀÏÇÔ)
+ * @brief		shared_ptr ë¡œ void * ì²˜ë¦¬í•˜ê¸° (HANDLE ê³¼ ë™ì¼í•¨)
  * @param	
  * @see		
  * @remarks	
@@ -73,7 +73,7 @@ bool boost_shared_ptr_void()
 }
 
 /**
- * @brief	boost::shared_ptr ·Î HANDLE Ã³¸®ÇÏ±â #1 (ÀÌ·¸°Ô »ç¿ëÇÏ¸é ¾ÈµÊ!!)
+ * @brief	boost::shared_ptr ë¡œ HANDLE ì²˜ë¦¬í•˜ê¸° #1 (ì´ë ‡ê²Œ ì‚¬ìš©í•˜ë©´ ì•ˆë¨!!)
  * @param	
  * @see		
  * @remarks	
@@ -99,8 +99,8 @@ bool boost_shared_ptr_handle_01()
 
 	file_handle.reset();	//!
 
-	//> CloseHandle() ÀÌ È£ÃâµÇ¾úÀ»Å×´Ï... ReadFile() Àº ½ÇÆĞÇØ¾ß ÇÏ°í, 
-	//> GetLastError() == ERROR_INVALID_HANDLE ÀÌ¾î¾ß ÇÔ
+	//> CloseHandle() ì´ í˜¸ì¶œë˜ì—ˆì„í…Œë‹ˆ... ReadFile() ì€ ì‹¤íŒ¨í•´ì•¼ í•˜ê³ , 
+	//> GetLastError() == ERROR_INVALID_HANDLE ì´ì–´ì•¼ í•¨
 	if (TRUE == ReadFile(file_handle.get(), buffer, 128, &bytes_read, NULL)) return false;
 	if (ERROR_INVALID_HANDLE != GetLastError()) return false;
 	
@@ -108,8 +108,8 @@ bool boost_shared_ptr_handle_01()
 }
 
 /**
- * @brief	boost::shared_ptr ·Î HANDLE Ã³¸®ÇÏ±â #2
- * @brief	custom destructor ÀÌ¿ëÇÏ±â
+ * @brief	boost::shared_ptr ë¡œ HANDLE ì²˜ë¦¬í•˜ê¸° #2
+ * @brief	custom destructor ì´ìš©í•˜ê¸°
  * @param	
  * @see		
  * @remarks	
@@ -119,7 +119,7 @@ bool boost_shared_ptr_handle_01()
 **/
 void MyCloseHandle(_In_ HANDLE file_handle)
 {
-	//> invalid ÇÑ file_handle ÀÌ ³Ñ¾î¿Ã ¼öµµ ÀÖÀ¸¹Ç·Î ²À Ã¼Å©ÇØÁÖ¾î¾ß ÇÔ
+	//> invalid í•œ file_handle ì´ ë„˜ì–´ì˜¬ ìˆ˜ë„ ìˆìœ¼ë¯€ë¡œ ê¼­ ì²´í¬í•´ì£¼ì–´ì•¼ í•¨
 	if (INVALID_HANDLE_VALUE == file_handle || NULL == file_handle) return;
 
 	log_dbg 
@@ -146,8 +146,8 @@ bool boost_shared_ptr_handle_02()
 
 	file_handle.reset();	//!
 
-	// MyCloseHandle() ÀÌ È£ÃâµÇ¾úÀ»Å×´Ï... 
-	//> ReadFile() Àº ½ÇÆĞÇØ¾ß ÇÏ°í, ERROR_INVALID_HANDLE ÀÌ¾î¾ß ÇÔ
+	// MyCloseHandle() ì´ í˜¸ì¶œë˜ì—ˆì„í…Œë‹ˆ... 
+	//> ReadFile() ì€ ì‹¤íŒ¨í•´ì•¼ í•˜ê³ , ERROR_INVALID_HANDLE ì´ì–´ì•¼ í•¨
 	if (TRUE == ReadFile(file_handle.get(), buffer, 128, &bytes_read, NULL)) return false;
 	if (ERROR_INVALID_HANDLE != GetLastError()) return false;
 
@@ -155,8 +155,8 @@ bool boost_shared_ptr_handle_02()
 }
 
 /**
- * @brief	boost::shared_ptr ·Î HANDLE Ã³¸®ÇÏ±â #3
- * @brief	file_hanele ÀÌ NULL ÀÎ °æ¿ì¿¡ ´ëÇÑ Ã³¸®
+ * @brief	boost::shared_ptr ë¡œ HANDLE ì²˜ë¦¬í•˜ê¸° #3
+ * @brief	file_hanele ì´ NULL ì¸ ê²½ìš°ì— ëŒ€í•œ ì²˜ë¦¬
  * @param	
  * @see		
  * @remarks	
@@ -193,7 +193,7 @@ bool boost_tuple()
 {
 	boost::tuple<bool, bool, std::string> _tuple;
 
-	// tuple ¿¡ °ª ¼³Á¤ÇÏ±â (I)
+	// tuple ì— ê°’ ì„¤ì •í•˜ê¸° (I)
 	bool &is_timeout = boost::tuples::get<0>(_tuple);
 	bool &io_status = boost::tuples::get<1>(_tuple);
 	std::string &str = boost::tuples::get<2>(_tuple);
@@ -201,13 +201,13 @@ bool boost_tuple()
 	io_status = false;
 	str = "this is boost::tuple test";
 
-	// tuple ·ÎºÎÅÍ °ª ÀĞ±â
+	// tuple ë¡œë¶€í„° ê°’ ì½ê¸°
 	std::cout << "is_timeout=" << boost::tuples::get<0>(_tuple) << std::endl
 			  << "io_status=" << boost::tuples::get<1>(_tuple) << std::endl
 			  << "str =" << boost::tuples::get<2>(_tuple) << std::endl;
 
 
-	// tuple ¿¡ °ª ¼³Á¤ÇÏ±â (II)
+	// tuple ì— ê°’ ì„¤ì •í•˜ê¸° (II)
 	boost::tuples::get<0>(_tuple) = true;
 	boost::tuples::get<1>(_tuple) = false;
 	boost::tuples::get<2>(_tuple) = "this is type2 assignment";
@@ -248,23 +248,23 @@ bool boost_hash()
     return true;
 }
 
-/// @brief	boost::fucntion Å×½ºÆ®
+/// @brief	boost::fucntion í…ŒìŠ¤íŠ¸
 bool test_boost_function()
 {
 	typedef boost::function<bool(int a, int b)> f_sum;
 
-	// nullptr ·Î ÃÊ±âÈ­ °¡´É?
-	//f_sum f0 = nullptr;				//<! ÄÄÆÄÀÏ¿¡·¯
+	// nullptr ë¡œ ì´ˆê¸°í™” ê°€ëŠ¥?
+	//f_sum f0 = nullptr;				//<! ì»´íŒŒì¼ì—ëŸ¬
 
-	// 0 À¸·Î´Â ÃÊ±âÈ­ °¡´É
+	// 0 ìœ¼ë¡œëŠ” ì´ˆê¸°í™” ê°€ëŠ¥
 	f_sum f1 = 0;
 	log_info "f1.empty()=%s", f1.empty() ? "true" : "false" log_end;
 
-	// ±âº» »ı¼ºÀÚ È£ÃâÇÏ¸é empty
+	// ê¸°ë³¸ ìƒì„±ì í˜¸ì¶œí•˜ë©´ empty
 	f_sum f2 = f_sum();
 	log_info "f2.empty()=%s", f2.empty() ? "true" : "false" log_end;
 
-	// ¾Æ¹«°Íµµ ÃÊ±âÈ­ ¾ÈÇÏ¸é empty
+	// ì•„ë¬´ê²ƒë„ ì´ˆê¸°í™” ì•ˆí•˜ë©´ empty
 	f_sum f3;
 	log_info "f3.empty()=%s", f3.empty() ? "true" : "false" log_end;
 

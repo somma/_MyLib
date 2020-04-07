@@ -76,9 +76,9 @@ bool OpenFileContext(IN PCWSTR FilePath, IN bool ReadOnly, OUT PFILE_CTX& Ctx)
 
         // [ WARN ]
         // 
-        // 4Gb ÀÌ»óÀÇ ÆÄÀÏÀÇ °æ¿ì MapViewOfFile()¿¡¼­ ¿À·ù°¡ ³ª°Å³ª 
-        // ÆÄÀÏ Æ÷ÀÎÅÍ ÀÌµ¿ÀÌ ¹®Á¦°¡ µÊ
-        // FilIoHelperClass ¸ðµâÀ» ÀÌ¿ëÇØ¾ß ÇÔ
+        // 4Gb ì´ìƒì˜ íŒŒì¼ì˜ ê²½ìš° MapViewOfFile()ì—ì„œ ì˜¤ë¥˜ê°€ ë‚˜ê±°ë‚˜ 
+        // íŒŒì¼ í¬ì¸í„° ì´ë™ì´ ë¬¸ì œê°€ ë¨
+        // FilIoHelperClass ëª¨ë“ˆì„ ì´ìš©í•´ì•¼ í•¨
         // 
         _ASSERTE(fileSize.HighPart == 0);
 		if (fileSize.HighPart > 0) 

@@ -4,8 +4,8 @@
  * from http://serious-code.net/moin.cgi/MemoryLeakDetection
  *
 
- °Ë»çÇÏ°íÀÚ ÇÏ´Â ¸ðµç cpp ÆÄÀÏÀÇ ¸¶Áö¸· include ¹® ¾Æ·¡¿¡ ¾Æ·¡ÀÇ 
- ÄÚµå¸¦ Ãß°¡ÇÑ´Ù. 
+ ê²€ì‚¬í•˜ê³ ìž í•˜ëŠ” ëª¨ë“  cpp íŒŒì¼ì˜ ë§ˆì§€ë§‰ include ë¬¸ ì•„ëž˜ì— ì•„ëž˜ì˜ 
+ ì½”ë“œë¥¼ ì¶”ê°€í•œë‹¤. 
 	
 	#include "LeakWatcher.h"
 
@@ -15,9 +15,9 @@
 	static char THIS_FILE[] = __FILE__;
 	#endif
 
- ÇÊ¿äÇÒ ¶§ _CrtDumpMemoryLeaks()  ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+ í•„ìš”í•  ë•Œ _CrtDumpMemoryLeaks()  í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 
- ¸Þ¸ð¸® ¸¯ÀÌ º¸°íµÇ´Â °æ¿ì ¾Æ·¡ ÇÔ¼ö¸¦ È£ÃâÇØ µÎ¸é ÀÚµ¿À¸·Î bp °¡ °É¸²
+ ë©”ëª¨ë¦¬ ë¦­ì´ ë³´ê³ ë˜ëŠ” ê²½ìš° ì•„ëž˜ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ ë‘ë©´ ìžë™ìœ¼ë¡œ bp ê°€ ê±¸ë¦¼
  _CrtSetBreakAlloc(45) 
 
 **---------------------------------------------------------------------------*/

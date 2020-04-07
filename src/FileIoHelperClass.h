@@ -10,9 +10,9 @@
 **/
 #pragma once
 
-/// @brief	MMIO ¿ë À¯Æ¿¸®Æ¼ Å¬·¡½º.
-///			_file_view Æ÷ÀÎÅÍ´Â ½º·¹µå ¾ÈÁ¤¼ºÀ» º¸ÀåÇÏÁö ¾ÊÀ¸¹Ç·Î, 
-///			¸ÖÆ¼½º·¹µå È¯°æ¿¡¼­ »ç¿ëÇÏ¸é ¾ÈµÊ
+/// @brief	MMIO ìš© ìœ í‹¸ë¦¬í‹° í´ëž˜ìŠ¤.
+///			_file_view í¬ì¸í„°ëŠ” ìŠ¤ë ˆë“œ ì•ˆì •ì„±ì„ ë³´ìž¥í•˜ì§€ ì•Šìœ¼ë¯€ë¡œ, 
+///			ë©€í‹°ìŠ¤ë ˆë“œ í™˜ê²½ì—ì„œ ì‚¬ìš©í•˜ë©´ ì•ˆë¨
 typedef class FileIoHelper
 {
 private:

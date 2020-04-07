@@ -50,8 +50,8 @@ bool WmiClient::initialize()
     if (!SUCCEEDED(hres))
     {
 		// 
-		//	CoInitializeSecurity() ÇÔ¼ö´Â ÇÁ·Î¼¼½º¿¡¼­ ÇÑ¹ø¸¸ È£ÃâÇÒ ¼ö ÀÖ´Ù. 
-		//	µÎ¹øÈ£Ãâ µÇ¸é RPC_E_TOO_LATE ¸¦ ¸®ÅÏÇÔ
+		//	CoInitializeSecurity() í•¨ìˆ˜ëŠ” í”„ë¡œì„¸ìŠ¤ì—ì„œ í•œë²ˆë§Œ í˜¸ì¶œí•  ìˆ˜ ìžˆë‹¤. 
+		//	ë‘ë²ˆí˜¸ì¶œ ë˜ë©´ RPC_E_TOO_LATE ë¥¼ ë¦¬í„´í•¨
 		// 
 		if (RPC_E_TOO_LATE != hres)
 		{

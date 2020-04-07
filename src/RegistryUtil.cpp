@@ -5,8 +5,8 @@
  * @date    2011/11/11 created.
  * @copyright All rights reserved by Yonghwan, Roh.
  *
- *			Registry I/O ÀÇ °æ¿ì Å° ¶Ç´Â Value °¡ ¾ø´Â °æ¿ì°¡ ¸¹¾Æ ¿¡·¯·Î±×¸¦ ´Ù ÂïÀ¸¸é
- *			³Ê¹« ¸¹Àº ºÒÇÊ¿äÇÑ ·Î±×°¡ ³²´Â´Ù. RegistryUtil ¸ğµâ ³»¿¡¼­´Â ¿¡·¯·Î±×¸¦ ³²±âÁö ¾Ê´Â´Ù.
+ *			Registry I/O ì˜ ê²½ìš° í‚¤ ë˜ëŠ” Value ê°€ ì—†ëŠ” ê²½ìš°ê°€ ë§ì•„ ì—ëŸ¬ë¡œê·¸ë¥¼ ë‹¤ ì°ìœ¼ë©´
+ *			ë„ˆë¬´ ë§ì€ ë¶ˆí•„ìš”í•œ ë¡œê·¸ê°€ ë‚¨ëŠ”ë‹¤. RegistryUtil ëª¨ë“ˆ ë‚´ì—ì„œëŠ” ì—ëŸ¬ë¡œê·¸ë¥¼ ë‚¨ê¸°ì§€ ì•ŠëŠ”ë‹¤.
 **/
 
 #include "stdafx.h"
@@ -22,14 +22,14 @@
 
 
 
-/// @brief	·¹Áö½ºÆ®¸® Å°¸¦ ¿ÀÇÂÇÑ´Ù. ¾øÀ¸¸é nullptr À» ¸®ÅÏÇÑ´Ù.
-/// @param	RootKey	RegCreateKey, RegOpenKey µîÀÌ ¸®ÅÏÇÑ HKEY ¶Ç´Â ¾Æ·¡ ³ª¿­µÈ Predefined key.
+/// @brief	ë ˆì§€ìŠ¤íŠ¸ë¦¬ í‚¤ë¥¼ ì˜¤í”ˆí•œë‹¤. ì—†ìœ¼ë©´ nullptr ì„ ë¦¬í„´í•œë‹¤.
+/// @param	RootKey	RegCreateKey, RegOpenKey ë“±ì´ ë¦¬í„´í•œ HKEY ë˜ëŠ” ì•„ë˜ ë‚˜ì—´ëœ Predefined key.
 ///					HKEY_CLASSES_ROOT
 ///                 HKEY_CURRENT_CONFIG
 ///                 HKEY_CURRENT_USER
 ///                 HKEY_LOCAL_MACHINE
 ///                 HKEY_USERS
-///	@param	SubKey	Rootkey ÀÌÇÏ ¼­ºêÅ° °æ·Î. `\` ¹®ÀÚ¿­·Î ½ÃÀÛÇÏ¸é ¾ÈµÊ
+///	@param	SubKey	Rootkey ì´í•˜ ì„œë¸Œí‚¤ ê²½ë¡œ. `\` ë¬¸ìì—´ë¡œ ì‹œì‘í•˜ë©´ ì•ˆë¨
 ///					SOFTWARE\Microsoft\Windows\CurrentVersion\Run 
 HKEY 
 RUOpenKey(
@@ -73,14 +73,14 @@ RUCloseKey(
     }
 }
 
-/// @brief	SubKey ¸¦ »ı¼ºÇÑ´Ù. ÀÌ¹Ì Á¸ÀçÇÏ´Â °æ¿ì ¿ÀÇÂÇÑ´Ù.
-/// @param	RootKey	RegCreateKey, RegOpenKey µîÀÌ ¸®ÅÏÇÑ HKEY ¶Ç´Â ¾Æ·¡ ³ª¿­µÈ Predefined key.
+/// @brief	SubKey ë¥¼ ìƒì„±í•œë‹¤. ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ê²½ìš° ì˜¤í”ˆí•œë‹¤.
+/// @param	RootKey	RegCreateKey, RegOpenKey ë“±ì´ ë¦¬í„´í•œ HKEY ë˜ëŠ” ì•„ë˜ ë‚˜ì—´ëœ Predefined key.
 ///					HKEY_CLASSES_ROOT
 ///                 HKEY_CURRENT_CONFIG
 ///                 HKEY_CURRENT_USER
 ///                 HKEY_LOCAL_MACHINE
 ///                 HKEY_USERS
-///	@param	SubKey	Rootkey ÀÌÇÏ ¼­ºêÅ° °æ·Î. `\` ¹®ÀÚ¿­·Î ½ÃÀÛÇÏ¸é ¾ÈµÊ
+///	@param	SubKey	Rootkey ì´í•˜ ì„œë¸Œí‚¤ ê²½ë¡œ. `\` ë¬¸ìì—´ë¡œ ì‹œì‘í•˜ë©´ ì•ˆë¨
 ///					SOFTWARE\Microsoft\Windows\CurrentVersion\Run     
 HKEY
 RUCreateKey(
@@ -366,15 +366,15 @@ RUSetExpandString(
     return true;
 }
 
-///	@brief Multi_SZ typeÀÇ ·¹Áö½ºÆ®¸® value¸¦ »ı¼ºÇÑ´Ù.
+///	@brief Multi_SZ typeì˜ ë ˆì§€ìŠ¤íŠ¸ë¦¬ valueë¥¼ ìƒì„±í•œë‹¤.
 ///
-///			Multi_SZ´Â ¿©·¯°³ÀÇ ¹®ÀÚ¿­À» ÀúÀåÇÏ´Âµ¥ ¹®ÀÚ¿­À» ±¸ºĞÇÒ¶§ '\' null terminator°¡ µé¾î°£´Ù.
-///			±×¸®°í Ç×»ó ¸¶Áö¸· null terminator´Â 2°³°¡ ¿Í¾ßÇÑ´Ù.
+///			Multi_SZëŠ” ì—¬ëŸ¬ê°œì˜ ë¬¸ìì—´ì„ ì €ì¥í•˜ëŠ”ë° ë¬¸ìì—´ì„ êµ¬ë¶„í• ë•Œ '\' null terminatorê°€ ë“¤ì–´ê°„ë‹¤.
+///			ê·¸ë¦¬ê³  í•­ìƒ ë§ˆì§€ë§‰ null terminatorëŠ” 2ê°œê°€ ì™€ì•¼í•œë‹¤.
 
-///			¹®ÀÚ¿­ 1. L"Welcome"
-///			¹®ÀÚ¿­ 2. L"to"
-///			¹®ÀÚ¿­ 3. L"Hello"
-///			¹®ÀÚ¿­ 4. L"World"
+///			ë¬¸ìì—´ 1. L"Welcome"
+///			ë¬¸ìì—´ 2. L"to"
+///			ë¬¸ìì—´ 3. L"Hello"
+///			ë¬¸ìì—´ 4. L"World"
 ///
 ///			buffer = L"Welcome\0to\0Hello\0World\0\0"
 bool
@@ -421,7 +421,7 @@ RUSetMultiString(
 	return true;
 }
 
-///	@brief Multi_SZ typeÀÇ ·¹Áö½ºÆ®¸® value°ªÀ» ÀĞ´Â´Ù.
+///	@brief Multi_SZ typeì˜ ë ˆì§€ìŠ¤íŠ¸ë¦¬ valueê°’ì„ ì½ëŠ”ë‹¤.
 bool
 RUReadMultiString(
 	_In_ HKEY key_handle,
@@ -496,8 +496,8 @@ RUReadMultiString(
 	//
 	// buffer = L"Welcome\0to\0Hello\0World\0\0"
 	//
-	// 1. L"\0\0"À» ¸ÕÀú ºñ±³ÇÏ¿© ¸¶Áö¸·ÀÎÁö Ã¼Å©ÇÏ°í wstring°ªÀ» vector¿¡ º¹»çÇÑ´Ù.
-	// 2. L"\0" null terminator¸¦ Ã£À¸¸é wstring°ªÀ» vector¿¡ º¹»çÇÑ´Ù.
+	// 1. L"\0\0"ì„ ë¨¼ì € ë¹„êµí•˜ì—¬ ë§ˆì§€ë§‰ì¸ì§€ ì²´í¬í•˜ê³  wstringê°’ì„ vectorì— ë³µì‚¬í•œë‹¤.
+	// 2. L"\0" null terminatorë¥¼ ì°¾ìœ¼ë©´ wstringê°’ì„ vectorì— ë³µì‚¬í•œë‹¤.
 
 	size_t str_pos = 0;
 	size_t pos = 0;
@@ -519,7 +519,7 @@ RUReadMultiString(
 	return true;
 }
 
-/// @remark	value »çÀÌÁî Á¦ÇÑ¿¡ °üÇÑ Á¤º¸´Â ¸µÅ© ÂüÁ¶
+/// @remark	value ì‚¬ì´ì¦ˆ ì œí•œì— ê´€í•œ ì •ë³´ëŠ” ë§í¬ ì°¸ì¡°
 ///			https://msdn.microsoft.com/en-us/library/windows/desktop/ms724872(v=vs.85).aspx
 bool
 RUSetBinaryData(
@@ -641,10 +641,10 @@ RUDeleteValue(
 	return true;
 }
 
-/// @brief	sub_key ¿Í value ¸¦ »èÁ¦ÇÑ´Ù. 
+/// @brief	sub_key ì™€ value ë¥¼ ì‚­ì œí•œë‹¤. 
 /// 
-///			recursive °¡ true ÀÎ °æ¿ì sub key ÀÇ ÇÏÀ§Å°µµ ¸ù¶¥ »èÁ¦ÇÑ´Ù. 
-///			sub key ÀÇ ÇÏÀ§ Å°°¡ Á¸ÀçÇÏ°í, recursive °¡ flase ÀÎ °æ¿ì false ¸¦ ¸®ÅÏÇÑ´Ù. 
+///			recursive ê°€ true ì¸ ê²½ìš° sub key ì˜ í•˜ìœ„í‚¤ë„ ëª½ë•… ì‚­ì œí•œë‹¤. 
+///			sub key ì˜ í•˜ìœ„ í‚¤ê°€ ì¡´ì¬í•˜ê³ , recursive ê°€ flase ì¸ ê²½ìš° false ë¥¼ ë¦¬í„´í•œë‹¤. 
 bool 
 RUDeleteKey(
 	_In_ HKEY key_handle,
@@ -659,9 +659,9 @@ RUDeleteKey(
 	if (true != recursive)
 	{
 		//
-		//	key_handle\sub_key ¸¦ »èÁ¦ÇÑ´Ù. 
-		//	key_handle\sub_key\value °¡ ÀÖ´Ù¸é ÇÔ²² »èÁ¦ÇÑ´Ù. 
-		//	key_handle\sub_key\sub_key2 °¡ ÀÖ´Ù¸é ¿¡·¯¸¦ ¸®ÅÏÇÑ´Ù. 
+		//	key_handle\sub_key ë¥¼ ì‚­ì œí•œë‹¤. 
+		//	key_handle\sub_key\value ê°€ ìˆë‹¤ë©´ í•¨ê»˜ ì‚­ì œí•œë‹¤. 
+		//	key_handle\sub_key\sub_key2 ê°€ ìˆë‹¤ë©´ ì—ëŸ¬ë¥¼ ë¦¬í„´í•œë‹¤. 
 		// 
 		DWORD ret = RegDeleteKeyW(key_handle, sub_key);
 		if (ERROR_SUCCESS != ret)
@@ -677,8 +677,8 @@ RUDeleteKey(
 	else
 	{
 		// 
-		//	key_handle\sub_key ¸¦ »èÁ¦ÇÑ´Ù. 
-		//	ÇÏÀ§ key/value ±îÁö ¸ù¶¥ »èÁ¦ÇÑ´Ù. 
+		//	key_handle\sub_key ë¥¼ ì‚­ì œí•œë‹¤. 
+		//	í•˜ìœ„ key/value ê¹Œì§€ ëª½ë•… ì‚­ì œí•œë‹¤. 
 		// 
 		LSTATUS ls = SHDeleteKeyW(key_handle, sub_key);
 		if (ERROR_SUCCESS != ls)
@@ -700,7 +700,7 @@ RUDeleteKey(
 ///						HKEY_USERS
 ///						
 /// @param	sub_key		SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-///						'\' ·Î ½ÃÀÛÇÏ¸é ¾ÈµÊ
+///						'\' ë¡œ ì‹œì‘í•˜ë©´ ì•ˆë¨
 bool
 RUIsKeyExists(
 	_In_ HKEY root_key,
@@ -717,13 +717,13 @@ RUIsKeyExists(
 }
 
 
-/// @brief  `key` ÀÇ key, value µéÀ» enumerate ÇÑ´Ù. 
-///         sub key ´Â `key_cb` ¸¦ ÅëÇØ caller ¿¡°Ô Àü´ŞµÈ´Ù.
-///			¶ÇÇÑ, sub keyÀÇ ºÎ¸ğ °æ·Î°¡ ÇÊ¿äÇÑ °æ¿ì base_nameÀ»
-///         ÇÔ²² Àü´Ş ÇÑ´Ù. ±×·¸±â ¶§¹®¿¡ base_nameÀº NULL ÀÏ ¼ö
-///			ÀÖ´Ù.
-///         value ´Â `value_cb` ¸¦ ÅëÇØ caller ¿¡°Ô Àü´ŞµÈ´Ù. 
-///         key_cb, value_cb ´Â NULL ÀÏ ¼ö ÀÖ´Ù. 
+/// @brief  `key` ì˜ key, value ë“¤ì„ enumerate í•œë‹¤. 
+///         sub key ëŠ” `key_cb` ë¥¼ í†µí•´ caller ì—ê²Œ ì „ë‹¬ëœë‹¤.
+///			ë˜í•œ, sub keyì˜ ë¶€ëª¨ ê²½ë¡œê°€ í•„ìš”í•œ ê²½ìš° base_nameì„
+///         í•¨ê»˜ ì „ë‹¬ í•œë‹¤. ê·¸ë ‡ê¸° ë•Œë¬¸ì— base_nameì€ NULL ì¼ ìˆ˜
+///			ìˆë‹¤.
+///         value ëŠ” `value_cb` ë¥¼ í†µí•´ caller ì—ê²Œ ì „ë‹¬ëœë‹¤. 
+///         key_cb, value_cb ëŠ” NULL ì¼ ìˆ˜ ìˆë‹¤. 
 ///			
 bool
 reg_enum_key_values(
@@ -784,9 +784,9 @@ reg_enum_key_values(
 	//    max_security_desciptor_byte
 	//    log_end;
 
-	// xxx_cc °ªÀº null terminate ¸¦ Æ÷ÇÔÇÏÁö ¾Ê´Â character count ÀÌ´Ù. 
-	// RegEnumKeyEx() °°Àº ÇÔ¼öµéÀº ÆÄ¶ó¹ÌÅÍ¸¦ ¹ŞÀ»¶§ null terminate ¸¦ Æ÷ÇÔÇÑ 
-	// ¹öÆÛ¿Í ¹öÆÛÀÇ »çÀÌÁî¸¦ ÆÄ¶ó¹ÌÅÍ·Î ¹Ş±â ¶§¹®¿¡ ÆíÀÇ»ó xxx_cc ¿¡ +1 À» ÇØÁØ´Ù. 
+	// xxx_cc ê°’ì€ null terminate ë¥¼ í¬í•¨í•˜ì§€ ì•ŠëŠ” character count ì´ë‹¤. 
+	// RegEnumKeyEx() ê°™ì€ í•¨ìˆ˜ë“¤ì€ íŒŒë¼ë¯¸í„°ë¥¼ ë°›ì„ë•Œ null terminate ë¥¼ í¬í•¨í•œ 
+	// ë²„í¼ì™€ ë²„í¼ì˜ ì‚¬ì´ì¦ˆë¥¼ íŒŒë¼ë¯¸í„°ë¡œ ë°›ê¸° ë•Œë¬¸ì— í¸ì˜ìƒ xxx_cc ì— +1 ì„ í•´ì¤€ë‹¤. 
 	++max_sub_key_name_cc;
 	++max_class_name_cc;
 	++max_value_name_cc;

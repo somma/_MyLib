@@ -6,7 +6,7 @@
  * All rights reserved by somma (fixbrain@gmail.com, unsorted@msn.com)
  *-----------------------------------------------------------------------------
  * 26:12:2011   17:53 created
- * - OpenMP º´·Ä ÇÁ·Î±×·¡¹Ö by Á¤¿µÈÆ (CStopWatch class)
+ * - OpenMP ë³‘ë ¬ í”„ë¡œê·¸ë˜ë° by ì •ì˜í›ˆ (CStopWatch class)
 **---------------------------------------------------------------------------*/
 #pragma once
 

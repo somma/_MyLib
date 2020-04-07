@@ -126,9 +126,9 @@ public:
         while (_running)
         {
             //
-			//	_tasks °¡ empty ÀÌ°í, _running ÀÌ true ÀÌ¸é ´Ù¸¥ ´©±º°¡°¡ 
-			//	_condition.notify_one() / notify_all() À» È£ÃâÇÒ ¶§±îÁö
-			//	wait ÇÑ´Ù. 
+			//	_tasks ê°€ empty ì´ê³ , _running ì´ true ì´ë©´ ë‹¤ë¥¸ ëˆ„êµ°ê°€ê°€ 
+			//	_condition.notify_one() / notify_all() ì„ í˜¸ì¶œí•  ë•Œê¹Œì§€
+			//	wait í•œë‹¤. 
 			//
 			std::unique_lock<std::mutex> lock(_lock);
 			try

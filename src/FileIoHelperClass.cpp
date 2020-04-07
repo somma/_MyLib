@@ -29,9 +29,9 @@ FileIoHelper::~FileIoHelper()
 	this->close();
 }
 
-/// @brief	I/O ¿¡ ÃÖÀûÈ­µÈ ºí·°»çÀÌÁî¸¦ ¸®ÅÏÇÑ´Ù. 
-///			Á¤È®ÇÑ ¼öÄ¡´Â ¸ğ¸£°ÚÁö¸¸ SYSTEM_INFO.dwAllocationGranularity(64k) * 8 Á¤µµ°¡ °¡Àå 
-///			¹«³­ÇÑ ¼º´ÉÀÌ ³ª¿À´Â°Í °°À½. (win7, win10 ¿¡¼­ Å×½ºÆ®)
+/// @brief	I/O ì— ìµœì í™”ëœ ë¸”ëŸ­ì‚¬ì´ì¦ˆë¥¼ ë¦¬í„´í•œë‹¤. 
+///			ì •í™•í•œ ìˆ˜ì¹˜ëŠ” ëª¨ë¥´ê² ì§€ë§Œ SYSTEM_INFO.dwAllocationGranularity(64k) * 8 ì •ë„ê°€ ê°€ì¥ 
+///			ë¬´ë‚œí•œ ì„±ëŠ¥ì´ ë‚˜ì˜¤ëŠ”ê²ƒ ê°™ìŒ. (win7, win10 ì—ì„œ í…ŒìŠ¤íŠ¸)
 //static
 uint32_t FileIoHelper::GetOptimizedBlockSize()
 {
@@ -53,7 +53,7 @@ uint32_t FileIoHelper::GetOptimizedBlockSize()
 	}
 }
 
-/// @brief	ÆÄÀÏÀ» ÀĞ±â¸ğµå·Î ¿ÀÇÂÇÑ´Ù. 
+/// @brief	íŒŒì¼ì„ ì½ê¸°ëª¨ë“œë¡œ ì˜¤í”ˆí•œë‹¤. 
 bool
 FileIoHelper::OpenForRead(_In_ const wchar_t* file_path)
 {
@@ -101,7 +101,7 @@ FileIoHelper::OpenForRead(_In_ const wchar_t* file_path)
 	return true;
 }
 
-/// @brief	ÆÄÀÏÀ» ÀĞ±â¸ğµå·Î ¿ÀÇÂÇÑ´Ù. 
+/// @brief	íŒŒì¼ì„ ì½ê¸°ëª¨ë“œë¡œ ì˜¤í”ˆí•œë‹¤. 
 bool
 FileIoHelper::OpenForRead(
 	_In_ const HANDLE file_handle
@@ -180,7 +180,7 @@ FileIoHelper::OpenForRead(
 	return ret;
 }
 
-/// @brief	file_size ¹ÙÀÌÆ® Â¥¸® ÆÄÀÏÀ» »ı¼ºÇÑ´Ù.
+/// @brief	file_size ë°”ì´íŠ¸ ì§œë¦¬ íŒŒì¼ì„ ìƒì„±í•œë‹¤.
 bool
 FileIoHelper::OpenForWrite(
 	_In_ const wchar_t* file_path,
@@ -199,7 +199,7 @@ FileIoHelper::OpenForWrite(
 		_file_size = file_size;
 		_file_handle = CreateFileW(file_path,
 								   GENERIC_READ | GENERIC_WRITE,
-								   FILE_SHARE_READ,		// write µµÁß ´Ù¸¥ ÇÁ·Î¼¼½º¿¡¼­ ÀĞ±â°¡ °¡´É
+								   FILE_SHARE_READ,		// write ë„ì¤‘ ë‹¤ë¥¸ í”„ë¡œì„¸ìŠ¤ì—ì„œ ì½ê¸°ê°€ ê°€ëŠ¥
 								   nullptr,
 								   CREATE_ALWAYS,
 								   FILE_ATTRIBUTE_NORMAL,
@@ -217,7 +217,7 @@ FileIoHelper::OpenForWrite(
 		_do_not_close_handle = false;	//<!
 
 		//
-		//	¿äÃ»µÈ Å©±â¸¸Å­ ÆÄÀÏ»çÀÌÁî¸¦ ´Ã¸°´Ù.
+		//	ìš”ì²­ëœ í¬ê¸°ë§Œí¼ íŒŒì¼ì‚¬ì´ì¦ˆë¥¼ ëŠ˜ë¦°ë‹¤.
 		// 
 		if (!SetFilePointerEx(_file_handle,
 							  *(PLARGE_INTEGER)&_file_size,
@@ -277,7 +277,7 @@ FileIoHelper::OpenForWrite(
 	return ret;
 }
 
-/// @brief	ÆÄÀÏÀ» ÀĞ±â/¾²±â¸ğµå·Î ¿ÀÇÂÇÑ´Ù. 
+/// @brief	íŒŒì¼ì„ ì½ê¸°/ì“°ê¸°ëª¨ë“œë¡œ ì˜¤í”ˆí•œë‹¤. 
 bool FileIoHelper::OpenForReadWrite(_In_ const wchar_t* file_path)
 {
 	_ASSERTE(nullptr != file_path);
@@ -324,7 +324,7 @@ bool FileIoHelper::OpenForReadWrite(_In_ const wchar_t* file_path)
 	return true;
 }
 
-/// @brief	ÆÄÀÏÀ» ÀĞ±â/¾²±â¸ğµå·Î ¿ÀÇÂÇÑ´Ù. 
+/// @brief	íŒŒì¼ì„ ì½ê¸°/ì“°ê¸°ëª¨ë“œë¡œ ì˜¤í”ˆí•œë‹¤. 
 bool
 FileIoHelper::OpenForReadWrite(
 	_In_ const HANDLE file_handle
@@ -400,7 +400,7 @@ FileIoHelper::OpenForReadWrite(
 	return ret;
 }
 
-/// @brief	¸ğµç ¸®¼Ò½º¸¦ Á¦°ÅÇÑ´Ù.
+/// @brief	ëª¨ë“  ë¦¬ì†ŒìŠ¤ë¥¼ ì œê±°í•œë‹¤.
 void FileIoHelper::close()
 {
 	if (true != Initialized()) return;
@@ -419,12 +419,12 @@ void FileIoHelper::close()
 	_file_handle = INVALID_HANDLE_VALUE;
 }
 
-/// @beief	¸Ş¸ğ¸® ¸ÅÇÎµÈ ÆÄÀÏÀÇ °æ·Î¸¦ ±¸ÇÑ´Ù. 
-///			convert_to_dosname == false ÀÎ °æ¿ì 
-///				\Device\harddiskVolume1\Windows\System32\notepad.exe °æ·Î ¸®ÅÏ
+/// @beief	ë©”ëª¨ë¦¬ ë§¤í•‘ëœ íŒŒì¼ì˜ ê²½ë¡œë¥¼ êµ¬í•œë‹¤. 
+///			convert_to_dosname == false ì¸ ê²½ìš° 
+///				\Device\harddiskVolume1\Windows\System32\notepad.exe ê²½ë¡œ ë¦¬í„´
 ///
-///			convert_to_dosname == true ÀÎ °æ¿ì µğ¹ÙÀÌ½º ³×ÀÓÀ» º¼·ı¸íÀ¸·Î º¯°æ
-///				c:\Windows\System32\notepad.exe °æ·Î ¸®ÅÏ
+///			convert_to_dosname == true ì¸ ê²½ìš° ë””ë°”ì´ìŠ¤ ë„¤ì„ì„ ë³¼ë¥¨ëª…ìœ¼ë¡œ ë³€ê²½
+///				c:\Windows\System32\notepad.exe ê²½ë¡œ ë¦¬í„´
 bool FileIoHelper::GetMappedFileName(_In_ bool convet_to_dosname, _Out_ std::wstring& file_path)
 {
 	if (true != Initialized()) return false;
@@ -478,10 +478,10 @@ bool FileIoHelper::GetMappedFileName(_In_ bool convet_to_dosname, _Out_ std::wst
 
 }
 
-/// @brief	ÁöÁ¤µÈ ÆÄÀÏÀÇ Offset À§Ä¡¸¦ Size ¸¸Å­ ¸ÅÇÎÇÏ°í, ÇØ´ç ¸Ş¸ğ¸® ÂüÁ¶¸¦ ¸®ÅÏÇÑ´Ù.
-///			Offset Àº SYSTEM_INFO.dwAllocationGranularity ÀÇ ¹è¼ö·Î ÁöÁ¤ÇØ¾ß ÇÑ´Ù. 
-///			±×·¸Áö ¾ÊÀº °æ¿ì ÀÚµ¿À¸·Î SYSTEM_INFO.dwAllocationGranularity °ªÀ¸·Î Á¶Á¤ÇØ¼­
-///			ÆÄÀÏÀ» ¸ÅÇÎÇÏ°í, pointer ¸¦ Àû´çÈ÷ º¸Á¤ÇØ¼­ ¸®ÅÏÇÑ´Ù.
+/// @brief	ì§€ì •ëœ íŒŒì¼ì˜ Offset ìœ„ì¹˜ë¥¼ Size ë§Œí¼ ë§¤í•‘í•˜ê³ , í•´ë‹¹ ë©”ëª¨ë¦¬ ì°¸ì¡°ë¥¼ ë¦¬í„´í•œë‹¤.
+///			Offset ì€ SYSTEM_INFO.dwAllocationGranularity ì˜ ë°°ìˆ˜ë¡œ ì§€ì •í•´ì•¼ í•œë‹¤. 
+///			ê·¸ë ‡ì§€ ì•Šì€ ê²½ìš° ìë™ìœ¼ë¡œ SYSTEM_INFO.dwAllocationGranularity ê°’ìœ¼ë¡œ ì¡°ì •í•´ì„œ
+///			íŒŒì¼ì„ ë§¤í•‘í•˜ê³ , pointer ë¥¼ ì ë‹¹íˆ ë³´ì •í•´ì„œ ë¦¬í„´í•œë‹¤.
 uint8_t*
 FileIoHelper::GetFilePointer(
 	_In_ bool read_only,
@@ -504,7 +504,7 @@ FileIoHelper::GetFilePointer(
 	}
 
 	// 
-	//	¿äÃ»ÇÑ offset ÀÌ ÆÄÀÏ »çÀÌÁîº¸´Ù Å©´Ù¸é ¿À·ù¸¦ ¸®ÅÏÇÑ´Ù.
+	//	ìš”ì²­í•œ offset ì´ íŒŒì¼ ì‚¬ì´ì¦ˆë³´ë‹¤ í¬ë‹¤ë©´ ì˜¤ë¥˜ë¥¼ ë¦¬í„´í•œë‹¤.
 	// 
 	if (Offset >= _file_size)
 	{
@@ -516,7 +516,7 @@ FileIoHelper::GetFilePointer(
 	}
 
 	//
-	//	¿äÃ»ÇÑ »çÀÌÁî°¡ ÆÄÀÏ»çÀÌÁîº¸´Ù Å©´Ù¸é ÆÄÀÏ»çÀÌÁî¸¸Å­¸¸ ¸ÅÇÎÇÑ´Ù. 
+	//	ìš”ì²­í•œ ì‚¬ì´ì¦ˆê°€ íŒŒì¼ì‚¬ì´ì¦ˆë³´ë‹¤ í¬ë‹¤ë©´ íŒŒì¼ì‚¬ì´ì¦ˆë§Œí¼ë§Œ ë§¤í•‘í•œë‹¤. 
 	//
 	uint32_t adjusted_size = Size;
 	if (Offset + Size > _file_size)
@@ -525,9 +525,9 @@ FileIoHelper::GetFilePointer(
 	}
 
 	//
-	//	MapViewOfFile() ÇÔ¼öÀÇ dwFileOffsetLow ÆÄ¶ó¹ÌÅÍ´Â 
-	//	SYSTEM_INFO::dwAllocationGranularity °ªÀÇ ¹è¼öÀÌ¾î¾ß ÇÑ´Ù.
-	//	È¤½Ã¶óµµ ¿À·ù°¡ ³ª¸é 64k ·Î ¼³Á¤ÇÑ´Ù. 
+	//	MapViewOfFile() í•¨ìˆ˜ì˜ dwFileOffsetLow íŒŒë¼ë¯¸í„°ëŠ” 
+	//	SYSTEM_INFO::dwAllocationGranularity ê°’ì˜ ë°°ìˆ˜ì´ì–´ì•¼ í•œë‹¤.
+	//	í˜¹ì‹œë¼ë„ ì˜¤ë¥˜ê°€ ë‚˜ë©´ 64k ë¡œ ì„¤ì •í•œë‹¤. 
 	// 
 	static DWORD AllocationGranularity = 0;
 	if (0 == AllocationGranularity)
@@ -544,8 +544,8 @@ FileIoHelper::GetFilePointer(
 	}
 
 	//
-	//	AllocationGranularity ÀÌÇÏÀÇ °ªÀ» ¹ö¸°´Ù. 
-	//	°á±¹ ¸ÅÇÎÇØ¾ß ÇÒ »çÀÌÁî´Â ¹ö·ÁÁø »çÀÌÁî ¸¸Å­ Ä¿Á®¾ß ÇÑ´Ù.
+	//	AllocationGranularity ì´í•˜ì˜ ê°’ì„ ë²„ë¦°ë‹¤. 
+	//	ê²°êµ­ ë§¤í•‘í•´ì•¼ í•  ì‚¬ì´ì¦ˆëŠ” ë²„ë ¤ì§„ ì‚¬ì´ì¦ˆ ë§Œí¼ ì»¤ì ¸ì•¼ í•œë‹¤.
 	// 	
 	uint64_t AdjustMask = (uint64_t)(AllocationGranularity - 1);
 	uint64_t adjusted_offset = Offset & ~AdjustMask;
@@ -569,14 +569,14 @@ FileIoHelper::GetFilePointer(
 	}
 
 	//
-	//	¸ÅÇÎÀº adjust offset À¸·Î ÇÏÁö¸¸ ¸®ÅÏÇÏ´Â ¸Ş¸ğ¸® Æ÷ÀÎÅÍ´Â 
-	//	¿äÃ»ÇÑ ´ë·Î ¸®ÅÏÇØÁÖ¾î¾ß ÇÑ´Ù.
+	//	ë§¤í•‘ì€ adjust offset ìœ¼ë¡œ í•˜ì§€ë§Œ ë¦¬í„´í•˜ëŠ” ë©”ëª¨ë¦¬ í¬ì¸í„°ëŠ” 
+	//	ìš”ì²­í•œ ëŒ€ë¡œ ë¦¬í„´í•´ì£¼ì–´ì•¼ í•œë‹¤.
 	// 
 	return &_file_view[Offset & AdjustMask];
 }
 
 
-/// @brief	¸ÅÇÎµÈ ÆÄÀÏÆ÷ÀÎÅÍ¸¦ ¸±¸®ÁîÇÑ´Ù. 
+/// @brief	ë§¤í•‘ëœ íŒŒì¼í¬ì¸í„°ë¥¼ ë¦´ë¦¬ì¦ˆí•œë‹¤. 
 void FileIoHelper::ReleaseFilePointer()
 {
 	if (nullptr != _file_view)
@@ -586,7 +586,7 @@ void FileIoHelper::ReleaseFilePointer()
 	}
 }
 
-/// @brief	ÆÄÀÏÀÇ Offset ¿¡¼­ Size ¸¸Å­ ÀĞ¾î¼­ Buffer ¿¡ ¸®ÅÏÇÑ´Ù.
+/// @brief	íŒŒì¼ì˜ Offset ì—ì„œ Size ë§Œí¼ ì½ì–´ì„œ Buffer ì— ë¦¬í„´í•œë‹¤.
 bool
 FileIoHelper::ReadFromFile(
 	_In_ uint64_t Offset,
@@ -628,7 +628,7 @@ FileIoHelper::ReadFromFile(
 
 }
 
-/// @brief	Buffer ¸¦ ÆÄÀÏÀÇ Offset ¿¡ Size ¸¸Å­ ¾´´Ù.
+/// @brief	Buffer ë¥¼ íŒŒì¼ì˜ Offset ì— Size ë§Œí¼ ì“´ë‹¤.
 bool
 FileIoHelper::WriteToFile(
 	_In_ uint64_t Offset,

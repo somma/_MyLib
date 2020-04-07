@@ -62,7 +62,7 @@ typedef NTSTATUS (WINAPI *pNtCreateThreadEx) (
 */
 bool inject_dll(_In_ DWORD pid, _In_z_ const char* dll_path)
 {
-	// Å¸°Ù ÇÁ·Î¼¼½º ¿ÀÇÂ		
+	// íƒ€ê²Ÿ í”„ë¡œì„¸ìŠ¤ ì˜¤í”ˆ		
 	DWORD rights = PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ;
 		
 	HANDLE process_handle = NULL;	
@@ -92,7 +92,7 @@ bool inject_dll(_In_ DWORD pid, _In_z_ const char* dll_path)
 		return false;
 	}
 
-	// ´ë»ó ÇÁ·Î¼¼½º ¸Ş¸ğ¸®¿¡ dll °æ·Î¸í ¸¸Å­ÀÇ ¹öÆÛ ÇÒ´ç (ÆÄ¶ó¹ÌÅÍ ¿µ¿ª)
+	// ëŒ€ìƒ í”„ë¡œì„¸ìŠ¤ ë©”ëª¨ë¦¬ì— dll ê²½ë¡œëª… ë§Œí¼ì˜ ë²„í¼ í• ë‹¹ (íŒŒë¼ë¯¸í„° ì˜ì—­)
 	unsigned int buffer_size = (unsigned int)strlen(dll_path) + sizeof(char);
 	char* buffer = (char*) VirtualAllocEx(
 								process_handle, 
@@ -107,7 +107,7 @@ bool inject_dll(_In_ DWORD pid, _In_z_ const char* dll_path)
 		return false;
 	}
 
-	// dll °æ·Î¸í (¹®ÀÚ¿­) º¹»ç
+	// dll ê²½ë¡œëª… (ë¬¸ìì—´) ë³µì‚¬
 	SIZE_T cbWritten=0;
 	if (TRUE != WriteProcessMemory(
 								process_handle, 
@@ -123,7 +123,7 @@ bool inject_dll(_In_ DWORD pid, _In_z_ const char* dll_path)
 		return false;
 	}
 
-	// LoadLibraryA ÁÖ¼Ò ±¸ÇÏ±â
+	// LoadLibraryA ì£¼ì†Œ êµ¬í•˜ê¸°
 	HMODULE kernel32_handle = GetModuleHandleW(L"kernel32.dll");
 	LPTHREAD_START_ROUTINE load_library_ptr = 
 		(LPTHREAD_START_ROUTINE) GetProcAddress(kernel32_handle, "LoadLibraryA");
@@ -154,10 +154,10 @@ bool inject_dll(_In_ DWORD pid, _In_z_ const char* dll_path)
  * @brief	
  * @param	
  * @see		
- * @remarks		ÀÌ½Â¿ø Ã¥ÀÓ ÄÚµå (05_64ºñÆ®_&_Windows_Kernel_6\43_DLL_Injection_in_Kernel_6\src\InjectDll_new\InjectDll_new.cpp)
-				´Â debug ¸ğµå¿¡¼­´Â ½ÇÆĞ, release ¸ğµå¿¡¼­´Â ¼º°øÇÔ
-				ÀÌÀ¯¸¦ ¸ğ¸£°Ú³×... ÀÏ´Ü ¹Ù»Ú´Ï NtCreateThreadEx »ç¿ëÇÏ´Â°Ç ³ªÁß¿¡ ÇÏÀÚ.
-				RtlCreateUserThread ´Â ¼º°øÇÔ
+ * @remarks		ì´ìŠ¹ì› ì±…ì„ ì½”ë“œ (05_64ë¹„íŠ¸_&_Windows_Kernel_6\43_DLL_Injection_in_Kernel_6\src\InjectDll_new\InjectDll_new.cpp)
+				ëŠ” debug ëª¨ë“œì—ì„œëŠ” ì‹¤íŒ¨, release ëª¨ë“œì—ì„œëŠ” ì„±ê³µí•¨
+				ì´ìœ ë¥¼ ëª¨ë¥´ê² ë„¤... ì¼ë‹¨ ë°”ì˜ë‹ˆ NtCreateThreadEx ì‚¬ìš©í•˜ëŠ”ê±´ ë‚˜ì¤‘ì— í•˜ì.
+				RtlCreateUserThread ëŠ” ì„±ê³µí•¨
 
  * @code		
  * @endcode	
@@ -241,7 +241,7 @@ my_create_remote_thread(
 	thread_handle = bCreateUserThread(process_handle, thread_start_routine, thread_param);
 	if (thread_handle  == NULL) return false;
 
-	WaitForSingleObject(thread_handle, INFINITE);		// dll loading ÀÌ ¿Ï·áµÉ ¶§ ±îÁö ´ë±â
+	WaitForSingleObject(thread_handle, INFINITE);		// dll loading ì´ ì™„ë£Œë  ë•Œ ê¹Œì§€ ëŒ€ê¸°
 	return true;
 }
 

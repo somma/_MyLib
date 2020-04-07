@@ -58,7 +58,7 @@ bool test_registry_util()
 	_ASSERTE(test64 == RUReadQword(key, L"test_Qword", 0));
 
 	// Delete key
-	// -- key ³»ºÎÀÇ value µéµµ ÇÔ²² »èÁ¦µÊ
+	// -- key ë‚´ë¶€ì˜ value ë“¤ë„ í•¨ê»˜ ì‚­ì œë¨
 	_ASSERTE(true == RUDeleteKey(HKEY_CURRENT_USER, L"_test_key", true));
 	    
 	return true;
@@ -109,7 +109,7 @@ reg_value_callback(
 
 bool test_read_mouted_device()
 {
-    // HKEY_LOCAL_MACHINE\SYSTEM\MountedDevices Å° ¿ÀÇÂ
+    // HKEY_LOCAL_MACHINE\SYSTEM\MountedDevices í‚¤ ì˜¤í”ˆ
     HKEY key = RUOpenKey(HKEY_LOCAL_MACHINE, L"SYSTEM\\MountedDevices", true);
     if (NULL == key)
     {
@@ -170,7 +170,7 @@ bool test_reg_multi_value()
 		}
 
 		// Delete key
-		// -- key ³»ºÎÀÇ value µéµµ ÇÔ²² »èÁ¦µÊ
+		// -- key ë‚´ë¶€ì˜ value ë“¤ë„ í•¨ê»˜ ì‚­ì œë¨
 		_ASSERTE(true == RUDeleteKey(HKEY_CURRENT_USER, L"test_key", true));
 	}
 	_mem_check_end;

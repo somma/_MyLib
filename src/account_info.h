@@ -15,7 +15,7 @@
 #include <LMaccess.h>
 
 
-/// @brief account Á¤º¸
+/// @brief account ì •ë³´
 typedef class account
 {
 public:
@@ -29,31 +29,31 @@ public:
 			_In_ const wchar_t* sid);
 
 public:
-	// °èÁ¤¸í
+	// ê³„ì •ëª…
 	std::wstring name() { return _name; }
 
-	// ¸¶Áö¸· ÆĞ½º¿öµå º¯°æµÈ ³¯Â¥ºÎÅÍ ÇöÀç ±îÁöÀÇ ½Ã°£(ÃÊ)
+	// ë§ˆì§€ë§‰ íŒ¨ìŠ¤ì›Œë“œ ë³€ê²½ëœ ë‚ ì§œë¶€í„° í˜„ì¬ ê¹Œì§€ì˜ ì‹œê°„(ì´ˆ)
 	DWORD password_age() { return _password_age; }
 
-	// °èÁ¤ Å¸ÀÔ(Administrator, User, Guest)
+	// ê³„ì • íƒ€ì…(Administrator, User, Guest)
 	const wchar_t* privilege() const;
 
-	// °èÁ¤ ¼Ó¼º
+	// ê³„ì • ì†ì„±
 	uint32_t flags() { return _flags; }
 
-	// °èÁ¤ ¼Ó¼º ´ıÇÁ
+	// ê³„ì • ì†ì„± ë¤í”„
 	void dump_account_flags();
 
-	// »ç¿ëÀÚ ·Î±×¿Â½Ã µ¿ÀÛÇÏ´Â ½ºÅ©¸³Æ®ÀÇ °æ·Î
+	// ì‚¬ìš©ì ë¡œê·¸ì˜¨ì‹œ ë™ì‘í•˜ëŠ” ìŠ¤í¬ë¦½íŠ¸ì˜ ê²½ë¡œ
 	std::wstring script_path() { return _script_path; };
 
-	// ¸¶Áö¸· ·Î±×ÀÎ ½Ã°£
+	// ë§ˆì§€ë§‰ ë¡œê·¸ì¸ ì‹œê°„
 	DWORD last_logon_timestamp() { return _last_logon; }
 
-	// ·Î±×ÀÎ ¼º°ø È½¼ö
+	// ë¡œê·¸ì¸ ì„±ê³µ íšŸìˆ˜
 	DWORD num_logons() { return _num_logons; }
 
-	// °èÁ¤º° °íÀ¯ ID
+	// ê³„ì •ë³„ ê³ ìœ  ID
 	std::wstring sid() { return _sid; }
 
 private:
@@ -70,21 +70,21 @@ private:
 
 
 
-/// @brief `PSID`¸¦ SID ¹®ÀÚ¿­·Î º¯È¯ ÇÑ´Ù.
+/// @brief `PSID`ë¥¼ SID ë¬¸ìì—´ë¡œ ë³€í™˜ í•œë‹¤.
 bool 
 psid_to_wstr_sid(
 	_In_ PSID sid, 
 	_Out_ std::wstring& sid_string
 	);
 
-/// @brief  »ç¿ëÀÚ ÀÌ¸§À» °¡Áö°í »ç¿ëÀÚ Á¤º¸¸¦ Á¶È¸ ÇÑ´Ù.
+/// @brief  ì‚¬ìš©ì ì´ë¦„ì„ ê°€ì§€ê³  ì‚¬ìš©ì ì •ë³´ë¥¼ ì¡°íšŒ í•œë‹¤.
 bool
 get_account_info_by_name(
 	_In_ wchar_t* user_name,
 	_Out_ LPUSER_INFO_4* user_info
 	);
 
-/// @brief  ½Ã½ºÅÛÀÇ ¸ğµç °èÁ¤ Á¤º¸¸¦ ÀĞ¾î ¿Â´Ù. 
+/// @brief  ì‹œìŠ¤í…œì˜ ëª¨ë“  ê³„ì • ì •ë³´ë¥¼ ì½ì–´ ì˜¨ë‹¤. 
 bool 
 get_account_infos(
 	_Out_ std::list<paccount>& accounts

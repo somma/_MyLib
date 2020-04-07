@@ -7,8 +7,8 @@
  *-----------------------------------------------------------------------------
  * - 2010.02.09 created
  * - 2013.08-08 modified
- *		StatusCode.h Á¦°Å
- *		FreeAndNil() ÇÔ¼ö »ç¿ë ¾ÈÇÔ
+ *		StatusCode.h ì œê±°
+ *		FreeAndNil() í•¨ìˆ˜ ì‚¬ìš© ì•ˆí•¨
 **---------------------------------------------------------------------------*/
 
 #ifndef _dt_thread_manager_
@@ -20,7 +20,7 @@
 #define		CONTEXT_TERMINATED_EVENT_TIMEOUT		10 * 1000				// 10 sec
 
 /* 
- * KillEvent ¸¦ ¸ğ´ÏÅÍ¸µ ÇÏµµ·Ï ÇÁ·Î½ÃÀú¸¦ ÀÛ¼ºÇÏ¸é µÊ
+ * KillEvent ë¥¼ ëª¨ë‹ˆí„°ë§ í•˜ë„ë¡ í”„ë¡œì‹œì €ë¥¼ ì‘ì„±í•˜ë©´ ë¨
  *
 
 DWORD __stdcall ThreadProcedure(IN LPVOID lpThreadParam)

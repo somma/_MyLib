@@ -62,8 +62,8 @@ BOOL CServiceBase::Run(CServiceBase &service)
 }
 
 //
-//	CServiceBase::Run(CServiceBase &service) ÀÇ È®Àå¹öÀü.
-//	Device change notification À» ¹ŞÀ» ¼ö ÀÖ´Â ¼­ºñ½º¸¦ »ı¼ºÇÑ´Ù.
+//	CServiceBase::Run(CServiceBase &service) ì˜ í™•ì¥ë²„ì „.
+//	Device change notification ì„ ë°›ì„ ìˆ˜ ìˆëŠ” ì„œë¹„ìŠ¤ë¥¼ ìƒì„±í•œë‹¤.
 // 
 BOOL CServiceBase::RunEx(_In_ CServiceBase &service)
 {
@@ -175,7 +175,7 @@ CServiceBase::ServiceMainEx(
 	}
 
 	//	NOTE 2017/04/13
-	//	Device change notification À» »ç¿ëÇÏÁö ¾Ê¾Æ ÁÖ¼®Ã³¸®ÇØµÎ¾úÀ½
+	//	Device change notification ì„ ì‚¬ìš©í•˜ì§€ ì•Šì•„ ì£¼ì„ì²˜ë¦¬í•´ë‘ì—ˆìŒ
 	////
 	////	Register device notification
 	//// 

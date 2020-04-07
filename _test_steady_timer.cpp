@@ -13,7 +13,7 @@
 bool test_steady_timer_using_lambda()
 {
 	//
-	//	1ÃÊ Â¥¸® Å¸ÀÌ¸Ó¸¦ »ı¼º
+	//	1ì´ˆ ì§œë¦¬ íƒ€ì´ë¨¸ë¥¼ ìƒì„±
 	//
 	DWORD_PTR random_value = 1024;
 	SteadyTimer timer;
@@ -42,7 +42,7 @@ bool timer_callback(_In_ DWORD_PTR tag)
 	UNREFERENCED_PARAMETER(tag);
 
 	//
-	//	4ÃÊ ÀÌÈÄ¿¡ Å¸ÀÌ¸Ó¸¦ Ãë¼ÒÇÑ´Ù. 
+	//	4ì´ˆ ì´í›„ì— íƒ€ì´ë¨¸ë¥¼ ì·¨ì†Œí•œë‹¤. 
 	//
 	static uint32_t count = 0;
 
@@ -58,7 +58,7 @@ bool timer_callback(_In_ DWORD_PTR tag)
 bool test_steady_timer_using_callback()
 {
 	//
-	//	1ÃÊ Â¥¸® Å¸ÀÌ¸Ó¸¦ »ı¼º
+	//	1ì´ˆ ì§œë¦¬ íƒ€ì´ë¨¸ë¥¼ ìƒì„±
 	//	
 	DWORD_PTR random_value = 1024;
 	SteadyTimer timer;
@@ -93,7 +93,7 @@ public:
 	bool start()
 	{
 		//
-		//	1ÃÊ Â¥¸® Å¸ÀÌ¸Ó¸¦ »ı¼º
+		//	1ì´ˆ ì§œë¦¬ íƒ€ì´ë¨¸ë¥¼ ìƒì„±
 		//	
 		_count = 0;
 		bool ret = _timer.start(1, _count, boost::bind(&SteadyTimerTest::callback,

@@ -16,13 +16,13 @@
 #include "boost/algorithm/string.hpp"	// to_uppper, to_lower
 
 //
-//  _pointer °¡ _alignment ¹Ù¿î´õ¸®¿¡ ÀÖ´ÂÁö È®ÀÎ (fltKernel.h ¿¡ Á¤ÀÇµÇ¾îÀÖÀ½)
+//  _pointer ê°€ _alignment ë°”ìš´ë”ë¦¬ì— ìˆëŠ”ì§€ í™•ì¸ (fltKernel.h ì— ì •ì˜ë˜ì–´ìˆìŒ)
 //	
 #define IS_ALIGNED(_pointer, _alignment) \
 	((((ULONG_PTR) (_pointer)) & ((_alignment) - 1)) == 0)
 
 
-// | size | _______data_______ | ÇüÅÂÀÇ ¸Ş¸ğ¸® ±¸Á¶
+// | size | _______data_______ | í˜•íƒœì˜ ë©”ëª¨ë¦¬ êµ¬ì¡°
 typedef struct _continuous_memory
 {
     DWORD   size;   // buf size
@@ -38,8 +38,8 @@ typedef struct _continuous_memory
 #define _LOW_PART(_int64_value_)     (UINT32)((_int64_value_) & 0x00000000FFFFFFFF)
 
 
-/// @brief  val ÀÇ pos ¹øÂ° ºñÆ®¸¦ check/set/clear 
-///			pos ´Â 0 ºÎÅÍ 63 ±îÁö
+/// @brief  val ì˜ pos ë²ˆì§¸ ë¹„íŠ¸ë¥¼ check/set/clear 
+///			pos ëŠ” 0 ë¶€í„° 63 ê¹Œì§€
 #define _check_bit(val, pos)  (val & (1 << pos))
 #define _set_bit(val, pos) (val |= (1 << pos))
 #define _clear_bit(val, pos) (val &= ~(1 << pos))
@@ -65,7 +65,7 @@ typedef struct _continuous_memory
 #define SUB_OFFSET(ptr, offset) (void*)((uintptr_t)ptr - (uintptr_t)offset)
 
 
-/// @brief	»ó¼ö ÀÌ¸§->¹®ÀÚ¿­ º¯È¯
+/// @brief	ìƒìˆ˜ ì´ë¦„->ë¬¸ìì—´ ë³€í™˜
 ///			#define love 0
 ///			#define	you 1
 ///			...
@@ -78,12 +78,12 @@ typedef struct _continuous_memory
 
 
 /**	-----------------------------------------------------------------------
-	ºôµå½Ã¿¡ TODO ¸Ş¼¼Áö¸¦ Ãâ·ÂÇÏ±â À§ÇÑ ¸ÅÅ©·Î
+	ë¹Œë“œì‹œì— TODO ë©”ì„¸ì§€ë¥¼ ì¶œë ¥í•˜ê¸° ìœ„í•œ ë§¤í¬ë¡œ
 
-	#pragma TODO( "¿ä±â ±¸ÇöÇÏ¼À	\n" )
+	#pragma TODO( "ìš”ê¸° êµ¬í˜„í•˜ì…ˆ	\n" )
 
-	¿ä·¸°Ô »ç¿ëÇÏ¸é µÊ
-	IT EXPERT, À©µµ¿ì ÇÁ·Î±×·¡¸Ó¸¦ ÀÌÇÑ MFC ±¸Á¶¿Í ¿ø¸®, ¼­ÁøÅÃ Àú
+	ìš”ë ‡ê²Œ ì‚¬ìš©í•˜ë©´ ë¨
+	IT EXPERT, ìœˆë„ìš° í”„ë¡œê·¸ë˜ë¨¸ë¥¼ ì´í•œ MFC êµ¬ì¡°ì™€ ì›ë¦¬, ì„œì§„íƒ ì €
 -------------------------------------------------------------------------*/
 #ifndef _TODO_DEFINED_
 #define LINE1(x)	#x
@@ -112,11 +112,11 @@ typedef struct _continuous_memory
 
 
 /* 
-	x64 ¿¡¼­´Â inline asm À» »ç¿ëÇÒ ¼ö ¾øÀ¸¹Ç·Î È£È¯¼ºÀ» À§ÇØ Á¦°Å
-	´ë½Å StopWatch.h ÆÄÀÏ¿¡ Á¤ÀÇµÈ Å¬·¡½º¸¦ »ç¿ëÇÏ¸é µÊ
+	x64 ì—ì„œëŠ” inline asm ì„ ì‚¬ìš©í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ í˜¸í™˜ì„±ì„ ìœ„í•´ ì œê±°
+	ëŒ€ì‹  StopWatch.h íŒŒì¼ì— ì •ì˜ëœ í´ë˜ìŠ¤ë¥¼ ì‚¬ìš©í•˜ë©´ ë¨
 
 
-// out-of-order execution À» ¸·±â À§ÇØ cpuid È£Ãâ
+// out-of-order execution ì„ ë§‰ê¸° ìœ„í•´ cpuid í˜¸ì¶œ
 //
 static __inline LARGE_INTEGER getticks(void)
 {
@@ -137,10 +137,10 @@ int get_random_int(_In_ int min, _In_ int max);
 
 
 //=============================================================================
-// ½Ã°£ °ü·Ã
+// ì‹œê°„ ê´€ë ¨
 //=============================================================================
 
-// FILETIME (1601³â 1¿ù 1ÀÏºÎÅÍ 100-nanosecond ´ÜÀ§ Ä«¿îÆ®)
+// FILETIME (1601ë…„ 1ì›” 1ì¼ë¶€í„° 100-nanosecond ë‹¨ìœ„ ì¹´ìš´íŠ¸)
 // 1 nano sec = 1/1,000,000,000 (1e-9) sec 
 // 100 nonosecond = 1/10,000,000 (1e-7) sec
 #define _file_time_to_msec  ((uint64_t) 10000)
@@ -290,7 +290,7 @@ get_file_hash_by_filehandle(
 );
 
 
-/// Äİ¹é ´ë½Å ¶÷´Ù¸¦ »ç¿ëÇÒ ¼ö ÀÖÀ½
+/// ì½œë°± ëŒ€ì‹  ëŒë‹¤ë¥¼ ì‚¬ìš©í•  ìˆ˜ ìˆìŒ
 //	if (true != find_files(root,
 //							(DWORD_PTR)&file_list,
 //							true, 
@@ -348,7 +348,7 @@ std::wstring get_current_module_pathEx();
 std::wstring get_current_module_dirEx();
 std::wstring get_current_module_fileEx();
 
-/// @brief  nt_name ¿¡¼­ device name ºÎºĞ¸¸ ¶¼¾î³»¼­ ¸®ÅÏÇÑ´Ù.
+/// @brief  nt_name ì—ì„œ device name ë¶€ë¶„ë§Œ ë–¼ì–´ë‚´ì„œ ë¦¬í„´í•œë‹¤.
 ///
 ///         "\\Device\\HarddiskVolume4\\Windows"    -> "\\Device\\HarddiskVolume4"
 ///         "\\Device\\HarddiskVolume4"             -> "\\Device\\HarddiskVolume4"
@@ -356,7 +356,7 @@ std::wstring get_current_module_fileEx();
 ///         "\\Device\\HarddiskVolume455\\xyz"      -> "\\Device\\HarddiskVolume455"
 std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name);
 
-/// @brief	full path °æ·Î¸í¿¡¼­ `ÆÄÀÏ¸í.È®ÀåÀÚ[:ADS]` ºÎºĞ¸¸ ¶¼¾î³½´Ù. 
+/// @brief	full path ê²½ë¡œëª…ì—ì„œ `íŒŒì¼ëª….í™•ì¥ì[:ADS]` ë¶€ë¶„ë§Œ ë–¼ì–´ë‚¸ë‹¤. 
 std::wstring 
 file_name_from_file_pathw(
 	_In_ const wchar_t* file_path,
@@ -368,7 +368,7 @@ file_name_from_file_patha(
 	_In_ const bool include_ext=true);
 
 
-/// @brief	full path °æ·Î¸í¿¡¼­ `ÆÄÀÏ¸í.È®ÀåÀÚ` ¸¦ Á¦¿ÜÇÑ µğ·ºÅä¸® ºÎºĞ¸¸ ¶¼¾î³½´Ù. 
+/// @brief	full path ê²½ë¡œëª…ì—ì„œ `íŒŒì¼ëª….í™•ì¥ì` ë¥¼ ì œì™¸í•œ ë””ë ‰í† ë¦¬ ë¶€ë¶„ë§Œ ë–¼ì–´ë‚¸ë‹¤. 
 std::wstring 
 directory_from_file_pathw(
 	_In_ const wchar_t* file_path);
@@ -411,17 +411,17 @@ bool get_process_image_full_path(_In_ HANDLE process_handle, _Out_ std::wstring&
 bool image_path_by_pid(_In_ DWORD process_id, _In_ bool win32_format, _Out_ std::wstring& image_path);
 #endif
 
-/// @brief  system direcotry °æ·Î ¸®ÅÏ (c:\windows\system32 )
+/// @brief  system direcotry ê²½ë¡œ ë¦¬í„´ (c:\windows\system32 )
 bool get_system_dir(_Out_ std::wstring& system_dir);        
 
-/// @brief  %systemroot% °æ·Î ¸®ÅÏ ( c:\windows )
+/// @brief  %systemroot% ê²½ë¡œ ë¦¬í„´ ( c:\windows )
 bool get_windows_dir(_Out_ std::wstring& windows_dir);
 bool get_environment_value(_In_ const wchar_t* env_variable, _Out_ std::wstring& env_value);
 bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring& short_file_name);
 
 
 /******************************************************************************
- * ¹®ÀÚ¿­ Ã³¸®
+ * ë¬¸ìì—´ ì²˜ë¦¬
 ******************************************************************************/
 wchar_t* MbsToWcs(_In_ const char* mbs);
 char* WcsToMbs(_In_ const wchar_t* wcs);
@@ -445,15 +445,15 @@ const char* const format_string(_In_z_ const char* const fmt, ...);
 bool format_string(_In_ char* buf, _In_z_ const char* const fmt, ...);
 
 
-/// @brief  src ÀÇ µÚ¿¡¼­ºÎÅÍ fnd ¹®ÀÚ¿­À» Ã£´Â´Ù. 
-///         fnd °¡ src ÀÇ ²Ç¹«´Ï¿Í Á¤È®È÷ ÀÏÄ¡ÇÏ¸é true, ¾Æ´Ï¸é false ¸®ÅÏ
-///         - È®ÀåÀÚ °Ë»ç°°Àº°Å ÇÒ¶§ »ç¿ë
+/// @brief  src ì˜ ë’¤ì—ì„œë¶€í„° fnd ë¬¸ìì—´ì„ ì°¾ëŠ”ë‹¤. 
+///         fnd ê°€ src ì˜ ê½ë¬´ë‹ˆì™€ ì •í™•íˆ ì¼ì¹˜í•˜ë©´ true, ì•„ë‹ˆë©´ false ë¦¬í„´
+///         - í™•ì¥ì ê²€ì‚¬ê°™ì€ê±° í• ë•Œ ì‚¬ìš©
 bool rstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd, _In_ bool case_insensitive = true);
 bool rstrnicmpa(_In_ const char* src, _In_ const char* fnd, _In_ bool case_insensitive = true);
 bool lstrnicmp(_In_ const wchar_t* src, _In_ const wchar_t* fnd, _In_ bool case_insensitive = true);
 bool lstrnicmpa(_In_ const char* src, _In_ const char* fnd, _In_ bool case_insensitive = true);
 
-/// µÎ ¹®ÀÚ¿­ÀÌ ¿ÏÀüÈ÷ ÀÏÄ¡ÇÏ´ÂÁö È®ÀÎÇÑ´Ù. 
+/// ë‘ ë¬¸ìì—´ì´ ì™„ì „íˆ ì¼ì¹˜í•˜ëŠ”ì§€ í™•ì¸í•œë‹¤. 
 bool is_same_string(_In_ const wchar_t* lhs, _In_ const wchar_t* rhs, _In_ bool case_insensitive = true);
 
 inline void clear_str_stream_w(std::wstringstream& stream)
@@ -572,8 +572,8 @@ uint64_t hash_string64w(_In_ const wchar_t* s, _In_opt_ uint64_t seed = 0);
 
 
 
-/// @brief	source ¿¡¼­ find ¹®ÀÚ¿­À» ¸ğµÎ Ã£¾Æ replace ¹®ÀÚ¿­·Î º¯°æÇÏ°í, º¯°æÇÑ È½¼ö¸¦ ¸®ÅÏÇÑ´Ù.
-///         source ¹®ÀÚ¿­ °´Ã¼¸¦ Á÷Á¢ º¯°æÇÑ´Ù.
+/// @brief	source ì—ì„œ find ë¬¸ìì—´ì„ ëª¨ë‘ ì°¾ì•„ replace ë¬¸ìì—´ë¡œ ë³€ê²½í•˜ê³ , ë³€ê²½í•œ íšŸìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
+///         source ë¬¸ìì—´ ê°ì²´ë¥¼ ì§ì ‘ ë³€ê²½í•œë‹¤.
 template <typename T> int		
 find_and_replace_string(IN T& source, IN T& find, IN T replace)
 {
@@ -583,8 +583,8 @@ find_and_replace_string(IN T& source, IN T& find, IN T replace)
 	while (T::npos != pos)
 	{
 		source.replace(pos, find.length(), replace);
-        pos += adv;     // replace °¡ find ¹®ÀÚ¿­À» Æ÷ÇÔÇÏ°í ÀÖ´Â ´õ ±ä ¹®ÀÚ¿­ÀÎ °æ¿ì 
-                        // adv ¸¸Å­ pos ¸¦ º¸Á¤ÇØ ÁÖÁö ¾ÊÀ¸¸é ¹«ÇÑ·çÇÁ¿¡ ºüÁø´Ù. 
+        pos += adv;     // replace ê°€ find ë¬¸ìì—´ì„ í¬í•¨í•˜ê³  ìˆëŠ” ë” ê¸´ ë¬¸ìì—´ì¸ ê²½ìš° 
+                        // adv ë§Œí¼ pos ë¥¼ ë³´ì •í•´ ì£¼ì§€ ì•Šìœ¼ë©´ ë¬´í•œë£¨í”„ì— ë¹ ì§„ë‹¤. 
                         // e.g. find = ',' replace = '\,' 
 		++count;
 		pos = source.find(find, pos);
@@ -592,8 +592,8 @@ find_and_replace_string(IN T& source, IN T& find, IN T replace)
 	return count;
 }
 
-/// @brief  source ¿¡¼­ find ¸¦ Ã£¾Æ replace ·Î º¯°æÇØ¼­, »õ·Î¿î ¹®ÀÚ¿­ °´Ã¼¸¦ »ı¼º/¸®ÅÏÇÑ´Ù.
-///         ½ÇÆĞ½Ã _null_string_a °´Ã¼¸¦ ¸®ÅÏÇÑ´Ù.
+/// @brief  source ì—ì„œ find ë¥¼ ì°¾ì•„ replace ë¡œ ë³€ê²½í•´ì„œ, ìƒˆë¡œìš´ ë¬¸ìì—´ ê°ì²´ë¥¼ ìƒì„±/ë¦¬í„´í•œë‹¤.
+///         ì‹¤íŒ¨ì‹œ _null_string_a ê°ì²´ë¥¼ ë¦¬í„´í•œë‹¤.
 std::string
 find_and_replace_string_exa(
     _In_ const char* source,
@@ -674,19 +674,19 @@ bool terminate_process_by_handle(_In_ HANDLE handle, _In_ DWORD exit_code);
 bool get_process_creation_time(_In_ DWORD pid, _Out_ PFILETIME const creation_time);
 bool get_process_creation_time(_In_ HANDLE process_handle, _Out_ PFILETIME const creation_time);
 
-/// @brief NtCreateFile `CreationDisposition`¹®ÀÚ¿­·Î ´ıÇÁÇÑ´Ù.
+/// @brief NtCreateFile `CreationDisposition`ë¬¸ìì—´ë¡œ ë¤í”„í•œë‹¤.
 void dump_file_create_disposition(_In_ uint32_t NtCreateFile_CreateDisposition);
-/// @brief NtCreateFile `CreateOptions`À» ¹®ÀÚ¿­·Î ´ıÇÁÇÑ´Ù.
+/// @brief NtCreateFile `CreateOptions`ì„ ë¬¸ìì—´ë¡œ ë¤í”„í•œë‹¤.
 void dump_file_create_options(_In_ uint32_t NtCreateFile_CreateOptions);
-/// @brief process group Á¤º¸ Áß `attributes`À» ¹®ÀÚ¿­·Î ´ıÇÁÇÑ´Ù.
+/// @brief process group ì •ë³´ ì¤‘ `attributes`ì„ ë¬¸ìì—´ë¡œ ë¤í”„í•œë‹¤.
 void dump_group_attributes(_In_ uint32_t group_attributes);
-/// @brief process privilege Á¤º¸ Áß `attributes`À» ¹®ÀÚ¿­·Î ´ıÇÁÇÑ´Ù.
+/// @brief process privilege ì •ë³´ ì¤‘ `attributes`ì„ ë¬¸ìì—´ë¡œ ë¤í”„í•œë‹¤.
 void dump_privilege_attributes(_In_ uint32_t privilege_attributes);
 
-/// @brief	user/group Á¤º¸
-///			sid		S-1-5-18, S-1-5-21-2224222141-402476733-2427282895-1001 µî
-///			domain	NT AUTHORITY, DESKTOP-27HJ3RS µî
-///			user_name	somma, guest µî
+/// @brief	user/group ì •ë³´
+///			sid		S-1-5-18, S-1-5-21-2224222141-402476733-2427282895-1001 ë“±
+///			domain	NT AUTHORITY, DESKTOP-27HJ3RS ë“±
+///			user_name	somma, guest ë“±
 typedef class sid_info
 {
 public: 
@@ -708,14 +708,14 @@ public:
 	{		
 	}
 	
-	/// Ç×»ó À¯È¿ÇÑ ¹®ÀÚ¿­
+	/// í•­ìƒ ìœ íš¨í•œ ë¬¸ìì—´
 	std::wstring _sid;
 
-	/// _domain, _name Àº ¾øÀ» ¼öµµ ÀÖÀ½
+	/// _domain, _name ì€ ì—†ì„ ìˆ˜ë„ ìˆìŒ
 	std::wstring _domain;
 	std::wstring _name;
 
-	/// GROUP SID ÀÎ °æ¿ì _sid_name_use ´Â »ç¿ë ¾ÈÇÔ
+	/// GROUP SID ì¸ ê²½ìš° _sid_name_use ëŠ” ì‚¬ìš© ì•ˆí•¨
 	SID_NAME_USE _sid_name_use;
 
 
@@ -729,8 +729,8 @@ psid_info get_process_user(_In_ HANDLE process_query_token);
 
 psid_info get_file_owner(_In_ const wchar_t* file_name);
 
-/// @brief	GROUP ÀÇ sid Á¤º¸¿Í attribute ¸¦ ÀúÀå ( TOKEN_GROUPS )
-///			TOKEN_GROUPS::_sid_info::_sid_name_use Àº ¹«½Ã
+/// @brief	GROUP ì˜ sid ì •ë³´ì™€ attribute ë¥¼ ì €ì¥ ( TOKEN_GROUPS )
+///			TOKEN_GROUPS::_sid_info::_sid_name_use ì€ ë¬´ì‹œ
 typedef class group_sid_info
 {
 public:
@@ -791,7 +791,7 @@ get_process_privilege(
 	_Out_ std::list<pprivilege_info>& privileges
 	);
 
-/// @brief ÇÁ·Î¼¼½º integrity levelÀ» °¡Á®¿Â´Ù.
+/// @brief í”„ë¡œì„¸ìŠ¤ integrity levelì„ ê°€ì ¸ì˜¨ë‹¤.
 bool
 get_process_integrity_level(
 	_In_ DWORD pid,
@@ -804,7 +804,7 @@ get_process_integrity_level(
 	_Out_ DWORD& integrity_level
 	);
 
-/// @brief ÇÁ·Î¼¼½º token elevation typeÀ» °¡Á®¿Â´Ù.
+/// @brief í”„ë¡œì„¸ìŠ¤ token elevation typeì„ ê°€ì ¸ì˜¨ë‹¤.
 bool
 get_process_token_elevation_type(
 	_In_ DWORD pid,
@@ -817,7 +817,7 @@ get_process_token_elevation_type(
 	_Out_ DWORD& token_elevation_type
 	);
 
-/// @brief ÇÁ·Î¼¼½º toekn elevationÀ» °¡Á®¿Â´Ù.
+/// @brief í”„ë¡œì„¸ìŠ¤ toekn elevationì„ ê°€ì ¸ì˜¨ë‹¤.
 bool
 get_process_token_elevated(
 	_In_ DWORD pid,
@@ -830,7 +830,7 @@ get_process_token_elevated(
 	_Out_ bool& token_is_elevated
 	);
 
-/// @brief ÇÁ·Î±×·¥ Á¤º¸
+/// @brief í”„ë¡œê·¸ë¨ ì •ë³´
 ///
 typedef class program
 {
@@ -867,9 +867,9 @@ private:
 #define sub_key_uninstall_x64 L"Software\\WOW6432Node\\Microsoft\\Windows\\"\
 							  L"CurrentVersion\\Uninstall\\"
 
-/// @brief `sub_key_uninstall` or `sub_key_uninstall_x64`ÀÇ ¼­ºêÅ°ÀÇ `value`
-///        µéÀ» ÀĞ´Â´Ù. ÀÌ‹š, ¼­ºêÅ°´Â ÇÁ·Î±×·¥¸í È¤Àº product codeÀÌ¸ç `value`
-///        ´Â ÇÁ·Î±×·¥ Á¤º¸µéÀÌ´Ù.
+/// @brief `sub_key_uninstall` or `sub_key_uninstall_x64`ì˜ ì„œë¸Œí‚¤ì˜ `value`
+///        ë“¤ì„ ì½ëŠ”ë‹¤. ì´ë–„, ì„œë¸Œí‚¤ëŠ” í”„ë¡œê·¸ë¨ëª… í˜¹ì€ product codeì´ë©° `value`
+///        ëŠ” í”„ë¡œê·¸ë¨ ì •ë³´ë“¤ì´ë‹¤.
 ///
 pprogram
 get_installed_program_info(
@@ -877,7 +877,7 @@ get_installed_program_info(
 	_In_ const wchar_t* sub_key_name
 	);
 
-/// @brief ¼³Ä¡µÈ ÇÁ·Î±×·¥ Á¤º¸¸¦ ÀĞ¾î ¿Â´Ù.
+/// @brief ì„¤ì¹˜ëœ í”„ë¡œê·¸ë¨ ì •ë³´ë¥¼ ì½ì–´ ì˜¨ë‹¤.
 ///
 ///
 bool get_installed_programs(_Out_ std::list<pprogram>& installed_programs);
@@ -1049,9 +1049,9 @@ BOOL WUGetProcessorInfo(IN OUT WU_PROCESSOR_INFO& CpuInfo);
 //
 // os version
 // 
-// widows 10 ¿¡¼­ (MDSN ¿¡¼­ ÇÏ¶ó´Â´ë·Î) VersionHelpers.h ¿¡ ÀÖ´Â 
-// IsWindows10OrGreater() ÇÔ¼ö¸¦ È£ÃâÇØµµ false °¡ ¶³¾îÁü
-// ±¦È÷ ¾²±âµµ º¹ÀâÇÏ°í, È¿À²µµ ¶³¾îÁ®¼­ RtlGetVersion() wrapper ¸¦ »ç¿ëÇÔ
+// widows 10 ì—ì„œ (MDSN ì—ì„œ í•˜ë¼ëŠ”ëŒ€ë¡œ) VersionHelpers.h ì— ìˆëŠ” 
+// IsWindows10OrGreater() í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ë„ false ê°€ ë–¨ì–´ì§
+// ê´œíˆ ì“°ê¸°ë„ ë³µì¡í•˜ê³ , íš¨ìœ¨ë„ ë–¨ì–´ì ¸ì„œ RtlGetVersion() wrapper ë¥¼ ì‚¬ìš©í•¨
 // 
 // from https://indidev.net/forum/viewtopic.php?f=5&t=474 
 // 

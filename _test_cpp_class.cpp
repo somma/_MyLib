@@ -150,7 +150,7 @@ bool test_template_method()
 	return true;
 }
 
-/// @brief »ı¼ºÀÚ / ¼Ò¸êÀÚ È£Ãâ ¼ø¼­ È®ÀÎ¿ë Å×½ºÆ®
+/// @brief ìƒì„±ì / ì†Œë©¸ì í˜¸ì¶œ ìˆœì„œ í™•ì¸ìš© í…ŒìŠ¤íŠ¸
 bool test_call_order()
 {
 	/* expected output 
@@ -186,7 +186,7 @@ bool test_call_order()
 }
 
 //
-//	º¹»ç»ı¼ºÀÚ/¿¬»êÀÚ ¿À¹ö·Îµù
+//	ë³µì‚¬ìƒì„±ì/ì—°ì‚°ì ì˜¤ë²„ë¡œë”©
 //
 bool test_copy_assign()
 {
@@ -205,8 +205,8 @@ bool test_copy_assign()
 	//
 	test_base* base_assign = new test_base(1, 2);
 	
-	//	µÑ´Ù Æ÷ÀÎÅÍÀÎ °æ¿ì ´ëÀÔ¿¬»êÀÚ È£ÃâÀÌ ¾Æ´Ï¶ó, raw Æ÷ÀÎÅÍ 
-	//	assignment °¡ µÇ¾î¹ö¸°´Ù. 
+	//	ë‘˜ë‹¤ í¬ì¸í„°ì¸ ê²½ìš° ëŒ€ì…ì—°ì‚°ì í˜¸ì¶œì´ ì•„ë‹ˆë¼, raw í¬ì¸í„° 
+	//	assignment ê°€ ë˜ì–´ë²„ë¦°ë‹¤. 
 	base_assign = base;
 
 	

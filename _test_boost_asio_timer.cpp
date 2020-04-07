@@ -59,7 +59,7 @@ void asio_on_timer( const boost::system::error_code& error )
 }
 
 /**
- * @brief	version 1 - ÄÝ¹é ÇÔ¼ö ÀÌ¿ë
+ * @brief	version 1 - ì½œë°± í•¨ìˆ˜ ì´ìš©
 **/
 bool test_boost_asio_timer_1()
 {
@@ -75,7 +75,7 @@ bool test_boost_asio_timer_1()
 
 
 /**
- * @brief	v2 - lambda ¸¦ ÀÌ¿ëÇÑ Å¸ÀÌ¸Ó
+ * @brief	v2 - lambda ë¥¼ ì´ìš©í•œ íƒ€ì´ë¨¸
 **/
 bool test_boost_asio_timer_2()
 {
@@ -102,7 +102,7 @@ bool test_boost_asio_timer_2()
 
 
 /**
- * @brief	v3 - callback + Å¸ÀÌ¸ÓÀÌº¥Æ® °è¼Ó ¹ß»ýÇÏ±â, Ãë¼Ò
+ * @brief	v3 - callback + íƒ€ì´ë¨¸ì´ë²¤íŠ¸ ê³„ì† ë°œìƒí•˜ê¸°, ì·¨ì†Œ
 **/
 void 
 print(
@@ -156,7 +156,7 @@ bool test_boost_asio_timer_3()
 
 
 /**
- * @brief	v3 - method binding + Å¸ÀÌ¸ÓÀÌº¥Æ® °è¼Ó ¹ß»ý, Ãë¼Ò ==> Å¬·¡½º ¹öÀü
+ * @brief	v3 - method binding + íƒ€ì´ë¨¸ì´ë²¤íŠ¸ ê³„ì† ë°œìƒ, ì·¨ì†Œ ==> í´ëž˜ìŠ¤ ë²„ì „
 **/
 
 class TimerClass
@@ -249,7 +249,7 @@ public :
 		_io_service.run();
 
 		//
-		// _forever_timer Ãë¼ÒµÇ¸é _io_service.run() ¸Þ¼Òµå°¡ ¸®ÅÏÇÔ
+		// _forever_timer ì·¨ì†Œë˜ë©´ _io_service.run() ë©”ì†Œë“œê°€ ë¦¬í„´í•¨
 		//
 		log_info "start_forever_timer() returned" log_end;
 
@@ -271,15 +271,15 @@ bool test_boost_asio_timer_4()
 	TimerClass tc;
 
 	//==============
-	//	À¯ÇÑ Å¸ÀÌ¸Ó
+	//	ìœ í•œ íƒ€ì´ë¨¸
 	//==============
 	tc.start_timer();
 
 		
 	//==============
-	//	¹«ÇÑ Å¸ÀÌ¸Ó¸¦ ½ÇÇàÇÏ°í, 
-	//	3 ÃÊ°£ ±â´Ù¸®´Ù°¡
-	//	¿ÜºÎ¿¡¼­ Å¸ÀÌ¸Ó¸¦ ÁßÁö
+	//	ë¬´í•œ íƒ€ì´ë¨¸ë¥¼ ì‹¤í–‰í•˜ê³ , 
+	//	3 ì´ˆê°„ ê¸°ë‹¤ë¦¬ë‹¤ê°€
+	//	ì™¸ë¶€ì—ì„œ íƒ€ì´ë¨¸ë¥¼ ì¤‘ì§€
 	//==============
 	auto timer_task = Concurrency::create_task([&]()->void
 	{

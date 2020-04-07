@@ -1,13 +1,13 @@
 /**
  * @file    Logging module
- * @brief   initialize_log() ÇÔ¼ö¸¦ ¸í½ÃÀûÀ¸·Î È£ÃâÇÏ¸é, log level, log target 
- *			(file, debugger, console, etc) ÁöÁ¤/º¯°æ °¡´É
+ * @brief   initialize_log() í•¨ìˆ˜ë¥¼ ëª…ì‹œì ìœ¼ë¡œ í˜¸ì¶œí•˜ë©´, log level, log target 
+ *			(file, debugger, console, etc) ì§€ì •/ë³€ê²½ ê°€ëŠ¥
  *
- *			log format ÁöÁ¤/º¯°æ °¡´É
+ *			log format ì§€ì •/ë³€ê²½ ê°€ëŠ¥
  *
- *			multi thread È¯°æ¿¡¼­ serialization ÀÌ µÊ
+ *			multi thread í™˜ê²½ì—ì„œ serialization ì´ ë¨
  *
- *			log_err, log_err °°Àº ¸ÅÅ©·Î¸¸ »ç¿ëÇÏ¸é debugger, console ·Î ¸Ş¼¼Áö Ãâ·Â °¡´É
+ *			log_err, log_err ê°™ì€ ë§¤í¬ë¡œë§Œ ì‚¬ìš©í•˜ë©´ debugger, console ë¡œ ë©”ì„¸ì§€ ì¶œë ¥ ê°€ëŠ¥
  * @ref     
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2015/01/12 created.
@@ -45,15 +45,15 @@
 #define log_to_all		(log_to_file | log_to_ods | log_to_con)
 
 /// @brief  log_mask
-#define log_mask_all    0xffffffff		// ¸ğµç ·Î±×¸¦ È°¼ºÈ­
+#define log_mask_all    0xffffffff		// ëª¨ë“  ë¡œê·¸ë¥¼ í™œì„±í™”
 #define log_mask_sys    0x00000001      // for log_info, log_err, xxx
 
 /// @brief	 Maximum log count on single log file.
 #define	_max_log_count_def 60000
 
-/// @brief	·ÎÅ×ÀÌÆÃ µÈ ·Î±× ÆÄÀÏÀÇ ÃÖ´ë °¹¼ö
-///			ÀÌ °¹¼ö º¸´Ù ¸¹Àº ·Î±× ÆÄÀÏÀÌ Á¸ÀçÇÏ´Â °æ¿ì ·Î±× ·ÎÅ×ÀÌÆÃ ½Ã 
-///			°¡Àå ¿À·¡µÈ ·Î±×ÆÄÀÏÀ» »èÁ¦ÇÑ´Ù. 
+/// @brief	ë¡œí…Œì´íŒ… ëœ ë¡œê·¸ íŒŒì¼ì˜ ìµœëŒ€ ê°¯ìˆ˜
+///			ì´ ê°¯ìˆ˜ ë³´ë‹¤ ë§ì€ ë¡œê·¸ íŒŒì¼ì´ ì¡´ì¬í•˜ëŠ” ê²½ìš° ë¡œê·¸ ë¡œí…Œì´íŒ… ì‹œ 
+///			ê°€ì¥ ì˜¤ë˜ëœ ë¡œê·¸íŒŒì¼ì„ ì‚­ì œí•œë‹¤. 
 #define _max_log_files_def 20
 
 //

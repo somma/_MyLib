@@ -36,7 +36,7 @@ account::account(_In_ const wchar_t * name,
 	_sid(sid)
 {}
 
-/// @brief	°èÁ¤ Å¸ÀÔ(Administrator, User, Guest)
+/// @brief	ê³„ì • íƒ€ì…(Administrator, User, Guest)
 const wchar_t* account::privilege() const 
 {
 	switch (_privilege)
@@ -50,7 +50,7 @@ const wchar_t* account::privilege() const
 	}
 }
 
-/// @brief	°èÁ¤ ¼Ó¼º
+/// @brief	ê³„ì • ì†ì„±
 void account::dump_account_flags()
 {
 	char buf[256];
@@ -224,7 +224,7 @@ void account::dump_account_flags()
 	}
 }
 
-/// @brief `PSID`¸¦ ¹®ÀÚ¿­·Î º¯È¯ ÇÑ´Ù. 
+/// @brief `PSID`ë¥¼ ë¬¸ìì—´ë¡œ ë³€í™˜ í•œë‹¤. 
 bool
 psid_to_wstr_sid(
 	_In_ PSID sid,
@@ -237,8 +237,8 @@ psid_to_wstr_sid(
 	if (nullptr == sid) return false;
 
 	//
-	//	ConvertSidToStringSidW() °¡ ¸®ÅÏÇÑ ¹öÆÛ´Â ¹İµå½Ã LocalFree ·Î
-	//	¼Ò¸êÇØ¾ß ÇÑ´Ù.
+	//	ConvertSidToStringSidW() ê°€ ë¦¬í„´í•œ ë²„í¼ëŠ” ë°˜ë“œì‹œ LocalFree ë¡œ
+	//	ì†Œë©¸í•´ì•¼ í•œë‹¤.
 	//
 	wchar_t* sid_buf = nullptr;	
 	wchar_ptr sid_ptr(sid_buf, [](wchar_t* p) 
@@ -277,7 +277,7 @@ psid_to_wstr_sid(
 	return true;
 }
 
-/// @brief  °èÁ¤ ÀÌ¸§À» °¡Áö°í °èÁ¤ Á¤º¸¸¦ Á¶È¸ÇØ¼­ ¹İÈ¯ÇÑ´Ù.
+/// @brief  ê³„ì • ì´ë¦„ì„ ê°€ì§€ê³  ê³„ì • ì •ë³´ë¥¼ ì¡°íšŒí•´ì„œ ë°˜í™˜í•œë‹¤.
 bool
 get_account_info_by_name(
 	_In_ wchar_t* user_name,
@@ -288,11 +288,11 @@ get_account_info_by_name(
 	if (nullptr == user_name) return false;
 
 	//
-	// NetUserGetInfo ÇÔ¼ö¿¡¼­ `infomation level`¿¡ µû¶ó ÀĞ¾î ¿Ã ¼ö ÀÖ´Â
-	// »ç¿ëÀÚ Á¤º¸°¡ ´Ù¸£´Ù. »ç¿ëÀÚÀÇ »ó¼¼ Á¤º¸¸¦ ÀĞ¾î ¿À´Â°Ç 3 ¶Ç´Â 4·¹º§ 
-	// ÀÌ¸é ÃæºĞ ÇÏ°í, MSDN¿¡ ÀÇÇÏ¸é level 3º¸´Ù´Â 4¸¦ »ç¿ëÇÏ´Â°É ±ÇÀå ÇÏ°í
-	// ÀÖ´Ù.
-	// Âü°í URL : https://msdn.microsoft.com/ko-kr/library/windows/desktop/aa370654(v=vs.85).aspx
+	// NetUserGetInfo í•¨ìˆ˜ì—ì„œ `infomation level`ì— ë”°ë¼ ì½ì–´ ì˜¬ ìˆ˜ ìˆëŠ”
+	// ì‚¬ìš©ì ì •ë³´ê°€ ë‹¤ë¥´ë‹¤. ì‚¬ìš©ìì˜ ìƒì„¸ ì •ë³´ë¥¼ ì½ì–´ ì˜¤ëŠ”ê±´ 3 ë˜ëŠ” 4ë ˆë²¨ 
+	// ì´ë©´ ì¶©ë¶„ í•˜ê³ , MSDNì— ì˜í•˜ë©´ level 3ë³´ë‹¤ëŠ” 4ë¥¼ ì‚¬ìš©í•˜ëŠ”ê±¸ ê¶Œì¥ í•˜ê³ 
+	// ìˆë‹¤.
+	// ì°¸ê³  URL : https://msdn.microsoft.com/ko-kr/library/windows/desktop/aa370654(v=vs.85).aspx
 	//
 	DWORD status = NetUserGetInfo(NULL,
 								  user_name,
@@ -331,7 +331,7 @@ get_account_info_by_name(
 	return true;
 }
 
-/// @brief  ½Ã½ºÅÛÀÇ ¸ğµç °èÁ¤ Á¤º¸¸¦ ÀĞ¾î ¿Â´Ù.
+/// @brief  ì‹œìŠ¤í…œì˜ ëª¨ë“  ê³„ì • ì •ë³´ë¥¼ ì½ì–´ ì˜¨ë‹¤.
 bool
 get_account_infos(
 	_Out_ std::list<paccount>& accounts
@@ -344,16 +344,16 @@ get_account_infos(
 	do
 	{
 		//
-		// ½Ã½ºÅÛÀÇ ¸ğµç °èÁ¤ Á¤º¸¸¦ ÀĞ´Â´Ù. ÀÌ¶§ °èÁ¤ Á¤º¸ °ü·Ã ·¹º§Àº `level` 
-		// ÀÎÀÚ°ªÀ¸·Î Á¶Àı °¡´ÉÇÏ¸ç °èÁ¤ Á¤º¸¸¦ iterateÇÒ ¶§ »ç¿ëÀÚ °èÁ¤ Å¸ÀÔº°
-		// ÇÊÅÍ¸¦ ÁÙ ¼ö ÀÖ´Ù. ÇöÀç ÇÊ¿äÇÑ »ç¿ëÀÚ ¸ñ·ÏÀº À©µµ¿ì ¼³Ä¡½Ã ¼³Á¤ µÇ¾î ÀÖ´Â °èÁ¤ 
-		// °ú »ç¿ëÀÚ°¡ »ı¼ºÇÑ °èÁ¤¸¸ ÀĞ¾î ¿Àµµ·Ï(`FILTER_NORMAL_ACCOUNT`) µÇ¾î ÀÖ´Ù.
-		// Âü°í : `Active Directory`È¯°æ¿¡¼­ ÇÁ·Î±×·¥ÀÌ µ¿ÀÛ ÇÒ ¶§ ACL¿¡ ÀÇÇØ¼­
-		//       `NetUserEnum`À» ÀÌ¿ëÇÑ °èÁ¤ Á¶È¸°¡ Çã¿ë µÇ°Å³ª °ÅºÎ µÉ ¼ö ÀÖ´Ù.
-		//       ACL ±âº» Á¤Ã¥Àº Çã¿ëµÈ »ç¿ëÀÚ ±×¸®°í `Pre-Windows 2000 compat-
-		//       ible access` ±×·ì¿¡ ¼ÓÇÑ °èÁ¤À¸·Î ÇÁ·Î±×·¥ÀÌ ½ÇÇà µÈ´Ù¸é °èÁ¤ Á¶
-		//       È¸¿¡ ¹®Á¦°¡ ¾ø´Ù.
-		// Âü°í : https://msdn.microsoft.com/ko-kr/library/windows/desktop/aa370652(v=vs.85).aspx
+		// ì‹œìŠ¤í…œì˜ ëª¨ë“  ê³„ì • ì •ë³´ë¥¼ ì½ëŠ”ë‹¤. ì´ë•Œ ê³„ì • ì •ë³´ ê´€ë ¨ ë ˆë²¨ì€ `level` 
+		// ì¸ìê°’ìœ¼ë¡œ ì¡°ì ˆ ê°€ëŠ¥í•˜ë©° ê³„ì • ì •ë³´ë¥¼ iterateí•  ë•Œ ì‚¬ìš©ì ê³„ì • íƒ€ì…ë³„
+		// í•„í„°ë¥¼ ì¤„ ìˆ˜ ìˆë‹¤. í˜„ì¬ í•„ìš”í•œ ì‚¬ìš©ì ëª©ë¡ì€ ìœˆë„ìš° ì„¤ì¹˜ì‹œ ì„¤ì • ë˜ì–´ ìˆëŠ” ê³„ì • 
+		// ê³¼ ì‚¬ìš©ìê°€ ìƒì„±í•œ ê³„ì •ë§Œ ì½ì–´ ì˜¤ë„ë¡(`FILTER_NORMAL_ACCOUNT`) ë˜ì–´ ìˆë‹¤.
+		// ì°¸ê³  : `Active Directory`í™˜ê²½ì—ì„œ í”„ë¡œê·¸ë¨ì´ ë™ì‘ í•  ë•Œ ACLì— ì˜í•´ì„œ
+		//       `NetUserEnum`ì„ ì´ìš©í•œ ê³„ì • ì¡°íšŒê°€ í—ˆìš© ë˜ê±°ë‚˜ ê±°ë¶€ ë  ìˆ˜ ìˆë‹¤.
+		//       ACL ê¸°ë³¸ ì •ì±…ì€ í—ˆìš©ëœ ì‚¬ìš©ì ê·¸ë¦¬ê³  `Pre-Windows 2000 compat-
+		//       ible access` ê·¸ë£¹ì— ì†í•œ ê³„ì •ìœ¼ë¡œ í”„ë¡œê·¸ë¨ì´ ì‹¤í–‰ ëœë‹¤ë©´ ê³„ì • ì¡°
+		//       íšŒì— ë¬¸ì œê°€ ì—†ë‹¤.
+		// ì°¸ê³  : https://msdn.microsoft.com/ko-kr/library/windows/desktop/aa370652(v=vs.85).aspx
 		//
 		ret = NetUserEnum(NULL,
 						  0,
@@ -375,12 +375,12 @@ get_account_infos(
 		{
 			USER_INFO_0* user_info_0 = (USER_INFO_0*)buffer;
 			//
-			// ½Ã½ºÅÛ¿¡ ÀÖ´Â °èÁ¤À» iterateÇÏ¸é¼­ °èÁ¤ Á¤º¸¸¦ °¡Á®¿Â´Ù.
+			// ì‹œìŠ¤í…œì— ìˆëŠ” ê³„ì •ì„ iterateí•˜ë©´ì„œ ê³„ì • ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 			//
 			for (DWORD count = 0; count < total_entries; count++)
 			{
 				//
-				// °èÁ¤¸íÀ» ÀÌ¿ëÇØ¼­ °èÁ¤¿¡ ´ëÇÑ »ó¼¼ Á¤º¸¸¦ È¹µæÇÑ´Ù.
+				// ê³„ì •ëª…ì„ ì´ìš©í•´ì„œ ê³„ì •ì— ëŒ€í•œ ìƒì„¸ ì •ë³´ë¥¼ íšë“í•œë‹¤.
 				//
 				LPUSER_INFO_4 user_info = NULL;
 				if (!get_account_info_by_name(user_info_0->usri0_name,
@@ -395,7 +395,7 @@ get_account_infos(
 				}
 
 				//
-				// psid¸¦ ¹®ÀÚ¿­ sid·Î º¯È¯À» ÇÑ´Ù.
+				// psidë¥¼ ë¬¸ìì—´ sidë¡œ ë³€í™˜ì„ í•œë‹¤.
 				// 
 				std::wstring sid_str;
 				psid_to_wstr_sid(user_info->usri4_user_sid, sid_str);

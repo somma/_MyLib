@@ -15,7 +15,7 @@
 #include "log.h"
 
 //
-// ¸Þ¸ð¸® ½ºÆ®¸² Å¬·¡½º 
+// ë©”ëª¨ë¦¬ ìŠ¤íŠ¸ë¦¼ í´ëž˜ìŠ¤ 
 //
 typedef class CMemoryStream
 {
@@ -38,35 +38,35 @@ public:
 	bool Reserve(_In_ size_t size);
 	void ClearStream(void);
 
-	// ½ºÆ®¸² ¹öÆÛÀÇ ÇÒ´çµÈ »çÀÌÁî (µ¥ÀÌÅÍ + ¿©À¯°ø°£)
+	// ìŠ¤íŠ¸ë¦¼ ë²„í¼ì˜ í• ë‹¹ëœ ì‚¬ì´ì¦ˆ (ë°ì´í„° + ì—¬ìœ ê³µê°„)
 	size_t GetCapacity() { return _capacity; }
 
-	// ½ºÆ®¸²ÀÇ »çÀÌÁî (½ºÆ®¸² ¹öÆÛ³» ÇÒ´çµÈ µ¥ÀÌÅÍÀÇ Å©±â)
+	// ìŠ¤íŠ¸ë¦¼ì˜ ì‚¬ì´ì¦ˆ (ìŠ¤íŠ¸ë¦¼ ë²„í¼ë‚´ í• ë‹¹ëœ ë°ì´í„°ì˜ í¬ê¸°)
 	size_t GetSize() { return m_size; };
 
-	// ½ºÆ®¸²ÀÇ Æ÷Áö¼ÇÀ» ¸®ÅÏÇÑ´Ù.
+	// ìŠ¤íŠ¸ë¦¼ì˜ í¬ì§€ì…˜ì„ ë¦¬í„´í•œë‹¤.
 	size_t GetPos() { return m_pos; };
 
-	// ½ºÆ®¸²ÀÇ Æ÷Áö¼ÇÀ» ÀÌµ¿ÇÑ´Ù. 
+	// ìŠ¤íŠ¸ë¦¼ì˜ í¬ì§€ì…˜ì„ ì´ë™í•œë‹¤. 
 	bool SetPos(_In_ size_t new_pos);
 		
-	// ½ºÆ®¸² ¹öÆÛ Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÑ´Ù.
+	// ìŠ¤íŠ¸ë¦¼ ë²„í¼ í¬ì¸í„°ë¥¼ ë¦¬í„´í•œë‹¤.
 	const char* GetMemory() { return m_pMemory; };
 	
-	// `size` ¸¸Å­ `Buffer` ¿¡ º¹»çÇÏ°í, ½ºÆ®¸² Æ÷Áö¼ÇÀ» size ¸¸Å­ ÀÌµ¿
+	// `size` ë§Œí¼ `Buffer` ì— ë³µì‚¬í•˜ê³ , ìŠ¤íŠ¸ë¦¼ í¬ì§€ì…˜ì„ size ë§Œí¼ ì´ë™
 	size_t ReadFromStream(_Out_ char* const Buffer, _In_ const size_t size);
 
-	// ½ºÆ®¸²ÀÇ ÇöÀç Æ÷Áö¼Ç Æ÷ÀÎÅÍ¸¦ ¸®ÅÏÇÏ°í, ½ºÆ®¸² Æ÷Áö¼ÇÀ» size ¸¸Å­ ÀÌµ¿ÇÑ´Ù.
+	// ìŠ¤íŠ¸ë¦¼ì˜ í˜„ìž¬ í¬ì§€ì…˜ í¬ì¸í„°ë¥¼ ë¦¬í„´í•˜ê³ , ìŠ¤íŠ¸ë¦¼ í¬ì§€ì…˜ì„ size ë§Œí¼ ì´ë™í•œë‹¤.
 	size_t RefFromStream(_Out_ const char*& Buffer, _In_ size_t size);
 
-	// ¹öÆÛ·ÎºÎÅÍ µ¥ÀÌÅÍ¸¦ ÀÐ¾î ½ºÆ®¸²ÀÇ ÇöÀç Æ÷Áö¼Ç¿¡ ¾´´Ù.
+	// ë²„í¼ë¡œë¶€í„° ë°ì´í„°ë¥¼ ì½ì–´ ìŠ¤íŠ¸ë¦¼ì˜ í˜„ìž¬ í¬ì§€ì…˜ì— ì“´ë‹¤.
 	size_t WriteToStream(_In_ const char* Buffer, _In_ size_t size);
 
-	/// @brief	½ºÆ®¸²À¸·ÎºÎÅÍ integer type °ªÀ» ÀÐ°í, ÀÐÀº °ªÀ» ¸®ÅÏÇÑ´Ù.
+	/// @brief	ìŠ¤íŠ¸ë¦¼ìœ¼ë¡œë¶€í„° integer type ê°’ì„ ì½ê³ , ì½ì€ ê°’ì„ ë¦¬í„´í•œë‹¤.
 	///
-	///			Âü°í.
-	///			¿¡·¯°¡ ¹ß»ýÇÑ °æ¿ì¿Í ½ÇÁ¦ °ªÀÌ 0 ÀÎ °æ¿ì°¡ ±¸ºÐÀÌ ¾ÈµÇ´Âµ¥, 
-	///			½ºÆ®¸² ÀÐ±âÀÇ °æ¿ì ¿¡·¯°¡ ¾ø´Ù°í °£ÁÖÇÑ´Ù. 
+	///			ì°¸ê³ .
+	///			ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš°ì™€ ì‹¤ì œ ê°’ì´ 0 ì¸ ê²½ìš°ê°€ êµ¬ë¶„ì´ ì•ˆë˜ëŠ”ë°, 
+	///			ìŠ¤íŠ¸ë¦¼ ì½ê¸°ì˜ ê²½ìš° ì—ëŸ¬ê°€ ì—†ë‹¤ê³  ê°„ì£¼í•œë‹¤. 
 	template <typename int_type> int_type ReadInt()
 	{
 		int_type value;
@@ -80,7 +80,7 @@ public:
 		}
 	}
 
-	/// @brief	½ºÆ®¸²¿¡ integer type °ªÀ» ¾²°í, ¼º°ø½Ã true ¸¦ ¸®ÅÏÇÑ´Ù.
+	/// @brief	ìŠ¤íŠ¸ë¦¼ì— integer type ê°’ì„ ì“°ê³ , ì„±ê³µì‹œ true ë¥¼ ë¦¬í„´í•œë‹¤.
 	template <typename int_type> bool WriteInt(const int_type value)
 	{
 		if (_read_only)
@@ -99,15 +99,15 @@ public:
 		}
 	}
 
-	/// string/wstring Àü¿ë ÇÔ¼ö
+	/// string/wstring ì „ìš© í•¨ìˆ˜
 	bool WriteString(_In_ const std::string& str); 
 	bool WriteWstring(_In_ const std::wstring& wstr); 
 
-	/// char*/wchar_t* ¾²±â Àü¿ë ÇÔ¼ö	
+	/// char*/wchar_t* ì“°ê¸° ì „ìš© í•¨ìˆ˜	
 	bool WriteString(_In_ const char* const str);
 	bool WriteWstring(_In_ const wchar_t* const wstr);
 	
-	/// string/wstring, char*/wchar* ÀÐ±â Àü¿ë ÇÔ¼ö
+	/// string/wstring, char*/wchar* ì½ê¸° ì „ìš© í•¨ìˆ˜
 	std::string ReadString();
 	std::wstring ReadWstring();
 
@@ -119,7 +119,7 @@ private:
 
 
 
-/// @brief	½ºÆ®¸²ÀÌ »ç¿ëÇÑ ÀÚ¿øÀ» ¼Ò¸êÇÑ´Ù. 
+/// @brief	ìŠ¤íŠ¸ë¦¼ì´ ì‚¬ìš©í•œ ìžì›ì„ ì†Œë©¸í•œë‹¤. 
 inline void CMemoryStream::ClearStream(void)
 {	
 	if (!_read_only && nullptr != m_pMemory)
@@ -134,8 +134,8 @@ inline void CMemoryStream::ClearStream(void)
 	_read_only = false;
 }
 
-/// @brief	½ºÆ®¸²ÀÇ Æ÷Áö¼ÇÀ» ÀÌµ¿ÇÑ´Ù. 
-///			½ºÆ®¸²ÀÌ À¯È¿ÇÏ°í, ¿äÃ»ÇÑ À§Ä¡°¡ ½ºÆ®¸² ¹üÀ§³»ÀÎ °æ¿ì ÀÌµ¿ÀÌ °¡´ÉÇÏ´Ù. 
+/// @brief	ìŠ¤íŠ¸ë¦¼ì˜ í¬ì§€ì…˜ì„ ì´ë™í•œë‹¤. 
+///			ìŠ¤íŠ¸ë¦¼ì´ ìœ íš¨í•˜ê³ , ìš”ì²­í•œ ìœ„ì¹˜ê°€ ìŠ¤íŠ¸ë¦¼ ë²”ìœ„ë‚´ì¸ ê²½ìš° ì´ë™ì´ ê°€ëŠ¥í•˜ë‹¤. 
 inline bool CMemoryStream::SetPos(_In_ size_t new_pos)
 {
 	if (m_size > 0 && m_size >= new_pos)

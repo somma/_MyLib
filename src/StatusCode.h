@@ -22,46 +22,46 @@ typedef unsigned long DTSTATUS;
 #define		DTS_GENERAL_ERROR			0x00000001
 #define		DTS_INVALID_PARAMETER		DTS_GENERAL_ERROR + 1
 #define		DTS_INVALID_OBJECT_STATUS	DTS_GENERAL_ERROR + 2
-#define		DTS_WINAPI_FAILED			DTS_GENERAL_ERROR + 3		// ¿äÃ»ÇÑ µ¿ÀÛÀÌ OS ¿¡¼­ µ¿ÀÛÇÏÁö ¾Ê½À´Ï´Ù.
+#define		DTS_WINAPI_FAILED			DTS_GENERAL_ERROR + 3		// ìš”ì²­í•œ ë™ìž‘ì´ OS ì—ì„œ ë™ìž‘í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 #define     DTS_MORE_BUFFER_NEEDED      DTS_GENERAL_ERROR + 4
 #define		DTS_INSUFFICIENT_RESOURCES	DTS_GENERAL_ERROR + 5
 #define		DTS_EXCEPTION_RAISED		DTS_GENERAL_ERROR + 6
 
-#define		DTS_NO_CONFIG_FILE			DTS_GENERAL_ERROR + 6		// ¼³Á¤ ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.
-#define		DTS_INVALID_CONFIG_FILE		DTS_GENERAL_ERROR + 7		// ¼³Á¤ ÆÄÀÏ¿¡ ¿À·ù°¡ ÀÖ½À´Ï´Ù.
-#define		DTS_INVALID_FILE_PATH		DTS_GENERAL_ERROR + 8		// À¯È¿ÇÏÁö ¾Ê´Â ÆÄÀÏ °æ·ÎÀÔ´Ï´Ù.
-#define		DTS_NO_FILE_EXIST			DTS_GENERAL_ERROR + 9		// ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.
+#define		DTS_NO_CONFIG_FILE			DTS_GENERAL_ERROR + 6		// ì„¤ì • íŒŒì¼ì´ ì¡´ìž¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+#define		DTS_INVALID_CONFIG_FILE		DTS_GENERAL_ERROR + 7		// ì„¤ì • íŒŒì¼ì— ì˜¤ë¥˜ê°€ ìžˆìŠµë‹ˆë‹¤.
+#define		DTS_INVALID_FILE_PATH		DTS_GENERAL_ERROR + 8		// ìœ íš¨í•˜ì§€ ì•ŠëŠ” íŒŒì¼ ê²½ë¡œìž…ë‹ˆë‹¤.
+#define		DTS_NO_FILE_EXIST			DTS_GENERAL_ERROR + 9		// íŒŒì¼ì´ ì¡´ìž¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 
-#define		DTS_NO_ARCIVE_FILE			DTS_GENERAL_ERROR + 10		// ¾ÆÄ«ÀÌºê ÆÄÀÏÀÌ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.
-#define		DTS_NO_ITEM_FOUND			DTS_GENERAL_ERROR + 11		// ¿äÃ»ÇÑ ¿ä¼Ò°¡ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.
+#define		DTS_NO_ARCIVE_FILE			DTS_GENERAL_ERROR + 10		// ì•„ì¹´ì´ë¸Œ íŒŒì¼ì´ ì¡´ìž¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+#define		DTS_NO_ITEM_FOUND			DTS_GENERAL_ERROR + 11		// ìš”ì²­í•œ ìš”ì†Œê°€ ì¡´ìž¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 
 
 // OpenSSL error
 // 
 #define		DTS_CRYPTO_ERROR_BASE		DTS_GENERAL_ERROR + 256
 #define		DTS_OPENSSL_ERROR			DTS_CRYPTO_ERROR_BASE + 1
-#define		DTS_OPENSSL_PRNG_FAIL		DTS_CRYPTO_ERROR_BASE + 2	// ³­¼ö »ý¼º¿¡ ½ÇÆÐÇß½À´Ï´Ù.
-#define		DTS_OPENSSL_KEYGEN_FAIL		DTS_CRYPTO_ERROR_BASE + 3	// Å° »ý¼º¿¡ ½ÇÆÐÇß½À´Ï´Ù.
+#define		DTS_OPENSSL_PRNG_FAIL		DTS_CRYPTO_ERROR_BASE + 2	// ë‚œìˆ˜ ìƒì„±ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.
+#define		DTS_OPENSSL_KEYGEN_FAIL		DTS_CRYPTO_ERROR_BASE + 3	// í‚¤ ìƒì„±ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.
 
-// UDT / Network ¿¡·¯
+// UDT / Network ì—ëŸ¬
 #define		DTS_NET_ERROR_BASE			DTS_GENERAL_ERROR + 512
-#define		DTS_NET_API_FAILED			DTS_NET_ERROR_BASE + 1		// network °ü·Ã api ¿À·ùÀÔ´Ï´Ù.
-#define		DTS_NET_CONNECT_FAILED		DTS_NET_ERROR_BASE + 2		// ¼­¹ö¿¡ Á¢¼Ó ÇÒ ¼ö ¾ø½À´Ï´Ù. 
-#define		DTS_NET_SEND_FAILED			DTS_NET_ERROR_BASE + 3		// µ¥ÀÌÅÍ Àü¼Û Áß ¿À·ù°¡ ¹ß»ýÇß½À´Ï´Ù.
-#define		DTS_NET_RECV_FAILED			DTS_NET_ERROR_BASE + 4		// µ¥ÀÌÅÍ ¼ö½Å Áß ¿À·ù°¡ ¹ß»ýÇß½À´Ï´Ù.
+#define		DTS_NET_API_FAILED			DTS_NET_ERROR_BASE + 1		// network ê´€ë ¨ api ì˜¤ë¥˜ìž…ë‹ˆë‹¤.
+#define		DTS_NET_CONNECT_FAILED		DTS_NET_ERROR_BASE + 2		// ì„œë²„ì— ì ‘ì† í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤. 
+#define		DTS_NET_SEND_FAILED			DTS_NET_ERROR_BASE + 3		// ë°ì´í„° ì „ì†¡ ì¤‘ ì˜¤ë¥˜ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤.
+#define		DTS_NET_RECV_FAILED			DTS_NET_ERROR_BASE + 4		// ë°ì´í„° ìˆ˜ì‹  ì¤‘ ì˜¤ë¥˜ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤.
 
 
 // DATA PARSER
 // 
 #define		DTS_PARSER_ERROR_BASE       DTS_GENERAL_ERROR + 768
-#define     DTS_INVALID_DATA_FORMAT     DTS_PARSER_ERROR_BASE + 1   // µ¥ÀÌÅÍÀÇ Æ÷¸ËÀÌ À¯È¿ÇÏÁö ¾Ê½À´Ï´Ù.
+#define     DTS_INVALID_DATA_FORMAT     DTS_PARSER_ERROR_BASE + 1   // ë°ì´í„°ì˜ í¬ë§·ì´ ìœ íš¨í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 
 
 // DATABASE
 // 
 #define		DTS_DATABASE_BASE			DTS_GENERAL_ERROR + 1024
-#define		DTS_DB_OPEN_FAILED			DTS_DATABASE_BASE + 1		// µ¥ÀÌÅÍº£ÀÌ½º¸¦ ¿­ ¼ö ¾ø½À´Ï´Ù. 
-#define		DTS_DB_EXEC_FAILED			DTS_DATABASE_BASE + 2		// µ¥ÀÌÅÍº£ÀÌ½º¸¦ ÁúÀÇ¾î ¼öÇàÁß ¿À·ù°¡ ¹ß»ýÇß½À´Ï´Ù.
+#define		DTS_DB_OPEN_FAILED			DTS_DATABASE_BASE + 1		// ë°ì´í„°ë² ì´ìŠ¤ë¥¼ ì—´ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. 
+#define		DTS_DB_EXEC_FAILED			DTS_DATABASE_BASE + 2		// ë°ì´í„°ë² ì´ìŠ¤ë¥¼ ì§ˆì˜ì–´ ìˆ˜í–‰ì¤‘ ì˜¤ë¥˜ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤.
 
 
 #define		DTS_NOT_IMPLEMENTED			0xFFFFFFFF
