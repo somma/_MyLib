@@ -12,7 +12,6 @@
  * @copyright (C)Somma, Inc. All rights reserved.
 **/
 
-
 #include "stdafx.h"
 #include <crtdbg.h>
 #include <openssl/evp.h>
@@ -26,9 +25,9 @@
 #pragma comment(lib, "libeay32.lib")
 
 /// @brief  aes256으로 스트링 암호화
-/// @param  _In_ const unsigned char * key : 
-///         _In_ const std::wstring plain_data : 
-///			_Out_ std::wstring& encrypted_data : 
+/// @param  _In_ const unsigned char * key : AES256에 사용할 키
+///         _In_ const std::wstring plain_data : 암호화 할 평문 데이터
+///			_Out_ std::wstring& encrypted_data : 암호화 된 데이터
 /// @remark	해당 암호화는 AES256 GCM 모드를 사용하고 있음.
 /// @return 성공하면 true 리턴
 ///			하나라도 실패하면 false 리턴
@@ -42,6 +41,12 @@ aes256_encrypt(
 	_ASSERTE(nullptr != key);
 	_ASSERTE(true != plain_data.empty());
 
+	if ((nullptr == key) ||
+		(true == plain_data.empty()))
+	{
+		return false;
+	}
+
 	// 입력 데이터 wstring->string
 	std::string buffer = WcsToMbsEx(plain_data);
 
@@ -51,11 +56,12 @@ aes256_encrypt(
 	if (!AirCryptBuffer(const_cast<unsigned char*>(key),
 						(uint32_t)strlen((const char*)key),
 						(unsigned char*)buffer.c_str(),
-						buffer.length(),
+						(uint32_t)buffer.length(),
 						encrypt_data,
 						encrypt_data_size,
 						true))
 	{
+		log_err "AirCryptoBuffer Encryption Failed." log_end;
 		return false;
 	}
 
@@ -87,9 +93,13 @@ aes256_decrypt(
 	_ASSERTE(nullptr != key);
 	_ASSERTE(true != encrypt_data.empty());
 
-	//
+	if ((nullptr == key) ||
+		(true == encrypt_data.empty()))
+	{
+		return false;
+	}
+
 	// 입력 데이터 wstring->string
-	//
 	std::string buffer = WcsToMbsEx(encrypt_data);
 
 	unsigned char* decrypt_data = nullptr;
@@ -98,11 +108,12 @@ aes256_decrypt(
 	if (!AirCryptBuffer(const_cast<unsigned char*>(key),
 						(uint32_t)strlen((const char*)key),
 						(unsigned char*)buffer.c_str(),
-						buffer.length(),
+						(uint32_t)buffer.length(),
 						decrypt_data,
 						decrypt_data_size,
 						false))
 	{
+		log_err "AirCryptoBuffer decryption Failed." log_end;
 		return false;
 	}
 
