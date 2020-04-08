@@ -1,12 +1,23 @@
+/**
+ * @file    _test_aes256.cpp
+ * @brief  aes256으로 암호화 유닛테스트 구현 파일 
+ * 
+ * 
+ * @author  JaeHyun, Park (jaehyun@somma.kr)
+ * @date    2020/04/08 14:02 created.
+ * @copyright (C)Somma, Inc. All rights reserved.
+**/
+
 #include "stdafx.h"
 #include "_MyLib/src/AirCrypto.h"
 #include "_MyLib/src/log.h"
 #include "_MyLib/src/Win32Utils.h"
 
-/**
-* @brief	test_aes256()에서 설정한 경로에 샘플 파일을 생성한다.
-*/
-bool create_test_sample(_In_ const std::wstring& target_file_path)
+/// @brief  test_aes256_file()에서 설정한 경로에 샘플 파일을 생성한다.
+bool 
+create_test_sample(
+	_In_ const std::wstring& target_file_path
+)
 {
 	_ASSERTE(nullptr != target_file_path.c_str());
 	if (nullptr == target_file_path.c_str())
@@ -79,8 +90,11 @@ bool create_test_sample(_In_ const std::wstring& target_file_path)
 * @brief	target_file_path, encrypt_file_path, decrypt_file_path 는 절대 경로로 설정한다.
 			C:\\_test_aes256 에 폴더와 파일을 생성하며, 결과도 C:\\_test_aes256에 생성이 된다.
 */
-
-bool test_aes256()
+/// @brief  target_file_path, encrypt_file_path, decrypt_file_path 는 절대 경로로 설정한다.
+///			C:\\_test_aes256 에 폴더와 파일을 생성하며, 결과도 C : \\_test_aes256에 생성이 된다.
+/// @return file을 암, 복호화 성공하면 true 리턴
+bool 
+test_aes256_file()
 {
 	std::wstring target_file_path = L"C:\\_test_aes256\\ase256_test_before.conf";
 	std::wstring encrypt_file_path = L"C:\\_test_aes256\\ase256_test.crypto";
@@ -103,10 +117,10 @@ bool test_aes256()
 		::DeleteFileW(encrypt_file_path.c_str());
 	}
 
-	//aes256 암호화
-	if (!aes256_encrypt(origin_key, 
-						target_file_path, 
-						encrypt_file_path))
+	//aes256 파일 암호화
+	if (!aes256_file_encrypt(origin_key,
+							 target_file_path,
+							 encrypt_file_path))
 	{
 		log_err "aes256_encrypt() err" log_end;
 		return false;
@@ -119,16 +133,57 @@ bool test_aes256()
 		::DeleteFileW(decrypt_file_path.c_str());
 	}
 
-	//aes256 복호화
-	if (!aes256_decrypt(origin_key, 
-						encrypt_file_path, 
-						decrypt_file_path))
+	//aes256 파일 복호화
+	if (!aes256_file_decrypt(origin_key,
+							 encrypt_file_path,
+							 decrypt_file_path))
 	{
 		log_err "aes256_encrypt() err" log_end;
 		return false;
 	}
-	
+
 	log_info "[result] aes256 test folder : C:\\_test_aes256" log_end;
 
+	return true;
+}
+
+/// @brief	wstring aes256으로 암호화
+/// @return 암, 복호화 결과 같으면 true 리턴
+///			암, 복호화 실패 또는 결과가 다르면 false 리턴
+bool 
+test_aes256_wstring()
+{
+	unsigned char origin_key[] = "See me If you can";
+
+	std::wstring plain_data = L"Hello Somma World!";
+	std::wstring encrypted_data;
+	std::wstring decrypted_data;
+
+	// 문자열 AES256 암호화
+	if (!aes256_encrypt(origin_key,
+						plain_data,
+						encrypted_data))
+	{
+		log_err "aes256_encrypt Failed()" log_end;
+		return false;
+	}
+
+	// 문자열 AES256 복호화
+	if (!aes256_decrypt(origin_key,
+						encrypted_data,
+						decrypted_data))
+	{
+		log_err "aes256_decrypt Failed()" log_end;
+		return false;
+	}
+
+	// 평문과 복호화 결과가 같은지 확인
+	if (0 != plain_data.compare(decrypted_data.c_str()))
+	{
+		log_err "aes256_decrypt Failed()" log_end;
+		return false;
+	}
+
+	log_info "aes256 decrypt Success" log_end;
 	return true;
 }

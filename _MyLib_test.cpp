@@ -219,7 +219,8 @@ extern bool test_boost_thread();
 extern bool test_std_thread_with_lambda();
 
 //_test_aes256.cpp
-extern bool test_aes256();
+extern bool test_aes256_file();
+extern bool test_aes256_wstring();
 
 // _test_sched_client.cpp
 extern bool test_sched_client();
@@ -392,7 +393,8 @@ void run_test()
 	//assert_bool(true, test_read_mouted_device);
 	//assert_bool(true, test_set_binary_data);
 	//assert_bool(true, test_reg_multi_value);
-	//assert_bool(true, test_aes256);
+	//assert_bool(true, test_aes256_file);
+	assert_bool(true, test_aes256_wstring);
 
 	//assert_bool(true, test_curl_https_down_with_auth);
 	//assert_bool(true, test_curl_https);
@@ -412,7 +414,7 @@ void run_test()
 	//assert_bool(true, test_unique_ptr_list);
 	//assert_bool(true, test_unique_ptr_list_remove);
 	//assert_bool(true, test_make_unique_struct_allocate);
-	assert_bool(true, test_return_unique_ptr);
+	//assert_bool(true, test_return_unique_ptr);
 
 	//assert_bool(true, test_zip_unzip);
 	

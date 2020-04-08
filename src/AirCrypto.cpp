@@ -1,17 +1,18 @@
-/**----------------------------------------------------------------------------
- * AirCrypto.cpp
- *-----------------------------------------------------------------------------
- * AES encryption/decryption demo program using OpenSSL EVP apis
- * gcc -Wall openssl_aes.c -lcrypto
+/**
+ * @file    AirCrypto.cpp
+ * @brief   AES encryption/decryption demo program using OpenSSL EVP apis
+ *			gcc -Wall openssl_aes.c -lcrypto
  * 
- *  this is public domain code. 
+ *			this is public domain code. 
  * 
- *  Saju Pillai (saju.pillai@gmail.com)
- *-----------------------------------------------------------------------------
- * All rights reserved by somma (fixbrain@gmail.com, unsorted@msn.com)
- *-----------------------------------------------------------------------------
- * 20:9:2011   15:35 created
-**---------------------------------------------------------------------------*/
+ *			Saju Pillai (saju.pillai@gmail.com)
+ * 
+ * @author  Yonhgwhan, Roh (somma@somma.kr)
+ * @date    2011/09/20 15:35 created.
+ * @copyright (C)Somma, Inc. All rights reserved.
+**/
+
+
 #include "stdafx.h"
 #include <crtdbg.h>
 #include <openssl/evp.h>
@@ -24,15 +25,106 @@
 
 #pragma comment(lib, "libeay32.lib")
 
-
-
-/**
-* @brief	aes256 파일 암호화
-* @param 	target_file_path ex) C:\\test_folder\\a.txt
-*			encrypt_file_path ex) C:\\test_folder\\a.txt.crypto
-**/
-bool 
+/// @brief  aes256으로 스트링 암호화
+/// @param  _In_ const unsigned char * key : 
+///         _In_ const std::wstring plain_data : 
+///			_Out_ std::wstring& encrypted_data : 
+/// @remark	해당 암호화는 AES256 GCM 모드를 사용하고 있음.
+/// @return 성공하면 true 리턴
+///			하나라도 실패하면 false 리턴
+bool
 aes256_encrypt(
+	_In_ const unsigned char * key,
+	_In_ const std::wstring plain_data,
+	_In_ std::wstring& encrypted_data
+)
+{
+	_ASSERTE(nullptr != key);
+	_ASSERTE(true != plain_data.empty());
+
+	// 입력 데이터 wstring->string
+	std::string buffer = WcsToMbsEx(plain_data);
+
+	unsigned char* encrypt_data = nullptr;
+	uint32_t encrypt_data_size = 0;
+
+	if (!AirCryptBuffer(const_cast<unsigned char*>(key),
+						(uint32_t)strlen((const char*)key),
+						(unsigned char*)buffer.c_str(),
+						buffer.length(),
+						encrypt_data,
+						encrypt_data_size,
+						true))
+	{
+		return false;
+	}
+
+	encrypted_data = MbsToWcsEx((char*)encrypt_data);
+	encrypted_data[encrypt_data_size] = '\0';
+
+	if (nullptr != encrypt_data)
+	{
+		free(encrypt_data);
+	}
+
+	return true;
+}
+
+/// @brief  aes256으로 스트링 복호화
+/// @param  _In_ const unsigned char * key : AES256에 사용하는 키 
+///         _In_ const std::wstring encrypt_data : 암호화된 문자열
+///			_Out_ std::wstring& decrypted_data : 복호화된 문자열
+/// @remark	해당 복호화는 AES256 GCM 모드를 사용하고 있음.
+/// @return 성공하면 true 리턴
+///			하나라도 실패하면 false 리턴
+bool
+aes256_decrypt(
+	_In_ const unsigned char * key,
+	_In_ const std::wstring encrypt_data,
+	_Out_ std::wstring& decrypted_data
+)
+{
+	_ASSERTE(nullptr != key);
+	_ASSERTE(true != encrypt_data.empty());
+
+	//
+	// 입력 데이터 wstring->string
+	//
+	std::string buffer = WcsToMbsEx(encrypt_data);
+
+	unsigned char* decrypt_data = nullptr;
+	uint32_t decrypt_data_size = 0;
+
+	if (!AirCryptBuffer(const_cast<unsigned char*>(key),
+						(uint32_t)strlen((const char*)key),
+						(unsigned char*)buffer.c_str(),
+						buffer.length(),
+						decrypt_data,
+						decrypt_data_size,
+						false))
+	{
+		return false;
+	}
+
+	decrypted_data = MbsToWcsEx((char*)decrypt_data);
+	decrypted_data[decrypt_data_size] = '\0';
+
+	if (nullptr != decrypt_data)
+	{
+		free(decrypt_data);
+	}
+
+	return true;
+}
+
+/// @brief  aes256 파일 암호화
+/// @param  target_file_path ex) C:\\test_folder\\a.txt
+///			encrypt_file_path ex) C:\\test_folder\\a.txt.crypto
+/// @remark Memory Load 한 상태에서 암호화 진행
+/// @return 성공하면 true return
+///			실패하면 false return
+bool 
+aes256_file_encrypt(
 	_In_ const unsigned char* key,
 	_In_ const std::wstring& target_file_path,
 	_In_ const std::wstring& encrypt_file_path
@@ -115,17 +207,18 @@ aes256_encrypt(
 	return true;
 }
 
-/**
-* @brief	aes256 파일 복호화
-* @param 	encrypt_file_path ex) C:\\test_folder\\a.txt.crypto
-*			decrypt_file_path ex) C:\\test_folder\\a.txt
-**/
+/// @brief  aes256 파일 복호화
+/// @param  target_file_path ex) C:\\test_folder\\a.txt
+///			encrypt_file_path ex) C:\\test_folder\\a.txt.crypto
+/// @remark Memory Load 한 상태에서 암호화 진행
+/// @return 성공하면 true return
+///			실패하면 false return
 bool 
-aes256_decrypt(
+aes256_file_decrypt(
 	_In_ const unsigned char* key,
 	_In_ const std::wstring& encrypt_file_path,
 	_In_ const std::wstring& decrypt_file_path
-	)
+)
 {
 	_ASSERTE(nullptr != key);
 	_ASSERTE(nullptr != encrypt_file_path.c_str());
@@ -215,16 +308,16 @@ aes_init(
 	_In_ const int key_data_len, 
 	_Outptr_ EVP_CIPHER_CTX* ctx, 
 	bool encrypt
-	)
+)
 {
 	unsigned char key[EVP_MAX_KEY_LENGTH]={0};
 	unsigned char iv[EVP_MAX_IV_LENGTH]={0};
 
-	/*
-	 * Gen key & IV for AES 256 GCM mode. A SHA1 digest is used to hash the supplied key material.
-	 * nrounds is the number of times the we hash the material. More rounds are more secure but
-	 * slower.
-	 */
+	//
+	// Gen key & IV for AES 256 GCM mode. A SHA1 digest is used to hash the supplied key material.
+	// nrounds is the number of times the we hash the material. More rounds are more secure but
+	// slower.
+	//
 	int ret = EVP_BytesToKey(EVP_aes_256_gcm(),
 							 EVP_sha1(),
 							 NULL, //salt, 
@@ -268,10 +361,10 @@ aes_init(
 -----------------------------------------------------------------------------*/
 unsigned char*
 aes_encrypt(
-	_In_ EVP_CIPHER_CTX* e, 
-	_In_ const unsigned char* plaintext, 
+	_In_ EVP_CIPHER_CTX* e,
+	_In_ const unsigned char* plaintext,
 	_Inout_  int* len
-	)
+)
 {
 	int BlockSize = EVP_CIPHER_CTX_block_size(e);
 	
@@ -279,19 +372,19 @@ aes_encrypt(
 	int f_len = 0;
 	unsigned char *ciphertext = (unsigned char *) malloc(c_len);
 
-	/* allows reusing of 'e' for multiple encryption cycles */
+	// allows reusing of 'e' for multiple encryption cycles
 	//	EVP_EncryptInit_ex(e, NULL, NULL, NULL, NULL);
 
-	/* update ciphertext, c_len is filled with the length of ciphertext generated,
-     * len is the size of plaintext in bytes 
-	 */
+	// update ciphertext, c_len is filled with the length of ciphertext generated,
+    // len is the size of plaintext in bytes 
+	//
 	EVP_EncryptUpdate(e, 
 					  ciphertext, 
 					  &c_len, 
 					  plaintext, 
 					  *len);
 
-	/* update ciphertext with the final remaining bytes */
+	// update ciphertext with the final remaining bytes
 	EVP_EncryptFinal_ex(e, 
 						ciphertext+c_len, 
 						&f_len);
@@ -305,63 +398,62 @@ aes_encrypt(
 -----------------------------------------------------------------------------*/
 unsigned char*
 aes_decrypt(
-	_In_ EVP_CIPHER_CTX* e, 
-	_In_ const unsigned char* ciphertext, 
+	_In_ EVP_CIPHER_CTX* e,
+	_In_ const unsigned char* ciphertext,
 	_Inout_ int* len
-	)
+)
 {
-	/* plaintext will always be equal to or lesser than length of ciphertext*/
+	// plaintext will always be equal to or lesser than length of ciphertext
 	int p_len = *len, f_len = 0;
 	unsigned char *plaintext = (unsigned char *)malloc(p_len);
-	
-//  EVP_DecryptInit_ex(e, NULL, NULL, NULL, NULL);
-  EVP_DecryptUpdate(e, 
-				    plaintext, 
-				    &p_len, 
-				    ciphertext, 
-				    *len);
 
-  EVP_DecryptFinal_ex(e, 
-					  plaintext+p_len, 
-					  &f_len);
+	// EVP_DecryptInit_ex(e, NULL, NULL, NULL, NULL);
+	EVP_DecryptUpdate(e,
+					  plaintext,
+					  &p_len,
+					  ciphertext,
+					  *len);
 
-  *len = p_len + f_len;
-  return plaintext;
+	EVP_DecryptFinal_ex(e,
+						plaintext + p_len,
+						&f_len);
+
+	*len = p_len + f_len;
+	return plaintext;
 }
 
-bool 
+bool
 AirCryptBuffer(
 	_In_ const unsigned char* PassPhrase,
 	_In_ const uint32_t PassPhraseLen,
-	_In_ const unsigned char* Input, 
+	_In_ const unsigned char* Input,
 	_In_ const uint32_t InputLength,
 	_Outptr_ unsigned char*& Output,
 	_Out_ uint32_t& OutputLength,
 	_In_ bool Encrypt
-	)
+)
 {
 	_ASSERTE(nullptr != PassPhrase);
 	_ASSERTE(0 < PassPhraseLen);
 	_ASSERTE(nullptr != Input);
 	_ASSERTE(nullptr == Output);
-	if (nullptr == PassPhrase || 
-		0 > PassPhraseLen || 
-		nullptr == Input || 
-		nullptr != Output) 
+	if (nullptr == PassPhrase ||
+		0 > PassPhraseLen ||
+		nullptr == Input ||
+		nullptr != Output)
 		return false;
 
 	ERR_load_crypto_strings();
 
-	/* "opaque" encryption, decryption ctx structures that libcrypto uses to record
-     * status of enc/dec operations 
-	 */
+	// "opaque" encryption, decryption ctx structures that libcrypto uses to record
+	// status of enc/dec operations
 
 	EVP_CIPHER_CTX ctx;
 	SecureZeroMemory(&ctx, sizeof(EVP_CIPHER_CTX));
 
-	if (!aes_init(PassPhrase, 
-				  PassPhraseLen, 
-				  &ctx, 
+	if (!aes_init(PassPhrase,
+				  PassPhraseLen,
+				  &ctx,
 				  Encrypt))
 	{
 		log_err "aes_init() failed." log_end;
@@ -369,25 +461,25 @@ AirCryptBuffer(
 		return false;
 	}
 
-	unsigned char* out=nullptr;
-	int outlen=InputLength;
+	unsigned char* out = nullptr;
+	int outlen = InputLength;
 
 	if (true == Encrypt)
 	{
-		out = aes_encrypt(&ctx, 
-			  			  Input, 
+		out = aes_encrypt(&ctx,
+						  Input,
 						  &outlen);
 		if (nullptr == out)
 		{
 			log_err "aes_encrypt() failed" log_end;
 			ERR_free_strings();
 			return false;
-		}		
+		}
 	}
 	else
 	{
-		out = aes_decrypt(&ctx, 
-						  Input, 
+		out = aes_decrypt(&ctx,
+						  Input,
 						  &outlen);
 		if (nullptr == out)
 		{
