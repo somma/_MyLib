@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    Logging module
  * @brief   initialize_log() 함수를 명시적으로 호출하면, log level, log target 
  *			(file, debugger, console, etc) 지정/변경 가능

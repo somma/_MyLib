@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    Windows registry api wrapper
  * @brief	
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
