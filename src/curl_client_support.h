@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    curl_client_support.h
  * @brief	This module implement support modules for curl_client class.
  *

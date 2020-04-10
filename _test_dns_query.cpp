@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    _test_dns_query.cpp
  * @brief
  *

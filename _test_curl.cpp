@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * @file    _test_curl.cpp
  * @brief
  *
@@ -30,7 +30,7 @@ bool test_curl_https_down_with_auth()
 
 		
 		//
-		//	´Ù¿î·Îµå ÀÓ½ÃÆÄÀÏ »ı¼º
+		//	ë‹¤ìš´ë¡œë“œ ì„ì‹œíŒŒì¼ ìƒì„±
 		//
 		std::wstring file_path = L"c:\\dbg\\download.dat";
 		handle_ptr temp_file(open_file_to_write(file_path.c_str()),

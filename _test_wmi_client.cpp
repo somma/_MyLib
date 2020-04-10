@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    wmi_client test
  * @brief   
  *

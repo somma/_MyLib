@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    _test_file_io_helper.cpp
  * @brief   unit test for FileIoHelper class.
  *

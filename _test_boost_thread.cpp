@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include <iostream>
 #include <boost\thread\thread.hpp>
 #include <boost\bind.hpp>

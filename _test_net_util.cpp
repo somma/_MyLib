@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    Tests for net_util module
  * @brief
  * @ref

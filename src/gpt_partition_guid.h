@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    gpt_partition_guid.h
  * @brief   This file defines GUID for GPT partion type.
  *          refer https://msdn.microsoft.com/ko-kr/library/windows/desktop/aa365449(v=vs.85).aspx

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    net_util.h
  * @brief   This module implements wrapper functions for Winsock.
  *			Call init_net_util() before use these functions

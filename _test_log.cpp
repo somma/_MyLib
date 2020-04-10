@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    tests for log.h/cpp
  * @brief
  * @ref

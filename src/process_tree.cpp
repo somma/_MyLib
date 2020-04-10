@@ -1,4 +1,4 @@
-/**----------------------------------------------------------------------------
+ï»¿/**----------------------------------------------------------------------------
  * process_tree.cpp
  *-----------------------------------------------------------------------------
  * module that manage running process
@@ -167,10 +167,10 @@ bool
 cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 {
 	//
-	// ±ÇÇÑ(SeDebugPrivilege)ÀÌ ¾ø´Â °æ¿ì Æ¯Á¤ ÇÁ·Î¼¼½º(csrss, WmiPrvSE µî)¸¦
-	// ¿ÀÇÂ ÇÒ·Á°í ÇÏ´Â °æ¿ì ½ÇÆÐ¸¦ ÇÏ±â ¶§¹®¿¡ µð¹ö±× ±ÇÇÑ ¼³Á¤ÀÌ ÇÊ¿äÇÏ´Ù.
-	// `set_debug_privilege` °ªÀÌ trueÀÎ °æ¿ì µð¹ö±× ±ÇÇÑÀ» ¼³Á¤À» ÇÏ°í ¾Æ´Ñ °æ¿ì ¼³Á¤
-	// ÇÏÁö ¾Ê´Â´Ù.
+	// ê¶Œí•œ(SeDebugPrivilege)ì´ ì—†ëŠ” ê²½ìš° íŠ¹ì • í”„ë¡œì„¸ìŠ¤(csrss, WmiPrvSE ë“±)ë¥¼
+	// ì˜¤í”ˆ í• ë ¤ê³  í•˜ëŠ” ê²½ìš° ì‹¤íŒ¨ë¥¼ í•˜ê¸° ë•Œë¬¸ì— ë””ë²„ê·¸ ê¶Œí•œ ì„¤ì •ì´ í•„ìš”í•˜ë‹¤.
+	// `set_debug_privilege` ê°’ì´ trueì¸ ê²½ìš° ë””ë²„ê·¸ ê¶Œí•œì„ ì„¤ì •ì„ í•˜ê³  ì•„ë‹Œ ê²½ìš° ì„¤ì •
+	// í•˜ì§€ ì•ŠëŠ”ë‹¤.
 	//
 	if (true == enable_debug_priv)
 	{
@@ -178,9 +178,9 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 		{
 			log_err "set_privilege(SE_DEBUG_NAME) failed." log_end;
 			//
-			// `SeDebugPrivilege`¸¦ È°¼ºÈ­ ÇÏÁö ¸øÇÑ °æ¿ì ½ÇÆÐ¸¦ ¹ÝÈ¯
-			// ÇÏ°í ÇÔ¼ö¸¦ ºüÁ® ³ª°¡Áö ¾Ê´Â ÀÌÀ¯´Â `SeDebugPrivilege`
-			// ±ÇÇÑÀÌ ¾ø´Ù°í ÇØ¼­ ÇÁ·Î¼¼½º Á¤º¸¸¦ ¼öÁý ¸øÇÏ´Â°Ô ¾Æ´Ï±â ‹š¹®ÀÌ´Ù.
+			// `SeDebugPrivilege`ë¥¼ í™œì„±í™” í•˜ì§€ ëª»í•œ ê²½ìš° ì‹¤íŒ¨ë¥¼ ë°˜í™˜
+			// í•˜ê³  í•¨ìˆ˜ë¥¼ ë¹ ì ¸ ë‚˜ê°€ì§€ ì•ŠëŠ” ì´ìœ ëŠ” `SeDebugPrivilege`
+			// ê¶Œí•œì´ ì—†ë‹¤ê³  í•´ì„œ í”„ë¡œì„¸ìŠ¤ ì •ë³´ë¥¼ ìˆ˜ì§‘ ëª»í•˜ëŠ”ê²Œ ì•„ë‹ˆê¸° Â‹Âšë¬¸ì´ë‹¤.
 			//
 		}
 	}
@@ -207,8 +207,8 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 		}
 
 		//
-		// system, idle ÇÁ·Î¼¼½º´Â »ý¼º ½Ã°£À» È¹µæ ÇÒ ¼ö ¾øÀ¸¹Ç·Î
-		// ÇöÀç ½Ã°¢À» ÇÁ·Î¼¼½º »ý¼º ½Ã°£À¸·Î °£ÁÖÇÑ´Ù.
+		// system, idle í”„ë¡œì„¸ìŠ¤ëŠ” ìƒì„± ì‹œê°„ì„ íšë“ í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ
+		// í˜„ìž¬ ì‹œê°ì„ í”„ë¡œì„¸ìŠ¤ ìƒì„± ì‹œê°„ìœ¼ë¡œ ê°„ì£¼í•œë‹¤.
 		//
 		FILETIME now;
 		GetSystemTimeAsFileTime(&now);
@@ -389,7 +389,7 @@ uint64_t cprocess_tree::get_process_time(DWORD pid)
 	}
 }
 
-/// @brief	ºÎ¸ð ÇÁ·Î¼¼½º °´Ã¼¸¦ ¸®ÅÏÇÑ´Ù.
+/// @brief	ë¶€ëª¨ í”„ë¡œì„¸ìŠ¤ ê°ì²´ë¥¼ ë¦¬í„´í•œë‹¤.
 const 
 process* 
 cprocess_tree::get_parent(
@@ -442,8 +442,8 @@ const wchar_t* cprocess_tree::get_parent_name(_In_ DWORD pid)
 	return p->process_name();
 }
 
-/// @brief	¸ðµç process ¸¦ iterate ÇÑ´Ù. 
-///			callback ¿¡¼­ false ¸¦ ¸®ÅÏÇÏ¸é iterate ¸¦ ÁßÁöÇÑ´Ù.
+/// @brief	ëª¨ë“  process ë¥¼ iterate í•œë‹¤. 
+///			callback ì—ì„œ false ë¥¼ ë¦¬í„´í•˜ë©´ iterate ë¥¼ ì¤‘ì§€í•œë‹¤.
 void
 cprocess_tree::iterate_process(
 	_In_ on_proc_walk callback
@@ -462,10 +462,10 @@ cprocess_tree::iterate_process(
 
 }
 
-/// @brief	ÁöÁ¤µÈ process tree ¸¦ iterate ÇÑ´Ù. 
-///			callback ¿¡¼­ false ¸¦ ¸®ÅÏ(iterate ÁßÁö/Ãë¼Ò) ÇÏ°Å³ª,
-///			ÁöÁ¤µÈ ÇÁ·Î¼¼½º¸¦ Ã£À» ¼ö ¾ø°Å³ª,
-///			À¯È¿ÇÏÁö ¾Ê´Â ÆÄ¶ó¹ÌÅÍ ÀÔ·Â½Ã iterate ¸¦ ÁßÁöÇÑ´Ù.
+/// @brief	ì§€ì •ëœ process tree ë¥¼ iterate í•œë‹¤. 
+///			callback ì—ì„œ false ë¥¼ ë¦¬í„´(iterate ì¤‘ì§€/ì·¨ì†Œ) í•˜ê±°ë‚˜,
+///			ì§€ì •ëœ í”„ë¡œì„¸ìŠ¤ë¥¼ ì°¾ì„ ìˆ˜ ì—†ê±°ë‚˜,
+///			ìœ íš¨í•˜ì§€ ì•ŠëŠ” íŒŒë¼ë¯¸í„° ìž…ë ¥ì‹œ iterate ë¥¼ ì¤‘ì§€í•œë‹¤.
 void
 cprocess_tree::iterate_process_tree(
 	_In_ DWORD root_pid,
@@ -482,8 +482,8 @@ cprocess_tree::iterate_process_tree(
 	return iterate_process_tree(root, callback);
 }
 
-/// @brief	process map À» ¼øÈ¸ÇÏ¸é¼­ ÄÝ¹éÇÔ¼ö¸¦ È£ÃâÇÑ´Ù. 
-///			ÄÝ¹éÇÔ¼ö°¡ false ¸¦ ¸®ÅÏÇÏ¸é ¼øÈ¸¸¦ Áï½Ã ¸ØÃá´Ù.
+/// @brief	process map ì„ ìˆœíšŒí•˜ë©´ì„œ ì½œë°±í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤. 
+///			ì½œë°±í•¨ìˆ˜ê°€ false ë¥¼ ë¦¬í„´í•˜ë©´ ìˆœíšŒë¥¼ ì¦‰ì‹œ ë©ˆì¶˜ë‹¤.
 void
 cprocess_tree::iterate_process_tree(
 	_In_ const process* const root,
@@ -494,15 +494,15 @@ cprocess_tree::iterate_process_tree(
 	if (true != callback(root)) return;
 
 	//
-	//	pid == 0 ÀÎ ÇÁ·Î¼¼½º¶ó¸é recursive call À» ÇÏÁö ¾Ê´Â´Ù. 
-	//	win10 ¿¡¼­ toolhelp ¸¦ ÀÌ¿ëÇÑ °æ¿ì 
+	//	pid == 0 ì¸ í”„ë¡œì„¸ìŠ¤ë¼ë©´ recursive call ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤. 
+	//	win10 ì—ì„œ toolhelp ë¥¼ ì´ìš©í•œ ê²½ìš° 
 	// 
 	//	`[System Process]` : 
 	//	`System` 
 	// 
-	//	ÀÌ·¸°Ô µÎ°³ÀÇ ÇÁ·Î¼¼½º Á¤º¸°¡ ¸®ÅÏµÇ´Âµ¥, [System Process] ÀÇ °æ¿ì
-	//	pid, ppid, create time µîÀÌ ¸ðµÎ 0 ÀÌ´Ù. 
-	//	[System Process] ÀÇ ÀÚ½Ä ÇÁ·Î¼¼½º´Â ¾øÀ¸¹Ç·Î recursive call À» ÇÏÁö ¾Ê´Â´Ù.
+	//	ì´ë ‡ê²Œ ë‘ê°œì˜ í”„ë¡œì„¸ìŠ¤ ì •ë³´ê°€ ë¦¬í„´ë˜ëŠ”ë°, [System Process] ì˜ ê²½ìš°
+	//	pid, ppid, create time ë“±ì´ ëª¨ë‘ 0 ì´ë‹¤. 
+	//	[System Process] ì˜ ìžì‹ í”„ë¡œì„¸ìŠ¤ëŠ” ì—†ìœ¼ë¯€ë¡œ recursive call ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
 	//	
 	if (0 == root->pid())
 	{
@@ -514,14 +514,14 @@ cprocess_tree::iterate_process_tree(
 	process_map::const_iterator ite = _proc_map.end();
 	for (; its != ite; ++its)
 	{
-		//	ppid ÀÇ °ªÀº µ¿ÀÏÇÏÁö¸¸ ppid ÇÁ·Î¼¼½º´Â ÀÌ¹Ì Á¾·áµÇ°í, »õ·Î¿î ÇÁ·Î¼¼½º°¡ »ý¼ºµÇ°í, 
-		//	ppid ¸¦ ÇÒ´ç¹ÞÀº °æ¿ì°¡ ¹ß»ýÇÒ ¼ö ÀÖ´Ù. 
-		//	µû¶ó¼­ ppid °ªÀÌ µ¿ÀÏÇÑ °æ¿ì ppid ¸¦ °¡Áø ÇÁ·Î¼¼½ºÀÇ »ý¼º ½Ã°£ÀÌ pid ÀÇ »ý¼º½Ã°£ °ªÀÌ 
-		//	´õ Ä¿¾ß ÇÑ´Ù.
+		//	ppid ì˜ ê°’ì€ ë™ì¼í•˜ì§€ë§Œ ppid í”„ë¡œì„¸ìŠ¤ëŠ” ì´ë¯¸ ì¢…ë£Œë˜ê³ , ìƒˆë¡œìš´ í”„ë¡œì„¸ìŠ¤ê°€ ìƒì„±ë˜ê³ , 
+		//	ppid ë¥¼ í• ë‹¹ë°›ì€ ê²½ìš°ê°€ ë°œìƒí•  ìˆ˜ ìžˆë‹¤. 
+		//	ë”°ë¼ì„œ ppid ê°’ì´ ë™ì¼í•œ ê²½ìš° ppid ë¥¼ ê°€ì§„ í”„ë¡œì„¸ìŠ¤ì˜ ìƒì„± ì‹œê°„ì´ pid ì˜ ìƒì„±ì‹œê°„ ê°’ì´ 
+		//	ë” ì»¤ì•¼ í•œë‹¤.
 		// 
-		//	¼öÁ¤: Jang, Hyowon (jang.hw73@gmail.com)
-		//	»ý¼º½Ã°£ÀÌ µ¿ÀÏÇÑ °æ¿ì printµÇÁö ¾Ê´Â ÇÁ·Î¼¼½º°¡ Á¸ÀçÇÏ±â ¶§¹®¿¡(ex. creation_time == 0) 
-		//	»ý¼º½Ã°£ÀÇ °ªÀÌ ´õ Å©°Å³ª °°Àº °ªÀ¸·Î ÇØ¾ß ÇÑ´Ù.
+		//	ìˆ˜ì •: Jang, Hyowon (jang.hw73@gmail.com)
+		//	ìƒì„±ì‹œê°„ì´ ë™ì¼í•œ ê²½ìš° printë˜ì§€ ì•ŠëŠ” í”„ë¡œì„¸ìŠ¤ê°€ ì¡´ìž¬í•˜ê¸° ë•Œë¬¸ì—(ex. creation_time == 0) 
+		//	ìƒì„±ì‹œê°„ì˜ ê°’ì´ ë” í¬ê±°ë‚˜ ê°™ì€ ê°’ìœ¼ë¡œ í•´ì•¼ í•œë‹¤.
 		if (its->second->ppid() == root->pid() &&
 			its->second->creation_time() >= root->creation_time())
 		{
@@ -602,15 +602,15 @@ cprocess_tree::print_process_tree(
 		p->process_name()
 		log_end;
 
-	// p._pid ¸¦ ppid ·Î °®´Â item À» Ã£ÀÚ
+	// p._pid ë¥¼ ppid ë¡œ ê°–ëŠ” item ì„ ì°¾ìž
 	process_map::const_iterator it = _proc_map.begin();
 	process_map::const_iterator ite = _proc_map.end();
 	for (; it != ite; ++it)
 	{
-		// ppid ÀÇ °ªÀº µ¿ÀÏÇÏÁö¸¸ ppid ÇÁ·Î¼¼½º´Â ÀÌ¹Ì Á¾·áµÇ°í, »õ·Î¿î ÇÁ·Î¼¼½º°¡ »ý¼ºµÇ°í, ppid ¸¦ ÇÒ´ç¹ÞÀº °æ¿ì°¡ 
-		// ¹ß»ýÇÒ ¼ö ÀÖ´Ù. µû¶ó¼­ ppid °ªÀÌ µ¿ÀÏÇÑ °æ¿ì ppid ¸¦ °¡Áø ÇÁ·Î¼¼½ºÀÇ »ý¼º ½Ã°£ÀÌ pid ÀÇ »ý¼º½Ã°£ °ªÀÌ ´õ Ä¿¾ß ÇÑ´Ù.
-		// ¼öÁ¤: Jang, Hyowon (jang.hw73@gmail.com)
-		// »ý¼º½Ã°£ÀÌ µ¿ÀÏÇÑ °æ¿ì printµÇÁö ¾Ê´Â ÇÁ·Î¼¼½º°¡ Á¸ÀçÇÏ±â ¶§¹®¿¡(ex. creation_time == 0) »ý¼º½Ã°£ÀÇ °ªÀÌ ´õ Å©°Å³ª °°Àº °ªÀ¸·Î ÇØ¾ß ÇÑ´Ù.
+		// ppid ì˜ ê°’ì€ ë™ì¼í•˜ì§€ë§Œ ppid í”„ë¡œì„¸ìŠ¤ëŠ” ì´ë¯¸ ì¢…ë£Œë˜ê³ , ìƒˆë¡œìš´ í”„ë¡œì„¸ìŠ¤ê°€ ìƒì„±ë˜ê³ , ppid ë¥¼ í• ë‹¹ë°›ì€ ê²½ìš°ê°€ 
+		// ë°œìƒí•  ìˆ˜ ìžˆë‹¤. ë”°ë¼ì„œ ppid ê°’ì´ ë™ì¼í•œ ê²½ìš° ppid ë¥¼ ê°€ì§„ í”„ë¡œì„¸ìŠ¤ì˜ ìƒì„± ì‹œê°„ì´ pid ì˜ ìƒì„±ì‹œê°„ ê°’ì´ ë” ì»¤ì•¼ í•œë‹¤.
+		// ìˆ˜ì •: Jang, Hyowon (jang.hw73@gmail.com)
+		// ìƒì„±ì‹œê°„ì´ ë™ì¼í•œ ê²½ìš° printë˜ì§€ ì•ŠëŠ” í”„ë¡œì„¸ìŠ¤ê°€ ì¡´ìž¬í•˜ê¸° ë•Œë¬¸ì—(ex. creation_time == 0) ìƒì„±ì‹œê°„ì˜ ê°’ì´ ë” í¬ê±°ë‚˜ ê°™ì€ ê°’ìœ¼ë¡œ í•´ì•¼ í•œë‹¤.
 		if (it->second->ppid() == p->pid() &&
 			(uint64_t)it->second->creation_time() >= (uint64_t)p->creation_time())
 		{
@@ -666,7 +666,7 @@ cprocess_tree::kill_process(
 }
 
 /**
- * @brief	root_pid ¿Í ±× ÀÚ½Ä ÇÁ·Î¼¼½º¸¦ ¸ðµÎ Á¾·áÇÑ´Ù.
+ * @brief	root_pid ì™€ ê·¸ ìžì‹ í”„ë¡œì„¸ìŠ¤ë¥¼ ëª¨ë‘ ì¢…ë£Œí•œë‹¤.
  * @param
  * @see
  * @remarks
@@ -736,10 +736,10 @@ cprocess_tree::add_process(
 }
 
 /**
- * @brief	ÀÚ½ÄÀÇ ÀÚ½ÄÀÇ ÀÚ½Ä±îÁö... Àç±ÍÀûÀ¸·Î Á×ÀÌ°í, ³ªµµ Á×´Â´Ù. :-)
+ * @brief	ìžì‹ì˜ ìžì‹ì˜ ìžì‹ê¹Œì§€... ìž¬ê·€ì ìœ¼ë¡œ ì£½ì´ê³ , ë‚˜ë„ ì£½ëŠ”ë‹¤. :-)
 
-			Áß°£¿¡ ±ÇÇÑ ¹®Á¦¶óµçÁö ¹º°¡ ¹®Á¦°¡ ÀÖ´Â ÇÁ·Î¼¼½º°¡ ÀÖÀ» ¼öµµ ÀÖ´Ù.
-			¸øÁ×ÀÌ´Â ³ðÀº ³ÀµÎ°í, Á×ÀÏ ¼ö ÀÖ´Â ³ðÀº ´Ù Á×ÀÌ·Á°í, ¸®ÅÏ°ªÀ» void ·Î ÇßÀ½
+			ì¤‘ê°„ì— ê¶Œí•œ ë¬¸ì œë¼ë“ ì§€ ë­”ê°€ ë¬¸ì œê°€ ìžˆëŠ” í”„ë¡œì„¸ìŠ¤ê°€ ìžˆì„ ìˆ˜ë„ ìžˆë‹¤.
+			ëª»ì£½ì´ëŠ” ë†ˆì€ ëƒ…ë‘ê³ , ì£½ì¼ ìˆ˜ ìžˆëŠ” ë†ˆì€ ë‹¤ ì£½ì´ë ¤ê³ , ë¦¬í„´ê°’ì„ void ë¡œ í–ˆìŒ
  * @param
  * @see
  * @remarks
@@ -758,10 +758,10 @@ cprocess_tree::kill_process_tree(
 	process_map::const_iterator ite = _proc_map.end();
 	for (; its != ite; ++its)
 	{
-		// ppid ÀÇ °ªÀº µ¿ÀÏÇÏÁö¸¸ ppid ÇÁ·Î¼¼½º´Â ÀÌ¹Ì Á¾·áµÇ°í, »õ·Î¿î ÇÁ·Î¼¼½º°¡ »ý¼ºµÇ°í, ppid ¸¦ ÇÒ´ç¹ÞÀº °æ¿ì°¡ 
-		// ¹ß»ýÇÒ ¼ö ÀÖ´Ù. µû¶ó¼­ ppid °ªÀÌ µ¿ÀÏÇÑ °æ¿ì ppid ¸¦ °¡Áø ÇÁ·Î¼¼½ºÀÇ »ý¼º ½Ã°£ÀÌ pid ÀÇ »ý¼º½Ã°£ °ªÀÌ ´õ Ä¿¾ß ÇÑ´Ù.
-		// ¼öÁ¤: Jang, Hyowon (jang.hw73@gmail.com)
-		// »ý¼º½Ã°£ÀÌ µ¿ÀÏÇÑ °æ¿ì printµÇÁö ¾Ê´Â ÇÁ·Î¼¼½º°¡ Á¸ÀçÇÏ±â ¶§¹®¿¡(ex. creation_time == 0) »ý¼º½Ã°£ÀÇ °ªÀÌ ´õ Å©°Å³ª °°Àº °ªÀ¸·Î ÇØ¾ß ÇÑ´Ù.
+		// ppid ì˜ ê°’ì€ ë™ì¼í•˜ì§€ë§Œ ppid í”„ë¡œì„¸ìŠ¤ëŠ” ì´ë¯¸ ì¢…ë£Œë˜ê³ , ìƒˆë¡œìš´ í”„ë¡œì„¸ìŠ¤ê°€ ìƒì„±ë˜ê³ , ppid ë¥¼ í• ë‹¹ë°›ì€ ê²½ìš°ê°€ 
+		// ë°œìƒí•  ìˆ˜ ìžˆë‹¤. ë”°ë¼ì„œ ppid ê°’ì´ ë™ì¼í•œ ê²½ìš° ppid ë¥¼ ê°€ì§„ í”„ë¡œì„¸ìŠ¤ì˜ ìƒì„± ì‹œê°„ì´ pid ì˜ ìƒì„±ì‹œê°„ ê°’ì´ ë” ì»¤ì•¼ í•œë‹¤.
+		// ìˆ˜ì •: Jang, Hyowon (jang.hw73@gmail.com)
+		// ìƒì„±ì‹œê°„ì´ ë™ì¼í•œ ê²½ìš° printë˜ì§€ ì•ŠëŠ” í”„ë¡œì„¸ìŠ¤ê°€ ì¡´ìž¬í•˜ê¸° ë•Œë¬¸ì—(ex. creation_time == 0) ìƒì„±ì‹œê°„ì˜ ê°’ì´ ë” í¬ê±°ë‚˜ ê°™ì€ ê°’ìœ¼ë¡œ í•´ì•¼ í•œë‹¤.
 		if (its->second->ppid() == root->pid() &&
 			its->second->creation_time() >= root->creation_time())
 		{

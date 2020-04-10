@@ -1,4 +1,4 @@
-#ifndef CRC64_H
+﻿#ifndef CRC64_H
 #define CRC64_H
 
 #include <stdint.h>

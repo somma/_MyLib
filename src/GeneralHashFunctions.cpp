@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "GeneralHashFunctions.h"
 
 unsigned int RSHash(char* str, unsigned int len)

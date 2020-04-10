@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    send_ping.h
  * @brief   
  *

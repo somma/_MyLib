@@ -1,4 +1,4 @@
-/* The following code example is taken from the book
+﻿/* The following code example is taken from the book
  * "The C++ Standard Library - A Tutorial and Reference"
  * by Nicolai M. Josuttis, Addison-Wesley, 1999
  *

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    net_util_typedef.h
  * @brief   This module defines custom types that used by net_util.h/cpp module.
  * @ref     

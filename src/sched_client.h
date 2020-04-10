@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    sched_client.h
  * @brief	This module contains a functions that create task scheduler.
  *

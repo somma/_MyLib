@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    _test_steady_timer.h
  * @brief   Test for SteadyTimer class
  *

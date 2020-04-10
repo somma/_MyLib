@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    service control manager helper class
  * @brief   
  * @ref     

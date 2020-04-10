@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * @file    test_unique_ptr.cpp
  * @brief
  *
@@ -41,9 +41,9 @@ bool test_unique_ptr()
 		}
 
 		//
-		// for (auto entry : fooz)  Ã³·³ entry ¸¦ ÂüÁ¶ÀÚ·Î ¹ŞÁö ¾ÊÀ¸¸é
-		// `attempting to reference a deleted function` ÄÄÆÄÀÏ ¿¡·¯ ¹ß»ı
-		// unique_ptr ÀÌ º¹»ç°¡ µÇÁö ¾Ê±â ¶§¹®ÀÎµí
+		// for (auto entry : fooz)  ì²˜ëŸ¼ entry ë¥¼ ì°¸ì¡°ìë¡œ ë°›ì§€ ì•Šìœ¼ë©´
+		// `attempting to reference a deleted function` ì»´íŒŒì¼ ì—ëŸ¬ ë°œìƒ
+		// unique_ptr ì´ ë³µì‚¬ê°€ ë˜ì§€ ì•Šê¸° ë•Œë¬¸ì¸ë“¯
 		//
 		for (auto& entry : fooz)
 		{
@@ -66,26 +66,26 @@ bool test_unique_ptr_assign()
 		std::unique_ptr<char[]> y = std::make_unique<char[]>(1024);
 		std::unique_ptr<char[]> x = std::make_unique<char[]>(512);
 
-		// unique_ptr Àº º¹»ç°¡ ¾ÈµÊ
-		// std::move ¸¦ ÇØ¾ß ÇÔ
+		// unique_ptr ì€ ë³µì‚¬ê°€ ì•ˆë¨
+		// std::move ë¥¼ í•´ì•¼ í•¨
 		y = std::move(x);
-			// y ¿¡ ÀÌ¹Ì ÇÒ´çµÇ¾îÀÖ´ø ¸Ş¸ğ¸®´Â x ¸¦ ÀÌµ¿ÇÒ¶§ ¼Ò¸ê µÊ
-			// x Æ÷ÀÌÅÍ´Â y ·Î ÀÌµ¿µÇ¾ú°í, y ¼Ò¸ê½Ã ÇØÁ¦ ‰Î
+			// y ì— ì´ë¯¸ í• ë‹¹ë˜ì–´ìˆë˜ ë©”ëª¨ë¦¬ëŠ” x ë¥¼ ì´ë™í• ë•Œ ì†Œë©¸ ë¨
+			// x í¬ì´í„°ëŠ” y ë¡œ ì´ë™ë˜ì—ˆê³ , y ì†Œë©¸ì‹œ í•´ì œ Â‰?
 
 		
 		//
-		//	µ¿ÀÏÇÑ Å×½ºÆ®............
-		//	¼Ò¸êÀÚ È£ÃâÀÌ Á¤»óÀûÀ¸·Î µÇ´ÂÁö È®ÀÎ
+		//	ë™ì¼í•œ í…ŒìŠ¤íŠ¸............
+		//	ì†Œë©¸ì í˜¸ì¶œì´ ì •ìƒì ìœ¼ë¡œ ë˜ëŠ”ì§€ í™•ì¸
 		//
 
 		std::unique_ptr<Foo> yyyy = std::make_unique<Foo>("yyyy");
 		std::unique_ptr<Foo> xxxx = std::make_unique<Foo>("xxxx");
 
-		// unique_ptr Àº º¹»ç°¡ ¾ÈµÊ
-		// std::move ¸¦ ÇØ¾ß ÇÔ
+		// unique_ptr ì€ ë³µì‚¬ê°€ ì•ˆë¨
+		// std::move ë¥¼ í•´ì•¼ í•¨
 		yyyy = std::move(xxxx);
-		// y ¿¡ ÀÌ¹Ì ÇÒ´çµÇ¾îÀÖ´ø ¸Ş¸ğ¸®´Â x ¸¦ ÀÌµ¿ÇÒ¶§ ¼Ò¸ê µÊ
-		// x Æ÷ÀÌÅÍ´Â y ·Î ÀÌµ¿µÇ¾ú°í, y ¼Ò¸ê½Ã ÇØÁ¦ ‰Î
+		// y ì— ì´ë¯¸ í• ë‹¹ë˜ì–´ìˆë˜ ë©”ëª¨ë¦¬ëŠ” x ë¥¼ ì´ë™í• ë•Œ ì†Œë©¸ ë¨
+		// x í¬ì´í„°ëŠ” y ë¡œ ì´ë™ë˜ì—ˆê³ , y ì†Œë©¸ì‹œ í•´ì œ Â‰?
 	}
 	_mem_check_end;
 
@@ -97,7 +97,7 @@ bool test_unique_ptr_list()
 	_mem_check_begin
 	{
 		//
-		//	std::list<std::unique_ptr<Obj>> objs ÇüÅÂÀÇ »ç¿ë
+		//	std::list<std::unique_ptr<Obj>> objs í˜•íƒœì˜ ì‚¬ìš©
 		//
 		std::list<std::unique_ptr<Foo>> fooz;
 
@@ -106,7 +106,7 @@ bool test_unique_ptr_list()
 			fooz.push_back(std::make_unique<Foo>(std::to_string(i).c_str()));
 		}
 
-		// ¾ê´Â È£Ãâ ¾ÈÇØµµ ±×¸¸...
+		// ì–˜ëŠ” í˜¸ì¶œ ì•ˆí•´ë„ ê·¸ë§Œ...
 		fooz.clear();
 
 		//
@@ -124,7 +124,7 @@ bool test_unique_ptr_list_remove()
 	_mem_check_begin
 	{
 		//
-		//	std::list<std::unique_ptr<Obj>> objs ÇüÅÂ¿¡¼­ ¾ÆÀÌÅÛ  »èÁ¦ÇÏ±â
+		//	std::list<std::unique_ptr<Obj>> objs í˜•íƒœì—ì„œ ì•„ì´í…œ  ì‚­ì œí•˜ê¸°
 		//
 		std::list<std::unique_ptr<Foo>> fooz;
 
@@ -138,8 +138,8 @@ bool test_unique_ptr_list_remove()
 			if (foo->foo_str == "2")
 			{
 				//
-				//	remove ÇØ¼­ foo ¸¦ ³¯¸®´Â ¼ø°£ unique_ptr ÀÇ ¼Ò¸êÀÚ°¡ 
-				//	È£ÃâµÇ¾î Á¤»óÀûÀ¸·Î ¸Ş¸ğ¸®´Â ÇØÁ¦µÈ´Ù.
+				//	remove í•´ì„œ foo ë¥¼ ë‚ ë¦¬ëŠ” ìˆœê°„ unique_ptr ì˜ ì†Œë©¸ìê°€ 
+				//	í˜¸ì¶œë˜ì–´ ì •ìƒì ìœ¼ë¡œ ë©”ëª¨ë¦¬ëŠ” í•´ì œëœë‹¤.
 				//
 				fooz.remove(foo);
 				break;

@@ -1,4 +1,4 @@
-// Free for all implementation of the MD5 hash algorithm
+﻿// Free for all implementation of the MD5 hash algorithm
 
 /*
  **********************************************************************

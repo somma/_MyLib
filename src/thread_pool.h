@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    thread_pool.h
  * @brief   thread pool implementation.
  * 

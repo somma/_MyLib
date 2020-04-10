@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    _test_boost_asio_timer.cpp
  * @brief   This class implements steady timer object.
  *

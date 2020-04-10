@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    steady_timer.h
  * @brief   This class implements steady timer object.
  *

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    Windows API wrapper and utility routines.
  * @brief
  * @ref

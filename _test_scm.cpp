@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    _test_scm.cpp
  * @brief   unit test for `scm_context` class
  *

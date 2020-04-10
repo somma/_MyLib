@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    nt path name -> win32 name converter
  * @brief   
  * @ref     https://msdn.microsoft.com/ko-kr/library/windows/desktop/aa385453(v=vs.85).aspx

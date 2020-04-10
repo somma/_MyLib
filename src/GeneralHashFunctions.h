@@ -1,4 +1,4 @@
-/*
+﻿/*
  **************************************************************************
  *                                                                        *
  *          General Purpose Hash Function Algorithms Library              *

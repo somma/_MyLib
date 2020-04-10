@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    sched_client.cpp
  * @brief	This module contains a functions that create task scheduler.
  *
