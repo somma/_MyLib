@@ -488,11 +488,7 @@ bool is_file_existsW(_In_ const wchar_t* file_path)
 
 bool is_file_existsA(_In_ const char* file_path)
 {
-	WCHAR* wcs = MbsToWcs(file_path);
-	if (NULL == wcs) { return false; }
-
-	bool ret = is_file_existsW(wcs); free(wcs);
-	return ret;
+	return is_file_existsW(MbsToWcsEx(file_path).c_str());
 }
 
 /// @brief  `file_path` 가 존재하고, directory 이면 true 리턴
@@ -2173,14 +2169,8 @@ SaveToFileAsUTF8A(
 
 	// ASCII ==> WIDE CHAR (UCS-2)
 	// 
-	PWSTR WideString = MbsToWcs(NullTerminatedAsciiString);
-	if (NULL == WideString) return FALSE;
-	SmrtPtr<PWSTR> spw(WideString);
-
-	return SaveToFileAsUTF8W(
-		FilePathDoesNotExists,
-		WideString
-	);
+	return SaveToFileAsUTF8W(FilePathDoesNotExists,
+							 MbsToWcsEx(NullTerminatedAsciiString).c_str());
 }
 
 
@@ -2199,9 +2189,8 @@ SaveToFileAsUTF8W(
 
 	// UCS-2 ==> UTF-8
 	// 
-	PSTR Utf8String = WcsToMbsUTF8(NullTerminatedWideString);
-	if (NULL == NullTerminatedWideString) return FALSE;
-	SmrtPtr<PSTR> spu(Utf8String);
+	auto Utf8String = WcsToMbsUTF8Ex(NullTerminatedWideString);
+	if (Utf8String.empty()) return FALSE;
 
 	HANDLE hFile = open_file_to_write(FilePathDoesNotExists);
 	if (INVALID_HANDLE_VALUE == hFile)
@@ -2233,12 +2222,11 @@ SaveToFileAsUTF8W(
 		return FALSE;
 	}
 
-	if (TRUE != WriteFile(
-		hFile,
-		Utf8String,
-		(DWORD)strlen(Utf8String),
-		&cbWritten,
-		NULL))
+	if (TRUE != WriteFile(hFile,
+						  Utf8String.c_str(),
+						  (DWORD)strlen(Utf8String.c_str()),
+						  &cbWritten,
+						  NULL))
 	{
 		log_err
 			"WriteFile(Utf8String) failed, gle=%u",
@@ -2746,14 +2734,9 @@ GetImageFullPathFromPredefinedPathA(
 		return FALSE;
 	}
 
-
-	WCHAR* wcs = MbsToWcs(ImageName);
-	if (NULL == wcs) { return FALSE; }
-	SmrtPtr<WCHAR*> smpt(wcs);
-
 	WCHAR buf[MAX_PATH] = { 0 };
 	if (TRUE != GetImageFullPathFromPredefinedPathW(
-		wcs,
+		MbsToWcsEx(ImageName).c_str(),
 		MAX_PATH,
 		buf))
 	{
@@ -2763,8 +2746,8 @@ GetImageFullPathFromPredefinedPathA(
 	size_t len = wcslen(buf);
 	if (FullPathBufferLen <= len)
 	{
-		log_err "buffer overflow" log_end
-			return FALSE;
+		log_err "buffer overflow" log_end;
+		return FALSE;
 	}
 
 	RtlZeroMemory(FullPathBuffer, FullPathBufferLen);
@@ -3412,40 +3395,40 @@ FindSubDirectory(
 }
 
 
-
-/**
- * @brief	ASCII(Multibyte) --> WIDE CHAR 로 변환, caller 는 리턴되는 포인터를 소멸시켜주어야 함
- * @param
- * @see
- * @remarks
- * @code
- * @endcode
- * @return
-**/
-wchar_t* MbsToWcs(_In_ const char* mbs)
-{
-	_ASSERTE(nullptr != mbs);
-	_ASSERTE(0x00 != mbs[0]);
-	if (nullptr == mbs) return nullptr;
-	if (0x00 == mbs[0]) return nullptr;
-
-	int outLen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mbs, -1, nullptr, 0);
-	if (0 == outLen) return nullptr;
-
-	wchar_t* outWchar = (wchar_t*)malloc(outLen * (sizeof(wchar_t)));  // outLen contains NULL char 
-	if (NULL == outWchar) return nullptr;
-	RtlZeroMemory(outWchar, outLen);
-
-	if (0 == MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mbs, -1, outWchar, outLen))
-	{
-		log_err "MultiByteToWideChar() failed, errcode=0x%08x", GetLastError() log_end
-
-			free(outWchar);
-		return nullptr;
-	}
-
-	return outWchar;
-}
+// refac 
+///**
+// * @brief	ASCII(Multibyte) --> WIDE CHAR 로 변환, caller 는 리턴되는 포인터를 소멸시켜주어야 함
+// * @param
+// * @see
+// * @remarks
+// * @code
+// * @endcode
+// * @return
+//**/
+//wchar_t* MbsToWcs(_In_ const char* mbs)
+//{
+//	_ASSERTE(nullptr != mbs);
+//	_ASSERTE(0x00 != mbs[0]);
+//	if (nullptr == mbs) return nullptr;
+//	if (0x00 == mbs[0]) return nullptr;
+//
+//	int outLen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mbs, -1, nullptr, 0);
+//	if (0 == outLen) return nullptr;
+//
+//	wchar_t* outWchar = (wchar_t*)malloc(outLen * (sizeof(wchar_t)));  // outLen contains NULL char 
+//	if (NULL == outWchar) return nullptr;
+//	RtlZeroMemory(outWchar, outLen);
+//
+//	if (0 == MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mbs, -1, outWchar, outLen))
+//	{
+//		log_err "MultiByteToWideChar() failed, errcode=0x%08x", GetLastError() log_end
+//
+//			free(outWchar);
+//		return nullptr;
+//	}
+//
+//	return outWchar;
+//}
 
 /**
  * @brief	WIDE CHAR --> ASCII(Multibyte) 로 변환, caller 는 리턴되는 포인터를 소멸시켜주어야 함
@@ -3456,29 +3439,29 @@ wchar_t* MbsToWcs(_In_ const char* mbs)
  * @endcode
  * @return
 **/
-char* WcsToMbs(_In_ const wchar_t* wcs)
-{
-	_ASSERTE(nullptr != wcs);
-	_ASSERTE(0x00 != wcs[0]);
-	if (nullptr == wcs) return nullptr;
-	if (0x00 == wcs[0]) return nullptr;
-
-	int outLen = WideCharToMultiByte(CP_ACP, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
-	if (0 == outLen) return nullptr;
-
-	char* outChar = (char*)malloc(outLen * sizeof(char));
-	if (nullptr == outChar) return nullptr;
-	RtlZeroMemory(outChar, outLen);
-
-	if (0 == WideCharToMultiByte(CP_ACP, 0, wcs, -1, outChar, outLen, nullptr, nullptr))
-	{
-		log_err "WideCharToMultiByte() failed, errcode=0x%08x", GetLastError() log_end
-			free(outChar);
-		return nullptr;
-	}
-
-	return outChar;
-}
+//char* WcsToMbs(_In_ const wchar_t* wcs)
+//{
+//	_ASSERTE(nullptr != wcs);
+//	_ASSERTE(0x00 != wcs[0]);
+//	if (nullptr == wcs) return nullptr;
+//	if (0x00 == wcs[0]) return nullptr;
+//
+//	int outLen = WideCharToMultiByte(CP_ACP, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
+//	if (0 == outLen) return nullptr;
+//
+//	char* outChar = (char*)malloc(outLen * sizeof(char));
+//	if (nullptr == outChar) return nullptr;
+//	RtlZeroMemory(outChar, outLen);
+//
+//	if (0 == WideCharToMultiByte(CP_ACP, 0, wcs, -1, outChar, outLen, nullptr, nullptr))
+//	{
+//		log_err "WideCharToMultiByte() failed, errcode=0x%08x", GetLastError() log_end
+//			free(outChar);
+//		return nullptr;
+//	}
+//
+//	return outChar;
+//}
 
 /**
  * @brief	wide char -> utf8 변환, caller 는 리턴되는 포인터를 소멸시켜주어야 함
@@ -3489,30 +3472,30 @@ char* WcsToMbs(_In_ const wchar_t* wcs)
  * @endcode
  * @return
 **/
-char* WcsToMbsUTF8(_In_ const wchar_t* wcs)
-{
-	_ASSERTE(nullptr != wcs);
-	_ASSERTE(0x00 != wcs[0]);
-	if (nullptr == wcs) return nullptr;
-	if (0x00 == wcs[0]) return nullptr;
-
-	int outLen = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
-	if (0 == outLen) return nullptr;
-
-	char* outChar = (char*)malloc(outLen * sizeof(char));
-	if (nullptr == outChar) return nullptr;
-	RtlZeroMemory(outChar, outLen);
-
-	if (0 == WideCharToMultiByte(CP_UTF8, 0, wcs, -1, outChar, outLen, nullptr, nullptr))
-	{
-		log_err "WideCharToMultiByte() failed, errcode=0x%08x", GetLastError() log_end
-
-			free(outChar);
-		return nullptr;
-	}
-
-	return outChar;
-}
+//char* WcsToMbsUTF8(_In_ const wchar_t* wcs)
+//{
+//	_ASSERTE(nullptr != wcs);
+//	_ASSERTE(0x00 != wcs[0]);
+//	if (nullptr == wcs) return nullptr;
+//	if (0x00 == wcs[0]) return nullptr;
+//
+//	int outLen = WideCharToMultiByte(CP_UTF8, 0, wcs, -1, nullptr, 0, nullptr, nullptr);
+//	if (0 == outLen) return nullptr;
+//
+//	char* outChar = (char*)malloc(outLen * sizeof(char));
+//	if (nullptr == outChar) return nullptr;
+//	RtlZeroMemory(outChar, outLen);
+//
+//	if (0 == WideCharToMultiByte(CP_UTF8, 0, wcs, -1, outChar, outLen, nullptr, nullptr))
+//	{
+//		log_err "WideCharToMultiByte() failed, errcode=0x%08x", GetLastError() log_end
+//
+//			free(outChar);
+//		return nullptr;
+//	}
+//
+//	return outChar;
+//}
 
 /**
  * @brief
@@ -3560,24 +3543,52 @@ wchar_t* Utf8MbsToWcs(_In_ const char* utf8)
 std::wstring MbsToWcsEx(_In_ const char *mbs)
 {
 	_ASSERTE(nullptr != mbs);
+	_ASSERTE(0x00 != mbs[0]);
 	if (nullptr == mbs) return _null_stringw;
 	if (0x00 == mbs[0]) return _null_stringw;
 
-	wchar_ptr tmp(MbsToWcs(mbs), [](wchar_t* p) {
-		if (nullptr != p)
-		{
-			free(p);
-		}
+	//
+	//	필요한 버퍼 사이즈 구하기
+	//
+	int outLen = MultiByteToWideChar(CP_ACP,
+									 MB_PRECOMPOSED,
+									 mbs,
+									 -1,
+									 nullptr,
+									 0);
+	if (0 == outLen) return _null_stringw;
+
+	//
+	//	버퍼 할당 
+	//	- outLen contains NULL char
+	//
+	wchar_ptr outWchar((wchar_t*)malloc(outLen * (sizeof(wchar_t))),
+					   [](wchar_t* p)
+	{
+		if (nullptr != p) free(p);
 	});
 
-	if (nullptr == tmp.get())
+	if (nullptr == outWchar.get()) return _null_stringw;
+	RtlZeroMemory(outWchar.get(), outLen);
+
+	//
+	//	문자열 변환
+	//
+	if (0 == MultiByteToWideChar(CP_ACP, 
+								 MB_PRECOMPOSED, 
+								 mbs, 
+								 -1, 
+								 outWchar.get(), 
+								 outLen))
 	{
+		log_err
+			"MultiByteToWideChar() failed, errcode=0x%08x",
+			GetLastError()
+			log_end;
 		return _null_stringw;
 	}
-	else
-	{
-		return std::wstring(tmp.get());
-	}
+
+	return std::wstring(outWchar.get());
 }
 
 /**
@@ -3592,24 +3603,54 @@ std::wstring MbsToWcsEx(_In_ const char *mbs)
 std::string WcsToMbsEx(_In_ const wchar_t *wcs)
 {
 	_ASSERTE(nullptr != wcs);
+	_ASSERTE(0x00 != wcs[0]);
 	if (nullptr == wcs) return _null_stringa;
 	if (0x00 == wcs[0]) return _null_stringa;
 
-	char_ptr tmp(WcsToMbs(wcs), [](char* p) {
-		if (nullptr != p)
-		{
-			free(p);
-		}
-	});
+	//
+	//	변환에 필요한 버퍼 사이즈 구하기
+	//
+	int outLen = WideCharToMultiByte(CP_ACP, 
+									 0, 
+									 wcs, 
+									 -1, 
+									 nullptr, 
+									 0, 
+									 nullptr, 
+									 nullptr);
+	if (0 == outLen) return _null_stringa;
 
-	if (NULL == tmp.get())
+	//
+	//	버퍼 할당
+	//
+	char_ptr outChar((char*)malloc(outLen * sizeof(char)),
+					 [](char* p)
 	{
+		if (nullptr != p) free(p);
+	});
+	if (nullptr == outChar.get()) return _null_stringa;
+	RtlZeroMemory(outChar.get(), outLen);
+
+	//
+	//	변환
+	//
+	if (0 == WideCharToMultiByte(CP_ACP, 
+								 0, 
+								 wcs, 
+								 -1, 
+								 outChar.get(), 
+								 outLen, 
+								 nullptr, 
+								 nullptr))
+	{
+		log_err
+			"WideCharToMultiByte() failed, errcode=0x%08x",
+			GetLastError()
+			log_end;			
 		return _null_stringa;
 	}
-	else
-	{
-		return std::string(tmp.get());
-	}
+
+	return std::string(outChar.get());
 }
 
 /**
@@ -3624,48 +3665,101 @@ std::string WcsToMbsEx(_In_ const wchar_t *wcs)
 std::string WcsToMbsUTF8Ex(_In_ const wchar_t *wcs)
 {
 	_ASSERTE(nullptr != wcs);
+	_ASSERTE(0x00 != wcs[0]);
 	if (nullptr == wcs) return _null_stringa;
 	if (0x00 == wcs[0]) return _null_stringa;
+	
+	//
+	//	변환에 필요한 버퍼 사이즈 계산
+	//
+	int outLen = WideCharToMultiByte(CP_UTF8, 
+									 0, 
+									 wcs, 
+									 -1, 
+									 nullptr, 
+									 0, 
+									 nullptr, 
+									 nullptr);
+	if (0 == outLen) return _null_stringa;
 
-	char_ptr tmp(WcsToMbsUTF8(wcs), [](char*p) {
-		if (nullptr != p)
-		{
-			free(p);
-		}
-	});
-
-	if (NULL == tmp.get())
+	char_ptr outChar((char*)malloc(outLen * sizeof(char)),
+					 [](char* p)
 	{
+		if (nullptr != p) free(p);
+	});
+	if (nullptr == outChar.get()) return _null_stringa;
+	RtlZeroMemory(outChar.get(), outLen);
+
+	//
+	//	변환
+	//
+	if (0 == WideCharToMultiByte(CP_UTF8, 
+								 0, 
+								 wcs, 
+								 -1, 
+								 outChar.get(), 
+								 outLen, 
+								 nullptr, 
+								 nullptr))
+	{
+		log_err
+			"WideCharToMultiByte() failed, errcode=0x%08x",
+			GetLastError()
+			log_end;
 		return _null_stringa;
 	}
-	else
-	{
-		return std::string(tmp.get());
-	}
+
+	return std::string(outChar.get());
 }
 
 /// @brief	
 std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 {
 	_ASSERTE(nullptr != utf8);
+	_ASSERTE(0x00 != utf8[0]);
 	if (nullptr == utf8) return _null_stringw;
 	if (0x00 == utf8[0]) return _null_stringw;
 
-	wchar_ptr tmp(Utf8MbsToWcs(utf8), [](wchar_t* p) {
-		if (nullptr != p)
-		{
-			free(p);
-		}
-	});
+	//
+	//	변환에 필요한 버퍼 크기 계산
+	//
+	int outLen = MultiByteToWideChar(CP_UTF8, 
+									 MB_ERR_INVALID_CHARS, 
+									 utf8, 
+									 -1, 
+									 nullptr, 
+									 0);
+	if (0 == outLen) return _null_stringw;
 
-	if (NULL == tmp.get())
+	//
+	//	버퍼 할당
+	//
+	wchar_ptr outWchar((wchar_t*)malloc(outLen * (sizeof(wchar_t))), 
+					   [](wchar_t* p) 
 	{
+		if (nullptr != p)free(p);
+	});
+	if (nullptr == outWchar.get()) return _null_stringw;
+	RtlZeroMemory(outWchar.get(), outLen);
+
+	//
+	//	변환
+	//
+	if (0 == MultiByteToWideChar(CP_UTF8, 
+								 MB_ERR_INVALID_CHARS, 
+								 utf8, 
+								 -1, 
+								 outWchar.get(), 
+								 outLen))
+	{
+		log_err
+			"MultiByteToWideChar() failed, errcode=0x%08x",
+			GetLastError()
+			log_end;
 		return _null_stringw;
 	}
-	else
-	{
-		return std::wstring(tmp.get());
-	}
+
+	return std::wstring(outWchar.get());
 }
 
 /// @brief	포맷팅된 문자열을 리턴한다. 
@@ -4416,13 +4510,11 @@ uint32_t hash_string32w(_In_ const wchar_t* s, _In_opt_ uint32_t seed)
 	if (NULL == s) return 0;
 
 	uint32_t ret = 0;
-	char* mbs = WcsToMbs(s);
-	if (NULL != mbs)
+	auto mbs = WcsToMbsEx(s);
+	if (!mbs.empty())
 	{
-		ret = hash_string32(mbs, seed);
-		free(mbs);
+		ret = hash_string32(mbs.c_str(), seed);
 	}
-
 	return ret;
 }
 
@@ -4432,13 +4524,11 @@ uint64_t hash_string64w(_In_ const wchar_t* s, _In_opt_ uint64_t seed)
 	if (NULL == s) return 0;
 
 	uint64_t ret = 0;
-	char* mbs = WcsToMbs(s);
-	if (NULL != mbs)
+	auto mbs = WcsToMbsEx(s);
+	if (!mbs.empty())
 	{
-		ret = hash_string64(mbs, seed);
-		free(mbs);
+		ret = hash_string64(mbs.c_str(), seed);
 	}
-
 	return ret;
 }
 

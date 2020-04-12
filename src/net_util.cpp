@@ -585,6 +585,15 @@ dns_to_ip(
 	return true;
 }
 
+
+
+
+
+
+
+
+
+
 ///	@brief	
 std::string
 ipv4_to_str(
@@ -608,32 +617,44 @@ ipv4_to_str(
 						  ipv4_buf,
 						  sizeof(ipv4_buf)))
 	{
-		log_err "InetNtopA( ) failed. wsa_gle = %u",
+		log_err "InetNtopA() failed. wsa gle=%u",
 			WSAGetLastError()
 			log_end;
-		return std::string("0.0.0.0");
+		return _null_stringa;
+		
 	}
 	return std::string(ipv4_buf);
 }
 
-/// @brief  
-std::string
-ipv6_to_str(
-	_In_ in_addr6& ipv6
+/// @brief	
+std::wstring 
+ipv4_to_strw(
+	_In_ uint32_t ip_netbyte_order
 )
 {
-	char ipv6_buf[46 + 1] = { 0 };
-	if (NULL == InetNtopA(AF_INET6,
-						  &ipv6,
-						  ipv6_buf,
-						  sizeof(ipv6_buf)))
+	in_addr ia;
+	ia.s_addr = ip_netbyte_order;
+	return ipv4_to_strw(ia);
+}
+
+/// @brief	
+std::wstring
+ipv4_to_strw(
+	_In_ in_addr& ipv4
+)
+{
+	wchar_t ipv4_buf[16 + 1] = { 0 };
+	if (NULL == InetNtopW(AF_INET,
+						  &ipv4,
+						  ipv4_buf,
+						  sizeof(ipv4_buf)))
 	{
-		log_err "InetNtopA( ) failed. wsa_gle = %u",
+		log_err "InetNtopW() failed. wsa gle=%u",
 			WSAGetLastError()
 			log_end;
-		return std::string("0.0.0.0");
+		return _null_stringw;
 	}
-	return std::string(ipv6_buf);
+	return std::wstring(ipv4_buf);
 }
 
 /// @brief  
@@ -643,23 +664,33 @@ str_to_ipv4(
 	_Out_ uint32_t& ip_netbyte_order
 )
 {
-	_ASSERTE(nullptr != ipv4);
-	if (nullptr == ipv4) return false;
+	_ASSERTE(NULL != ipv4);
+	if (NULL != ipv4)
+	{
+		in_addr ipv4_addr = { 0 };
+		int ret = InetPtonA(AF_INET,
+							ipv4,
+							&ipv4_addr);
+		switch (ret)
+		{
+		case 1:
+			ip_netbyte_order = ipv4_addr.s_addr;
+			return true;    // success
+		case 0:
+			log_warn "invalid ipv4 string. input=%s",
+				ipv4
+				log_end;
+			return false;
+		case -1:
+			log_err "InetPtonA() failed. input=%s, wsa gle=%u",
+				ipv4,
+				WSAGetLastError()
+				log_end;
+			return false;
+		}
+	}
 
-	return str_to_ipv4(MbsToWcsEx(ipv4).c_str(), ip_netbyte_order);
-}
-
-/// @brief  
-bool
-str_to_ipv6(
-	_In_ const char* const ipv6,
-	_Out_ in_addr6& ip_netbyte_order
-)
-{
-	_ASSERTE(nullptr != ipv6);
-	if (nullptr == ipv6) return false;
-
-	return str_to_ipv6(MbsToWcsEx(ipv6).c_str(), ip_netbyte_order);
+	return false;
 }
 
 /// @brief  
@@ -689,6 +720,78 @@ str_to_ipv4(
 		case -1:
 			log_err "InetPtonW() failed. input = %ws, wsa gle = %u",
 				ipv4,
+				WSAGetLastError()
+				log_end;
+			return false;
+		}
+	}
+
+	return false;
+}
+
+/// @brief  
+std::string
+ipv6_to_str(
+	_In_ in_addr6& ipv6
+)
+{
+	char ipv6_buf[46 + 1] = { 0 };
+	if (NULL == InetNtopA(AF_INET6,
+						  &ipv6,
+						  ipv6_buf,
+						  sizeof(ipv6_buf)))
+	{
+		log_err "InetNtopA() failed. wsa gle=%u",
+			WSAGetLastError()
+			log_end;
+		return _null_stringa;
+	}
+	return std::string(ipv6_buf);
+}
+
+std::wstring 
+ipv6_to_strw(
+	_In_ in_addr6& ipv6
+)
+{
+	wchar_t ipv6_buf[46 + 1] = { 0 };
+	if (NULL == InetNtopW(AF_INET6,
+						  &ipv6,
+						  ipv6_buf,
+						  sizeof(ipv6_buf)))
+	{
+		log_err "InetNtopW() failed. wsa gle=%u",
+			WSAGetLastError()
+			log_end;
+		return _null_stringw;
+		
+	}
+	return std::wstring(ipv6_buf);
+}
+
+/// @brief  
+bool
+str_to_ipv6(
+	_In_ const char* const ipv6,
+	_Out_ in_addr6& ip_netbyte_order
+)
+{
+	_ASSERTE(NULL != ipv6);
+	if (NULL != ipv6)
+	{
+		int ret = InetPtonA(AF_INET6, ipv6, &ip_netbyte_order);
+		switch (ret)
+		{
+		case 1:
+			return true;    // success
+		case 0:
+			log_warn "invalid ipv6 string. input = %ws",
+				ipv6
+				log_end;
+			return false;
+		case -1:
+			log_err "InetPtonW() failed. input = %ws, wsa gle = %u",
+				ipv6,
 				WSAGetLastError()
 				log_end;
 			return false;

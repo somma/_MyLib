@@ -423,10 +423,10 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 /******************************************************************************
  * 문자열 처리
 ******************************************************************************/
-wchar_t* MbsToWcs(_In_ const char* mbs);
-char* WcsToMbs(_In_ const wchar_t* wcs);
-char* WcsToMbsUTF8(_In_ const wchar_t* wcs);
-wchar_t* Utf8MbsToWcs(_In_ const char* utf8);
+//wchar_t* MbsToWcs(_In_ const char* mbs);
+//char* WcsToMbs(_In_ const wchar_t* wcs);
+//char* WcsToMbsUTF8(_In_ const wchar_t* wcs);
+//wchar_t* Utf8MbsToWcs(_In_ const char* utf8);
 
 static const std::wstring _null_stringw(L"");
 static const std::string  _null_stringa("");
@@ -456,18 +456,12 @@ bool lstrnicmpa(_In_ const char* src, _In_ const char* fnd, _In_ bool case_insen
 /// 두 문자열이 완전히 일치하는지 확인한다. 
 bool is_same_string(_In_ const wchar_t* lhs, _In_ const wchar_t* rhs, _In_ bool case_insensitive = true);
 
-inline void clear_str_stream_w(std::wstringstream& stream)
+/// std::stringstream, std::wstringstream 초기화
+template <typename T> void clear_sstream(T& strm)
 {
-	stream.str(L"");
-	stream.clear();
+	strm.str({});
+	strm.clear();
 }
-
-inline void clear_str_stream_a(std::stringstream& stream)
-{
-	stream.str("");
-	stream.clear();
-}
-
 
 //> T = std::string || std::wstring
 template <typename T> void to_upper_string(_Inout_ T& input){ boost::algorithm::to_upper(input);}

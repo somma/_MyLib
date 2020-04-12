@@ -197,6 +197,17 @@ std::unique_ptr<Foo> return_uniq_empty()
 	return u;
 }
 
+std::unique_ptr<Foo> return_empty()
+{
+	return {};		// 원래는 요렇게 리턴하는게 정석이라고 함(잘모르겠음)
+}
+
+std::unique_ptr<Foo> return_empty2()
+{
+	return nullptr;	// 이렇게 리턴해도 괜찮음
+}
+
+
 
 bool test_return_unique_ptr()
 {
@@ -206,6 +217,12 @@ bool test_return_unique_ptr()
 		_ASSERTE(u);
 		auto u2 = return_uniq_empty();
 		_ASSERTE(!u2);
+
+		auto u3 = return_empty();
+		_ASSERTE(!u3);
+
+		auto u4 = return_empty2();
+		_ASSERTE(!u4);
 	}
 	_mem_check_end;
 

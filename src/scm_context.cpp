@@ -345,7 +345,7 @@ install_fs_filter(
 
 #define	MF_ALTITUDE		L"Altitude"
 #define	MF_FLAGS		L"Flags"
-		clear_str_stream_w(key_path);
+		clear_sstream<std::wstringstream>(key_path);
 		key_path
 			<< L"SYSTEM\\CurrentControlSet\\Services\\"
 			<< service_name

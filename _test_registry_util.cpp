@@ -51,7 +51,6 @@ bool test_registry_util()
 
 	
 	uint64_t test64 = 1234567890;
-	uint64_t ret_test64 = 0;
 	// Write QWORD Value
 	_ASSERTE(true == RUWriteQword(key, L"test_Qword", test64));
 	// Read QWORD Value

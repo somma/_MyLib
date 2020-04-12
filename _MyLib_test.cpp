@@ -249,15 +249,16 @@ bool test_interlock_operation();
 bool test_auto_manual_reset_event();
 bool test_get_module_dirEx();
 bool test_read_line();
-
 bool test_zip_unzip();
+bool test_clear_stringsstream();
+
 
 
 void run_test()
 {
 	UINT32 _pass_count = 0;
 	UINT32 _fail_count = 0;
-
+		
 	bool ret = false;
 	//assert_bool(true, test_cstream);	
 	//assert_bool(true, test_cstream_read_only);
@@ -417,6 +418,7 @@ void run_test()
 	//assert_bool(true, test_zip_unzip);
 	
 	//assert_bool(true, test_callby_value_container);
+	assert_bool(true, test_clear_stringsstream);
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //
@@ -2537,13 +2539,13 @@ bool test_NameConverter_dosname_to_devicename()
 		_ASSERTE(0 == _wcsnicmp(L"c:", drive_letter.c_str(), 2));
 
 		// \Device\HarddiskVolume1\windows\... 포맷 입력
-		clear_str_stream_w(strm);
+		clear_sstream<std::wstringstream>(strm);
 		strm << device_name << L"\\windows\\system32\\aaa.txt";
 		_ASSERTE(true == nc.get_drive_letter_by_device_name(strm.str().c_str(), drive_letter));
 		_ASSERTE(0 == _wcsnicmp(L"c:", drive_letter.c_str(), 2));
 
 		// 없는 디바이스 (볼륨)
-		clear_str_stream_w(strm);
+		clear_sstream<std::wstringstream>(strm);
 		strm << L"\\Device\\not_exist\\";
 		_ASSERTE(true != nc.get_drive_letter_by_device_name(strm.str().c_str(), drive_letter));
 
@@ -2955,13 +2957,10 @@ bool test_GeneralHashFunctions2()
 					true,
 					[](_In_ DWORD_PTR tag, _In_ const wchar_t* path)
 	{
-		char_ptr cptr(WcsToMbs(path), [](char* p) {if (nullptr != p) free(p); });
-		if (nullptr == cptr) return true;
-
+		auto path_a = WcsToMbsEx(path);
 		std::list<std::string>* files = (std::list<std::string>*)(tag);
-		files->push_back(cptr.get());
+		files->push_back(path_a);
 		return true;
-
 	}))
 	{
 		return false;
@@ -3872,7 +3871,7 @@ bool test_zip_unzip()
 						{
 							_ASSERTE(WriteFile(h,
 											   vp.get(),
-											   entry.getSize(),
+											   (DWORD)entry.getSize(),
 											   nullptr,
 											   nullptr));
 						}
@@ -3889,6 +3888,23 @@ bool test_zip_unzip()
 			_ASSERTE(is_file_existsW(wss.str().c_str()));
 			_ASSERTE(WUDeleteDirectoryW(wss.str().c_str()));
 		}
+	}
+	_mem_check_end;
+
+	return true;
+}
+
+bool test_clear_stringsstream()
+{
+	_mem_check_begin
+	{
+		std::wstringstream ws;
+		ws << L"test............................test";
+		clear_sstream<std::wstringstream>(ws);
+
+		std::stringstream ss;
+		ss << "Test................................Test";
+		clear_sstream<std::stringstream>(ss);
 	}
 	_mem_check_end;
 

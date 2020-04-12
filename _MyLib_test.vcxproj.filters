@@ -338,9 +338,4 @@
       <Filter>Source Files\asm</Filter>
     </masm>
   </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="_MyLib_test.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
 </Project>

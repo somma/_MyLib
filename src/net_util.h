@@ -85,44 +85,23 @@ dns_to_ip(
 //	정리를 좀 해야 하는데, 귀찮다. 
 // 
 
-std::string
-ipv4_to_str(
-	_In_ uint32_t ip_netbyte_order
-);
+std::string ipv4_to_str(_In_ uint32_t ip_netbyte_order);
+std::string ipv4_to_str(_In_ in_addr& ipv4);
 
-std::string
-ipv4_to_str(
-	_In_ in_addr& ipv4
-);
+std::wstring ipv4_to_strw(_In_ uint32_t ip_netbyte_order);
+std::wstring ipv4_to_strw(_In_ in_addr& ipv4);
 
-std::string
-ipv6_to_str(
-	_In_ in_addr6& ipv6
-);
+bool str_to_ipv4(_In_ const char* const ipv4, _Out_ uint32_t& ip_netbyte_order);
+bool str_to_ipv4(_In_ const wchar_t* const ipv4,_Out_ uint32_t& ip_netbyte_order);
 
-bool
-str_to_ipv4(
-	_In_ const char* const ipv4,
-	_Out_ uint32_t& ip_netbyte_order
-);
 
-bool
-str_to_ipv6(
-	_In_ const char* const ipv6,
-	_Out_ in_addr6& ip_netbyte_order
-);
+std::string ipv6_to_str(_In_ in_addr6& ipv6); 
+std::wstring ipv6_to_strw(_In_ in_addr6& ipv6);
+bool str_to_ipv6(_In_ const wchar_t* const ipv6,_Out_ in_addr6& ip_netbyte_order);
+bool str_to_ipv6(_In_ const char* const ipv6, _Out_ in_addr6& ip_netbyte_order);
 
-bool
-str_to_ipv4(
-	_In_ const wchar_t* const ipv4,
-	_Out_ uint32_t& ip_netbyte_order
-);
 
-bool
-str_to_ipv6(
-	_In_ const wchar_t* const ipv6,
-	_Out_ in_addr6& ip_netbyte_order
-);
+
 
 bool
 get_ip_list_v4(
