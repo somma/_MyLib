@@ -423,11 +423,6 @@ bool get_short_file_name(_In_ const wchar_t* long_file_name, _Out_ std::wstring&
 /******************************************************************************
  * 문자열 처리
 ******************************************************************************/
-//wchar_t* MbsToWcs(_In_ const char* mbs);
-//char* WcsToMbs(_In_ const wchar_t* wcs);
-//char* WcsToMbsUTF8(_In_ const wchar_t* wcs);
-//wchar_t* Utf8MbsToWcs(_In_ const char* utf8);
-
 static const std::wstring _null_stringw(L"");
 static const std::string  _null_stringa("");
 
