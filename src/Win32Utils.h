@@ -1020,6 +1020,24 @@ inline uint64_t swap_endian_64(_In_ uint64_t value)
 		(value << 56);
 }
 
+inline 
+uint32_t 
+get_percentage(
+	_In_ uint64_t numerator,
+	_In_ uint64_t denominator
+)
+{
+	return denominator != 0
+		? (uint32_t)(((float)numerator / (float)denominator) * 100)
+		: 0;
+}
+
+
+
+
+
+
+
 typedef struct WU_PROCESSOR_INFO
 {
     DWORD   NumaNodeCount;

@@ -251,7 +251,7 @@ bool test_get_module_dirEx();
 bool test_read_line();
 bool test_zip_unzip();
 bool test_clear_stringsstream();
-
+bool test_print_percent();
 
 
 void run_test()
@@ -413,12 +413,13 @@ void run_test()
 	//assert_bool(true, test_unique_ptr_list);
 	//assert_bool(true, test_unique_ptr_list_remove);
 	//assert_bool(true, test_make_unique_struct_allocate);
-	assert_bool(true, test_return_unique_ptr);
+	//assert_bool(true, test_return_unique_ptr);
 
 	//assert_bool(true, test_zip_unzip);
 	
 	//assert_bool(true, test_callby_value_container);
-	assert_bool(true, test_clear_stringsstream);
+	//assert_bool(true, test_clear_stringsstream);
+	assert_bool(true, test_print_percent);	
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //
@@ -3908,6 +3909,19 @@ bool test_clear_stringsstream()
 	}
 	_mem_check_end;
 
+	return true;
+}
+
+bool test_print_percent()
+{
+	int a = 10;
+	int b = 4;
+	uint32_t p = get_percentage(b, a);
+	_ASSERTE(p == 40);
+	log_info "%u%%", p log_end;
+
+	p = get_percentage(b, 0);
+	_ASSERTE(p == 0);
 	return true;
 }
 
