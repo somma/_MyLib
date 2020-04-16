@@ -92,7 +92,7 @@ std::wstring ipv4_to_strw(_In_ uint32_t ip_netbyte_order);
 std::wstring ipv4_to_strw(_In_ in_addr& ipv4);
 
 bool str_to_ipv4(_In_ const char* const ipv4, _Out_ uint32_t& ip_netbyte_order);
-bool str_to_ipv4(_In_ const wchar_t* const ipv4,_Out_ uint32_t& ip_netbyte_order);
+bool str_to_ipv4(_In_ const wchar_t* const ipv4, _Out_ uint32_t& ip_netbyte_order);
 
 
 std::string ipv6_to_str(_In_ in_addr6& ipv6); 
