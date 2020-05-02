@@ -6862,7 +6862,7 @@ void dump_file_create_options(_In_ uint32_t NtCreateFile_CreateOptions)
 #define FILE_OPEN_NO_RECALL                     0x00400000
 #define FILE_OPEN_FOR_FREE_SPACE_QUERY          0x00800000
 
-	char buf[256];
+	char buf[512];
 	char* pos = buf;
 	size_t remain = sizeof(buf);
 	bool add_lf = false;
