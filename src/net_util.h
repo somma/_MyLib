@@ -138,5 +138,6 @@ get_addr_infow(
 
 bool
 is_reserved_ipv4(
-	_In_ uint32_t ip_netbyte_order
+	_In_ uint32_t ip_netbyte_order, 
+	_In_ bool include_private = true
 );
