@@ -25,6 +25,7 @@
 #include <TLHELP32.H>
 #include <userenv.h>
 #include <Wtsapi32.h>
+#include <shlwapi.h>
 #pragma comment (lib, "userenv.lib")
 #pragma comment (lib, "Wtsapi32.lib")
 
@@ -8032,6 +8033,59 @@ get_process_token_elevated(
 
 	token_is_elevated = (0 != te.TokenIsElevated ? true : false);
 	return true;
+}
+
+///	@brief
+std::wstring
+get_default_browser(
+)
+{
+	//
+	//	필요한 버퍼 길이 구하기
+	//
+	DWORD cch_buf = 0;
+	HRESULT ret = AssocQueryStringW(ASSOCF_INIT_IGNOREUNKNOWN,
+									ASSOCSTR_EXECUTABLE,
+									L".html",
+									nullptr,
+									nullptr,
+									&cch_buf);
+	_ASSERTE(ret == S_FALSE);
+	if (ret != S_FALSE)
+	{
+		return _null_stringw;
+	}
+
+	//
+	//	버퍼 할당
+	//
+	std::unique_ptr<char[]> buf = std::make_unique<char[]>((cch_buf + 1) * sizeof(wchar_t));
+	if (!buf)
+	{
+		log_err
+			"No resources for buf. size=%u",
+			(cch_buf + 1) * sizeof(wchar_t)
+			log_end;
+		return _null_stringw;
+	}
+
+	//
+	//	디폴트 브라우저 경로 구하기
+	//
+	ret = AssocQueryStringW(ASSOCF_INIT_IGNOREUNKNOWN,
+							ASSOCSTR_EXECUTABLE,
+							L".html",
+							nullptr,
+							(wchar_t*)buf.get(),
+							&cch_buf);
+	if (ret == S_OK)
+	{
+		return std::wstring((wchar_t*)buf.get());
+	}
+	else
+	{
+		return _null_stringw;
+	}
 }
 
 /// @brief 설치된 프로그램의 정보(프로그램명, 버전, 제조사) 읽어 온다.

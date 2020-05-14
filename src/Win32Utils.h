@@ -819,6 +819,17 @@ get_process_token_elevated(
 	_Out_ bool& token_is_elevated
 	);
 
+///	@brief	default browser의 실행 경로를 가져온다.
+///
+///			IE: C:\Program Files\Internet Explorer\iexplore.exe
+///			firefox: C:\Program Files\Mozilla Firefox\firefox.exe
+///			Chrome: C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+///			Edge(구버전): C:\Windows\system32\LaunchWinApp.exe
+///						 "LaunchWinApp.exe https://google.com"을 실행할 경우 edge 브라우저에
+///						 google.com이 실행되기 때문에 LaunchWinApp.exe를 반환한다.
+///			Edge(신버전): C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+std::wstring get_default_browser();
+
 /// @brief 프로그램 정보
 ///
 typedef class program
