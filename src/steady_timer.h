@@ -37,6 +37,8 @@ public:
 		stop();
 	}
 
+	bool running() { return _running; }
+
 	bool start(_In_ uint32_t interval_by_sec,
 			   _In_ DWORD_PTR tag,
 			   _In_ SteadyTimerCallback callback)
