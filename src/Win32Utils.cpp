@@ -2241,9 +2241,8 @@ SaveToFileAsUTF8W(
 	return TRUE;
 }
 
-/**
-* @brief	파일을 메모리에 로드한다. 반환되는 메모리는 동적할당된 메모리이므로 caller 가 해제해야 함
-*/
+///	@brief	파일을 메모리에 로드한다. 
+///			반환되는 메모리는 동적할당된 메모리이므로 caller 가 해제해야 함
 bool
 LoadFileToMemory(
 	_In_ const LPCWSTR  FilePath,

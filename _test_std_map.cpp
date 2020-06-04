@@ -12,6 +12,7 @@
 #include <iostream>
 #include <unordered_map>
 
+using namespace boost::placeholders;
 
 bool test_std_unordered_map_object();
 bool test_unorded_map_test_move();

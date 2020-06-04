@@ -14,6 +14,7 @@
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
 #include <crtdbg.h>
+#include <openssl/ossl_typ.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/err.h>
@@ -21,10 +22,6 @@
 #include "_MyLib/src/log.h"
 #include "_MyLib/src/Win32Utils.h"
 #include "_MyLib/src/AirCrypto.h"
-
-#pragma comment(lib, "libeay32.lib")
-
-
 
 /**
 * @brief	aes256 파일 암호화
@@ -85,16 +82,17 @@ aes256_encrypt(
 	if (LoadFileToMemory(target_file_path.c_str(), file_size, buffer))
 	{
 		if (!AirCryptBuffer(const_cast<unsigned char*>(key),
-							(uint32_t)strlen((const char*)key),
-							buffer,
-							file_size,
-							encrypt_data,
-							length,
-							true))
+						(uint32_t)strlen((const char*)key),
+						buffer,
+						file_size,
+						encrypt_data,
+						length,
+						true))
 		{
 			log_err "AirCryptBuffer() failed." log_end;
 			return false;
 		}
+		
 		if (!SaveBinaryFile(target_file_directory.c_str(),
 							encrypt_file_name.c_str(),
 							file_size,
@@ -350,22 +348,27 @@ AirCryptBuffer(
 		nullptr != Output) 
 		return false;
 
-	ERR_load_crypto_strings();
+	//
+	//	"opaque" encryption, decryption ctx structures that libcrypto 
+	//	uses to record status of enc/dec operations 
+	//	 
 
-	/* "opaque" encryption, decryption ctx structures that libcrypto uses to record
-     * status of enc/dec operations 
-	 */
-
-	EVP_CIPHER_CTX ctx;
-	SecureZeroMemory(&ctx, sizeof(EVP_CIPHER_CTX));
+	std::unique_ptr<EVP_CIPHER_CTX, void(*)(EVP_CIPHER_CTX*)> ctx(
+		EVP_CIPHER_CTX_new(), 
+		[](EVP_CIPHER_CTX* ctx) 
+	{
+		if (nullptr != ctx)
+		{
+			EVP_CIPHER_CTX_free(ctx);
+		}	
+	});
 
 	if (!aes_init(PassPhrase, 
 				  PassPhraseLen, 
-				  &ctx, 
+				  ctx.get(), 
 				  Encrypt))
 	{
 		log_err "aes_init() failed." log_end;
-		ERR_free_strings();
 		return false;
 	}
 
@@ -374,35 +377,29 @@ AirCryptBuffer(
 
 	if (true == Encrypt)
 	{
-		out = aes_encrypt(&ctx, 
+		out = aes_encrypt(ctx.get(),
 			  			  Input, 
 						  &outlen);
 		if (nullptr == out)
 		{
 			log_err "aes_encrypt() failed" log_end;
-			ERR_free_strings();
 			return false;
 		}		
 	}
 	else
 	{
-		out = aes_decrypt(&ctx, 
+		out = aes_decrypt(ctx.get(), 
 						  Input, 
 						  &outlen);
 		if (nullptr == out)
 		{
 			log_err "aes_encrypt() failed" log_end;
-			ERR_free_strings();
 			return false;
 		}
 	}
 
 	Output = out;
 	OutputLength = outlen;
-
-	EVP_CIPHER_CTX_cleanup(&ctx);
-	ERR_free_strings();
-
 	return true;
 }
 

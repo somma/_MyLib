@@ -87,6 +87,9 @@ bool test_aes256()
 	std::wstring decrypt_file_path = L"C:\\_test_aes256\\ase256_test_after.conf";
 	unsigned char origin_key[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890*!=&?&/";
 
+	WUDeleteDirectoryW(L"C:\\_test_aes256");
+
+
 	//테스트 샘플 생성
 	if (!create_test_sample(target_file_path))
 	{
@@ -95,11 +98,11 @@ bool test_aes256()
 		RemoveDirectoryW(L"C:\\_test_aes256");
 		return false;
 	}
-
+	
 	//이미 암호화 파일이 존재하면 삭제
 	if (is_file_existsW(encrypt_file_path.c_str()))
 	{
-		log_err "encrypt file exits, encrypt file delete!!" log_end;
+		log_info "encrypt file exits, encrypt file delete!!" log_end;
 		::DeleteFileW(encrypt_file_path.c_str());
 	}
 
@@ -111,11 +114,11 @@ bool test_aes256()
 		log_err "aes256_encrypt() err" log_end;
 		return false;
 	}
-
+	
 	//aes256 복호화 파일 존재하면 삭제
 	if (is_file_existsW(decrypt_file_path.c_str()))
 	{
-		log_err "decrypt file exits, decrypt file delete!!" log_end;
+		log_info "decrypt file exits, decrypt file delete!!" log_end;
 		::DeleteFileW(decrypt_file_path.c_str());
 	}
 
@@ -128,7 +131,7 @@ bool test_aes256()
 		return false;
 	}
 	
-	log_info "[result] aes256 test folder : C:\\_test_aes256" log_end;
-
+	log_info "Done." log_end;
+	WUDeleteDirectoryW(L"C:\\_test_aes256");
 	return true;
 }

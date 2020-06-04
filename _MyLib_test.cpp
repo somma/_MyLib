@@ -393,7 +393,7 @@ void run_test()
 	//assert_bool(true, test_read_mouted_device);
 	//assert_bool(true, test_set_binary_data);
 	//assert_bool(true, test_reg_multi_value);
-	//assert_bool(true, test_aes256);
+	assert_bool(true, test_aes256);
 
 	//assert_bool(true, test_curl_https_down_with_auth);
 	//assert_bool(true, test_curl_https);

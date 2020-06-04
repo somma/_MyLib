@@ -11,6 +11,8 @@
 #include "_MyLib/src/log.h"
 #include "_MyLib/src/Win32Utils.h"
 
+using namespace boost::placeholders;
+
 /**
 * @brief	boost::bind() - part 1
 */
@@ -41,9 +43,13 @@ bool boost_bind()
 	// boost::bind(f, 1, _1) 로 파라미터를 고정해서 f(val) 형태로 호출이 가능하고, 
 	// 항상 (1+ val) 를 리턴하게 된다. 이런 특징을 이용해서 callback 함수에 부가적인 
 	// 파라미터를 전달하거나, 파라미터 순서를 조작하는 등의 일을 할 수 있다.
-	boost::function<int (int, int)> xf = boost::bind(f, 1, _1);
+	boost::function<int (int, int)> xf = boost::bind(f, 
+													 1, 
+													 _1);
     std::cout	<< "xf(1, 2) = "					<< ff(1, 2) 
-				<< "boost::bind(f, 1, _1)(2) = "	<< boost::bind(f, 1, _1)(2) 
+				<< "boost::bind(f, 1, _1)(2) = "	<< boost::bind(f, 
+																   1, 
+																   _1)(2)
 				<< std::endl;
 
 
@@ -51,7 +57,9 @@ bool boost_bind()
     int y = 4;
     int z = 5;
 
-    assert( f(y, x) == bind(f, _2, _1)(x,y) );
+    assert( f(y, x) == bind(f, 
+							_2, 
+							_1)(x,y) );
     assert( g(x, 9, x) == bind(g, _1, 9, _1)(x) );
     assert( g(z,z,z) == bind(g, _3, _3, _3)(x,y,z) );
     assert( g(x,x,x) == bind(g, _1, _1, _1)(x,y,z) );
