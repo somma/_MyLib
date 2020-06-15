@@ -26,6 +26,7 @@ curl_client::curl_client()
 	_follow_location(true),
 	_ssl_verify_peer(true),
 	_ssl_verify_host(true),
+	_user_agent(_null_stringa),
 	_verbose(false)
 {
 }
@@ -659,6 +660,25 @@ bool curl_client::prepare_perform(_In_ const char* const url)
 				log_end;
 			break;
 		}
+
+		//
+		//	Set user-agent
+		//
+		if (!_user_agent.empty())
+		{
+			curl_code = curl_easy_setopt(_curl,
+										 CURLOPT_USERAGENT,
+										 _user_agent.c_str());
+			if (CURLE_OK != curl_code)
+			{
+				log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+					curl_code,
+					curl_easy_strerror(curl_code)
+					log_end;
+				break;
+			}
+		}
+		
 
 		//
 		//	get verbose debug output 

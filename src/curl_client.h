@@ -125,6 +125,7 @@ private:
 	bool _follow_location;
 	bool _ssl_verify_peer;
 	bool _ssl_verify_host;
+	std::string _user_agent;
 	bool _verbose;
 
 	typedef std::map<std::string, std::string> Fields;
@@ -139,6 +140,7 @@ public:
 	void set_follow_location(const bool value) { _follow_location = value; }
 	void set_ssl_verify_peer(const bool value) { _ssl_verify_peer = value; }
 	void set_ssl_verify_host(const bool value) { _ssl_verify_host = value; }
+	void set_user_agent(const char* value) { _user_agent = value; }
 	void set_verbose(const bool value) { _verbose = value; }
 
 
