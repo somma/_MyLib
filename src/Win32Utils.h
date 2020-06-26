@@ -243,6 +243,7 @@ bool get_file_size(_In_ const wchar_t* const file_path, _Out_ int64_t& size);
 bool get_file_size(_In_ HANDLE file_handle, _Out_ int64_t& size);
 bool get_file_version(_In_ const wchar_t* file_path, _Out_ std::wstring& file_version);
 bool get_file_company_name(_In_ const wchar_t* file_path, _Out_ std::wstring& company_name);
+bool get_file_original_name(_In_ const wchar_t* file_path, _Out_ std::wstring& original_name);
 ULONG get_file_versioninfo_lang_code_page(_In_ PVOID version_info);
 bool get_file_position(_In_ HANDLE file_handle, _Out_ int64_t& position);
 bool set_file_position(_In_ HANDLE file_handle, _In_ int64_t distance, _Out_opt_ int64_t* new_position);
