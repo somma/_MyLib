@@ -3979,6 +3979,32 @@ int _tmain(int argc, _TCHAR* argv[])
 			return 0;
 		}
 		//
+		//	mylib.exe /ip_to_netint 192.168.0.1
+		//
+		else if (argc == 3 && (0 == _wcsicmp(&argv[1][1], L"ip_to_netint")))
+		{
+			wchar_t* ip_str = argv[2];
+			uint32_t ip;
+			if (!str_to_ipv4(ip_str, ip))
+			{
+				log_err
+					"str_to_ipv4() failed. Input=%ws",
+					ip_str
+					log_end; 				
+				return -1;
+			}
+			else
+			{
+				log_info
+					"Input=%ws, IP(network bytes order)=%u",
+					ip_str,
+					ip
+					log_end;
+			}
+
+			return 0;
+		}
+		//
 		//	mylib.exe /session_info
 		//
 		else if (argc == 2 && (0 == _wcsicmp(&argv[1][1], L"session_info")))
@@ -4011,7 +4037,9 @@ int _tmain(int argc, _TCHAR* argv[])
 				"\nUsage:\n\n"\
 				"%ws /?	show help \n"\
 				"%ws /filetime_to_str 131618627540824506\n"\
+				"%ws /ip_to_netint 192.168.0.1\n"\
 				"%ws /session_info \n",
+				argv[0],
 				argv[0],
 				argv[0],
 				argv[0]
