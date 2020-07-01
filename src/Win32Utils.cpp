@@ -1835,6 +1835,101 @@ get_file_company_name(
 	return true;
 }
 
+/// @brief 지정된 파일의 OriginalFilename 정보를 수집하는 함수
+/// @return 성공		true
+///					(파일에 리소스 섹션이 없는경우에도,
+///					 file_version을 ""로 true를 return 한다.)
+/// @return 실패		false
+///
+bool
+get_file_original_name(
+	_In_ const wchar_t* file_path,
+	_Out_ std::wstring& original_name
+)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path)
+	{
+		return false;
+	}
+
+	DWORD size = GetFileVersionInfoSizeW(file_path,
+										 0);
+
+	if (0 == size)
+	{
+		DWORD err = GetLastError();
+		if (ERROR_RESOURCE_DATA_NOT_FOUND == err ||
+			ERROR_RESOURCE_TYPE_NOT_FOUND == err)
+		{
+			//
+			// 파일의 리소스 섹션이 없는 경우 항상 실패하게 된다.
+			// 때문에 ori_file_name을 ""으로 설정하고 true를 반환한다.
+			//
+			original_name = L"";
+			return true;
+		}
+
+		log_err "GetFileVersionInfoSize() failed, file=%ws, gle=%u",
+			original_name.c_str(),
+			err
+			log_end;
+		return false;
+	}
+
+	wchar_ptr buffer((wchar_t*)malloc(size),
+					 [](_In_ wchar_t* ptr)
+	{
+		if (nullptr != ptr) free(ptr);
+	});
+	if (nullptr == buffer.get())
+	{
+		log_err "Not enough memory, malloc size=%u",
+			size
+			log_end;
+		return false;
+	}
+
+	if (TRUE != GetFileVersionInfoExW(FILE_VER_GET_NEUTRAL,
+									  file_path,
+									  0,
+									  size,
+									  buffer.get()))
+	{
+		log_err "GetFileVersionInfo() failed, file=%ws, gle=%u",
+			file_path,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	ULONG lang_code_page = get_file_versioninfo_lang_code_page(buffer.get());
+
+	std::wstringstream query;
+	query
+		<< L"\\StringFileInfo\\"
+		<< std::setw(8) << std::setfill(L'0') << std::hex << lang_code_page
+		<< L"\\OriginalFilename";
+
+	std::wstringstream cn;
+	UINT length;
+	LPVOID value;
+	if (TRUE != VerQueryValue(buffer.get(),
+							  query.str().c_str(),
+							  &value,
+							  &length))
+	{
+		log_err "VerQueryValue() failed. query=%ws",
+			query.str().c_str()
+			log_end;
+		return false;
+	}
+	_ASSERTE(nullptr != value);
+	original_name = reinterpret_cast<wchar_t*>(value);
+
+	return true;
+}
+
 ULONG
 get_file_versioninfo_lang_code_page(
 	_In_ PVOID version_info

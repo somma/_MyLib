@@ -156,6 +156,7 @@ bool test_get_environment_value();
 bool test_get_account_infos();
 bool test_get_installed_programs();
 bool test_get_file_company_name();
+bool test_get_file_original_name();
 bool test_generate_random_string();
 bool test_bit_check_set_clear();
 bool test_file_time_stuff();
@@ -419,7 +420,8 @@ void run_test()
 	
 	//assert_bool(true, test_callby_value_container);
 	//assert_bool(true, test_clear_stringsstream);
-	assert_bool(true, test_print_percent);	
+	//assert_bool(true, test_print_percent);	
+	assert_bool(true, test_get_file_original_name);
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //
@@ -1534,6 +1536,21 @@ bool test_get_file_company_name()
 	log_info
 		"notepad publisher=%ws",
 		company_name.c_str()
+		log_end;
+
+	return true;
+}
+
+/**
+ * @brief
+ **/
+bool test_get_file_original_name()
+{
+	std::wstring original_name;
+	_ASSERTE(true == get_file_original_name(L"C:\\Windows\\System32\\notepad.exe", original_name));
+	log_info
+		"notepad original_name=%ws",
+		original_name.c_str()
 		log_end;
 
 	return true;
