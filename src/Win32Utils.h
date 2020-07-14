@@ -189,8 +189,8 @@ std::string sys_time_to_str2(_In_ const PSYSTEMTIME utc_sys_time);
 /******************************************************************************
  * file, disk, volumes
 ******************************************************************************/
-bool is_file_existsW(_In_ std::wstring& file_path);
-bool is_file_existsA(_In_ std::string& file_path);
+bool is_file_existsW(_In_ const std::wstring& file_path);
+bool is_file_existsA(_In_ const std::string& file_path);
 bool is_file_existsW(_In_ const wchar_t* file_path);
 bool is_file_existsA(_In_ const char* file_path);
 bool is_dir(_In_ const wchar_t* file_path);

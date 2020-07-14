@@ -457,12 +457,12 @@ sys_time_to_str2(
 }
 
 
-bool is_file_existsW(_In_ std::wstring& file_path)
+bool is_file_existsW(_In_ const std::wstring& file_path)
 {
 	return is_file_existsW(file_path.c_str());
 }
 
-bool is_file_existsA(_In_ std::string& file_path)
+bool is_file_existsA(_In_ const std::string& file_path)
 {
 	return is_file_existsA(file_path.c_str());
 }
