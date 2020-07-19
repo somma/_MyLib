@@ -9,13 +9,13 @@
 #include "stdafx.h"
 #include <regex>
 #include <unordered_map>
+#include <winioctl.h>
 
 #include "libzippp/libzippp.h"
 
 #include "_MyLib/src/process_tree.h"
 #include "_MyLib/src/base64.h"
 #include "_MyLib/src/rc4.h"
-#include "_MyLib/src/thread_pool.h"
 #include "_MyLib/src/md5.h"
 #include "_MyLib/src/sha2.h"
 #include "_MyLib/src/Win32Utils.h"
@@ -29,7 +29,6 @@
 #include "_MyLib/src/account_info.h"
 #include "_MyLib/src/CStream.h"
 #include "_MyLib/src/sched_client.h"
-
 
 
 // test_CStream.cpp
@@ -57,9 +56,6 @@ extern bool test_iphelp_api();
 
 // _test_process_token.cpp
 extern bool test_process_token();
-
-// _test_std_move.cpp
-bool test_std_move();
 
 bool test_log_xxx();
 bool test_set_security_attributes();
@@ -211,7 +207,7 @@ bool test_curl_http();
 bool test_curl_http_upload();
 
 // thread_pool.h
-bool test_thread_pool();
+extern bool test_thread_pool();
 
 // _test_boost_thread.cpp
 extern bool test_boost_thread();
@@ -236,9 +232,11 @@ extern bool test_return_unique_ptr();
 // _test_call_by_value_container.cpp
 extern bool test_callby_value_container();
 
+// _test_rvo_move.cpp
+extern bool test_rvo_and_move();
+
 
 bool test_create_guid();
-
 bool test_is_executable_file_w();
 bool test_singleton();
 bool test_trivia();
@@ -277,7 +275,6 @@ void run_test()
 	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
-	//assert_bool(true, test_std_move);
 	//assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);
 	//assert_bool(true, test_GeneralHashFunctions);
@@ -421,7 +418,9 @@ void run_test()
 	//assert_bool(true, test_callby_value_container);
 	//assert_bool(true, test_clear_stringsstream);
 	//assert_bool(true, test_print_percent);	
-	assert_bool(true, test_get_file_original_name);
+	//assert_bool(true, test_get_file_original_name);
+
+	assert_bool(true, test_rvo_and_move);
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //
@@ -1771,82 +1770,6 @@ bool test_md5_sha2()
     CloseHandle(file_handle);
     return true;
 }
-
-/**
- * @brief thread_pool test
- */
-
-void work()
-{
-	log_info "tid = %u, running", GetCurrentThreadId() log_end;
-};
-
-struct worker
-{
-    void operator()()
-    {
-		log_info "tid = %u, running", GetCurrentThreadId() log_end;
-    };
-};
-
-void more_work( int v)
-{
-	log_info "tid = %u, running = %d", GetCurrentThreadId(), v log_end;
-    //getchar();
-};
-
-class RunClass
-{
-public:
-	bool CalledByThread(_In_ const char* msg)
-	{
-		log_info "tid=%u, msg=%s",
-			GetCurrentThreadId(),
-			msg
-			log_end;
-		return true;
-	}
-};
-
-
-bool test_thread_pool()
-{
-    thread_pool pool(8);
-    pool.run_task( work );                        // Function pointer.
-    pool.run_task( worker() );                    // Callable object.
-    pool.run_task( boost::bind( more_work, 5 ) ); // Callable object.
-    pool.run_task( worker() );                    // Callable object.
-
-	pool.run_task([]()								// lambda
-	{
-		log_info "tid=%u",GetCurrentThreadId() log_end;
-	});
-
-
-	RunClass rc;
-	pool.run_task([&]()
-	{
-		if (true != rc.CalledByThread("test msg"))
-		{
-			log_err "rc.CalledByThread() failed." log_end;
-		}
-		else
-		{
-			log_info "rc.CalledByThread() succeeded." log_end;
-		}
-	});
-
-
-    // Wait until all tasks are done.
-    while (0 < pool.get_task_count())
-    {
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
-    }
-
-	return true;
-}
-
-#include <winioctl.h>
 
 
 bool test_enum_physical_drive()
