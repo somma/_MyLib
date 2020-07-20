@@ -235,6 +235,9 @@ extern bool test_callby_value_container();
 // _test_rvo_move.cpp
 extern bool test_rvo_and_move();
 
+// _test_cppjson.cpp
+extern bool test_cpp_joson();
+
 
 bool test_create_guid();
 bool test_is_executable_file_w();
@@ -420,7 +423,8 @@ void run_test()
 	//assert_bool(true, test_print_percent);	
 	//assert_bool(true, test_get_file_original_name);
 
-	assert_bool(true, test_rvo_and_move);
+	//assert_bool(true, test_rvo_and_move);
+	assert_bool(true, test_cpp_joson);
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //

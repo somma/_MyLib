@@ -335,6 +335,9 @@
     <ClCompile Include="_test_thread_pool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="_test_cppjson.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">
