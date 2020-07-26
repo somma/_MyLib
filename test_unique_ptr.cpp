@@ -66,26 +66,20 @@ bool test_unique_ptr_assign()
 		std::unique_ptr<char[]> y = std::make_unique<char[]>(1024);
 		std::unique_ptr<char[]> x = std::make_unique<char[]>(512);
 
-		// unique_ptr 은 복사가 안됨
-		// std::move 를 해야 함
+		// unique_ptr 은 복사가 안됨, std::move 를 해야 함
+		// y 에 이미 할당되어있던 메모리는 x 를 이동할때 소멸 됨
 		y = std::move(x);
-			// y 에 이미 할당되어있던 메모리는 x 를 이동할때 소멸 됨
-			// x 포이터는 y 로 이동되었고, y 소멸시 해제 ?
-
 		
 		//
 		//	동일한 테스트............
-		//	소멸자 호출이 정상적으로 되는지 확인
+		//	소멸자는 정상적으로 호출됨
 		//
-
 		std::unique_ptr<Foo> yyyy = std::make_unique<Foo>("yyyy");
 		std::unique_ptr<Foo> xxxx = std::make_unique<Foo>("xxxx");
 
-		// unique_ptr 은 복사가 안됨
-		// std::move 를 해야 함
-		yyyy = std::move(xxxx);
+		// unique_ptr 은 복사가 안됨, std::move 를 해야 함
 		// y 에 이미 할당되어있던 메모리는 x 를 이동할때 소멸 됨
-		// x 포이터는 y 로 이동되었고, y 소멸시 해제 ?
+		yyyy = std::move(xxxx);
 	}
 	_mem_check_end;
 
@@ -110,9 +104,8 @@ bool test_unique_ptr_list()
 		fooz.clear();
 
 		//
-		//	No leaks
+		//	No leaks!!
 		//
-
 	}
 	_mem_check_end;
 
@@ -207,6 +200,23 @@ std::unique_ptr<Foo> return_empty2()
 	return nullptr;	// 이렇게 리턴해도 괜찮음
 }
 
+void func_foo_param(_In_ Foo* foo_param)
+{
+	log_info "str=%s", foo_param->foo_str.c_str() log_end;	
+}
+
+void call_func_foo_param()
+{
+	_mem_check_begin
+	{
+		// 임시 unique_ptr 객체를 만들어서 포인터만 파라미터로 전달
+		func_foo_param(std::make_unique<Foo>("func_foo_param").get());
+	}
+	_mem_check_end;	
+}
+
+
+
 
 
 bool test_return_unique_ptr()
@@ -223,6 +233,8 @@ bool test_return_unique_ptr()
 
 		auto u4 = return_empty2();
 		_ASSERTE(!u4);
+
+		call_func_foo_param();
 	}
 	_mem_check_end;
 

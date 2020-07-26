@@ -30,7 +30,6 @@
 #include "_MyLib/src/CStream.h"
 #include "_MyLib/src/sched_client.h"
 
-
 // test_CStream.cpp
 extern bool test_cstream();
 extern bool test_cstream_read_only();
@@ -238,6 +237,8 @@ extern bool test_rvo_and_move();
 // _test_cppjson.cpp
 extern bool test_cpp_joson();
 
+// _test_template.cpp
+extern bool test_template();
 
 bool test_create_guid();
 bool test_is_executable_file_w();
@@ -426,6 +427,7 @@ void run_test()
 	//assert_bool(true, test_rvo_and_move);
 	assert_bool(true, test_cpp_joson);
 
+	//assert_bool(true, test_template);
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //
 	//assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.

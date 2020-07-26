@@ -3751,7 +3751,7 @@ std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 	return std::wstring(outWchar.get());
 }
 
-/// @brief	포맷팅된 문자열을 리턴한다. 
+/// @brief	포맷팅된 문자열을 리턴한다. (테스트용으로만 쓸것)
 ///			static 배열을 사용하므로 Thread safe 하지 않으며 포맷팅된 
 ///			문자열의 길이가 buffer 사이즈를 넘는경우 nullptr 을 리턴
 const 
