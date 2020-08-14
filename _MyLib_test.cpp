@@ -355,7 +355,7 @@ void run_test()
 	//assert_bool(true, test_str_to_xxx);
 	//assert_bool(true, test_set_get_file_position);
 	//assert_bool(true, test_get_module_path);
-	//assert_bool(true, test_dump_memory);
+	assert_bool(true, test_dump_memory);
 	//assert_bool(true, test_get_environment_value);
 	//assert_bool(true, test_get_account_infos);
 	//assert_bool(true, test_get_installed_programs);
@@ -425,7 +425,7 @@ void run_test()
 	//assert_bool(true, test_get_file_original_name);
 
 	//assert_bool(true, test_rvo_and_move);
-	assert_bool(true, test_cpp_joson);
+	//assert_bool(true, test_cpp_joson);
 
 	//assert_bool(true, test_template);
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -1433,20 +1433,26 @@ bool test_get_module_path()
 **/
 bool test_dump_memory()
 {
+	auto lt = set_log_to(log_to_all);
+	
 	unsigned char buf[512] = {0};
-	RtlCopyMemory(buf, GetModuleHandle(NULL), 512);
+	RtlCopyMemory(buf, GetModuleHandle(NULL), 128);
 
-	std::vector<std::string> dump;
-	if (true != dump_memory(0, buf, sizeof(buf), dump)) return false;
-
-	std::vector<std::string>::iterator its = dump.begin();
-	std::vector<std::string>::iterator ite = dump.end();
-	for(; its != ite; ++its)
+	auto dump = dump_memory(0, buf, 6);
+	for (const auto& its: dump)
 	{
-		log_dbg "%s", its->c_str() log_end
+		log_info "%s", its.c_str() log_end
 	}
 
 	dump.clear();
+	dump = dump_memory(0, buf, 132);
+	for (const auto& its : dump)
+	{
+		log_info "%s", its.c_str() log_end
+
+	}
+
+	set_log_to(lt);
 	return true;
 }
 
@@ -1809,13 +1815,11 @@ bool test_enum_physical_drive()
             }
             else
             {
-                std::vector<std::string> dumps;
-                dump_memory(0, buf, sizeof(buf), dumps);
-                //for (auto line : dumps)
-                //{
-                //    log_info "%s", line.c_str() log_end;
-                //}
-                log_info "%ws, \n%s", path.str().c_str(), dumps[dumps.size() - 2].c_str() log_end;
+                auto dumps = dump_memory(0, buf, sizeof(buf));
+                for (auto line : dumps)
+                {
+                    log_info "%s", line.c_str() log_end;
+                }
             }
         }
         else
@@ -1892,8 +1896,7 @@ bool test_get_disk_volume_info()
         }
         else
         {
-            std::vector<std::string> dump;
-            dump_memory(0, buf, sizeof(buf), dump);
+            auto dump = dump_memory(0, buf, sizeof(buf));
             log_info "[*] MBR" log_end
             for (auto& line : dump)
             {
@@ -1922,8 +1925,7 @@ bool test_get_disk_volume_info()
             else
             {
                 log_info "[*] VBR" log_end
-                std::vector<std::string> dump;
-                dump_memory(0, buf, sizeof(buf), dump);
+                auto dump = dump_memory(0, buf, sizeof(buf));
                 for (auto& line : dump)
                 {
                     log_info "%s", line.c_str() log_end
@@ -2131,14 +2133,8 @@ void dump_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint32
         return;
     }
 
-    std::vector<std::string> dump;
-    if (true != dump_memory(0, buf, size, dump))
-    {
-        log_err "dump_memory(0,  ) failed." log_end;
-        return;
-    }
-
-    for (auto& line : dump)
+	auto dump = dump_memory(0, buf, size);
+    for (const auto& line : dump)
     {
         log_info "%s", line.c_str() log_end
     }
@@ -3173,13 +3169,7 @@ bool test_raii_xxx()
 			break;
 		}
 
-		std::vector<std::string> dumps;
-		if (!dump_memory(0, buf, sizeof(buf), dumps))
-		{
-			log_err "dump_memory() failed." log_end;
-			break;
-		}
-
+		auto dumps = dump_memory(0, buf, sizeof(buf));
 		for (auto& dump : dumps)
 		{
 			log_info "%s", dump.c_str() log_end;

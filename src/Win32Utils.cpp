@@ -1332,8 +1332,7 @@ bool dump_all_disk_drive_layout()
 							}
 							else
 							{
-								std::vector<std::string> dumps;
-								dump_memory(0, buf, sizeof(buf), dumps);
+								auto dumps = dump_memory(0, buf, sizeof(buf));
 								for (const auto& line : dumps)
 								{
 									log_info "%s", line.c_str() log_end;
@@ -1356,8 +1355,7 @@ bool dump_all_disk_drive_layout()
 							}
 							else
 							{
-								std::vector<std::string> dumps;
-								dump_memory(0, buf, sizeof(buf), dumps);
+								auto dumps = dump_memory(0, buf, sizeof(buf));
 
 								log_info
 									"[*] dump VBR (disk offset 0x%llx)", pi->StartingOffset.QuadPart
@@ -1511,8 +1509,7 @@ bool dump_boot_area()
 		}
 		else
 		{
-			std::vector<std::string> dumps;
-			dump_memory(0, buf, sizeof(buf), dumps);
+			auto dumps = dump_memory(0, buf, sizeof(buf));
 			for (const auto& line : dumps)
 			{
 				log_info "%s", line.c_str() log_end;
@@ -5193,262 +5190,6 @@ std::wstring Win32ErrorToStringW(IN DWORD ErrorCode)
 	return ret;
 }
 
-/**----------------------------------------------------------------------------
-	\brief
-
-	\param
-	\return
-	\code
-
-	\endcode
------------------------------------------------------------------------------*/
-BOOL DumpMemory(DWORD Length, BYTE* Buf)
-{
-	if ((0 < Length) && (NULL != Buf))
-	{
-		log_info "length = %u, buffer=0x%08x", Length, Buf log_end
-
-			CHAR print_buf[128 * sizeof(CHAR)] = { 0 };
-		DWORD i = 0, x = 0, ib = 0;
-		UCHAR*  Addr = Buf;
-		CHAR*	Pos = NULL;
-		size_t	Remain = 0;
-		for (;;)
-		{
-			if (i >= Length) break;
-			ib = i;
-
-			// reset all
-			//
-			Pos = print_buf;
-			Remain = sizeof(print_buf);
-
-			if (!SUCCEEDED(StringCbPrintfExA(
-				Pos,
-				Remain,
-				&Pos,
-				&Remain,
-				0,
-				"0x%08p    ",
-				&Addr[i])))
-			{
-				log_err "StringCbPrintfEx() failed" log_end
-					break;
-			}
-
-			// first 8 bytes
-			//
-			for (x = 0; x < 8; x++, i++)
-			{
-				if (x == Length) break;
-
-				if (!SUCCEEDED(StringCbPrintfExA(
-					Pos,
-					Remain,
-					&Pos,
-					&Remain,
-					0,
-					"%02X ",
-					Addr[i])))
-				{
-					log_err "StringCbPrintfEx() failed" log_end
-						break;
-				}
-			}
-
-			if (x != Length)
-			{
-				// insert space between first 8bytes and last 8 bytes.
-				//
-				if (!SUCCEEDED(StringCbPrintfExA(
-					Pos,
-					Remain,
-					&Pos,
-					&Remain,
-					0,
-					"%s",
-					"  ")))
-				{
-					log_err "StringCbPrintfEx() failed" log_end
-						break;
-				}
-			}
-
-			// last 8 bytes
-			//
-			for (x = 0; x < 8; x++, i++)
-			{
-				if (x == Length) break;
-
-				if (!SUCCEEDED(StringCbPrintfExA(
-					Pos,
-					Remain,
-					&Pos,
-					&Remain,
-					0,
-					"%02X ",
-					Addr[i])))
-				{
-					log_err "StringCbPrintfEx() failed" log_end
-						break;
-				}
-			}
-
-			char tmp[64] = { 0 };
-			Pos = tmp;
-			Remain = sizeof(tmp) - sizeof(char);
-			for (DWORD p = 0; p < 16; ++p)
-			{
-				if (p == Length) break;
-
-				if (0x20 <= Addr[ib] && 0x7F > Addr[ib])
-				{
-					if (!SUCCEEDED(StringCbPrintfExA(
-						Pos,
-						Remain,
-						&Pos,
-						&Remain,
-						0,
-						"%c",
-						Addr[ib])))
-					{
-						log_err "StringCbPrintfEx() failed" log_end
-							break;
-					}
-				}
-				else
-				{
-					if (!SUCCEEDED(StringCbPrintfExA(
-						Pos,
-						Remain,
-						&Pos,
-						&Remain,
-						0,
-						"%c",
-						'.')))
-					{
-						log_err "StringCbPrintfEx() failed" log_end
-							break;
-					}
-				}
-
-				++ib;
-			}
-
-			// print string..
-			//
-			log_info "  %s   %s", print_buf, tmp log_end
-				memset(print_buf, 0x00, sizeof(print_buf));
-		}
-
-		log_info "  %s\n\n", print_buf log_end
-			return TRUE;
-	}
-
-	log_err "invalid parameters" log_end
-		return FALSE;
-}
-
-/** ---------------------------------------------------------------------------
-	\brief
-
-	\param
-	\return
-	\code
-	\endcode
------------------------------------------------------------------------------*/
-BOOL DumpMemory(FILE* stream, DWORD Length, BYTE* Buf)
-{
-	if ((0 < Length) && (NULL != Buf))
-	{
-		_ftprintf(stream, TEXT("\n  00 01 02 03 04 05 06 07   08 09 0A 0B 0C 0D 0E 0F\n"));
-		_ftprintf(stream, TEXT("  -- -- -- -- -- -- -- --   -- -- -- -- -- -- -- --\n"));
-
-		TCHAR print_buf[128 * sizeof(TCHAR)] = { 0 };
-		DWORD i = 0, x = 0;
-		UCHAR*  Addr = Buf;
-		TCHAR*	Pos = NULL;
-		size_t	Remain = 0;
-		for (;;)
-		{
-			if (i >= Length) break;
-
-			// reset all
-			//
-			Pos = print_buf;
-			Remain = sizeof(print_buf);
-
-			// first 8 bytes
-			//
-			for (x = 0; x < 8; x++, i++)
-			{
-				if (x == Length) break;
-
-				if (!SUCCEEDED(StringCbPrintfEx(
-					Pos,
-					Remain,
-					&Pos,
-					&Remain,
-					0,
-					TEXT("%02X "),
-					Addr[i])))
-				{
-					_ftprintf(stream, TEXT("StringCbPrintfEx() failed \n"));
-					break;
-				}
-			}
-
-			if (x == Length) break;
-
-			// insert space between first 8bytes and last 8 bytes.
-			//
-			if (!SUCCEEDED(StringCbPrintfEx(
-				Pos,
-				Remain,
-				&Pos,
-				&Remain,
-				0,
-				TEXT("%s"),
-				TEXT("  "))))
-			{
-				_ftprintf(stream, TEXT("StringCbPrintfEx() failed \n"));
-				break;
-			}
-
-			// last 8 bytes
-			//
-			for (x = 0; x < 8; x++, i++)
-			{
-				if ((x + 8) == Length) break;
-
-				if (!SUCCEEDED(StringCbPrintfEx(
-					Pos,
-					Remain,
-					&Pos,
-					&Remain,
-					0,
-					TEXT("%02X "),
-					Addr[i])))
-				{
-					_ftprintf(stream, TEXT("StringCbPrintfEx() failed \n"));
-					break;
-				}
-			}
-
-			// print string..
-			//
-			_ftprintf(stream, TEXT("  %s\n"), print_buf);
-			memset(print_buf, 0x00, sizeof(print_buf));
-		}
-
-		_ftprintf(stream, TEXT("  %s\n\n"), print_buf);
-		return TRUE;
-	}
-
-	_ftprintf(stream, TEXT("err ] invalid parameters \n"));
-	return FALSE;
-}
-
 /**
  * @brief
  * @param
@@ -5458,55 +5199,63 @@ BOOL DumpMemory(FILE* stream, DWORD Length, BYTE* Buf)
  * @endcode
  * @return
 **/
-bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump)
+std::list<std::string> 
+dump_memory(
+	_In_ uint64_t base_offset, 
+	_In_ unsigned char* buf, 
+	_In_ UINT32 buf_len
+)
 {
-	_ASSERTE(NULL != buf);
+	std::list<std::string> rs;
+	rs.push_back("                      00 01 02 03 04 05 06 07   08 09 0A 0B 0C 0D 0E 0F");
+	rs.push_back("                      -- -- -- -- -- -- -- --   -- -- -- -- -- -- -- --");
+
+	_ASSERTE(nullptr != buf);
 	_ASSERTE(0 < buf_len);
-	if (NULL == buf || 0 == buf_len) return false;
+	if (nullptr == buf || 0 == buf_len) return rs;
 
-	// !주의! - 한 라인이 line_dump 보다 큰 경우 (설마 그런일이...?!) 문제가 발생 할 수 있음
+	//	!주의! - 한 라인이 line_dump 보다 큰 경우 
+	//	(설마 그런일이...?!) 문제가 발생 할 수 있음
 	char line_dump[1024];
+		
+	CHAR print_buf[128 * sizeof(CHAR)] = { 0 };
+	DWORD i = 0, ib = 0;
+	UCHAR*  Addr = buf;
+	CHAR*	Pos = NULL;
+	size_t	Remain = 0;
 
-	if ((0 < buf_len) && (NULL != buf))
+	while(i < buf_len)
 	{
-		// useless, uh?
-		//StringCbPrintfA(line_dump, sizeof(line_dump), "buf_len = %u, buffer=0x%08x", buf_len, buf);
-		//dump.push_back(line_dump);
+		ib = i;
 
-		CHAR print_buf[128 * sizeof(CHAR)] = { 0 };
-		DWORD i = 0, x = 0, ib = 0;
-		UCHAR*  Addr = buf;
-		CHAR*	Pos = NULL;
-		size_t	Remain = 0;
-		for (;;)
+		// reset all
+		//
+		Pos = print_buf;
+		Remain = sizeof(print_buf);
+
+		//
+		//	offset
+		//
+		if (!SUCCEEDED(StringCbPrintfExA(
+			Pos,
+			Remain,
+			&Pos,
+			&Remain,
+			0,
+			"0x%08p    ",
+			base_offset + i)))
 		{
-			if (i >= buf_len) break;
-			ib = i;
+			log_err "StringCbPrintfEx() failed" log_end;
+			break;
+		}
 
-			// reset all
-			//
-			Pos = print_buf;
-			Remain = sizeof(print_buf);
-
-			if (!SUCCEEDED(StringCbPrintfExA(
-				Pos,
-				Remain,
-				&Pos,
-				&Remain,
-				0,
-				"0x%08p    ",
-				base_offset + i)))
+		//
+		// first 8 bytes
+		//
+		for (int x = 0; x < 8; x++, i++)
+		{
+			if (i < buf_len)
 			{
-				log_err "StringCbPrintfEx() failed" log_end
-					break;
-			}
-
-			// first 8 bytes
-			//
-			for (x = 0; x < 8; x++, i++)
-			{
-				if (x == buf_len) break;
-
 				if (!SUCCEEDED(StringCbPrintfExA(
 					Pos,
 					Remain,
@@ -5516,15 +5265,12 @@ bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32
 					"%02X ",
 					Addr[i])))
 				{
-					log_err "StringCbPrintfEx() failed" log_end
-						break;
+					log_err "StringCbPrintfEx() failed" log_end;
+					break;
 				}
 			}
-
-			if (x != buf_len)
+			else
 			{
-				// insert space between first 8bytes and last 8 bytes.
-				//
 				if (!SUCCEEDED(StringCbPrintfExA(
 					Pos,
 					Remain,
@@ -5532,19 +5278,37 @@ bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32
 					&Remain,
 					0,
 					"%s",
-					"  ")))
+					"   ")))
 				{
-					log_err "StringCbPrintfEx() failed" log_end
-						break;
+					log_err "StringCbPrintfEx() failed" log_end;
+					break;
 				}
 			}
-
-			// last 8 bytes
-			//
-			for (x = 0; x < 8; x++, i++)
+		}
+		
+		//
+		// insert space between first 8bytes and last 8 bytes.
+		//
+		if (!SUCCEEDED(StringCbPrintfExA(
+			Pos,
+			Remain,
+			&Pos,
+			&Remain,
+			0,
+			"%s",
+			"  ")))
+		{
+			log_err "StringCbPrintfEx() failed" log_end;
+			break;
+		}
+		
+		//
+		// last 8 bytes
+		//		
+		for (int x = 0; x < 8; x++, i++)
+		{
+			if (i < buf_len)
 			{
-				if (x == buf_len) break;
-
 				if (!SUCCEEDED(StringCbPrintfExA(
 					Pos,
 					Remain,
@@ -5554,67 +5318,86 @@ bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32
 					"%02X ",
 					Addr[i])))
 				{
-					log_err "StringCbPrintfEx() failed" log_end
-						break;
+					log_err "StringCbPrintfEx() failed" log_end;
+					break;
 				}
 			}
-
-			char tmp[64] = { 0 };
-			Pos = tmp;
-			Remain = sizeof(tmp) - sizeof(char);
-			for (DWORD p = 0; p < 16; ++p)
+			else
 			{
-				if (p == buf_len) break;
-
-				if (0x20 <= Addr[ib] && 0x7F > Addr[ib])
+				if (!SUCCEEDED(StringCbPrintfExA(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					"%s",
+					"   ")))
 				{
-					if (!SUCCEEDED(StringCbPrintfExA(
-						Pos,
-						Remain,
-						&Pos,
-						&Remain,
-						0,
-						"%c",
-						Addr[ib])))
-					{
-						log_err "StringCbPrintfEx() failed" log_end
-							break;
-					}
+					log_err "StringCbPrintfEx() failed" log_end;
+					break;
 				}
-				else
-				{
-					if (!SUCCEEDED(StringCbPrintfExA(
-						Pos,
-						Remain,
-						&Pos,
-						&Remain,
-						0,
-						"%c",
-						'.')))
-					{
-						log_err "StringCbPrintfEx() failed" log_end
-							break;
-					}
-				}
-
-				++ib;
 			}
-
-			// add line dump string..
-			StringCbPrintfA(line_dump, sizeof(line_dump), "%s   %s", print_buf, tmp);
-			dump.push_back(line_dump);
-
-			memset(print_buf, 0x00, sizeof(print_buf));
+		}
+		
+		//
+		//	Dump memory as ascii
+		//
+		char ascii[64] = { 0 };
+		Pos = ascii;
+		Remain = sizeof(ascii) - sizeof(char);
+		for (DWORD p = 0; p < 16 && ib < buf_len; ++p, ++ib)
+		{
+			if (0x20 <= Addr[ib] && 0x7F > Addr[ib])
+			{
+				if (!SUCCEEDED(StringCbPrintfExA(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					"%c",
+					Addr[ib])))
+				{
+					log_err "StringCbPrintfEx() failed" log_end;
+					break;
+				}
+			}
+			else
+			{
+				if (!SUCCEEDED(StringCbPrintfExA(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					"%c",
+					'.')))
+				{
+					log_err "StringCbPrintfEx() failed" log_end;
+					break;
+				}
+			}
 		}
 
-		// add rest of dump
-		StringCbPrintfA(line_dump, sizeof(line_dump), "%s", print_buf);
-		dump.push_back(line_dump);
-
-		return true;
+		// add line dump string..
+		StringCbPrintfA(line_dump, 
+						sizeof(line_dump), 
+						"%s   %s", 
+						print_buf, 
+						ascii);
+		rs.push_back(line_dump);
+		
+		memset(print_buf, 0x00, sizeof(print_buf));
 	}
 
-	return false;
+	//// add rest of dump
+	//StringCbPrintfA(line_dump, 
+	//				sizeof(line_dump), 
+	//				"%s", 
+	//				print_buf);
+	//rs.push_back(line_dump);
+	
+	return rs;
 }
 
 /**

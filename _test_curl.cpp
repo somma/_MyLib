@@ -167,9 +167,15 @@ bool test_curl_http()
 	CMemoryStream stream;
 	_ASSERTE(true == _curl_client->http_get(url, http_response_code, stream));
 
-	std::vector<std::string> dumps;
-	dump_memory(0LL, (unsigned char*)(stream.GetMemory()), (UINT32)stream.GetSize(), dumps);
-	std::for_each(dumps.begin(), dumps.end(), [](std::string& dump) {printf("%s\n", dump.c_str()); });
+	auto dumps = dump_memory(0LL, 
+							 (unsigned char*)(stream.GetMemory()), 
+							 (UINT32)stream.GetSize());
+	std::for_each(dumps.begin(), 
+				  dumps.end(), 
+				  [](std::string& dump) 
+	{
+		printf("%s\n", dump.c_str()); 
+	});
 
 	_ASSERTE(_curl_client != nullptr);
 	delete _curl_client; _curl_client = nullptr;
