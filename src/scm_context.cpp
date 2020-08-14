@@ -182,28 +182,6 @@ install_fs_filter(
 	}
 
 	//
-	//	Open service manager for create new service
-	//
-	schandle_ptr scm_handle(OpenSCManagerW(NULL,
-										   NULL,
-										   SC_MANAGER_CREATE_SERVICE),
-							[](SC_HANDLE handle) {
-		if (nullptr != handle)
-		{
-			CloseServiceHandle(handle);
-		}
-	});
-
-	if (!scm_handle)
-	{
-		log_err
-			"OpenSCManagerW() faield. gle = %u",
-			GetLastError()
-			log_end;
-		return false;
-	}
-
-	//
 	//	Install Kernel driver service 
 	//
 	std::wstringstream sys_path;	
@@ -224,7 +202,7 @@ install_fs_filter(
 
 		sys_path
 			<< windows_dir
-			<< L"\\system32\\"
+			<< L"\\system32\\drivers\\"
 			<< file_name_from_file_pathw(bin_path);
 
 		//
@@ -260,6 +238,27 @@ install_fs_filter(
 		sys_path << bin_path;
 	}
 
+	//
+	//	Open service manager for create new service
+	//
+	schandle_ptr scm_handle(OpenSCManagerW(NULL,
+										   NULL,
+										   SC_MANAGER_CREATE_SERVICE),
+							[](SC_HANDLE handle) {
+		if (nullptr != handle)
+		{
+			CloseServiceHandle(handle);
+		}
+	});
+
+	if (!scm_handle)
+	{
+		log_err
+			"OpenSCManagerW() faield. gle = %u",
+			GetLastError()
+			log_end;
+		return false;
+	}
 
 	schandle_ptr svc_handle(CreateServiceW(scm_handle.get(),
 										   service_name,
@@ -274,7 +273,8 @@ install_fs_filter(
 										   L"FltMgr",
 										   nullptr,
 										   nullptr),
-							[](SC_HANDLE handle) {
+							[](SC_HANDLE handle) 
+	{
 		if (nullptr != handle)
 		{
 			CloseServiceHandle(handle);
