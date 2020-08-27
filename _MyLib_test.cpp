@@ -800,7 +800,7 @@ bool test_random()
 bool test_ip_mac()
 {
 	std::wstring host_name;
-	std::vector<std::string> ip_list;
+	std::list<std::string> ip_list;
 
 	log_info "representative ip v4=%s",
 		get_representative_ip_v4().c_str()
