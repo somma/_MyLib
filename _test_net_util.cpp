@@ -70,7 +70,7 @@ bool test_get_adapters()
 		init_net_util();
 		do
 		{
-			std::vector<PInetAdapter> adapters;
+			std::list<PInetAdapter> adapters;
 			_ASSERTE(true == get_inet_adapters(adapters));
 
 			for (auto& adapter : adapters)
@@ -109,8 +109,8 @@ bool test_get_addr_info()
 		
 		for (int i = 0; i < sizeof(host_names) / sizeof(wchar_t*); ++i)
 		{
-			std::vector<in_addr> ipv4_list;
-			std::vector<in_addr6> ipv6_list;
+			std::list<in_addr> ipv4_list;
+			std::list<in_addr6> ipv6_list;
 
 			_ASSERT(true == get_addr_infow(host_names[i],
 										   &ipv4_list,

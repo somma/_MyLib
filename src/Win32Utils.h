@@ -630,9 +630,7 @@ std::wstring guid_to_stringw(_In_ const GUID& guid);
 std::string Win32ErrorToStringA(IN DWORD ErrorCode);
 std::wstring Win32ErrorToStringW(IN DWORD ErrorCode);
 
-BOOL	DumpMemory(DWORD Length, BYTE* Buf);
-BOOL	DumpMemory(FILE* stream,DWORD Length,BYTE* Buf);
-bool	dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump);
+std::list<std::string> dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32 buf_len);
 
 bool	set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
 
