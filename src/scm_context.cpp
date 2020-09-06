@@ -190,7 +190,7 @@ install_fs_filter(
 	{
 		// 
 		//	StartType = SERVICE_BOOT_START 
-		//	으로 지정하려면 드라이버파일의 경로가 반드시 system32 에 있어야 함
+		//	으로 지정하려면 드라이버파일의 경로가 반드시 system32\drivers 에 있어야 함
 		// 
 	
 		std::wstring windows_dir;
@@ -211,16 +211,19 @@ install_fs_filter(
 		//
 		if (0 != sys_path.str().compare(bin_path))
 		{
-			if (!DeleteFileW(sys_path.str().c_str()))
+			if (is_file_existsW(sys_path.str()))
 			{
-				log_err
-					"Can not delete (old) fs driver. path=%ws, gle=%u",
-					sys_path.str().c_str(),
-					GetLastError()
-					log_end;
-				return false;
+				if (!DeleteFileW(sys_path.str().c_str()))
+				{
+					log_err
+						"Can not delete (old) fs driver. path=%ws, gle=%u",
+						sys_path.str().c_str(),
+						GetLastError()
+						log_end;
+						return false;
+				}
 			}
-
+			
 			if (!CopyFile(bin_path, sys_path.str().c_str(), TRUE))
 			{
 				log_err
