@@ -775,7 +775,7 @@ stop_service(
 								&service_status))
 	{
 		log_err
-			"ControlService() failed, service name=%ws, gle = %u",
+			"ControlService() failed, service name=%ws, gle=%u",
 			service_name,
 			GetLastError()
 			log_end;
@@ -787,18 +787,39 @@ stop_service(
 	// 
 	SERVICE_STATUS svc_status = { 0 };
 	uint32_t wait_for_secs = 0;
-	while (QueryServiceStatus(svc_handle.get(), &svc_status))
+	while (true)
 	{
+		if (!QueryServiceStatus(svc_handle.get(), &svc_status))
+		{
+			log_err
+				"QueryServiceStatus() failed. service name=%ws, gle=%u",
+				service_name,
+				GetLastError()
+				log_end;
+			break;
+		}
+
 		if (svc_status.dwCurrentState == SERVICE_STOP_PENDING)
 		{
 			if (wait_for_secs < wait_for_n_secs)
 			{
 				Sleep(1000);
 				wait_for_secs++;
+				continue;
+			}
+			else
+			{
+				//
+				//	timeout
+				//	
+				break;
 			}
 		}
 		else
 		{
+			//
+			//	Ok. Service stopped.
+			//
 			break;
 		}
 	}
