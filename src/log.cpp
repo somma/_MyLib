@@ -4,10 +4,16 @@
  *			(file, debugger, console, etc) 지정/변경 가능
  *
  *			log format 지정/변경 가능
- *
  *			multi thread 환경에서 serialization 이 됨
- *
  *			log_err, log_err 같은 매크로만 사용하면 debugger, console 로 메세지 출력 가능
+ *
+ *			커널모드 log 모듈과 user mode log 모듈이 모두 DPFLTR_IHVDRIVER_ID 를 
+ *			사용하기 때문에 WinDbg 에서 User mode 메세지만 필터링 하고 싶은 경우
+ *			`.ofilter` 를 써야 함
+ *
+ *			kd>ed nt!Kd_IHVDRIVER_Mask 0xff
+ *			kd>.ofilter /! "*MonsterK*"
+ *
  * @ref
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2015/01/12 created.
