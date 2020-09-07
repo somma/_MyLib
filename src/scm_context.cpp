@@ -190,7 +190,7 @@ install_fs_filter(
 	{
 		// 
 		//	StartType = SERVICE_BOOT_START 
-		//	으로 지정하려면 드라이버파일의 경로가 반드시 system32 에 있어야 함
+		//	으로 지정하려면 드라이버파일의 경로가 반드시 system32\drivers 에 있어야 함
 		// 
 	
 		std::wstring windows_dir;
@@ -211,16 +211,19 @@ install_fs_filter(
 		//
 		if (0 != sys_path.str().compare(bin_path))
 		{
-			if (!DeleteFileW(sys_path.str().c_str()))
+			if (is_file_existsW(sys_path.str()))
 			{
-				log_err
-					"Can not delete (old) fs driver. path=%ws, gle=%u",
-					sys_path.str().c_str(),
-					GetLastError()
-					log_end;
-				return false;
+				if (!DeleteFileW(sys_path.str().c_str()))
+				{
+					log_err
+						"Can not delete (old) fs driver. path=%ws, gle=%u",
+						sys_path.str().c_str(),
+						GetLastError()
+						log_end;
+						return false;
+				}
 			}
-
+			
 			if (!CopyFile(bin_path, sys_path.str().c_str(), TRUE))
 			{
 				log_err
@@ -772,7 +775,7 @@ stop_service(
 								&service_status))
 	{
 		log_err
-			"ControlService() failed, service name=%ws, gle = %u",
+			"ControlService() failed, service name=%ws, gle=%u",
 			service_name,
 			GetLastError()
 			log_end;
@@ -784,18 +787,39 @@ stop_service(
 	// 
 	SERVICE_STATUS svc_status = { 0 };
 	uint32_t wait_for_secs = 0;
-	while (QueryServiceStatus(svc_handle.get(), &svc_status))
+	while (true)
 	{
+		if (!QueryServiceStatus(svc_handle.get(), &svc_status))
+		{
+			log_err
+				"QueryServiceStatus() failed. service name=%ws, gle=%u",
+				service_name,
+				GetLastError()
+				log_end;
+			break;
+		}
+
 		if (svc_status.dwCurrentState == SERVICE_STOP_PENDING)
 		{
 			if (wait_for_secs < wait_for_n_secs)
 			{
 				Sleep(1000);
 				wait_for_secs++;
+				continue;
+			}
+			else
+			{
+				//
+				//	timeout
+				//	
+				break;
 			}
 		}
 		else
 		{
+			//
+			//	Ok. Service stopped.
+			//
 			break;
 		}
 	}
