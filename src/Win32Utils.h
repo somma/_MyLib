@@ -956,11 +956,12 @@ LPCWSTR  image_type_to_string(IMAGE_TYPE type);
 /******************************************************************************
  * type cast
 ******************************************************************************/
-const 
-char* 
-get_int_to_char_table(
-	_In_ bool uppercase
-	);
+
+std::string 
+bin_to_stra(
+	_In_ size_t size, 
+	_In_ const char* buf
+);
 
 bool
 bin_to_hexa_fast(

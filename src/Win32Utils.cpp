@@ -68,6 +68,29 @@ char _int_to_uchar_table[] = {
 	"{|}~" /* 65 - 68 */
 };
 
+// ASCII table
+char _ascii_table[] = {
+	//NUL, SOH, STX, ETX, EOT, ENQ, ACK, BEL, BS, HT, LF, VT, FF, CR, SO, SI,		0x00 ~ 0x0f
+	//DLE, DC1, DC2, DC3, DC4, NAK, SYN, ETB, CAN, EM, SUB, ESC, FS, GS, RS, US,	0x10 ~ 0x1f
+	//Space, !, ", #, $, %, &, ', (, ), *, +, ,, -, ., /,							0x20 ~ 0x2f
+	" !\"#$%&'()*+,-./"
+
+	//0, 1, 2, 3, 4, 5, 6, 7, 8, 9, :, ;, <, =, >, ?,								0x30 ~ 0x3f
+	"0123456789:;<=>?"
+
+	//@, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O,								0x40 ~ 0x4f
+	"@ABCDEFGHIJKLMNO"
+
+	//P, Q, R, S, T, U, V, W, X, Y, Z, [, \, ], ^, _,								0x50 ~ 0x5f
+	"PQRSTUVWXYZ[\\]^_"
+
+	//`, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o,								0x60 ~ 0x6f
+	"`abcdefghijklmno"
+
+	//p, q, r, s, t, u, v, w, x, y, z, {, |, }, ~, DEL,								0x70 ~ 0x7f
+	"pqrstuvwxyz{|}~"
+};
+
 
 /// @brief	int type 랜덤값을 리턴한다.
 int get_random_int(_In_ int min, _In_ int max)
@@ -8771,20 +8794,47 @@ bin_to_hexa(
 }
 
 
-const
-char*
-get_int_to_char_table(
-	_In_ bool uppercase
+std::string 
+bin_to_stra(
+	_In_ size_t size, 
+	_In_ const char* buf
 )
 {
-	if (true == uppercase)
+	_ASSERTE(size > 0);
+	_ASSERTE(nullptr != buf);
+	if (nullptr == buf || !(size > 0)) return _null_stringa;
+
+	bool crlf_seen = false;
+	std::stringstream strm;
+	for (size_t pos = 0; pos < size; ++pos)
 	{
-		return _int_to_uchar_table;
+		uint8_t v = (uint8_t)(buf[pos]);
+		if (v >= 0x20 && v < 0x7F)
+		{
+			//
+			//	c.f. 
+			//	strm << buf[pos] 형태로 stream 의 변환기능을 써도
+			//	성능상의 차이는 거의 없는데, 쓸데없는짓 한것 같음 Orz
+			//
+			strm << _ascii_table[(v - 0x20)];
+			crlf_seen = false;
+		}
+		else if (v == 0x0a || v == 0x0d)  // LF, CR
+		{
+			if (!crlf_seen)
+			{
+				strm << '\n';
+				crlf_seen = true;	// LF, CR 쪼개서 \n 이 두번들어가지 않도록 
+			}
+		}
+		else
+		{
+			strm << '.';
+			crlf_seen = false;
+		}
 	}
-	else
-	{
-		return _int_to_char_table;
-	}
+
+	return strm.str();
 }
 
 bool
