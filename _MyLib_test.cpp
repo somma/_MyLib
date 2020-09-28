@@ -147,6 +147,7 @@ bool test_str_to_xxx();
 bool test_set_get_file_position();
 bool test_get_module_path();
 bool test_dump_memory();
+bool test_bin_to_str();
 bool test_get_environment_value();
 bool test_get_account_infos();
 bool test_get_installed_programs();
@@ -266,7 +267,7 @@ void run_test()
 	//assert_bool(true, test_cstream);	
 	//assert_bool(true, test_cstream_read_only);
 	//assert_bool(true, test_cstream_read_write_string);
-	assert_bool(true, test_log_rotate);
+	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
@@ -355,7 +356,8 @@ void run_test()
 	//assert_bool(true, test_str_to_xxx);
 	//assert_bool(true, test_set_get_file_position);
 	//assert_bool(true, test_get_module_path);
-	assert_bool(true, test_dump_memory);
+	//assert_bool(true, test_dump_memory);
+	assert_bool(true, test_bin_to_str);
 	//assert_bool(true, test_get_environment_value);
 	//assert_bool(true, test_get_account_infos);
 	//assert_bool(true, test_get_installed_programs);
@@ -1453,6 +1455,102 @@ bool test_dump_memory()
 	}
 
 	set_log_to(lt);
+	return true;
+}
+
+/// bin_to_str() 과 달리 strm 을 통해서 문자열을 변환
+std::string bin_to_str2(_In_ size_t size, _In_ const char* buf)
+{
+	_ASSERTE(size > 0);
+	_ASSERTE(nullptr != buf);
+	if (nullptr == buf || !(size > 0)) return _null_stringa;
+
+	bool crlf_seen = false;
+	std::stringstream strm;
+	for (size_t pos = 0; pos < size; ++pos)
+	{
+		uint8_t v = (uint8_t)(buf[pos]);
+		if (v >= 0x20 && v < 0x7F)
+		{
+			strm << buf[pos];
+			crlf_seen = false;
+		}
+		else if (v == 0x0a || v == 0x0d)  // LF, CR
+		{
+			if (!crlf_seen)
+			{
+				strm << '\n';
+				crlf_seen = true;	// LF, CR 쪼개서 \n 이 두번들어가지 않도록 
+			}
+		}
+		else
+		{
+			strm << '.';
+			crlf_seen = false;
+		}
+	}
+
+	return strm.str();
+}
+
+/// @brief	bin_to_stra() 나 bin_to_str2() 나 크게 성능차이는 거의 없다. 쓸떼없는 짓했음
+bool test_bin_to_str()
+{
+	//
+	//	Test 1 : 출력가능한 문자열이 많은 경우
+	//
+	//std::wstringstream strmw;
+	//strmw << L"c:\\work.monster\\_MyLib\\src\\win32Utils.cpp";
+	//handle_ptr handle(open_file_to_read(strmw.str().c_str()),
+	//				  [](HANDLE h) 
+	//{
+
+	//	if (INVALID_HANDLE_VALUE != h) 
+	//		CloseHandle(h);
+	//});
+	//if (INVALID_HANDLE_VALUE == handle.get()) return false;
+
+	//DWORD cb_read;
+	//char* text[40960];
+	//if (!ReadFile(handle.get(), text, sizeof(text), &cb_read, nullptr)) return false;
+
+	//
+	//	Test 2 : 비교적 출력하기 어려운 프로세스 메모리 영역 변환
+	//
+	char* text = (char*)GetModuleHandleW(nullptr);
+
+
+	//
+	//	bin_to_str()
+	//
+	size_t len = 40960, itcount=120;
+	std::stringstream strm;
+	std::string str;
+	StopWatch sw;
+	float t1 = 0, t2 = 0, delta = 0;
+
+	for (int i = 0; i < itcount; ++i)
+	{
+		sw.Start();
+		str = bin_to_str2(len, (char*)text);
+		sw.Stop();
+		t2 += sw.GetDurationMilliSecond();
+
+		sw.Start();
+		str = bin_to_stra(len, (char*)text);
+		sw.Stop();
+		t1 += sw.GetDurationMilliSecond();
+	}
+
+	delta = (t1 / itcount) - (t2 / itcount);
+	log_info
+		"bin_to_stra() %s bin_to_str2(), delta=%f (%f -- %f)",
+		delta > 0 ? ">" : "<",
+		delta, 
+		t1, 
+		t2
+		log_end;
+
 	return true;
 }
 
