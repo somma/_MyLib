@@ -132,6 +132,7 @@ private:
 	Fields _header_fields;
 public:
 	bool enable_auth(_In_ const char* id, _In_ const char* password);
+	bool enable_bearer_auth(_In_ const char* bearer_token);
 	void append_header(_In_z_ const char* key, _In_z_ const char* value);
 
 	void set_url(const char* const url) { _url = url; }
