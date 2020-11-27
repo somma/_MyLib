@@ -38,7 +38,8 @@ curl_client::~curl_client()
 }
 
 /// @brief	
-bool curl_client::initialize()
+bool 
+curl_client::initialize()
 {
 	_curl = curl_easy_init();
 	if (nullptr == _curl)
@@ -51,7 +52,8 @@ bool curl_client::initialize()
 }
 
 /// @brief
-void curl_client::finalize()
+void 
+curl_client::finalize()
 {
 	_header_fields.clear();
 	curl_easy_cleanup(_curl);
@@ -643,6 +645,30 @@ curl_client::http_post(
 			break;
 		}
 
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_HEADERFUNCTION,
+									 On_Callback_response_header);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "set http header Function Failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_HEADERDATA,
+									 &http_response_header);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "set http response header failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
 		ret = true;		//<!
 	} while (false);
 
@@ -651,8 +677,7 @@ curl_client::http_post(
 	//
 	//	Perform http(s) I/O
 	//
-	if (true != perform(http_response_code,
-						http_response_header))
+	if (true != perform(http_response_code))
 	{
 		log_err "perform() failed." log_end;
 		return false;
@@ -662,7 +687,10 @@ curl_client::http_post(
 }
 
 ///	@brief	HTTP(S) 요청의 공통 옵션들을 설정하고, 성공시 true 를 리턴
-bool curl_client::prepare_perform(_In_ const char* const url)
+bool 
+curl_client::prepare_perform(
+	_In_ const char* const url
+)
 {
 	_ASSERTE(nullptr != url);
 	if (nullptr == url) return false;
@@ -814,7 +842,9 @@ bool curl_client::prepare_perform(_In_ const char* const url)
 }
 
 /// @brief	HTTP(S) Request 를 전송하고, 응답코드를 확인한다.
-bool curl_client::perform(_Out_ long& http_response_code)
+bool curl_client::perform(
+	_Out_ long& http_response_code
+)
 {
 	http_response_code = 0;
 	CURLcode curl_code = CURLE_OK;
@@ -902,130 +932,13 @@ bool curl_client::perform(_Out_ long& http_response_code)
 	return ret;
 }
 
-///	@brief	
-bool
-curl_client::perform(
-	_Out_ long& http_response_code, 
-	_Out_ std::map<std::string, std::string>& http_response_header
-)
-{
-	http_response_code = 0;
-	CURLcode curl_code = CURLE_OK;
-	curl_slist* header_list = nullptr;
-	bool ret = false;
-	do
-	{
-		//
-		//	Set HTTP Headers 
-		//	
-		if (true != _header_fields.empty())
-		{
-			std::string header_item;
-			for (const auto& hf : _header_fields)
-			{
-				header_item = hf.first;
-				header_item += ":";
-				header_item += hf.second;
-				header_list = curl_slist_append(header_list,
-												header_item.c_str());
-			}
-
-			curl_code = curl_easy_setopt(_curl,
-										 CURLOPT_HTTPHEADER,
-										 header_list);
-			if (CURLE_OK != curl_code)
-			{
-				log_err "set http header failed. curl_code = %d, %s",
-					curl_code,
-					curl_easy_strerror(curl_code)
-					log_end;
-				break;
-			}
-		}
-
-		curl_code = curl_easy_setopt(_curl,
-									 CURLOPT_HEADERFUNCTION,
-									 On_Callback_response_header);
-		if (CURLE_OK != curl_code)
-		{
-			log_err "set http header Function Failed. curl_code = %d, %s",
-				curl_code,
-				curl_easy_strerror(curl_code)
-				log_end;
-			break;
-		}
-
-		curl_code = curl_easy_setopt(_curl,
-									 CURLOPT_HEADERDATA,
-									 &http_response_header);
-		if (CURLE_OK != curl_code)
-		{
-			log_err "set http response header failed. curl_code = %d, %s",
-				curl_code,
-				curl_easy_strerror(curl_code)
-				log_end;
-			break;
-		}
-
-		//
-		//	Execute HTTP(S) I/O
-		//
-		curl_code = curl_easy_perform(_curl);
-		if (CURLE_OK != curl_code)
-		{
-			log_err "curl_easy_perform() failed. curl_code = %d, %s",
-				curl_code,
-				curl_easy_strerror(curl_code)
-				log_end;
-			break;
-		}
-
-		//
-		//	Get the last response code.
-		//
-		long http_code = 0;
-		if (CURLE_OK != curl_easy_getinfo(_curl,
-										  CURLINFO_RESPONSE_CODE,
-										  &http_code))
-		{
-			log_err "curl_easy_getinfo() failed. curl_code = %d, %s",
-				curl_code,
-				curl_easy_strerror(curl_code)
-				log_end;
-			break;
-		}
-		http_response_code = http_code;
-
-		ret = true;		//<!		
-	} while (false);
-
-	//
-	//	Free header_list 
-	//
-	if (nullptr != header_list)
-	{
-		curl_slist_free_all(header_list);
-	}
-
-	//
-	//	설정 완료된 HTTP Header 필드들은 정리
-	//
-	_header_fields.clear();
-
-	//
-	//	reset curl handle
-	//
-	curl_easy_reset(_curl);
-	return ret;
-}
-
 /// @brief	
 bool 
 curl_client::perform(
 	_In_ const char* file_path,
 	_In_ Forms& forms,
 	_Out_ long& http_response_code
-	)
+)
 {
 	CURLcode curl_code = curl_easy_setopt(_curl, 
 										  CURLOPT_NOPROGRESS, 

@@ -54,9 +54,9 @@
 
 static const char* _null_http_header_string = "";
 static size_t On_Callback_response_header(_In_ void* pData,
-										_In_ size_t tSize,
-										_In_ size_t tCount,
-										_In_ void* pmUser);
+										  _In_ size_t tSize,
+										  _In_ size_t tCount,
+										  _In_ void* pmUser);
 
 typedef class curl_client
 {
@@ -158,9 +158,6 @@ private:
 	bool prepare_perform(_In_ const char* const url);
 
 	bool perform(_Out_ long& http_response_code);
-
-	bool perform(_Out_ long& http_response_code,
-				 _Out_ std::map<std::string, std::string>& http_response_header);
 
 	// multipart/form type을 request body data에 설정한 후 전송하는 함수
 	bool perform(

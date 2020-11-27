@@ -205,7 +205,7 @@ bool test_curl_https_down_with_auth();
 bool test_curl_https();
 bool test_curl_http();
 bool test_curl_http_upload();
-
+bool test_curl_http_post_with_response_header();
 // thread_pool.h
 extern bool test_thread_pool();
 
@@ -357,7 +357,7 @@ void run_test()
 	//assert_bool(true, test_set_get_file_position);
 	//assert_bool(true, test_get_module_path);
 	//assert_bool(true, test_dump_memory);
-	assert_bool(true, test_bin_to_str);
+	//assert_bool(true, test_bin_to_str);
 	//assert_bool(true, test_get_environment_value);
 	//assert_bool(true, test_get_account_infos);
 	//assert_bool(true, test_get_installed_programs);
@@ -403,6 +403,7 @@ void run_test()
 	//assert_bool(true, test_curl_https);
 	//assert_bool(true, test_curl_http);
 	//assert_bool(true, test_curl_http_upload);
+	//assert_bool(true, test_curl_http_post_with_response_header);
 	//assert_bool(true, test_alignment);
 	//assert_bool(true, test_create_string_from_buffer);
 	//assert_bool(true, test_stop_watch);
