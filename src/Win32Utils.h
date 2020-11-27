@@ -640,7 +640,7 @@ bool	get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id);
 bool	process_in_console_session(_In_ DWORD process_id);
 bool	get_current_session_id(_Out_ DWORD& session_id);
 
-bool create_process(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _Out_opt_ HANDLE& process_handle, _Out_opt_ DWORD& process_id);
+bool create_process(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _Out_ HANDLE& process_handle, _Out_ DWORD& process_id);
 bool create_process_and_wait(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _In_ DWORD timeout_secs, _Out_ DWORD& exit_code);
 
 bool create_process_on_session(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _Out_ PROCESS_INFORMATION& pi);

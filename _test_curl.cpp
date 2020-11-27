@@ -106,7 +106,7 @@ bool test_curl_https_down_with_auth()
 			sw.GetDurationSecond()
 			log_end;
 
-		_ASSERTE(!_cc);
+		_ASSERTE(_cc);
 	}
 	_mem_check_end;
 	return true;
