@@ -90,7 +90,7 @@ curl_client::enable_auth(
 			log_end;
 		return false;
 	}
-
+	
 	//
 	// set user name and password for the authentication
 	//
@@ -98,6 +98,49 @@ curl_client::enable_auth(
 	curl_code = curl_easy_setopt(_curl,
 								 CURLOPT_USERPWD,
 								 id_n_pw.c_str());
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	return true;
+}
+
+///	@brief
+bool
+curl_client::enable_bearer_auth(
+	_In_ const char* bearer_token
+)
+{
+	_ASSERTE(nullptr != bearer_token);
+	if (nullptr == bearer_token) return false;
+
+	//
+	//	Set bearer auth mode
+	//
+	auto curl_code = curl_easy_setopt(_curl,
+									  CURLOPT_HTTPAUTH,
+									  (long)CURLAUTH_BEARER);
+
+	if (CURLE_OK != curl_code)
+	{
+		log_err "curl_easy_setopt() failed. curl_code =%d, %s",
+			curl_code,
+			curl_easy_strerror(curl_code)
+			log_end;
+		return false;
+	}
+
+	//
+	// set bearer token for the authentication
+	//
+	curl_code = curl_easy_setopt(_curl,
+								 CURLOPT_XOAUTH2_BEARER,
+								 bearer_token);
 	if (CURLE_OK != curl_code)
 	{
 		log_err "curl_easy_setopt() failed. curl_code = %d, %s",
