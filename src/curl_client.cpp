@@ -903,33 +903,6 @@ bool curl_client::perform(_Out_ long& http_response_code)
 }
 
 ///	@brief	
-size_t
-On_Callback_response_header(
-	_In_ void* pData,
-	_In_ size_t tSize,
-	_In_ size_t tCount,
-	_In_ void* pmUser
-)
-{
-	size_t length = tSize * tCount, index = 0;
-	while (index < length)
-	{
-		unsigned char *temp = (unsigned char *)pData + index;
-		if ((temp[0] == '\r') || (temp[0] == '\n'))
-			break;
-		index++;
-	}
-
-	std::string str((unsigned char*)pData, (unsigned char*)pData + index);
-	std::map<std::string, std::string>* pmHeader = (std::map<std::string, std::string>*)pmUser;
-	size_t pos = str.find(": ");
-	if (pos != std::string::npos)
-		pmHeader->insert(std::pair<std::string, std::string>(str.substr(0, pos), str.substr(pos + 2)));
-
-	return (tCount);
-}
-
-///	@brief	
 bool
 curl_client::perform(
 	_Out_ long& http_response_code, 
@@ -1161,4 +1134,31 @@ curl_client::perform(
 	curl_easy_reset(_curl);
 
 	return true;
+}
+
+///	@brief	
+size_t
+On_Callback_response_header(
+	_In_ void* pData,
+	_In_ size_t tSize,
+	_In_ size_t tCount,
+	_In_ void* pmUser
+)
+{
+	size_t length = tSize * tCount, index = 0;
+	while (index < length)
+	{
+		unsigned char *temp = (unsigned char *)pData + index;
+		if ((temp[0] == '\r') || (temp[0] == '\n'))
+			break;
+		index++;
+	}
+
+	std::string str((unsigned char*)pData, (unsigned char*)pData + index);
+	std::map<std::string, std::string>* pmHeader = (std::map<std::string, std::string>*)pmUser;
+	size_t pos = str.find(": ");
+	if (pos != std::string::npos)
+		pmHeader->insert(std::pair<std::string, std::string>(str.substr(0, pos), str.substr(pos + 2)));
+
+	return (tCount);
 }
