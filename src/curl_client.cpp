@@ -290,7 +290,6 @@ curl_client::http_download_file(
 	return true;
 }
 
-
 ///	@brief	http post 요청을 수행한다.
 /// @param	url				전송할 서버 주소
 ///	@param	post_data		전송할 데이터
@@ -549,6 +548,119 @@ curl_client::http_post(
 	return true;
 }
 
+bool 
+curl_client::http_post(
+	_In_ const char* url, 
+	_In_ const char* data, 
+	_Out_ long& http_response_code, 
+	_Out_ std::map<std::string, std::string>& http_response_header,
+	_Out_ CMemoryStream& stream
+)
+{
+	_ASSERTE(nullptr != url);
+	_ASSERTE(nullptr != data);
+	if (nullptr == url || nullptr == data) return false;
+
+	//
+	//	Prepare (set common options)
+	//
+	if (!prepare_perform(url))
+	{
+		log_err "prepare_perform() failed. " log_end;
+		return false;
+	}
+
+	//
+	//	Set mothod specific options
+	//
+	bool ret = false;
+	do
+	{
+		//
+		//	Received data stuff
+		//
+		stream.ClearStream();
+		auto curl_code = curl_easy_setopt(_curl,
+										  CURLOPT_WRITEDATA,
+										  &stream);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_WRITEFUNCTION,
+									 curl_wcb_to_stream);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		//
+		//	HTTP POST stuff
+		//
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_POST,
+									 1);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_POSTFIELDSIZE,
+									 strlen(data));
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_POSTFIELDS,
+									 data);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		ret = true;		//<!
+	} while (false);
+
+	if (!ret) return false;
+
+	//
+	//	Perform http(s) I/O
+	//
+	if (true != perform(http_response_code,
+						http_response_header))
+	{
+		log_err "perform() failed." log_end;
+		return false;
+	}
+
+	return true;
+}
+
 ///	@brief	HTTP(S) 요청의 공통 옵션들을 설정하고, 성공시 true 를 리턴
 bool curl_client::prepare_perform(_In_ const char* const url)
 {
@@ -788,7 +900,151 @@ bool curl_client::perform(_Out_ long& http_response_code)
 	//
 	curl_easy_reset(_curl);	
 	return ret;
-}			
+}
+
+///	@brief	
+size_t
+On_Callback_response_header(
+	_In_ void* pData,
+	_In_ size_t tSize,
+	_In_ size_t tCount,
+	_In_ void* pmUser
+)
+{
+	size_t length = tSize * tCount, index = 0;
+	while (index < length)
+	{
+		unsigned char *temp = (unsigned char *)pData + index;
+		if ((temp[0] == '\r') || (temp[0] == '\n'))
+			break;
+		index++;
+	}
+
+	std::string str((unsigned char*)pData, (unsigned char*)pData + index);
+	std::map<std::string, std::string>* pmHeader = (std::map<std::string, std::string>*)pmUser;
+	size_t pos = str.find(": ");
+	if (pos != std::string::npos)
+		pmHeader->insert(std::pair<std::string, std::string>(str.substr(0, pos), str.substr(pos + 2)));
+
+	return (tCount);
+}
+
+///	@brief	
+bool
+curl_client::perform(
+	_Out_ long& http_response_code, 
+	_Out_ std::map<std::string, std::string>& http_response_header
+)
+{
+	http_response_code = 0;
+	CURLcode curl_code = CURLE_OK;
+	curl_slist* header_list = nullptr;
+	bool ret = false;
+	do
+	{
+		//
+		//	Set HTTP Headers 
+		//	
+		if (true != _header_fields.empty())
+		{
+			std::string header_item;
+			for (const auto& hf : _header_fields)
+			{
+				header_item = hf.first;
+				header_item += ":";
+				header_item += hf.second;
+				header_list = curl_slist_append(header_list,
+												header_item.c_str());
+			}
+
+			curl_code = curl_easy_setopt(_curl,
+										 CURLOPT_HTTPHEADER,
+										 header_list);
+			if (CURLE_OK != curl_code)
+			{
+				log_err "set http header failed. curl_code = %d, %s",
+					curl_code,
+					curl_easy_strerror(curl_code)
+					log_end;
+				break;
+			}
+		}
+
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_HEADERFUNCTION,
+									 On_Callback_response_header);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "set http header Function Failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_HEADERDATA,
+									 &http_response_header);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "set http response header failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		//
+		//	Execute HTTP(S) I/O
+		//
+		curl_code = curl_easy_perform(_curl);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_perform() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		//
+		//	Get the last response code.
+		//
+		long http_code = 0;
+		if (CURLE_OK != curl_easy_getinfo(_curl,
+										  CURLINFO_RESPONSE_CODE,
+										  &http_code))
+		{
+			log_err "curl_easy_getinfo() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+		http_response_code = http_code;
+
+		ret = true;		//<!		
+	} while (false);
+
+	//
+	//	Free header_list 
+	//
+	if (nullptr != header_list)
+	{
+		curl_slist_free_all(header_list);
+	}
+
+	//
+	//	설정 완료된 HTTP Header 필드들은 정리
+	//
+	_header_fields.clear();
+
+	//
+	//	reset curl handle
+	//
+	curl_easy_reset(_curl);
+	return ret;
+}
 
 /// @brief	
 bool 
