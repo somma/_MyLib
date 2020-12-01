@@ -4,10 +4,16 @@
  *			(file, debugger, console, etc) 지정/변경 가능
  *
  *			log format 지정/변경 가능
- *
  *			multi thread 환경에서 serialization 이 됨
- *
  *			log_err, log_err 같은 매크로만 사용하면 debugger, console 로 메세지 출력 가능
+ *
+ *			커널모드 log 모듈과 user mode log 모듈이 모두 DPFLTR_IHVDRIVER_ID 를 
+ *			사용하기 때문에 WinDbg 에서 User mode 메세지만 필터링 하고 싶은 경우
+ *			`.ofilter` 를 써야 함
+ *
+ *			kd>ed nt!Kd_IHVDRIVER_Mask 0xff
+ *			kd>.ofilter /! "*MonsterK*"
+ *
  * @ref
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    2015/01/12 created.
@@ -35,6 +41,61 @@ static uint32_t			_log_level = log_level_info;
 #endif
 static uint32_t			_log_to = log_to_ods;
 
+/// @brief	ntdll::DbgPrintEx 
+///			(ref) dpfilter.h
+#define DPFLTR_ERROR_LEVEL 0
+#define DPFLTR_WARNING_LEVEL 1
+#define DPFLTR_TRACE_LEVEL 2
+#define DPFLTR_INFO_LEVEL 3
+#define DPFLTR_MASK 0x80000000
+
+#define DPFLTR_IHVDRIVER_ID 77
+
+typedef 
+ULONG (__cdecl *fnDbgPrintEx) (
+	_In_ ULONG ComponentId,
+	_In_ ULONG Level,
+	_In_z_ _Printf_format_string_ PCSTR Format,
+	...
+);
+static fnDbgPrintEx _dbg_print = nullptr;
+
+void dbg_print(_In_ uint32_t log_level, _In_ const char* msg)
+{
+	//
+	//	log level 변환
+	//
+	uint32_t ll = DPFLTR_ERROR_LEVEL;
+	switch (log_level)
+	{
+	case log_level_debug: 
+		ll = DPFLTR_INFO_LEVEL; 
+		break;
+	case log_level_info:
+		ll = DPFLTR_TRACE_LEVEL;
+		break;
+	case log_level_warn:
+		ll = DPFLTR_WARNING_LEVEL;
+		break;
+	case log_level_error:
+		ll = DPFLTR_ERROR_LEVEL;
+		break;	
+	}
+
+	if (_dbg_print)
+	{
+		_dbg_print(DPFLTR_IHVDRIVER_ID,
+				   ll,
+				   "%s",
+				   msg);
+	}
+	else
+	{
+		OutputDebugStringA(msg);
+	}
+}
+
+
 /**
  * @brief	log 모듈을 초기화한다.
  * @param
@@ -58,9 +119,20 @@ initialize_log(
 	_log_level = log_level;
 	_log_to = log_to;
 
+	//
+	//	Get `DbgPrintEx` pointer
+	//
+	HMODULE nt = GetModuleHandleW(L"ntdll.dll");
+	_ASSERTE(nt);
+	if (nt)
+	{
+		_dbg_print = (fnDbgPrintEx)GetProcAddress(nt, "DbgPrintEx");
+	}
+
 	if (nullptr == log_file_path && FlagOn(log_to, log_to_file))
 	{
-		OutputDebugStringA("[ERR ] initialize_log(), Invalid parameter mix \n");
+		dbg_print(log_level_error,
+				  "[ERR ] initialize_log(), Invalid parameter mix \n");
 		return false;
 	}
 
@@ -75,13 +147,16 @@ initialize_log(
 											 max_log_files);
 		if (NULL == local_slogger)
 		{
-			OutputDebugStringA("[ERR ] initialize_log(), insufficient resource for slogger.\n");
+			dbg_print(log_level_error, 
+					  "[ERR ] initialize_log(), insufficient resource for slogger.\n");
 			return false;
 		}
 
 		if (true != local_slogger->slog_start())
 		{
-			OutputDebugStringA("[ERR ] initialize_log(), _logger->slog_start() failed.\n");
+			
+			dbg_print(log_level_error, 
+					  "[ERR ] initialize_log(), _logger->slog_start() failed.\n");
 			delete local_slogger;
 			return false;
 		}
@@ -437,7 +512,7 @@ log_write_fmt(
 
 			if (FlagOn(_log_to, log_to_ods))
 			{
-				OutputDebugStringA(log_buffer);
+				dbg_print(log_level, log_buffer);
 			}
 		}
 	}
@@ -521,7 +596,7 @@ log_write_fmt_without_deco(
 
 			if (FlagOn(_log_to, log_to_ods))
 			{
-				OutputDebugStringA(log_buffer);
+				dbg_print(log_level, log_buffer);
 			}
 		}
 	}
@@ -570,7 +645,7 @@ bool slogger::slog_start()
 
 	if (_log_file_path.empty() && FlagOn(_log_to, log_to_file))
 	{
-		OutputDebugStringA("[ERR ] slog_start(), log_to_file specified but no log_file_path exists.\n");
+		dbg_print(log_level_error, "[ERR ] slog_start(), log_to_file specified but no log_file_path exists.\n");
 		return false;
 	}
 
@@ -881,7 +956,7 @@ void slogger::slog_thread()
 
 		if (FlagOn(_log_to, log_to_ods))
 		{
-			OutputDebugStringA(log->_msg.c_str());
+			dbg_print(log->_log_level, log->_msg.c_str());
 		}
 
 		if (FlagOn(_log_to, log_to_file))
@@ -905,7 +980,7 @@ void slogger::slog_thread()
 					{
 						write_to_console(fc_red, "[ERR ] rotate_log_file() failed.");
 					}					
-					OutputDebugStringA("[ERR ] rotate_log_file() failed.");
+					dbg_print(log_level_error, "[ERR ] rotate_log_file() failed.");
 				}
 				else
 				{
@@ -980,7 +1055,7 @@ void slogger::slog_thread()
 						{
 							write_to_console(fc_red, "[ERR ] rotate_log_file() failed.\n");
 						}
-						OutputDebugStringA("[ERR ] rotate_log_file() failed.\n");
+						dbg_print(log_level_error, "ERR ] rotate_log_file() failed.\n");
 					}
 					else
 					{

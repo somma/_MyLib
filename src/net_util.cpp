@@ -127,7 +127,7 @@ get_host_name(
 ///	@param	net_family	AF_INET
 bool
 get_inet_adapters(	
-	_Out_ std::vector<PInetAdapter>& adapters
+	_Out_ std::list<PInetAdapter>& adapters
 )
 {
 	//
@@ -527,7 +527,7 @@ bool
 dns_to_ip(
 	_In_ const wchar_t* domain_name,
 	_In_ bool cache_only,
-	_Out_ std::vector<uint32_t>& ip_list
+	_Out_ std::list<uint32_t>& ip_list
 )
 {
 	std::string dns_query_ip;
@@ -731,6 +731,38 @@ str_to_ipv4(
 	return false;
 }
 
+/// @brief	
+uint32_t 
+str_to_ipv4(
+	_In_ const char* const ipv4
+)
+{
+	uint32_t nb_ip = 0;
+	if (!str_to_ipv4(ipv4, nb_ip))
+	{
+		return 0;
+	}
+	
+	return nb_ip;
+}
+
+/// @brief	
+uint32_t 
+str_to_ipv4(
+	_In_ const wchar_t* const ipv4
+)
+{
+	uint32_t nb_ip = 0;
+	if (!str_to_ipv4(ipv4, nb_ip))
+	{
+		return 0;
+	}
+
+	return nb_ip;
+}
+
+
+
 /// @brief  
 std::string
 ipv6_to_str(
@@ -846,10 +878,10 @@ str_to_ipv6(
 **/
 bool
 get_ip_list_v4(
-	_Out_ std::vector<std::string>& ip_list
+	_Out_ std::list<std::string>& ip_list
 )
 {
-	std::vector<PInetAdapter> adapters;
+	std::list<PInetAdapter> adapters;
 	if (true != get_inet_adapters(adapters))
 	{
 		log_err "get_inet_adapters() failed." log_end;
@@ -880,10 +912,10 @@ get_ip_list_v4(
 **/
 bool
 get_broadcast_list_v4(
-	_Out_ std::vector<uint32_t>& broadcast_list
+	_Out_ std::list<uint32_t>& broadcast_list
 )
 {
-	std::vector<PInetAdapter> adapters;
+	std::list<PInetAdapter> adapters;
 	if (true != get_inet_adapters(adapters))
 	{
 		log_err "get_inet_adapters() failed." log_end;
@@ -921,7 +953,7 @@ get_representative_ip_v4(
 	//	3순위: 
 	//		첫번째 IP
 	// 
-	std::vector<PInetAdapter> adapters;
+	std::list<PInetAdapter> adapters;
 	if (true != get_inet_adapters(adapters))
 	{
 		log_err "get_inet_adapters() failed." log_end;
@@ -1011,7 +1043,7 @@ get_mac_by_ip_v4(
 	//
 	//	어댑터 정보를 가져온다.
 	//
-	std::vector<PInetAdapter> adapters;
+	std::list<PInetAdapter> adapters;
 	if (true != get_inet_adapters(adapters))
 	{
 		log_err "get_inet_adapters() failed." log_end;
@@ -1086,8 +1118,8 @@ std::string mac_to_str(_In_ const MacAddrType mac)
 bool
 get_addr_infow(
 	_In_ const wchar_t* host_name,
-	_Out_opt_ std::vector<in_addr>* const ipv4_addrs,
-	_Out_opt_ std::vector<in6_addr>* const ipv6_addrs
+	_Out_opt_ std::list<in_addr>* const ipv4_addrs,
+	_Out_opt_ std::list<in6_addr>* const ipv6_addrs
 )
 {
 	_ASSERTE(nullptr != host_name);

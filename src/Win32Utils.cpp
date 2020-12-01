@@ -68,6 +68,29 @@ char _int_to_uchar_table[] = {
 	"{|}~" /* 65 - 68 */
 };
 
+// ASCII table
+char _ascii_table[] = {
+	//NUL, SOH, STX, ETX, EOT, ENQ, ACK, BEL, BS, HT, LF, VT, FF, CR, SO, SI,		0x00 ~ 0x0f
+	//DLE, DC1, DC2, DC3, DC4, NAK, SYN, ETB, CAN, EM, SUB, ESC, FS, GS, RS, US,	0x10 ~ 0x1f
+	//Space, !, ", #, $, %, &, ', (, ), *, +, ,, -, ., /,							0x20 ~ 0x2f
+	" !\"#$%&'()*+,-./"
+
+	//0, 1, 2, 3, 4, 5, 6, 7, 8, 9, :, ;, <, =, >, ?,								0x30 ~ 0x3f
+	"0123456789:;<=>?"
+
+	//@, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O,								0x40 ~ 0x4f
+	"@ABCDEFGHIJKLMNO"
+
+	//P, Q, R, S, T, U, V, W, X, Y, Z, [, \, ], ^, _,								0x50 ~ 0x5f
+	"PQRSTUVWXYZ[\\]^_"
+
+	//`, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o,								0x60 ~ 0x6f
+	"`abcdefghijklmno"
+
+	//p, q, r, s, t, u, v, w, x, y, z, {, |, }, ~, DEL,								0x70 ~ 0x7f
+	"pqrstuvwxyz{|}~"
+};
+
 
 /// @brief	int type 랜덤값을 리턴한다.
 int get_random_int(_In_ int min, _In_ int max)
@@ -457,12 +480,12 @@ sys_time_to_str2(
 }
 
 
-bool is_file_existsW(_In_ std::wstring& file_path)
+bool is_file_existsW(_In_ const std::wstring& file_path)
 {
 	return is_file_existsW(file_path.c_str());
 }
 
-bool is_file_existsA(_In_ std::string& file_path)
+bool is_file_existsA(_In_ const std::string& file_path)
 {
 	return is_file_existsA(file_path.c_str());
 }
@@ -1332,8 +1355,7 @@ bool dump_all_disk_drive_layout()
 							}
 							else
 							{
-								std::vector<std::string> dumps;
-								dump_memory(0, buf, sizeof(buf), dumps);
+								auto dumps = dump_memory(0, buf, sizeof(buf));
 								for (const auto& line : dumps)
 								{
 									log_info "%s", line.c_str() log_end;
@@ -1356,8 +1378,7 @@ bool dump_all_disk_drive_layout()
 							}
 							else
 							{
-								std::vector<std::string> dumps;
-								dump_memory(0, buf, sizeof(buf), dumps);
+								auto dumps = dump_memory(0, buf, sizeof(buf));
 
 								log_info
 									"[*] dump VBR (disk offset 0x%llx)", pi->StartingOffset.QuadPart
@@ -1511,8 +1532,7 @@ bool dump_boot_area()
 		}
 		else
 		{
-			std::vector<std::string> dumps;
-			dump_memory(0, buf, sizeof(buf), dumps);
+			auto dumps = dump_memory(0, buf, sizeof(buf));
 			for (const auto& line : dumps)
 			{
 				log_info "%s", line.c_str() log_end;
@@ -1831,6 +1851,101 @@ get_file_company_name(
 	}
 	_ASSERTE(nullptr != value);
 	company_name = reinterpret_cast<wchar_t*>(value);
+
+	return true;
+}
+
+/// @brief 지정된 파일의 OriginalFilename 정보를 수집하는 함수
+/// @return 성공		true
+///					(파일에 리소스 섹션이 없는경우에도,
+///					 file_version을 ""로 true를 return 한다.)
+/// @return 실패		false
+///
+bool
+get_file_original_name(
+	_In_ const wchar_t* file_path,
+	_Out_ std::wstring& original_name
+)
+{
+	_ASSERTE(nullptr != file_path);
+	if (nullptr == file_path)
+	{
+		return false;
+	}
+
+	DWORD size = GetFileVersionInfoSizeW(file_path,
+										 0);
+
+	if (0 == size)
+	{
+		DWORD err = GetLastError();
+		if (ERROR_RESOURCE_DATA_NOT_FOUND == err ||
+			ERROR_RESOURCE_TYPE_NOT_FOUND == err)
+		{
+			//
+			// 파일의 리소스 섹션이 없는 경우 항상 실패하게 된다.
+			// 때문에 ori_file_name을 ""으로 설정하고 true를 반환한다.
+			//
+			original_name = L"";
+			return true;
+		}
+
+		log_err "GetFileVersionInfoSize() failed, file=%ws, gle=%u",
+			original_name.c_str(),
+			err
+			log_end;
+		return false;
+	}
+
+	wchar_ptr buffer((wchar_t*)malloc(size),
+					 [](_In_ wchar_t* ptr)
+	{
+		if (nullptr != ptr) free(ptr);
+	});
+	if (nullptr == buffer.get())
+	{
+		log_err "Not enough memory, malloc size=%u",
+			size
+			log_end;
+		return false;
+	}
+
+	if (TRUE != GetFileVersionInfoExW(FILE_VER_GET_NEUTRAL,
+									  file_path,
+									  0,
+									  size,
+									  buffer.get()))
+	{
+		log_err "GetFileVersionInfo() failed, file=%ws, gle=%u",
+			file_path,
+			GetLastError()
+			log_end;
+		return false;
+	}
+
+	ULONG lang_code_page = get_file_versioninfo_lang_code_page(buffer.get());
+
+	std::wstringstream query;
+	query
+		<< L"\\StringFileInfo\\"
+		<< std::setw(8) << std::setfill(L'0') << std::hex << lang_code_page
+		<< L"\\OriginalFilename";
+
+	std::wstringstream cn;
+	UINT length;
+	LPVOID value;
+	if (TRUE != VerQueryValue(buffer.get(),
+							  query.str().c_str(),
+							  &value,
+							  &length))
+	{
+		log_err "VerQueryValue() failed. query=%ws",
+			query.str().c_str()
+			log_end;
+		return false;
+	}
+	_ASSERTE(nullptr != value);
+	original_name = reinterpret_cast<wchar_t*>(value);
 
 	return true;
 }
@@ -3655,7 +3770,7 @@ std::wstring Utf8MbsToWcsEx(_In_ const char* utf8)
 	return std::wstring(outWchar.get());
 }
 
-/// @brief	포맷팅된 문자열을 리턴한다. 
+/// @brief	포맷팅된 문자열을 리턴한다. (테스트용으로만 쓸것)
 ///			static 배열을 사용하므로 Thread safe 하지 않으며 포맷팅된 
 ///			문자열의 길이가 buffer 사이즈를 넘는경우 nullptr 을 리턴
 const 
@@ -5097,262 +5212,6 @@ std::wstring Win32ErrorToStringW(IN DWORD ErrorCode)
 	return ret;
 }
 
-/**----------------------------------------------------------------------------
-	\brief
-
-	\param
-	\return
-	\code
-
-	\endcode
------------------------------------------------------------------------------*/
-BOOL DumpMemory(DWORD Length, BYTE* Buf)
-{
-	if ((0 < Length) && (NULL != Buf))
-	{
-		log_info "length = %u, buffer=0x%08x", Length, Buf log_end
-
-			CHAR print_buf[128 * sizeof(CHAR)] = { 0 };
-		DWORD i = 0, x = 0, ib = 0;
-		UCHAR*  Addr = Buf;
-		CHAR*	Pos = NULL;
-		size_t	Remain = 0;
-		for (;;)
-		{
-			if (i >= Length) break;
-			ib = i;
-
-			// reset all
-			//
-			Pos = print_buf;
-			Remain = sizeof(print_buf);
-
-			if (!SUCCEEDED(StringCbPrintfExA(
-				Pos,
-				Remain,
-				&Pos,
-				&Remain,
-				0,
-				"0x%08p    ",
-				&Addr[i])))
-			{
-				log_err "StringCbPrintfEx() failed" log_end
-					break;
-			}
-
-			// first 8 bytes
-			//
-			for (x = 0; x < 8; x++, i++)
-			{
-				if (x == Length) break;
-
-				if (!SUCCEEDED(StringCbPrintfExA(
-					Pos,
-					Remain,
-					&Pos,
-					&Remain,
-					0,
-					"%02X ",
-					Addr[i])))
-				{
-					log_err "StringCbPrintfEx() failed" log_end
-						break;
-				}
-			}
-
-			if (x != Length)
-			{
-				// insert space between first 8bytes and last 8 bytes.
-				//
-				if (!SUCCEEDED(StringCbPrintfExA(
-					Pos,
-					Remain,
-					&Pos,
-					&Remain,
-					0,
-					"%s",
-					"  ")))
-				{
-					log_err "StringCbPrintfEx() failed" log_end
-						break;
-				}
-			}
-
-			// last 8 bytes
-			//
-			for (x = 0; x < 8; x++, i++)
-			{
-				if (x == Length) break;
-
-				if (!SUCCEEDED(StringCbPrintfExA(
-					Pos,
-					Remain,
-					&Pos,
-					&Remain,
-					0,
-					"%02X ",
-					Addr[i])))
-				{
-					log_err "StringCbPrintfEx() failed" log_end
-						break;
-				}
-			}
-
-			char tmp[64] = { 0 };
-			Pos = tmp;
-			Remain = sizeof(tmp) - sizeof(char);
-			for (DWORD p = 0; p < 16; ++p)
-			{
-				if (p == Length) break;
-
-				if (0x20 <= Addr[ib] && 0x7F > Addr[ib])
-				{
-					if (!SUCCEEDED(StringCbPrintfExA(
-						Pos,
-						Remain,
-						&Pos,
-						&Remain,
-						0,
-						"%c",
-						Addr[ib])))
-					{
-						log_err "StringCbPrintfEx() failed" log_end
-							break;
-					}
-				}
-				else
-				{
-					if (!SUCCEEDED(StringCbPrintfExA(
-						Pos,
-						Remain,
-						&Pos,
-						&Remain,
-						0,
-						"%c",
-						'.')))
-					{
-						log_err "StringCbPrintfEx() failed" log_end
-							break;
-					}
-				}
-
-				++ib;
-			}
-
-			// print string..
-			//
-			log_info "  %s   %s", print_buf, tmp log_end
-				memset(print_buf, 0x00, sizeof(print_buf));
-		}
-
-		log_info "  %s\n\n", print_buf log_end
-			return TRUE;
-	}
-
-	log_err "invalid parameters" log_end
-		return FALSE;
-}
-
-/** ---------------------------------------------------------------------------
-	\brief
-
-	\param
-	\return
-	\code
-	\endcode
------------------------------------------------------------------------------*/
-BOOL DumpMemory(FILE* stream, DWORD Length, BYTE* Buf)
-{
-	if ((0 < Length) && (NULL != Buf))
-	{
-		_ftprintf(stream, TEXT("\n  00 01 02 03 04 05 06 07   08 09 0A 0B 0C 0D 0E 0F\n"));
-		_ftprintf(stream, TEXT("  -- -- -- -- -- -- -- --   -- -- -- -- -- -- -- --\n"));
-
-		TCHAR print_buf[128 * sizeof(TCHAR)] = { 0 };
-		DWORD i = 0, x = 0;
-		UCHAR*  Addr = Buf;
-		TCHAR*	Pos = NULL;
-		size_t	Remain = 0;
-		for (;;)
-		{
-			if (i >= Length) break;
-
-			// reset all
-			//
-			Pos = print_buf;
-			Remain = sizeof(print_buf);
-
-			// first 8 bytes
-			//
-			for (x = 0; x < 8; x++, i++)
-			{
-				if (x == Length) break;
-
-				if (!SUCCEEDED(StringCbPrintfEx(
-					Pos,
-					Remain,
-					&Pos,
-					&Remain,
-					0,
-					TEXT("%02X "),
-					Addr[i])))
-				{
-					_ftprintf(stream, TEXT("StringCbPrintfEx() failed \n"));
-					break;
-				}
-			}
-
-			if (x == Length) break;
-
-			// insert space between first 8bytes and last 8 bytes.
-			//
-			if (!SUCCEEDED(StringCbPrintfEx(
-				Pos,
-				Remain,
-				&Pos,
-				&Remain,
-				0,
-				TEXT("%s"),
-				TEXT("  "))))
-			{
-				_ftprintf(stream, TEXT("StringCbPrintfEx() failed \n"));
-				break;
-			}
-
-			// last 8 bytes
-			//
-			for (x = 0; x < 8; x++, i++)
-			{
-				if ((x + 8) == Length) break;
-
-				if (!SUCCEEDED(StringCbPrintfEx(
-					Pos,
-					Remain,
-					&Pos,
-					&Remain,
-					0,
-					TEXT("%02X "),
-					Addr[i])))
-				{
-					_ftprintf(stream, TEXT("StringCbPrintfEx() failed \n"));
-					break;
-				}
-			}
-
-			// print string..
-			//
-			_ftprintf(stream, TEXT("  %s\n"), print_buf);
-			memset(print_buf, 0x00, sizeof(print_buf));
-		}
-
-		_ftprintf(stream, TEXT("  %s\n\n"), print_buf);
-		return TRUE;
-	}
-
-	_ftprintf(stream, TEXT("err ] invalid parameters \n"));
-	return FALSE;
-}
-
 /**
  * @brief
  * @param
@@ -5362,55 +5221,63 @@ BOOL DumpMemory(FILE* stream, DWORD Length, BYTE* Buf)
  * @endcode
  * @return
 **/
-bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump)
+std::list<std::string> 
+dump_memory(
+	_In_ uint64_t base_offset, 
+	_In_ unsigned char* buf, 
+	_In_ UINT32 buf_len
+)
 {
-	_ASSERTE(NULL != buf);
+	std::list<std::string> rs;
+	rs.push_back("                      00 01 02 03 04 05 06 07   08 09 0A 0B 0C 0D 0E 0F");
+	rs.push_back("                      -- -- -- -- -- -- -- --   -- -- -- -- -- -- -- --");
+
+	_ASSERTE(nullptr != buf);
 	_ASSERTE(0 < buf_len);
-	if (NULL == buf || 0 == buf_len) return false;
+	if (nullptr == buf || 0 == buf_len) return rs;
 
-	// !주의! - 한 라인이 line_dump 보다 큰 경우 (설마 그런일이...?!) 문제가 발생 할 수 있음
+	//	!주의! - 한 라인이 line_dump 보다 큰 경우 
+	//	(설마 그런일이...?!) 문제가 발생 할 수 있음
 	char line_dump[1024];
+		
+	CHAR print_buf[128 * sizeof(CHAR)] = { 0 };
+	DWORD i = 0, ib = 0;
+	UCHAR*  Addr = buf;
+	CHAR*	Pos = NULL;
+	size_t	Remain = 0;
 
-	if ((0 < buf_len) && (NULL != buf))
+	while(i < buf_len)
 	{
-		// useless, uh?
-		//StringCbPrintfA(line_dump, sizeof(line_dump), "buf_len = %u, buffer=0x%08x", buf_len, buf);
-		//dump.push_back(line_dump);
+		ib = i;
 
-		CHAR print_buf[128 * sizeof(CHAR)] = { 0 };
-		DWORD i = 0, x = 0, ib = 0;
-		UCHAR*  Addr = buf;
-		CHAR*	Pos = NULL;
-		size_t	Remain = 0;
-		for (;;)
+		// reset all
+		//
+		Pos = print_buf;
+		Remain = sizeof(print_buf);
+
+		//
+		//	offset
+		//
+		if (!SUCCEEDED(StringCbPrintfExA(
+			Pos,
+			Remain,
+			&Pos,
+			&Remain,
+			0,
+			"0x%08p    ",
+			base_offset + i)))
 		{
-			if (i >= buf_len) break;
-			ib = i;
+			log_err "StringCbPrintfEx() failed" log_end;
+			break;
+		}
 
-			// reset all
-			//
-			Pos = print_buf;
-			Remain = sizeof(print_buf);
-
-			if (!SUCCEEDED(StringCbPrintfExA(
-				Pos,
-				Remain,
-				&Pos,
-				&Remain,
-				0,
-				"0x%08p    ",
-				base_offset + i)))
+		//
+		// first 8 bytes
+		//
+		for (int x = 0; x < 8; x++, i++)
+		{
+			if (i < buf_len)
 			{
-				log_err "StringCbPrintfEx() failed" log_end
-					break;
-			}
-
-			// first 8 bytes
-			//
-			for (x = 0; x < 8; x++, i++)
-			{
-				if (x == buf_len) break;
-
 				if (!SUCCEEDED(StringCbPrintfExA(
 					Pos,
 					Remain,
@@ -5420,15 +5287,12 @@ bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32
 					"%02X ",
 					Addr[i])))
 				{
-					log_err "StringCbPrintfEx() failed" log_end
-						break;
+					log_err "StringCbPrintfEx() failed" log_end;
+					break;
 				}
 			}
-
-			if (x != buf_len)
+			else
 			{
-				// insert space between first 8bytes and last 8 bytes.
-				//
 				if (!SUCCEEDED(StringCbPrintfExA(
 					Pos,
 					Remain,
@@ -5436,19 +5300,37 @@ bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32
 					&Remain,
 					0,
 					"%s",
-					"  ")))
+					"   ")))
 				{
-					log_err "StringCbPrintfEx() failed" log_end
-						break;
+					log_err "StringCbPrintfEx() failed" log_end;
+					break;
 				}
 			}
-
-			// last 8 bytes
-			//
-			for (x = 0; x < 8; x++, i++)
+		}
+		
+		//
+		// insert space between first 8bytes and last 8 bytes.
+		//
+		if (!SUCCEEDED(StringCbPrintfExA(
+			Pos,
+			Remain,
+			&Pos,
+			&Remain,
+			0,
+			"%s",
+			"  ")))
+		{
+			log_err "StringCbPrintfEx() failed" log_end;
+			break;
+		}
+		
+		//
+		// last 8 bytes
+		//		
+		for (int x = 0; x < 8; x++, i++)
+		{
+			if (i < buf_len)
 			{
-				if (x == buf_len) break;
-
 				if (!SUCCEEDED(StringCbPrintfExA(
 					Pos,
 					Remain,
@@ -5458,67 +5340,86 @@ bool dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32
 					"%02X ",
 					Addr[i])))
 				{
-					log_err "StringCbPrintfEx() failed" log_end
-						break;
+					log_err "StringCbPrintfEx() failed" log_end;
+					break;
 				}
 			}
-
-			char tmp[64] = { 0 };
-			Pos = tmp;
-			Remain = sizeof(tmp) - sizeof(char);
-			for (DWORD p = 0; p < 16; ++p)
+			else
 			{
-				if (p == buf_len) break;
-
-				if (0x20 <= Addr[ib] && 0x7F > Addr[ib])
+				if (!SUCCEEDED(StringCbPrintfExA(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					"%s",
+					"   ")))
 				{
-					if (!SUCCEEDED(StringCbPrintfExA(
-						Pos,
-						Remain,
-						&Pos,
-						&Remain,
-						0,
-						"%c",
-						Addr[ib])))
-					{
-						log_err "StringCbPrintfEx() failed" log_end
-							break;
-					}
+					log_err "StringCbPrintfEx() failed" log_end;
+					break;
 				}
-				else
-				{
-					if (!SUCCEEDED(StringCbPrintfExA(
-						Pos,
-						Remain,
-						&Pos,
-						&Remain,
-						0,
-						"%c",
-						'.')))
-					{
-						log_err "StringCbPrintfEx() failed" log_end
-							break;
-					}
-				}
-
-				++ib;
 			}
-
-			// add line dump string..
-			StringCbPrintfA(line_dump, sizeof(line_dump), "%s   %s", print_buf, tmp);
-			dump.push_back(line_dump);
-
-			memset(print_buf, 0x00, sizeof(print_buf));
+		}
+		
+		//
+		//	Dump memory as ascii
+		//
+		char ascii[64] = { 0 };
+		Pos = ascii;
+		Remain = sizeof(ascii) - sizeof(char);
+		for (DWORD p = 0; p < 16 && ib < buf_len; ++p, ++ib)
+		{
+			if (0x20 <= Addr[ib] && 0x7F > Addr[ib])
+			{
+				if (!SUCCEEDED(StringCbPrintfExA(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					"%c",
+					Addr[ib])))
+				{
+					log_err "StringCbPrintfEx() failed" log_end;
+					break;
+				}
+			}
+			else
+			{
+				if (!SUCCEEDED(StringCbPrintfExA(
+					Pos,
+					Remain,
+					&Pos,
+					&Remain,
+					0,
+					"%c",
+					'.')))
+				{
+					log_err "StringCbPrintfEx() failed" log_end;
+					break;
+				}
+			}
 		}
 
-		// add rest of dump
-		StringCbPrintfA(line_dump, sizeof(line_dump), "%s", print_buf);
-		dump.push_back(line_dump);
-
-		return true;
+		// add line dump string..
+		StringCbPrintfA(line_dump, 
+						sizeof(line_dump), 
+						"%s   %s", 
+						print_buf, 
+						ascii);
+		rs.push_back(line_dump);
+		
+		memset(print_buf, 0x00, sizeof(print_buf));
 	}
 
-	return false;
+	//// add rest of dump
+	//StringCbPrintfA(line_dump, 
+	//				sizeof(line_dump), 
+	//				"%s", 
+	//				print_buf);
+	//rs.push_back(line_dump);
+	
+	return rs;
 }
 
 /**
@@ -8892,20 +8793,47 @@ bin_to_hexa(
 }
 
 
-const
-char*
-get_int_to_char_table(
-	_In_ bool uppercase
+std::string 
+bin_to_stra(
+	_In_ size_t size, 
+	_In_ const char* buf
 )
 {
-	if (true == uppercase)
+	_ASSERTE(size > 0);
+	_ASSERTE(nullptr != buf);
+	if (nullptr == buf || !(size > 0)) return _null_stringa;
+
+	bool crlf_seen = false;
+	std::stringstream strm;
+	for (size_t pos = 0; pos < size; ++pos)
 	{
-		return _int_to_uchar_table;
+		uint8_t v = (uint8_t)(buf[pos]);
+		if (v >= 0x20 && v < 0x7F)
+		{
+			//
+			//	c.f. 
+			//	strm << buf[pos] 형태로 stream 의 변환기능을 써도
+			//	성능상의 차이는 거의 없는데, 쓸데없는짓 한것 같음 Orz
+			//
+			strm << _ascii_table[(v - 0x20)];
+			crlf_seen = false;
+		}
+		else if (v == 0x0a || v == 0x0d)  // LF, CR
+		{
+			if (!crlf_seen)
+			{
+				strm << '\n';
+				crlf_seen = true;	// LF, CR 쪼개서 \n 이 두번들어가지 않도록 
+			}
+		}
+		else
+		{
+			strm << '.';
+			crlf_seen = false;
+		}
 	}
-	else
-	{
-		return _int_to_char_table;
-	}
+
+	return strm.str();
 }
 
 bool

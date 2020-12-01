@@ -9,13 +9,13 @@
 #include "stdafx.h"
 #include <regex>
 #include <unordered_map>
+#include <winioctl.h>
 
 #include "libzippp/libzippp.h"
 
 #include "_MyLib/src/process_tree.h"
 #include "_MyLib/src/base64.h"
 #include "_MyLib/src/rc4.h"
-#include "_MyLib/src/thread_pool.h"
 #include "_MyLib/src/md5.h"
 #include "_MyLib/src/sha2.h"
 #include "_MyLib/src/Win32Utils.h"
@@ -29,8 +29,6 @@
 #include "_MyLib/src/account_info.h"
 #include "_MyLib/src/CStream.h"
 #include "_MyLib/src/sched_client.h"
-
-
 
 // test_CStream.cpp
 extern bool test_cstream();
@@ -57,9 +55,6 @@ extern bool test_iphelp_api();
 
 // _test_process_token.cpp
 extern bool test_process_token();
-
-// _test_std_move.cpp
-bool test_std_move();
 
 bool test_log_xxx();
 bool test_set_security_attributes();
@@ -152,10 +147,12 @@ bool test_str_to_xxx();
 bool test_set_get_file_position();
 bool test_get_module_path();
 bool test_dump_memory();
+bool test_bin_to_str();
 bool test_get_environment_value();
 bool test_get_account_infos();
 bool test_get_installed_programs();
 bool test_get_file_company_name();
+bool test_get_file_original_name();
 bool test_generate_random_string();
 bool test_bit_check_set_clear();
 bool test_file_time_stuff();
@@ -208,9 +205,9 @@ bool test_curl_https_down_with_auth();
 bool test_curl_https();
 bool test_curl_http();
 bool test_curl_http_upload();
-
+bool test_curl_http_post_with_response_header();
 // thread_pool.h
-bool test_thread_pool();
+extern bool test_thread_pool();
 
 // _test_boost_thread.cpp
 extern bool test_boost_thread();
@@ -235,9 +232,16 @@ extern bool test_return_unique_ptr();
 // _test_call_by_value_container.cpp
 extern bool test_callby_value_container();
 
+// _test_rvo_move.cpp
+extern bool test_rvo_and_move();
+
+// _test_cppjson.cpp
+extern bool test_cpp_joson();
+
+// _test_template.cpp
+extern bool test_template();
 
 bool test_create_guid();
-
 bool test_is_executable_file_w();
 bool test_singleton();
 bool test_trivia();
@@ -276,7 +280,6 @@ void run_test()
 	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
-	//assert_bool(true, test_std_move);
 	//assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);
 	//assert_bool(true, test_GeneralHashFunctions);
@@ -354,6 +357,7 @@ void run_test()
 	//assert_bool(true, test_set_get_file_position);
 	//assert_bool(true, test_get_module_path);
 	//assert_bool(true, test_dump_memory);
+	//assert_bool(true, test_bin_to_str);
 	//assert_bool(true, test_get_environment_value);
 	//assert_bool(true, test_get_account_infos);
 	//assert_bool(true, test_get_installed_programs);
@@ -399,6 +403,7 @@ void run_test()
 	//assert_bool(true, test_curl_https);
 	//assert_bool(true, test_curl_http);
 	//assert_bool(true, test_curl_http_upload);
+	//assert_bool(true, test_curl_http_post_with_response_header);
 	//assert_bool(true, test_alignment);
 	//assert_bool(true, test_create_string_from_buffer);
 	//assert_bool(true, test_stop_watch);
@@ -419,8 +424,13 @@ void run_test()
 	
 	//assert_bool(true, test_callby_value_container);
 	//assert_bool(true, test_clear_stringsstream);
-	assert_bool(true, test_print_percent);	
+	//assert_bool(true, test_print_percent);	
+	//assert_bool(true, test_get_file_original_name);
 
+	//assert_bool(true, test_rvo_and_move);
+	//assert_bool(true, test_cpp_joson);
+
+	//assert_bool(true, test_template);
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //
 	//assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.
@@ -793,7 +803,7 @@ bool test_random()
 bool test_ip_mac()
 {
 	std::wstring host_name;
-	std::vector<std::string> ip_list;
+	std::list<std::string> ip_list;
 
 	log_info "representative ip v4=%s",
 		get_representative_ip_v4().c_str()
@@ -1426,20 +1436,122 @@ bool test_get_module_path()
 **/
 bool test_dump_memory()
 {
+	auto lt = set_log_to(log_to_all);
+	
 	unsigned char buf[512] = {0};
-	RtlCopyMemory(buf, GetModuleHandle(NULL), 512);
+	RtlCopyMemory(buf, GetModuleHandle(NULL), 128);
 
-	std::vector<std::string> dump;
-	if (true != dump_memory(0, buf, sizeof(buf), dump)) return false;
-
-	std::vector<std::string>::iterator its = dump.begin();
-	std::vector<std::string>::iterator ite = dump.end();
-	for(; its != ite; ++its)
+	auto dump = dump_memory(0, buf, 6);
+	for (const auto& its: dump)
 	{
-		log_dbg "%s", its->c_str() log_end
+		log_info "%s", its.c_str() log_end
 	}
 
 	dump.clear();
+	dump = dump_memory(0, buf, 132);
+	for (const auto& its : dump)
+	{
+		log_info "%s", its.c_str() log_end
+
+	}
+
+	set_log_to(lt);
+	return true;
+}
+
+/// bin_to_str() 과 달리 strm 을 통해서 문자열을 변환
+std::string bin_to_str2(_In_ size_t size, _In_ const char* buf)
+{
+	_ASSERTE(size > 0);
+	_ASSERTE(nullptr != buf);
+	if (nullptr == buf || !(size > 0)) return _null_stringa;
+
+	bool crlf_seen = false;
+	std::stringstream strm;
+	for (size_t pos = 0; pos < size; ++pos)
+	{
+		uint8_t v = (uint8_t)(buf[pos]);
+		if (v >= 0x20 && v < 0x7F)
+		{
+			strm << buf[pos];
+			crlf_seen = false;
+		}
+		else if (v == 0x0a || v == 0x0d)  // LF, CR
+		{
+			if (!crlf_seen)
+			{
+				strm << '\n';
+				crlf_seen = true;	// LF, CR 쪼개서 \n 이 두번들어가지 않도록 
+			}
+		}
+		else
+		{
+			strm << '.';
+			crlf_seen = false;
+		}
+	}
+
+	return strm.str();
+}
+
+/// @brief	bin_to_stra() 나 bin_to_str2() 나 크게 성능차이는 거의 없다. 쓸떼없는 짓했음
+bool test_bin_to_str()
+{
+	//
+	//	Test 1 : 출력가능한 문자열이 많은 경우
+	//
+	//std::wstringstream strmw;
+	//strmw << L"c:\\work.monster\\_MyLib\\src\\win32Utils.cpp";
+	//handle_ptr handle(open_file_to_read(strmw.str().c_str()),
+	//				  [](HANDLE h) 
+	//{
+
+	//	if (INVALID_HANDLE_VALUE != h) 
+	//		CloseHandle(h);
+	//});
+	//if (INVALID_HANDLE_VALUE == handle.get()) return false;
+
+	//DWORD cb_read;
+	//char* text[40960];
+	//if (!ReadFile(handle.get(), text, sizeof(text), &cb_read, nullptr)) return false;
+
+	//
+	//	Test 2 : 비교적 출력하기 어려운 프로세스 메모리 영역 변환
+	//
+	char* text = (char*)GetModuleHandleW(nullptr);
+
+
+	//
+	//	bin_to_str()
+	//
+	size_t len = 40960, itcount=120;
+	std::stringstream strm;
+	std::string str;
+	StopWatch sw;
+	float t1 = 0, t2 = 0, delta = 0;
+
+	for (int i = 0; i < itcount; ++i)
+	{
+		sw.Start();
+		str = bin_to_str2(len, (char*)text);
+		sw.Stop();
+		t2 += sw.GetDurationMilliSecond();
+
+		sw.Start();
+		str = bin_to_stra(len, (char*)text);
+		sw.Stop();
+		t1 += sw.GetDurationMilliSecond();
+	}
+
+	delta = (t1 / itcount) - (t2 / itcount);
+	log_info
+		"bin_to_stra() %s bin_to_str2(), delta=%f (%f -- %f)",
+		delta > 0 ? ">" : "<",
+		delta, 
+		t1, 
+		t2
+		log_end;
+
 	return true;
 }
 
@@ -1534,6 +1646,21 @@ bool test_get_file_company_name()
 	log_info
 		"notepad publisher=%ws",
 		company_name.c_str()
+		log_end;
+
+	return true;
+}
+
+/**
+ * @brief
+ **/
+bool test_get_file_original_name()
+{
+	std::wstring original_name;
+	_ASSERTE(true == get_file_original_name(L"C:\\Windows\\System32\\notepad.exe", original_name));
+	log_info
+		"notepad original_name=%ws",
+		original_name.c_str()
 		log_end;
 
 	return true;
@@ -1755,82 +1882,6 @@ bool test_md5_sha2()
     return true;
 }
 
-/**
- * @brief thread_pool test
- */
-
-void work()
-{
-	log_info "tid = %u, running", GetCurrentThreadId() log_end;
-};
-
-struct worker
-{
-    void operator()()
-    {
-		log_info "tid = %u, running", GetCurrentThreadId() log_end;
-    };
-};
-
-void more_work( int v)
-{
-	log_info "tid = %u, running = %d", GetCurrentThreadId(), v log_end;
-    //getchar();
-};
-
-class RunClass
-{
-public:
-	bool CalledByThread(_In_ const char* msg)
-	{
-		log_info "tid=%u, msg=%s",
-			GetCurrentThreadId(),
-			msg
-			log_end;
-		return true;
-	}
-};
-
-
-bool test_thread_pool()
-{
-    thread_pool pool(8);
-    pool.run_task( work );                        // Function pointer.
-    pool.run_task( worker() );                    // Callable object.
-    pool.run_task( boost::bind( more_work, 5 ) ); // Callable object.
-    pool.run_task( worker() );                    // Callable object.
-
-	pool.run_task([]()								// lambda
-	{
-		log_info "tid=%u",GetCurrentThreadId() log_end;
-	});
-
-
-	RunClass rc;
-	pool.run_task([&]()
-	{
-		if (true != rc.CalledByThread("test msg"))
-		{
-			log_err "rc.CalledByThread() failed." log_end;
-		}
-		else
-		{
-			log_info "rc.CalledByThread() succeeded." log_end;
-		}
-	});
-
-
-    // Wait until all tasks are done.
-    while (0 < pool.get_task_count())
-    {
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));
-    }
-
-	return true;
-}
-
-#include <winioctl.h>
-
 
 bool test_enum_physical_drive()
 {
@@ -1863,13 +1914,11 @@ bool test_enum_physical_drive()
             }
             else
             {
-                std::vector<std::string> dumps;
-                dump_memory(0, buf, sizeof(buf), dumps);
-                //for (auto line : dumps)
-                //{
-                //    log_info "%s", line.c_str() log_end;
-                //}
-                log_info "%ws, \n%s", path.str().c_str(), dumps[dumps.size() - 2].c_str() log_end;
+                auto dumps = dump_memory(0, buf, sizeof(buf));
+                for (auto line : dumps)
+                {
+                    log_info "%s", line.c_str() log_end;
+                }
             }
         }
         else
@@ -1946,8 +1995,7 @@ bool test_get_disk_volume_info()
         }
         else
         {
-            std::vector<std::string> dump;
-            dump_memory(0, buf, sizeof(buf), dump);
+            auto dump = dump_memory(0, buf, sizeof(buf));
             log_info "[*] MBR" log_end
             for (auto& line : dump)
             {
@@ -1976,8 +2024,7 @@ bool test_get_disk_volume_info()
             else
             {
                 log_info "[*] VBR" log_end
-                std::vector<std::string> dump;
-                dump_memory(0, buf, sizeof(buf), dump);
+                auto dump = dump_memory(0, buf, sizeof(buf));
                 for (auto& line : dump)
                 {
                     log_info "%s", line.c_str() log_end
@@ -2185,14 +2232,8 @@ void dump_file_offset(_In_ HANDLE file_handle, _In_ uint64_t offset, _In_ uint32
         return;
     }
 
-    std::vector<std::string> dump;
-    if (true != dump_memory(0, buf, size, dump))
-    {
-        log_err "dump_memory(0,  ) failed." log_end;
-        return;
-    }
-
-    for (auto& line : dump)
+	auto dump = dump_memory(0, buf, size);
+    for (const auto& line : dump)
     {
         log_info "%s", line.c_str() log_end
     }
@@ -3227,13 +3268,7 @@ bool test_raii_xxx()
 			break;
 		}
 
-		std::vector<std::string> dumps;
-		if (!dump_memory(0, buf, sizeof(buf), dumps))
-		{
-			log_err "dump_memory() failed." log_end;
-			break;
-		}
-
+		auto dumps = dump_memory(0, buf, sizeof(buf));
 		for (auto& dump : dumps)
 		{
 			log_info "%s", dump.c_str() log_end;
@@ -3979,6 +4014,32 @@ int _tmain(int argc, _TCHAR* argv[])
 			return 0;
 		}
 		//
+		//	mylib.exe /ip_to_netint 192.168.0.1
+		//
+		else if (argc == 3 && (0 == _wcsicmp(&argv[1][1], L"ip_to_netint")))
+		{
+			wchar_t* ip_str = argv[2];
+			uint32_t ip;
+			if (!str_to_ipv4(ip_str, ip))
+			{
+				log_err
+					"str_to_ipv4() failed. Input=%ws",
+					ip_str
+					log_end; 				
+				return -1;
+			}
+			else
+			{
+				log_info
+					"Input=%ws, IP(network bytes order)=%u",
+					ip_str,
+					ip
+					log_end;
+			}
+
+			return 0;
+		}
+		//
 		//	mylib.exe /session_info
 		//
 		else if (argc == 2 && (0 == _wcsicmp(&argv[1][1], L"session_info")))
@@ -4011,7 +4072,9 @@ int _tmain(int argc, _TCHAR* argv[])
 				"\nUsage:\n\n"\
 				"%ws /?	show help \n"\
 				"%ws /filetime_to_str 131618627540824506\n"\
+				"%ws /ip_to_netint 192.168.0.1\n"\
 				"%ws /session_info \n",
+				argv[0],
 				argv[0],
 				argv[0],
 				argv[0]

@@ -189,8 +189,8 @@ std::string sys_time_to_str2(_In_ const PSYSTEMTIME utc_sys_time);
 /******************************************************************************
  * file, disk, volumes
 ******************************************************************************/
-bool is_file_existsW(_In_ std::wstring& file_path);
-bool is_file_existsA(_In_ std::string& file_path);
+bool is_file_existsW(_In_ const std::wstring& file_path);
+bool is_file_existsA(_In_ const std::string& file_path);
 bool is_file_existsW(_In_ const wchar_t* file_path);
 bool is_file_existsA(_In_ const char* file_path);
 bool is_dir(_In_ const wchar_t* file_path);
@@ -243,6 +243,7 @@ bool get_file_size(_In_ const wchar_t* const file_path, _Out_ int64_t& size);
 bool get_file_size(_In_ HANDLE file_handle, _Out_ int64_t& size);
 bool get_file_version(_In_ const wchar_t* file_path, _Out_ std::wstring& file_version);
 bool get_file_company_name(_In_ const wchar_t* file_path, _Out_ std::wstring& company_name);
+bool get_file_original_name(_In_ const wchar_t* file_path, _Out_ std::wstring& original_name);
 ULONG get_file_versioninfo_lang_code_page(_In_ PVOID version_info);
 bool get_file_position(_In_ HANDLE file_handle, _Out_ int64_t& position);
 bool set_file_position(_In_ HANDLE file_handle, _In_ int64_t distance, _Out_opt_ int64_t* new_position);
@@ -629,9 +630,7 @@ std::wstring guid_to_stringw(_In_ const GUID& guid);
 std::string Win32ErrorToStringA(IN DWORD ErrorCode);
 std::wstring Win32ErrorToStringW(IN DWORD ErrorCode);
 
-BOOL	DumpMemory(DWORD Length, BYTE* Buf);
-BOOL	DumpMemory(FILE* stream,DWORD Length,BYTE* Buf);
-bool	dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32 buf_len, _Out_ std::vector<std::string>& dump);
+std::list<std::string> dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32 buf_len);
 
 bool	set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
 
@@ -641,7 +640,7 @@ bool	get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id);
 bool	process_in_console_session(_In_ DWORD process_id);
 bool	get_current_session_id(_Out_ DWORD& session_id);
 
-bool create_process(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _Out_opt_ HANDLE& process_handle, _Out_opt_ DWORD& process_id);
+bool create_process(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _Out_ HANDLE& process_handle, _Out_ DWORD& process_id);
 bool create_process_and_wait(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _In_ DWORD timeout_secs, _Out_ DWORD& exit_code);
 
 bool create_process_on_session(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _Out_ PROCESS_INFORMATION& pi);
@@ -957,11 +956,12 @@ LPCWSTR  image_type_to_string(IMAGE_TYPE type);
 /******************************************************************************
  * type cast
 ******************************************************************************/
-const 
-char* 
-get_int_to_char_table(
-	_In_ bool uppercase
-	);
+
+std::string 
+bin_to_stra(
+	_In_ size_t size, 
+	_In_ const char* buf
+);
 
 bool
 bin_to_hexa_fast(

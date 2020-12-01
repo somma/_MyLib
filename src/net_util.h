@@ -52,13 +52,13 @@ get_host_name(
 
 bool
 get_inet_adapters(
-	_Out_ std::vector<PInetAdapter>& adapters
+	_Out_ std::list<PInetAdapter>& adapters
 );
 
 __inline 
 bool
 get_inet6_adapters(
-	_Out_ std::vector<PInet6Adapter>& adapters
+	_Out_ std::list<PInet6Adapter>& adapters
 )
 {
 	UNREFERENCED_PARAMETER(adapters);
@@ -76,7 +76,7 @@ bool
 dns_to_ip(
 	_In_ const wchar_t* domain_name,
 	_In_ bool cache_only,
-	_Out_ std::vector<uint32_t>& ip_list
+	_Out_ std::list<uint32_t>& ip_list
 );
 
 //
@@ -93,6 +93,8 @@ std::wstring ipv4_to_strw(_In_ in_addr& ipv4);
 
 bool str_to_ipv4(_In_ const char* const ipv4, _Out_ uint32_t& ip_netbyte_order);
 bool str_to_ipv4(_In_ const wchar_t* const ipv4, _Out_ uint32_t& ip_netbyte_order);
+uint32_t str_to_ipv4(_In_ const char* const ipv4);
+uint32_t str_to_ipv4(_In_ const wchar_t* const ipv4);
 
 
 std::string ipv6_to_str(_In_ in_addr6& ipv6); 
@@ -105,12 +107,12 @@ bool str_to_ipv6(_In_ const char* const ipv6, _Out_ in_addr6& ip_netbyte_order);
 
 bool
 get_ip_list_v4(
-	_Out_ std::vector<std::string>& ip_list
+	_Out_ std::list<std::string>& ip_list
 );
 
 bool
 get_broadcast_list_v4(
-	_Out_ std::vector<uint32_t>& broadcast_list
+	_Out_ std::list<uint32_t>& broadcast_list
 );
 
 std::string
@@ -130,8 +132,8 @@ mac_to_str(
 bool
 get_addr_infow(
 	_In_ const wchar_t* host_name,
-	_Out_opt_ std::vector<in_addr>* const ipv4_addrs,
-	_Out_opt_ std::vector<in6_addr>* const ipv6_addrs
+	_Out_opt_ std::list<in_addr>* const ipv4_addrs,
+	_Out_opt_ std::list<in6_addr>* const ipv6_addrs
 );
 
 

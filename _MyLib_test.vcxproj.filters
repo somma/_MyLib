@@ -212,9 +212,6 @@
     <ClCompile Include="_test_process_tree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="_test_std_move.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="_test_process_token.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -331,6 +328,18 @@
     </ClCompile>
     <ClCompile Include="src\curl_client_support.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_rvo_move.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_thread_pool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_cppjson.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_template.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

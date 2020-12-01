@@ -23,6 +23,7 @@
 #include "boost/shared_ptr.hpp"
 #include <sstream>
 #include <list>
+#include <vector>
 #include <string>
 #include <set>
 #include <iostream>

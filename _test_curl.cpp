@@ -11,6 +11,8 @@
 #include "_MyLib/src/curl_client_support.h"
 #include "_MyLib/src/StopWatch.h"
 
+#include "json/json.h"
+
  /// @brief	
 bool test_curl_https_down_with_auth()
 {
@@ -106,7 +108,7 @@ bool test_curl_https_down_with_auth()
 			sw.GetDurationSecond()
 			log_end;
 
-		_ASSERTE(!_cc);
+		_ASSERTE(_cc);
 	}
 	_mem_check_end;
 	return true;
@@ -167,9 +169,15 @@ bool test_curl_http()
 	CMemoryStream stream;
 	_ASSERTE(true == _curl_client->http_get(url, http_response_code, stream));
 
-	std::vector<std::string> dumps;
-	dump_memory(0LL, (unsigned char*)(stream.GetMemory()), (UINT32)stream.GetSize(), dumps);
-	std::for_each(dumps.begin(), dumps.end(), [](std::string& dump) {printf("%s\n", dump.c_str()); });
+	auto dumps = dump_memory(0LL, 
+							 (unsigned char*)(stream.GetMemory()), 
+							 (UINT32)stream.GetSize());
+	std::for_each(dumps.begin(), 
+				  dumps.end(), 
+				  [](std::string& dump) 
+	{
+		printf("%s\n", dump.c_str()); 
+	});
 
 	_ASSERTE(_curl_client != nullptr);
 	delete _curl_client; _curl_client = nullptr;
@@ -222,4 +230,55 @@ bool test_curl_http_upload()
 		delete client; client = nullptr;
 	}
 	return false;
+}
+
+bool test_curl_http_post_with_response_header()
+{
+	pcurl_client _curl_client = new curl_client();
+	if (nullptr == _curl_client)
+	{
+		log_err "not enought memory" log_end;
+		return false;
+	}
+
+	if (true != _curl_client->initialize())
+	{
+		log_err "curl client initialize() failed." log_end;
+		return false;
+	}
+
+	//
+	//	자체 서버 켜놓고 테스트 진행 필요
+	//	Python -m http.server
+	//
+	const char* url = nullptr;
+	
+	_ASSERTE(nullptr != url);
+	long http_response_code = 404;
+	CMemoryStream stream;
+	std::map<std::string, std::string> http_response_header;
+	Json::Value root;
+
+	root["host_name"] = "Test";
+	root["host_ip"] = "127.0.0.1";
+
+	Json::StreamWriterBuilder builder;
+	std::stringstream request_body;
+	try
+	{
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+		writer->write(root, &request_body);
+	}
+	catch (std::exception e) {
+		log_err "Exception, Can not create request body with json." log_end;
+		return false;
+	}
+
+	_ASSERTE(true == _curl_client->http_post(url, request_body.str().c_str(),http_response_code, http_response_header, stream));
+
+	_ASSERTE(0 < http_response_header.size());
+	_ASSERTE(_curl_client != nullptr);
+	delete _curl_client; _curl_client = nullptr;
+
+	return true;
 }

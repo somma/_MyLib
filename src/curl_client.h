@@ -53,7 +53,10 @@
 //
 
 static const char* _null_http_header_string = "";
-
+static size_t On_Callback_response_header(_In_ void* pData,
+										  _In_ size_t tSize,
+										  _In_ size_t tCount,
+										  _In_ void* pmUser);
 
 typedef class curl_client
 {
@@ -82,6 +85,13 @@ public:
 		_In_z_ const char* url,
 		_In_z_ const char* data,
 		_Out_  long& http_response_code,
+		_Out_  CMemoryStream& stream);
+
+	bool http_post(
+		_In_z_ const char* url,
+		_In_z_ const char* data,
+		_Out_  long& http_response_code,
+		_Out_  std::map<std::string, std::string>& http_response_header,
 		_Out_  CMemoryStream& stream);
 
 	bool http_post(
@@ -125,12 +135,14 @@ private:
 	bool _follow_location;
 	bool _ssl_verify_peer;
 	bool _ssl_verify_host;
+	std::string _user_agent;
 	bool _verbose;
 
 	typedef std::map<std::string, std::string> Fields;
 	Fields _header_fields;
 public:
 	bool enable_auth(_In_ const char* id, _In_ const char* password);
+	bool enable_bearer_auth(_In_ const char* bearer_token);
 	void append_header(_In_z_ const char* key, _In_z_ const char* value);
 
 	void set_url(const char* const url) { _url = url; }
@@ -139,6 +151,7 @@ public:
 	void set_follow_location(const bool value) { _follow_location = value; }
 	void set_ssl_verify_peer(const bool value) { _ssl_verify_peer = value; }
 	void set_ssl_verify_host(const bool value) { _ssl_verify_host = value; }
+	void set_user_agent(const char* value) { _user_agent = value; }
 	void set_verbose(const bool value) { _verbose = value; }
 
 
