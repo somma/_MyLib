@@ -20,7 +20,7 @@
 //	SteadyTimer callback, false 를 리턴하면 타이머를 중지
 typedef boost::function<bool(DWORD_PTR tag)> SteadyTimerCallback;
 
-class SteadyTimer
+typedef class SteadyTimer
 {
 public:
 	SteadyTimer():	
@@ -67,6 +67,7 @@ public:
 		//	백그라운드 태스크를 만들어서 실행한다. 
 		// 
 		_timer_task = Concurrency::create_task([&]()->void {
+			_io_service.reset();
 			_io_service.run();
 		});
 
@@ -149,7 +150,7 @@ private:
 	boost::asio::io_service _io_service;
 	boost::asio::steady_timer _timer;
 	concurrency::task<void> _timer_task;
-};
+} *PSteadyTimer;
 
 
 

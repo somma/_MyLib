@@ -268,7 +268,7 @@ void run_test()
 	//assert_bool(true, test_cstream_read_only);
 	//assert_bool(true, test_cstream_read_write_string);
 	//assert_bool(true, test_log_rotate);
-	//assert_bool(true, test_steady_timer);
+	assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_is_reserved_ipv4);
