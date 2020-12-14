@@ -122,10 +122,41 @@ bool test_steady_timer_class()
 	return true;
 }
 
+bool on_timer(_In_ DWORD_PTR tag)
+{
+	UNREFERENCED_PARAMETER(tag);
+	int timer_number = (int)tag;
+
+	log_info "timer[%d]: callback", timer_number log_end;
+
+	return true;
+}
+
+bool test_steady_timer_restart()
+{
+	SteadyTimer timer;
+
+	for (int i = 0; i < 3; ++i)
+	{
+		log_info "timer[%d]: start...", i log_end;
+		bool ret = timer.start(1,
+							   i,
+							   on_timer);
+		Sleep(6000);
+
+		log_info "timer[%d]: stop...", i log_end;
+		timer.stop();
+		Sleep(2000);
+	}
+	_pause;
+	return true;
+}
+
 bool test_steady_timer()
 {
-	_ASSERTE(true == test_steady_timer_using_lambda());
+	//_ASSERTE(true == test_steady_timer_using_lambda());
 	//_ASSERTE(true == test_steady_timer_using_callback());
 	//_ASSERTE(true == test_steady_timer_class());
+	_ASSERTE(true == test_steady_timer_restart());
 	return true;
 }
