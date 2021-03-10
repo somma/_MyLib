@@ -937,7 +937,8 @@ bool service_started(_In_ const wchar_t* service_name)
 	//
 	schandle_ptr scm_handle(OpenSCManagerW(NULL,
 										   NULL,
-										   SC_MANAGER_ALL_ACCESS),
+										   STANDARD_RIGHTS_READ | SC_MANAGER_ENUMERATE_SERVICE |
+										   SC_MANAGER_QUERY_LOCK_STATUS),
 							[](SC_HANDLE handle) {
 		if (nullptr != handle)
 		{
