@@ -348,14 +348,11 @@ AirCryptBuffer(
 		nullptr != Output) 
 		return false;
 
-	ERR_load_crypto_strings();
-
 	/* "opaque" encryption, decryption ctx structures that libcrypto uses to record
      * status of enc/dec operations 
 	 */
 
 	EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-	// SecureZeroMemory(&ctx, sizeof(EVP_CIPHER_CTX));
 
 	if (!aes_init(PassPhrase, 
 				  PassPhraseLen, 
@@ -399,7 +396,6 @@ AirCryptBuffer(
 	OutputLength = outlen;
 
 	EVP_CIPHER_CTX_free(ctx);
-	ERR_free_strings();
 
 	return true;
 }
