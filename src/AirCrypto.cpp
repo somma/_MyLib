@@ -22,9 +22,7 @@
 #include "_MyLib/src/Win32Utils.h"
 #include "_MyLib/src/AirCrypto.h"
 
-#pragma comment(lib, "libeay32.lib")
-
-
+#pragma comment(lib, "libcrypto.lib")
 
 /**
 * @brief	aes256 파일 암호화
@@ -313,20 +311,20 @@ aes_decrypt(
 	/* plaintext will always be equal to or lesser than length of ciphertext*/
 	int p_len = *len, f_len = 0;
 	unsigned char *plaintext = (unsigned char *)malloc(p_len);
-	
-//  EVP_DecryptInit_ex(e, NULL, NULL, NULL, NULL);
-  EVP_DecryptUpdate(e, 
-				    plaintext, 
-				    &p_len, 
-				    ciphertext, 
-				    *len);
 
-  EVP_DecryptFinal_ex(e, 
-					  plaintext+p_len, 
-					  &f_len);
+	//  EVP_DecryptInit_ex(e, NULL, NULL, NULL, NULL);
+	EVP_DecryptUpdate(e,
+					  plaintext,
+					  &p_len,
+					  ciphertext,
+					  *len);
 
-  *len = p_len + f_len;
-  return plaintext;
+	EVP_DecryptFinal_ex(e,
+						plaintext + p_len,
+						&f_len);
+
+	*len = p_len + f_len;
+	return plaintext;
 }
 
 bool 
@@ -356,12 +354,12 @@ AirCryptBuffer(
      * status of enc/dec operations 
 	 */
 
-	EVP_CIPHER_CTX ctx;
-	SecureZeroMemory(&ctx, sizeof(EVP_CIPHER_CTX));
+	EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+	// SecureZeroMemory(&ctx, sizeof(EVP_CIPHER_CTX));
 
 	if (!aes_init(PassPhrase, 
 				  PassPhraseLen, 
-				  &ctx, 
+				  ctx, 
 				  Encrypt))
 	{
 		log_err "aes_init() failed." log_end;
@@ -374,7 +372,7 @@ AirCryptBuffer(
 
 	if (true == Encrypt)
 	{
-		out = aes_encrypt(&ctx, 
+		out = aes_encrypt(ctx, 
 			  			  Input, 
 						  &outlen);
 		if (nullptr == out)
@@ -386,7 +384,7 @@ AirCryptBuffer(
 	}
 	else
 	{
-		out = aes_decrypt(&ctx, 
+		out = aes_decrypt(ctx, 
 						  Input, 
 						  &outlen);
 		if (nullptr == out)
@@ -400,7 +398,7 @@ AirCryptBuffer(
 	Output = out;
 	OutputLength = outlen;
 
-	EVP_CIPHER_CTX_cleanup(&ctx);
+	EVP_CIPHER_CTX_free(ctx);
 	ERR_free_strings();
 
 	return true;
