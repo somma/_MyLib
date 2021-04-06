@@ -6,7 +6,7 @@
  * All rights reserved by Noh Yong Hwan (fixbrain@gmail.com, unsorted@msn.com)
 **---------------------------------------------------------------------------*/
 
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "AKSyncObjs.h"
 
 #include <crtdbg.h>
