@@ -3905,10 +3905,11 @@ bool test_zip_unzip()
 
 						if (vp)
 						{
+							DWORD bytes_written = 0;
 							_ASSERTE(WriteFile(h,
 											   vp.get(),
 											   (DWORD)entry.getSize(),
-											   nullptr,
+											   &bytes_written,
 											   nullptr));
 						}
 					}
