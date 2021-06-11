@@ -41,9 +41,13 @@ bool boost_bind()
 	// boost::bind(f, 1, _1) 로 파라미터를 고정해서 f(val) 형태로 호출이 가능하고, 
 	// 항상 (1+ val) 를 리턴하게 된다. 이런 특징을 이용해서 callback 함수에 부가적인 
 	// 파라미터를 전달하거나, 파라미터 순서를 조작하는 등의 일을 할 수 있다.
-	boost::function<int (int, int)> xf = boost::bind(f, 1, _1);
+	boost::function<int (int, int)> xf = boost::bind(f, 
+													 1, 
+													 boost::placeholders::_1);
     std::cout	<< "xf(1, 2) = "					<< ff(1, 2) 
-				<< "boost::bind(f, 1, _1)(2) = "	<< boost::bind(f, 1, _1)(2) 
+				<< "boost::bind(f, 1, _1)(2) = "	<< boost::bind(f, 
+																   1, 
+																   boost::placeholders::_1)(2)
 				<< std::endl;
 
 
@@ -51,10 +55,21 @@ bool boost_bind()
     int y = 4;
     int z = 5;
 
-    assert( f(y, x) == bind(f, _2, _1)(x,y) );
-    assert( g(x, 9, x) == bind(g, _1, 9, _1)(x) );
-    assert( g(z,z,z) == bind(g, _3, _3, _3)(x,y,z) );
-    assert( g(x,x,x) == bind(g, _1, _1, _1)(x,y,z) );
+    assert( f(y, x) == bind(f, 
+							boost::placeholders::_2, 
+							boost::placeholders::_1)(x,y) );
+    assert( g(x, 9, x) == bind(g, 
+							   boost::placeholders::_1, 
+							   9, 
+							   boost::placeholders::_1)(x) );
+    assert( g(z,z,z) == bind(g, 
+							 boost::placeholders::_3, 
+							 boost::placeholders::_3, 
+							 boost::placeholders::_3)(x,y,z) );
+    assert( g(x,x,x) == bind(g, 
+							 boost::placeholders::_1, 
+							 boost::placeholders::_1, 
+							 boost::placeholders::_1)(x,y,z) );
 
 	return true;
 }
@@ -82,11 +97,17 @@ bool boost_bind2()
     F f;
 
     int x = 104;
-    assert( 0 == boost::bind<int>(f, _1, _1)(x) );            // f(x, x)    
+    assert( 0 == boost::bind<int>(f, 
+								  boost::placeholders::_1, 
+								  boost::placeholders::_1)(x) );            // f(x, x)    
 
     long y = 104;
-    assert( true == boost::bind<bool>(f, _1, _1)(y) );            // f(x, x)
-    assert( true == boost::bind( boost::type<bool>(), f, _1, _1)(y) );
+    assert( true == boost::bind<bool>(f, 
+									  boost::placeholders::_1, 
+									  boost::placeholders::_1)(y) );            // f(x, x)
+    assert( true == boost::bind( boost::type<bool>(), f, 
+								boost::placeholders::_1, 
+								boost::placeholders::_1)(y) );
 
 	return true;
 }
@@ -110,7 +131,8 @@ bool boost_bind3()
     FF f={0};
     int a[] = {1,2,3};
 
-    std::for_each(a, a+3, boost::bind( boost::ref(f), _1) );
+    std::for_each(a, a+3, boost::bind( boost::ref(f), 
+									  boost::placeholders::_1) );
     assert( f.s == 6 );
 
 	return true;
@@ -161,7 +183,9 @@ bool boost_bind4()
         }
     */
     A a(100);
-    boost::function <int (int)> functor_add_value = boost::bind( &A::add_value, a, _1);
+    boost::function <int (int)> functor_add_value = boost::bind( &A::add_value, 
+																a, 
+																boost::placeholders::_1);
     std::for_each(vint.begin(), vint.end(), functor_add_value);
     //std::for_each(vint.begin(), vint.end(), boost::bind( &A::add_value, a, _1));
     
@@ -188,7 +212,9 @@ bool boost_bind4()
     }
     
     int value = 0;
-    std::for_each(vA.begin(), vA.end(), boost::bind(&A::start, _1, ++value) );    
+    std::for_each(vA.begin(), vA.end(), boost::bind(&A::start, 
+													boost::placeholders::_1, 
+													++value) );
 
 	
 
@@ -274,9 +300,9 @@ bool boost_bind5()
     b.set_callback(boost::bind(&A5::print, &a, s));
 	b.set_complx_callback(boost::bind(&A5::complx_callback, 
 									  &a, 
-									  _1, 
-									  _2,
-									  _3));
+									  boost::placeholders::_1,
+									  boost::placeholders::_2,
+									  boost::placeholders::_3));
     b.do_callback();
 	b.do_complx_callback();
 

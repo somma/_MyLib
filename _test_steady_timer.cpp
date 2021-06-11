@@ -98,7 +98,7 @@ public:
 		_count = 0;
 		bool ret = _timer.start(1, _count, boost::bind(&SteadyTimerTest::callback,
 													   this, 
-													   _1));
+													   boost::placeholders::_1));
 		_ASSERTE(true == ret);
 		return true;
 	}

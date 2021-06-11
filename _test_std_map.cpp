@@ -234,9 +234,10 @@ bool test_map_plus_algorithm_4()
 						&Elem::GetValue, 
 						boost::bind(
 								&std::map<std::string, Elem>::value_type::second, 
-								_1)));
+								boost::placeholders::_1)));
 
-	std::for_each(vi.begin(), vi.end(), boost::bind(&print_value, _1));
+	std::for_each(vi.begin(), vi.end(), boost::bind(&print_value, 
+													boost::placeholders::_1));
 	
 	std::for_each(
 				mm.begin(), 
@@ -245,7 +246,7 @@ bool test_map_plus_algorithm_4()
 						&Elem::Print, 
 						boost::bind(
 								&std::map<std::string, Elem>::value_type::second, 
-								_1)));
+								boost::placeholders::_1)));
 
 	return true;
 }

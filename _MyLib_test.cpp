@@ -3860,7 +3860,7 @@ bool test_zip_unzip()
 			<< "\\tmp.zip";
 		{
 			libzippp::ZipArchive zf(ss.str().c_str());
-			_ASSERTE(true == zf.open(libzippp::ZipArchive::WRITE));
+			_ASSERTE(true == zf.open(libzippp::ZipArchive::Write));
 
 			for (int i = 0; i < 10; ++i)
 			{
@@ -3880,7 +3880,7 @@ bool test_zip_unzip()
 		// tmp.zip -> /tmp 에 압축 해제
 		{
 			libzippp::ZipArchive zf(ss.str().c_str());
-			_ASSERTE(true == zf.open(libzippp::ZipArchive::READ_ONLY));
+			_ASSERTE(true == zf.open(libzippp::ZipArchive::ReadOnly));
 
 			auto entries = zf.getEntries();
 			for (const libzippp::ZipEntry& entry : entries)
@@ -3905,10 +3905,11 @@ bool test_zip_unzip()
 
 						if (vp)
 						{
+							DWORD bytes_written = 0;
 							_ASSERTE(WriteFile(h,
 											   vp.get(),
 											   (DWORD)entry.getSize(),
-											   nullptr,
+											   &bytes_written,
 											   nullptr));
 						}
 					}
