@@ -914,3 +914,47 @@ reg_enum_key_values(
 
 	return true;
 }
+
+///	root key 
+bool
+str_to_reg_key(
+	_In_ const wchar_t* key_path,
+	_Out_ HKEY& key,
+	_Out_ std::wstring& sub_key
+)
+{
+	_ASSERTE(nullptr != key_path);
+	if (nullptr == key_path) return false;
+
+	std::wstring root_key_str = extract_first_tokenExW(key_path,
+													   L"\\",
+													   true);
+	to_lower_string(root_key_str);
+
+	bool ret = false;
+	do
+	{
+		if (0 == root_key_str.compare(_hklm_str) || 0 == root_key_str.compare(_hklm_full_str))
+		{
+			key = HKEY_LOCAL_MACHINE;
+		}
+		else if(0 == root_key_str.compare(_hkcu_str) || 0 == root_key_str.compare(_hkcu_full_str))
+		{
+			key = HKEY_CURRENT_USER;
+		}
+		else if (0 == root_key_str.compare(_hkcr_str) || 0 == root_key_str.compare(_hkcr_full_str))
+		{
+			key = HKEY_CLASSES_ROOT;
+		}
+		else
+		{
+			break;
+		}
+		sub_key = extract_first_tokenExW(key_path,
+										 L"\\",
+										 false);
+		ret = true;
+	} while (false);
+
+	return ret;
+}

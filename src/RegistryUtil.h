@@ -14,6 +14,15 @@
 #define MAX_KEY_LENGTH 255
 #define MAX_VALUE_NAME 16383
 
+
+/// 레지스트리 root 문자열
+#define _hklm_str		L"hklm"
+#define _hklm_full_str	L"hkey_local_machine"
+#define _hkcu_str		L"hkcu"
+#define _hkcu_full_str	L"hkey_current_user"
+#define _hkcr_str		L"hkcr"
+#define _hkcr_full_str	L"hkey_classes_root"
+
 HKEY 
 RUOpenKey(
 	_In_ HKEY RootKey, 
@@ -156,6 +165,13 @@ reg_enum_key_values(
 	_In_ fn_key_value_callback_tag value_cb,
 	_In_ DWORD_PTR value_cb_tag
 	);
+
+bool
+str_to_reg_key(
+	_In_ const wchar_t* key_path,
+	_Out_ HKEY& key,
+	_Out_ std::wstring& sub_key
+);
 
 class RegHandle
 {
