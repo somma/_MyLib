@@ -52,11 +52,7 @@
 //		}
 //
 
-static const char* _null_http_header_string = "";
-static size_t On_Callback_response_header(_In_ void* pData,
-										  _In_ size_t tSize,
-										  _In_ size_t tCount,
-										  _In_ void* pmUser);
+#define HTTP_OK	200
 
 typedef class curl_client
 {

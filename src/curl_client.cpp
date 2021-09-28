@@ -16,6 +16,13 @@
 #define _def_conn_timeout	10			// 10초
 #define _def_read_timeout	60 * 5		// 5분
 
+static const char* _null_http_header_string = "";
+static size_t On_Callback_response_header(_In_ void* pData,
+										  _In_ size_t tSize,
+										  _In_ size_t tCount,
+										  _In_ void* pmUser);
+
+
 /// @brief
 curl_client::curl_client() 
 	: 
