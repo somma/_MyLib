@@ -1081,14 +1081,8 @@ get_mac_by_ip_v4(
 				  adapters.cend(), 
 				  [](const PInetAdapter& p)
 	{
-		if (nullptr != p)
-		{
-			for (const auto& ip_info : p->ip_info_list)
-			{
-				delete ip_info;
-			}
-			delete p;
-		}
+		_ASSERTE(nullptr != p);
+		delete p;
 	});
 	adapters.clear();
 
