@@ -26,6 +26,7 @@ typedef class InetAdapter
 public:
 	InetAdapter(IFTYPE interface_type): interface_type(interface_type)
 	{
+		RtlZeroMemory(physical_address, sizeof(MacAddrType));
 	}
 
 	virtual ~InetAdapter()

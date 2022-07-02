@@ -156,6 +156,9 @@
     <ClInclude Include="src\curl_client_support.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\machine_id.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -340,6 +343,12 @@
     </ClCompile>
     <ClCompile Include="_test_template.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_machine_id.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\machine_id.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
