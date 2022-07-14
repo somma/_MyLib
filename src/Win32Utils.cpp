@@ -9157,8 +9157,7 @@ const char* get_archtecture()
 #ifdef _WIN64
 	return "x64";
 #else
-	CWow64Util wow;
-	if (wow.IsWow64Process())
+	if (is_wow64_process(GetCurrentProcess()))
 	{
 		return "x64";
 	}

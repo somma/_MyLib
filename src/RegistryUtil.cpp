@@ -14,12 +14,7 @@
 #include "log.h"
 #include "RegistryUtil.h"
 #include "CStream.h"
-
-
-#define NO_SHLWAPI_STRFCNS
-#include "Shlwapi.h"
-#pragma comment(lib, "Shlwapi.lib")
-
+#include "Wow64Util.h"
 
 
 /// @brief	레지스트리 키를 오픈한다. 없으면 nullptr 을 리턴한다.
@@ -35,42 +30,42 @@ HKEY
 RUOpenKey(
     _In_ HKEY RootKey,
 	_In_ const wchar_t* SubKey,
-	_In_ bool ReadOnly
+	_In_ bool ReadOnly, 
+	_In_ bool DisableWow
     )
 {
     HKEY hSubKey = nullptr;
     REGSAM sam = (true == ReadOnly) ? KEY_READ : KEY_ALL_ACCESS;
 
-    DWORD ret = RegOpenKeyExW(RootKey, SubKey, 0, sam, &hSubKey);
-    if (ERROR_SUCCESS != ret)
-    {
-        //log_err "RegOpenKeyExW(%ws) failed, ret = %u", SubKey, ret log_end        
-        return nullptr;
-    }
+	// 현재 프로세스가 WOW64 프로세스라면 64bit registry 경로로 변경한다. 
+	if (DisableWow)
+	{		
+		if (is_wow64_process(GetCurrentProcess()))
+		{
+			sam |= KEY_WOW64_64KEY;
+		}
+	}
+
+	DWORD ret = RegOpenKeyExW(RootKey,
+							  SubKey,
+							  0,
+							  sam,
+							  &hSubKey);
+	if (ERROR_SUCCESS != ret)
+	{
+		return nullptr;
+	}    
 
     return hSubKey;
 }
 
-
-/**----------------------------------------------------------------------------
-    \brief  
-    
-    \param  
-    \return
-    \code
-    
-    \endcode        
------------------------------------------------------------------------------*/
+/// @brief	
 void
 RUCloseKey(
 	_In_ HKEY Key
     )
 {
-    DWORD ret = RegCloseKey(Key);
-    if (ERROR_SUCCESS != ret)
-    {
-        //log_err "RegCloseKey() failed, ret = %u", ret log_end
-    }
+    RegCloseKey(Key);
 }
 
 /// @brief	SubKey 를 생성한다. 이미 존재하는 경우 오픈한다.
@@ -86,7 +81,8 @@ HKEY
 RUCreateKey(
 	_In_ HKEY RootKey,
 	_In_ const wchar_t* SubKey,
-	_In_ bool ReadOnly
+	_In_ bool ReadOnly, 
+	_In_ bool DisableWow
     )
 {
     DWORD ret = ERROR_SUCCESS;
@@ -94,22 +90,27 @@ RUCreateKey(
     HKEY sub_key_handle = NULL;
     REGSAM sam = (true == ReadOnly) ? KEY_READ : KEY_ALL_ACCESS;
 
+	// 현재 프로세스가 WOW64 프로세스라면 64bit registry 경로로 변경한다. 
+	if (DisableWow)
+	{
+		if (is_wow64_process(GetCurrentProcess()))
+		{
+			sam |= KEY_WOW64_64KEY;
+		}
+	}
+
     ret = RegCreateKeyExW(RootKey, 
 						  SubKey, 
 						  0, 
-						  NULL, 
+						  nullptr,
 						  0, 
 						  sam, 
-						  NULL, 
+						  nullptr,
 						  &sub_key_handle, 
 						  &disposition);
     if (ERROR_SUCCESS != ret)
     {
-		//log_err "RegCreateKeyExW(%ws) failed, ret = %u",
-		//	SubKey,
-		//	ret
-		//	log_end
-        return NULL;
+        return nullptr;
     }
     else
     {
@@ -133,16 +134,12 @@ RUReadDword(
 
 	DWORD ret = RegQueryValueExW(key_handle, 
 								 value_name, 
-								 NULL, 
-								 NULL, 
+								 nullptr,
+								 nullptr,
 								 (PBYTE)&value, 
 								 &value_size);
     if (ERROR_SUCCESS != ret)
     {
-		//log_err "RegQueryValueExW(%ws) failed, ret = %u",
-		//	value_name,
-		//	ret
-		//	log_end;
         return DefaultValue;
     }
 
@@ -193,18 +190,13 @@ RUReadQword(
 	DWORD value_size = sizeof(value);
 
 	DWORD ret = RegQueryValueExW(key_handle,
-						    value_name,
-						    NULL,
-						    NULL,
-						    (PBYTE)&value,
-						    &value_size);
-
+								 value_name,
+								 nullptr,
+								 nullptr,
+								 (PBYTE)&value,
+								 &value_size);
 	if (ERROR_SUCCESS != ret)
 	{
-		//log_err "RegQueryValueExW(%ws) failed, ret = %u",
-		//	value_name,
-		//	ret
-		//	log_end;
 		return DefaultValue;
 	}
 
@@ -223,18 +215,14 @@ RUWriteQword(
 	if (nullptr == key_handle || nullptr == value_name) return false;
 
 	DWORD ret = RegSetValueExW(key_handle,
-						  value_name,
-						  0,
-						  REG_QWORD,
-						  (PBYTE)&value,
-						  sizeof(uint64_t));
+							   value_name,
+							   0,
+							   REG_QWORD,
+							   (PBYTE)&value,
+							   sizeof(uint64_t));
 
 	if (ERROR_SUCCESS != ret)
 	{
-		//log_err "RegSetValueExW(%ws) failed, ret = %u",
-		//	value_name,
-		//	ret
-		//	log_end;
 		return false;
 	}
 
@@ -258,14 +246,12 @@ RUReadString(
     if (NULL == buffer) return false;
     RtlZeroMemory(buffer, cbValue);
 
-    DWORD ret = RegQueryValueExW(
-                        key_handle,
-                        value_name, 
-                        NULL, 
-                        NULL, 
-                        (LPBYTE) buffer, 
-                        &cbValue
-                        );
+	DWORD ret = RegQueryValueExW(key_handle,
+								 value_name,
+								 nullptr,
+								 nullptr,
+								 (LPBYTE)buffer,
+								 &cbValue);
     while (ERROR_MORE_DATA  == ret)
     {
         cbValue *= 2;
@@ -279,29 +265,24 @@ RUReadString(
         }
 		RtlZeroMemory(buffer, cbValue);
 
-        ret = RegQueryValueExW(
-                        key_handle, 
-                        value_name, 
-                        NULL, 
-                        NULL, 
-                        (LPBYTE) buffer, 
-                        &cbValue
-                        );
+		ret = RegQueryValueExW(key_handle,
+							   value_name,
+							   nullptr,
+							   nullptr,
+							   (LPBYTE)buffer,
+							   &cbValue
+		);
     }
 
     if (ERROR_SUCCESS != ret)
     {
-		//log_err "RegQueryValueExW(%ws) failed, ret = %u",
-		//	value_name,
-		//	ret
-		//	log_end;
-        free(buffer); buffer=NULL;
+        free(buffer); buffer=nullptr;
         return false;    
     }
     
 	// buffer -> wstring 
 	value = buffer;
-	free(buffer); buffer = NULL;
+	free(buffer); buffer = nullptr;
     return true;
 }
 
@@ -325,10 +306,6 @@ RUSetString(
 							   static_cast<uint32_t>(((wcslen(value) + 1) * sizeof(wchar_t))) );
     if (ERROR_SUCCESS != ret)
     {
-		//log_err "RegSetValueExW(%ws) failed, ret = %u",
-		//	value_name,
-		//	ret
-		//	log_end;
 		return false;
     }
 
@@ -356,11 +333,7 @@ RUSetExpandString(
 							   cbValue);
     if (ERROR_SUCCESS != ret)
     {
-		//log_err "RegSetValueExW(%ws) failed, ret = %u",
-		//	value_name,
-		//	ret 
-		//	log_end;
-        return false;
+		return false;
     }
 
     return true;
@@ -405,16 +378,12 @@ RUSetMultiString(
 
 	DWORD ret = RegSetValueExW(key_handle,
 							   value_name,
-							   NULL,
+							   0,
 							   REG_MULTI_SZ,
 							   (LPBYTE)strm.GetMemory(),
 							   (DWORD)strm.GetSize());
 	if (ERROR_SUCCESS != ret)
 	{
-		//log_err "RegSetValueExW(%ws) failed, ret = %u",
-		//	value_name,
-		//	ret
-		//	log_end;
 		return false;
 	}
 
@@ -444,10 +413,6 @@ RUReadMultiString(
 
 	if (ERROR_SUCCESS != ret)
 	{
-		//log_err "RegQueryValueExW(%ws) failed. ret = %u",
-		//	value_name,
-		//	ret
-		//	log_end;
 		return false;
 	}
 
@@ -486,10 +451,6 @@ RUReadMultiString(
 
 	if (ERROR_SUCCESS != ret)
 	{
-		//log_err "RegQueryValueExW(%ws) failed. ret = %u",
-		//	value_name,
-		//	ret
-		//	log_end;
 		return false;
 	}
 
@@ -542,10 +503,6 @@ RUSetBinaryData(
 							   cbValue);
     if (ERROR_SUCCESS != ret)
     {
-		//log_err "RegSetValueExW(%ws) failed, ret = %u",
-		//	value_name,
-		//	ret
-		//	log_end;
 		return false;
     }
 
@@ -575,43 +532,34 @@ RUReadBinaryData(
     }
     RtlZeroMemory(buffer, cbValue);
 
-    DWORD ret = RegQueryValueExW(
-                        key_handle, 
-                        value_name, 
-                        NULL, 
-                        NULL,
-                        (LPBYTE) buffer, 
-                        &cbValue
-                        );
+	DWORD ret = RegQueryValueExW(key_handle,
+								 value_name,
+								 nullptr,
+								 nullptr,
+								 (LPBYTE)buffer,
+								 &cbValue);
     while (ERROR_MORE_DATA  == ret)
     {
         cbValue *= 2;
         old = buffer;        // save pointer for realloc faild
 
         buffer = (uint8_t*) realloc(buffer, cbValue);
-        if (NULL == buffer)
+        if (nullptr == buffer)
         {
             free(old);  cbValue = 0;
             return nullptr;
         }
 		RtlZeroMemory(buffer, cbValue);
-
-        ret = RegQueryValueExW(
-                        key_handle, 
-                        value_name, 
-						nullptr,
-						nullptr,
-                        (LPBYTE) buffer, 
-                        &cbValue
-                        );
+		ret = RegQueryValueExW(key_handle,
+							   value_name,
+							   nullptr,
+							   nullptr,
+							   (LPBYTE)buffer,
+							   &cbValue);
     }
 
     if (ERROR_SUCCESS != ret)
     {
-		//log_err "RegQueryValueExW(%ws) failed, ret = %u",
-		//	value_name,
-		//	ret
-		//	log_end;
 		free(buffer); buffer= nullptr;
         return nullptr;    
     }
@@ -632,10 +580,6 @@ RUDeleteValue(
 	DWORD ret = RegDeleteValueW(key_handle, value_name);
 	if (ERROR_SUCCESS != ret)
 	{
-		//log_err "RegDeleteValueW( %ws ) failed. ret = %u",
-		//	value_name,
-		//	ret
-		//	log_end;
 		return false;
 	}
 	return true;
@@ -649,29 +593,43 @@ bool
 RUDeleteKey(
 	_In_ HKEY key_handle,
 	_In_ const wchar_t* sub_key, 
-	_In_ bool recursive
+	_In_ bool recursive,
+	_In_ bool DisableWow
 	)
 {
 	_ASSERTE(nullptr != key_handle);
 	_ASSERTE(nullptr != sub_key);
 	if (nullptr == key_handle || nullptr == sub_key) return false;
 		
+	REGSAM sam = 0;
+	
 	if (true != recursive)
 	{
 		//
 		//	key_handle\sub_key 를 삭제한다. 
 		//	key_handle\sub_key\value 가 있다면 함께 삭제한다. 
 		//	key_handle\sub_key\sub_key2 가 있다면 에러를 리턴한다. 
-		// 
-		DWORD ret = RegDeleteKeyW(key_handle, sub_key);
-		if (ERROR_SUCCESS != ret)
+		// 	
+		if (DisableWow)
 		{
-			//log_err "RegDeleteKeyW( sub = %ws ) failed. ret = %u",
-			//	sub_key,
-			//	ret
-			//	log_end;
+			// 현재 프로세스가 WOW64 프로세스라면 64bit registry 경로로 변경. 
+			if (is_wow64_process(GetCurrentProcess()))
+			{
+				sam |= KEY_WOW64_64KEY;
+			}
+		}
+
+		LSTATUS status = RegDeleteKeyExW(key_handle, sub_key, sam, 0);
+		if (ERROR_SUCCESS != status)
+		{
+			log_err
+				"RegDeleteKeyExW() failed. sub=%ws, err=%u",
+				sub_key,
+				status
+				log_end;
 			return false;
 		}
+		
 		return true;
 	}
 	else
@@ -680,15 +638,30 @@ RUDeleteKey(
 		//	key_handle\sub_key 를 삭제한다. 
 		//	하위 key/value 까지 몽땅 삭제한다. 
 		// 
-		LSTATUS ls = SHDeleteKeyW(key_handle, sub_key);
-		if (ERROR_SUCCESS != ls)
+		hkey_ptr hkey(RUOpenKey(key_handle,
+								sub_key,
+								false,
+								DisableWow),
+					  [](HKEY key)
 		{
-			//log_err "SHDeleteKeyW( sub = %ws ) failed. lstatus = %u",
-			//	sub_key,
-			//	ls
-			//	log_end;
+			if (nullptr != key)
+			{
+				RegCloseKey(key);
+			}
+		});
+		if (!hkey) { return false; }
+		
+		LSTATUS status = RegDeleteTreeW(hkey.get(), nullptr);
+		if (ERROR_SUCCESS != status)
+		{
+			log_err
+				"RegDeleteTreeW() failed. sub=%ws, err=%u",
+				sub_key,
+				status
+				log_end;
 			return false;
 		}
+
 		return true;
 	}	
 }
@@ -704,15 +677,15 @@ RUDeleteKey(
 bool
 RUIsKeyExists(
 	_In_ HKEY root_key,
-	_In_ const wchar_t* sub_key
+	_In_ const wchar_t* sub_key, 
+	_In_ bool DisableWow
     )
 {
 	_ASSERTE(nullptr != root_key);
 	_ASSERTE(nullptr != sub_key);
 	if (nullptr == root_key || nullptr == sub_key) return false;
 
-
-    RegHandle reg (RUOpenKey(root_key, sub_key, true));    
+    RegHandle reg (RUOpenKey(root_key, sub_key, true, DisableWow));    
     return (NULL == reg.get()) ? false : true;
 }
 
