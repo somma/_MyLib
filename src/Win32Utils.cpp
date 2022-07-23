@@ -36,6 +36,7 @@
 #pragma comment(lib, "version.lib")
 #pragma comment(lib, "Ole32.lib")
 #pragma comment(lib, "User32.lib")
+#pragma comment(lib, "Shlwapi.lib")
 
 #include "Win32Utils.h"
 #include "RegistryUtil.h"
