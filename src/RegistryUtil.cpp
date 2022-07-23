@@ -600,43 +600,20 @@ RUDeleteKey(
 	_ASSERTE(nullptr != key_handle);
 	_ASSERTE(nullptr != sub_key);
 	if (nullptr == key_handle || nullptr == sub_key) return false;
-		
-	REGSAM sam = 0;
-	
-	if (true != recursive)
-	{
-		//
-		//	key_handle\sub_key 를 삭제한다. 
-		//	key_handle\sub_key\value 가 있다면 함께 삭제한다. 
-		//	key_handle\sub_key\sub_key2 가 있다면 에러를 리턴한다. 
-		// 	
-		if (DisableWow)
-		{
-			// 현재 프로세스가 WOW64 프로세스라면 64bit registry 경로로 변경. 
-			if (is_wow64_process(GetCurrentProcess()))
-			{
-				sam |= KEY_WOW64_64KEY;
-			}
-		}
 
-		LSTATUS status = RegDeleteKeyExW(key_handle, sub_key, sam, 0);
-		if (ERROR_SUCCESS != status)
-		{
-			log_err
-				"RegDeleteKeyExW() failed. sub=%ws, err=%u",
-				sub_key,
-				status
-				log_end;
-			return false;
-		}
-		
-		return true;
-	}
-	else
+	//
+	// recursive 인 경우 하위 키/값들을 먼저 삭제
+	//
+	if (recursive)
 	{
 		// 
 		//	key_handle\sub_key 를 삭제한다. 
 		//	하위 key/value 까지 몽땅 삭제한다. 
+		//
+		//	(참고)
+		//	WOW 문제가 있기때문에 sub_key 를 열어서 핸들을 구한후
+		//	RegDeleteTreeW 함수로 sub_key 를 제외한 하위 키/값들을 
+		//	먼저 삭제한다. 
 		// 
 		hkey_ptr hkey(RUOpenKey(key_handle,
 								sub_key,
@@ -650,7 +627,7 @@ RUDeleteKey(
 			}
 		});
 		if (!hkey) { return false; }
-		
+
 		LSTATUS status = RegDeleteTreeW(hkey.get(), nullptr);
 		if (ERROR_SUCCESS != status)
 		{
@@ -661,9 +638,33 @@ RUDeleteKey(
 				log_end;
 			return false;
 		}
+	}
 
-		return true;
-	}	
+	//
+	//	sub_key 를 삭제한다. 
+	//
+	REGSAM sam = 0;
+	if (DisableWow)
+	{
+		// 현재 프로세스가 WOW64 프로세스라면 64bit registry 경로로 변경. 
+		if (is_wow64_process(GetCurrentProcess()))
+		{
+			sam |= KEY_WOW64_64KEY;
+		}
+	}
+
+	LSTATUS status = RegDeleteKeyExW(key_handle, sub_key, sam, 0);
+	if (ERROR_SUCCESS != status)
+	{
+		log_err
+			"RegDeleteKeyExW() failed. sub=%ws, err=%u",
+			sub_key,
+			status
+			log_end;
+		return false;
+	}
+
+	return true;
 }
 
 /// @prarm	root_key	HKEY_CLASSES_ROOT
