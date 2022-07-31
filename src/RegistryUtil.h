@@ -44,12 +44,25 @@ RUCreateKey(
 	_In_ bool DisableWow = false
 );
 
+///
+
 DWORD 
 RUReadDword(	
 	_In_ HKEY key_handle, 
 	_In_ const wchar_t* value_name, 
 	_In_ DWORD DefaultValue
 );
+
+DWORD
+RUReadDwordEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ DWORD default_value,
+	_In_ bool disable_wow
+);
+
+///
 
 bool 
 RUWriteDword(
@@ -58,6 +71,17 @@ RUWriteDword(
 	_In_ DWORD value
 );
 
+bool
+RUWriteDwordEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ DWORD value,
+	_In_ bool disable_wow
+);
+
+///
+
 uint64_t
 RUReadQword(
 	_In_ HKEY key_handle,
@@ -65,12 +89,34 @@ RUReadQword(
 	_In_ uint64_t DefaultValue
 );
 
+uint64_t
+RUReadQwordEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ uint64_t default_value,
+	_In_ bool disable_wow
+);
+
+///
+
 bool
 RUWriteQword(
 	_In_ HKEY key_handle,
 	_In_ const wchar_t* value_name,
 	_In_ uint64_t value
 );
+
+bool
+RUWriteQwordEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ int64_t value,
+	_In_ bool disable_wow
+);
+
+///
 
 bool 
 RUReadString(
@@ -80,11 +126,33 @@ RUReadString(
 );
 
 bool
+RUReadStringEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key, 
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_Out_ std::wstring& value
+);
+
+///
+
+bool
 RUSetString(
 	_In_ HKEY key_handle,
 	_In_ const wchar_t* value_name,
 	_In_ const wchar_t* value
 );
+
+bool
+RUSetStringEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,	
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_In_ const wchar_t* value
+);
+
+///
 
 bool 
 RUSetExpandString(
@@ -94,20 +162,17 @@ RUSetExpandString(
 	_In_ DWORD cbValue
 );
 
-bool 
-RUSetBinaryData(
-	_In_ HKEY key_handle, 
-	_In_ const wchar_t* value_name, 
-	_In_ const uint8_t* value, 
+bool
+RUSetExpandStringEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_In_ const wchar_t* value,
 	_In_ DWORD cbValue
 );
 
-bool
-RUSetMultiString(
-	_In_ HKEY key_handle,
-	_In_ const wchar_t* value_name,
-	_In_ std::vector<std::wstring>& values
-);
+///
 
 bool
 RUReadMultiString(
@@ -116,6 +181,35 @@ RUReadMultiString(
 	_Out_ std::vector<std::wstring>& values
 );
 
+bool
+RUReadMultiStringEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_Out_ std::vector<std::wstring>& values
+);
+
+///
+
+bool
+RUSetMultiString(
+	_In_ HKEY key_handle,	
+	_In_ const wchar_t* value_name,
+	_In_ std::vector<std::wstring>& values
+); 
+
+bool
+RUSetMultiString(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_In_ std::vector<std::wstring>& values
+);
+
+///
+
 uint8_t* 
 RUReadBinaryData(
 	_In_ HKEY key_handle, 
@@ -123,11 +217,52 @@ RUReadBinaryData(
 	_Out_ DWORD& cbValue
 );
 
-bool 
+uint8_t*
+RUReadBinaryDataEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_Out_ DWORD& cbValue
+);
+
+///
+
+bool
+RUSetBinaryData(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
+	_In_ const uint8_t* value,
+	_In_ DWORD cbValue
+);
+
+bool
+RUSetBinaryDataEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_In_ const uint8_t* value,
+	_In_ DWORD cbValue
+);
+
+///
+
+bool
 RUDeleteValue(
 	_In_ HKEY key_handle, 
 	_In_ const wchar_t* value_name
 );
+
+bool
+RUDeleteValueEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow
+);
+
+///
 
 bool
 RUDeleteKey(
@@ -184,7 +319,7 @@ class RegHandle
 {
 public:
     RegHandle(HKEY key) : m_key(key) {}
-	~RegHandle()    { if (NULL != m_key) RegCloseKey(m_key);  }
+	~RegHandle()    { if (nullptr != m_key) RegCloseKey(m_key);  }
     HKEY get()      { return m_key; };
 protected:
 private:

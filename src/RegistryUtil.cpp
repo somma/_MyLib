@@ -146,6 +146,34 @@ RUReadDword(
     return value;
 }
 
+DWORD
+RUReadDwordEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ DWORD default_value, 
+	_In_ bool disable_wow
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != sub_key);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle ||
+		nullptr == sub_key || 
+		nullptr == value_name)
+	{
+		return default_value;
+	}
+
+	RegHandle rh(RUOpenKey(key_handle, sub_key, true, disable_wow));
+	if (nullptr == rh.get())
+	{
+		return default_value;
+	}
+
+	return RUReadDword(rh.get(), value_name, default_value);
+}
+
 bool 
 RUWriteDword(
 	_In_ HKEY key_handle,
@@ -165,14 +193,38 @@ RUWriteDword(
 							   sizeof(DWORD));
     if (ERROR_SUCCESS != ret)
     {
-		//log_err "RegSetValueExW(%ws) failed, ret = %u",
-		//	value_name,
-		//	ret
-		//	log_end;
         return false;
     }
 
     return true;
+}
+
+bool
+RUWriteDwordEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ DWORD value,
+	_In_ bool disable_wow
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != sub_key);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle ||
+		nullptr == sub_key ||
+		nullptr == value_name)
+	{
+		return false;
+	}
+
+	RegHandle rh(RUOpenKey(key_handle, sub_key, false, disable_wow));
+	if (nullptr == rh.get())
+	{
+		return false;
+	}
+
+	return RUWriteDword(rh.get(), value_name, value);
 }
 
 uint64_t 
@@ -203,6 +255,34 @@ RUReadQword(
 	return value;
 }
 
+uint64_t
+RUReadQwordEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ uint64_t default_value,
+	_In_ bool disable_wow = false
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != sub_key);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle ||
+		nullptr == sub_key ||
+		nullptr == value_name)
+	{
+		return default_value;
+	}
+
+	RegHandle rh(RUOpenKey(key_handle, sub_key, false, disable_wow));
+	if (nullptr == rh.get())
+	{
+		return default_value;
+	}
+
+	return RUReadQword(rh.get(), value_name, default_value);
+}
+
 bool 
 RUWriteQword(
 	_In_ HKEY key_handle, 
@@ -228,6 +308,36 @@ RUWriteQword(
 
 	return true;
 }
+
+bool
+RUWriteQwordEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ int64_t value,
+	_In_ bool disable_wow
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != sub_key);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle ||
+		nullptr == sub_key ||
+		nullptr == value_name)
+	{
+		return false;
+	}
+
+	RegHandle rh(RUOpenKey(key_handle, sub_key, false, disable_wow));
+	if (nullptr == rh.get())
+	{
+		return false;
+	}
+
+	return RUWriteQword(rh.get(), value_name, value);
+}
+
+////
 
 bool
 RUReadString(
@@ -287,6 +397,36 @@ RUReadString(
 }
 
 bool
+RUReadStringEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_Out_ std::wstring& value
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != sub_key);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle ||
+		nullptr == sub_key ||
+		nullptr == value_name)
+	{
+		return false;
+	}
+
+	RegHandle rh(RUOpenKey(key_handle, sub_key, true, disable_wow));
+	if (nullptr == rh.get())
+	{
+		return false;
+	}
+
+	return RUReadString(rh.get(), value_name, value);
+}
+
+///
+
+bool
 RUSetString(
     _In_ HKEY key_handle,	
 	_In_ const wchar_t* value_name,
@@ -311,6 +451,36 @@ RUSetString(
 
     return true;
 }
+
+bool
+RUSetStringEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_In_ const wchar_t* value
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != sub_key);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle ||
+		nullptr == sub_key ||
+		nullptr == value_name)
+	{
+		return false;
+	}
+
+	RegHandle rh(RUOpenKey(key_handle, sub_key, false, disable_wow));
+	if (nullptr == rh.get())
+	{
+		return false;
+	}
+
+	return RUSetString(rh.get(), value_name, value);
+}
+
+///
 
 bool
 RUSetExpandString(
@@ -338,6 +508,156 @@ RUSetExpandString(
 
     return true;
 }
+
+bool
+RUSetExpandStringEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_In_ const wchar_t* value,
+	_In_ DWORD cbValue
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != sub_key);
+	_ASSERTE(nullptr != value_name);
+	_ASSERTE(nullptr != value);
+	if (nullptr == key_handle ||
+		nullptr == sub_key ||
+		nullptr == value_name ||
+		nullptr == value)
+	{
+		return false;
+	}
+
+	RegHandle rh(RUOpenKey(key_handle, sub_key, false, disable_wow));
+	if (nullptr == rh.get())
+	{
+		return false;
+	}
+
+	return RUSetExpandString(rh.get(), value_name, value, cbValue);
+}
+
+///	@brief Multi_SZ type의 레지스트리 value값을 읽는다.
+bool
+RUReadMultiString(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
+	_Out_ std::vector<std::wstring>& value
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle || nullptr == value_name) return false;
+
+	DWORD type = REG_NONE;
+	DWORD cbValue = 0;
+	DWORD ret = RegQueryValueExW(key_handle,
+								 value_name,
+								 nullptr,
+								 &type,
+								 nullptr,
+								 &cbValue);
+
+	if (ERROR_SUCCESS != ret)
+	{
+		return false;
+	}
+
+	_ASSERTE(REG_MULTI_SZ == type);
+	if (REG_MULTI_SZ != type)
+	{
+		log_err
+			"Type of requested value is not REG_MULTI_SZ. value=%ws",
+			value_name
+			log_end;
+		return false;
+	}
+
+	char_ptr ptr((char*)malloc(cbValue),
+				 [](char* p) {
+		free_and_nil(p);
+	});
+	if (nullptr == ptr.get())
+	{
+		log_err "No resources for value. value=%ws, size=%u",
+			value_name,
+			cbValue
+			log_end;
+		return false;
+	}
+
+	uint8_t* buffer = (uint8_t*)ptr.get();
+	RtlZeroMemory(buffer, cbValue);
+
+	ret = RegQueryValueExW(key_handle,
+						   value_name,
+						   nullptr,
+						   nullptr,
+						   buffer,
+						   &cbValue);
+
+	if (ERROR_SUCCESS != ret)
+	{
+		return false;
+	}
+
+	//
+	// buffer = L"Welcome\0to\0Hello\0World\0\0"
+	//
+	// 1. L"\0\0"을 먼저 비교하여 마지막인지 체크하고 wstring값을 vector에 복사한다.
+	// 2. L"\0" null terminator를 찾으면 wstring값을 vector에 복사한다.
+
+	size_t str_pos = 0;
+	size_t pos = 0;
+	while (pos < cbValue)
+	{
+		if (0 == wmemcmp((wchar_t*)(buffer + pos), L"\0\0", 2))
+		{
+			value.push_back((wchar_t*)(buffer + str_pos));
+			break;
+		}
+		if (buffer[pos] == L'\0')
+		{
+			value.push_back((wchar_t*)(buffer + str_pos));
+			str_pos = pos + sizeof(wchar_t);
+		}
+		pos += sizeof(wchar_t);
+	}
+
+	return true;
+}
+
+bool
+RUReadMultiStringEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_Out_ std::vector<std::wstring>& values
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != sub_key);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle ||
+		nullptr == sub_key ||
+		nullptr == value_name)
+	{
+		return false;
+	}
+
+	RegHandle rh(RUOpenKey(key_handle, sub_key, true, disable_wow));
+	if (nullptr == rh.get())
+	{
+		return false;
+	}
+
+	return RUReadMultiString(rh.get(), value_name, values);
+}
+
 
 ///	@brief Multi_SZ type의 레지스트리 value를 생성한다.
 ///
@@ -390,94 +710,118 @@ RUSetMultiString(
 	return true;
 }
 
-///	@brief Multi_SZ type의 레지스트리 value값을 읽는다.
 bool
-RUReadMultiString(
+RUSetMultiString(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_In_ std::vector<std::wstring>& values
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != sub_key);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle ||
+		nullptr == sub_key ||
+		nullptr == value_name)
+	{
+		return false;
+	}
+
+	RegHandle rh(RUOpenKey(key_handle, sub_key, false, disable_wow));
+	if (nullptr == rh.get())
+	{
+		return false;
+	}
+
+	return RUSetMultiString(rh.get(), value_name, values);
+}
+
+
+/// @remark	caller must free returned buffer pointer.
+uint8_t*
+RUReadBinaryData(
 	_In_ HKEY key_handle,
 	_In_ const wchar_t* value_name,
-	_Out_ std::vector<std::wstring>& value
-	)
+	_Out_ DWORD& cbValue			// count byte
+)
 {
 	_ASSERTE(nullptr != key_handle);
 	_ASSERTE(nullptr != value_name);
 	if (nullptr == key_handle || nullptr == value_name) return false;
 
-	DWORD type = REG_NONE;
-	DWORD cbValue = 0;
+	void* old = nullptr;
+	cbValue = 1024;
+	uint8_t* buffer = (uint8_t*)malloc(cbValue);
+	if (nullptr == buffer)
+	{
+		cbValue = 0;
+		return nullptr;
+	}
+	RtlZeroMemory(buffer, cbValue);
+
 	DWORD ret = RegQueryValueExW(key_handle,
 								 value_name,
 								 nullptr,
-								 &type,
 								 nullptr,
+								 (LPBYTE)buffer,
 								 &cbValue);
+	while (ERROR_MORE_DATA == ret)
+	{
+		cbValue *= 2;
+		old = buffer;        // save pointer for realloc faild
+
+		buffer = (uint8_t*)realloc(buffer, cbValue);
+		if (nullptr == buffer)
+		{
+			free(old);  cbValue = 0;
+			return nullptr;
+		}
+		RtlZeroMemory(buffer, cbValue);
+		ret = RegQueryValueExW(key_handle,
+							   value_name,
+							   nullptr,
+							   nullptr,
+							   (LPBYTE)buffer,
+							   &cbValue);
+	}
 
 	if (ERROR_SUCCESS != ret)
 	{
-		return false;
+		free(buffer); buffer = nullptr;
+		return nullptr;
 	}
 
-	_ASSERTE(REG_MULTI_SZ == type);
-	if (REG_MULTI_SZ != type)
-	{
-		log_err
-			"Type of requested value is not REG_MULTI_SZ. value=%ws",
-			value_name
-			log_end;
-		return false;
-	}
+	return buffer;
+}
 
-	char_ptr ptr((char*)malloc(cbValue),
-				 [](char* p) {
-		free_and_nil(p);
-	});
-	if (nullptr == ptr.get())
-	{
-		log_err "No resources for value. value=%ws, size=%u",
-			value_name, 
-			cbValue
-			log_end;
-		return false;
-	}
-
-	uint8_t* buffer = (uint8_t*)ptr.get();
-	RtlZeroMemory(buffer, cbValue);
-
-	ret = RegQueryValueExW(key_handle,
-						   value_name,
-						   nullptr,
-						   nullptr,
-						   buffer,
-						   &cbValue);
-
-	if (ERROR_SUCCESS != ret)
+uint8_t*
+RUReadBinaryDataEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_Out_ DWORD& cbValue
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != sub_key);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle ||
+		nullptr == sub_key ||
+		nullptr == value_name)
 	{
 		return false;
 	}
 
-	//
-	// buffer = L"Welcome\0to\0Hello\0World\0\0"
-	//
-	// 1. L"\0\0"을 먼저 비교하여 마지막인지 체크하고 wstring값을 vector에 복사한다.
-	// 2. L"\0" null terminator를 찾으면 wstring값을 vector에 복사한다.
-
-	size_t str_pos = 0;
-	size_t pos = 0;
-	while (pos < cbValue)
+	RegHandle rh(RUOpenKey(key_handle, sub_key, true, disable_wow));
+	if (nullptr == rh.get())
 	{
-		if (0 == wmemcmp((wchar_t*)(buffer + pos), L"\0\0", 2))
-		{
-			value.push_back((wchar_t*)(buffer + str_pos));
-			break;
-		}
-		if (buffer[pos] == L'\0')
-		{
-			value.push_back((wchar_t*)(buffer + str_pos));
-			str_pos = pos + sizeof(wchar_t);
-		}
-		pos += sizeof(wchar_t);
+		return nullptr;
 	}
 
-	return true;
+	return RUReadBinaryData(rh.get(), value_name, cbValue);
 }
 
 /// @remark	value 사이즈 제한에 관한 정보는 링크 참조
@@ -509,62 +853,35 @@ RUSetBinaryData(
     return true;
 }
 
-
-/// @remark	caller must free returned buffer pointer.
-uint8_t*
-RUReadBinaryData(
+bool
+RUSetBinaryDataEx(
 	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
 	_In_ const wchar_t* value_name,
-	_Out_ DWORD& cbValue			// count byte
-	)
+	_In_ bool disable_wow,
+	_In_ const uint8_t* value,
+	_In_ DWORD cbValue
+)
 {
 	_ASSERTE(nullptr != key_handle);
-	_ASSERTE(nullptr != value_name);	
-	if (nullptr == key_handle || nullptr == value_name) return false;
+	_ASSERTE(nullptr != sub_key);
+	_ASSERTE(nullptr != value_name);
+	_ASSERTE(nullptr != value);
+	if (nullptr == key_handle ||
+		nullptr == sub_key ||
+		nullptr == value_name ||
+		nullptr == value)
+	{
+		return false;
+	}
 
-    void* old = nullptr;
-    cbValue = 1024;
-    uint8_t* buffer = (uint8_t*) malloc(cbValue);
-    if (nullptr == buffer)
-    {
-        cbValue = 0;
-        return nullptr;
-    }
-    RtlZeroMemory(buffer, cbValue);
+	RegHandle rh(RUOpenKey(key_handle, sub_key, false, disable_wow));
+	if (nullptr == rh.get())
+	{
+		return false;
+	}
 
-	DWORD ret = RegQueryValueExW(key_handle,
-								 value_name,
-								 nullptr,
-								 nullptr,
-								 (LPBYTE)buffer,
-								 &cbValue);
-    while (ERROR_MORE_DATA  == ret)
-    {
-        cbValue *= 2;
-        old = buffer;        // save pointer for realloc faild
-
-        buffer = (uint8_t*) realloc(buffer, cbValue);
-        if (nullptr == buffer)
-        {
-            free(old);  cbValue = 0;
-            return nullptr;
-        }
-		RtlZeroMemory(buffer, cbValue);
-		ret = RegQueryValueExW(key_handle,
-							   value_name,
-							   nullptr,
-							   nullptr,
-							   (LPBYTE)buffer,
-							   &cbValue);
-    }
-
-    if (ERROR_SUCCESS != ret)
-    {
-		free(buffer); buffer= nullptr;
-        return nullptr;    
-    }
-    
-	return buffer;
+	return RUSetBinaryData(rh.get(), value_name, value, cbValue);
 }
 
 bool
@@ -583,6 +900,33 @@ RUDeleteValue(
 		return false;
 	}
 	return true;
+}
+
+bool
+RUDeleteValueEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow
+)
+{
+	_ASSERTE(nullptr != key_handle);
+	_ASSERTE(nullptr != sub_key);
+	_ASSERTE(nullptr != value_name);
+	if (nullptr == key_handle ||
+		nullptr == sub_key ||
+		nullptr == value_name)
+	{
+		return false;
+	}
+
+	RegHandle rh(RUOpenKey(key_handle, sub_key, false, disable_wow));
+	if (nullptr == rh.get())
+	{
+		return false;
+	}
+
+	return RUDeleteValue(rh.get(), value_name);
 }
 
 /// @brief	sub_key 와 value 를 삭제한다. 
