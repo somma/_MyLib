@@ -894,7 +894,7 @@ get_ip_list_v4(
 		{
 			ip_list.push_back(std::move(ipv4_to_str(ip_info->ip)));			
 		}
-		delete adapter;
+		delete adapter;	//!!!
 	}
 	adapters.clear();
 
@@ -928,7 +928,7 @@ get_broadcast_list_v4(
 		{
 			broadcast_list.push_back(ip_info->ip | ~ip_info->mask);			
 		}
-		delete adapter;
+		delete adapter;	//!!
 	}
 	adapters.clear();
 
@@ -1014,7 +1014,10 @@ get_representative_ip_v4(
 				  [](_In_ const PInetAdapter& p)
 	{
 		_ASSERTE(nullptr != p);
-		delete p;
+		if (nullptr != p)
+		{
+			delete p;
+		}
 	});
 	adapters.clear();
 	return (true != ip.empty()) ? ip : "127.0.0.1";

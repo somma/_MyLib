@@ -257,6 +257,11 @@ bool test_zip_unzip();
 bool test_clear_stringsstream();
 bool test_print_percent();
 
+// _test_machine_id.cpp
+extern bool test_generate_machine_id();
+
+
+
 
 void run_test()
 {
@@ -268,7 +273,7 @@ void run_test()
 	//assert_bool(true, test_cstream_read_only);
 	//assert_bool(true, test_cstream_read_write_string);
 	//assert_bool(true, test_log_rotate);
-	assert_bool(true, test_steady_timer);
+	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_is_reserved_ipv4);
@@ -431,6 +436,10 @@ void run_test()
 	//assert_bool(true, test_cpp_joson);
 
 	//assert_bool(true, test_template);
+
+	assert_bool(true, test_generate_machine_id);
+
+
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
 //
 	//assert_bool(true, test_write_mbr_vbr);		// 혹시라도 테스트 중 mbr 날릴 수 있으므로 빼자.

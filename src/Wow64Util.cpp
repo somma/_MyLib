@@ -1,212 +1,64 @@
-﻿///////////////////////////////////////////////////////////////////////////////
-// (C) Copyright 2004. Yoo Byung In.
-//
-// Any part of this source code can not be copied with
-// any method without prior written permission from
-// the author or authorized person.
-//
-// File Name	: Wow64Util.cpp
-// Author		: Yoo, Byung In (hanlife7@hanmail.net)
-// Descrtption	: implementation of the CWow64Util class.
-//
-// Revision History
-// Date         Name								Description
-// 2004-02-18   Yoo, Byung In (hanlife7@hanmail.net)  Created
-//
-///////////////////////////////////////////////////////////////////////////////
+﻿/**
+ * @file    WOW64 util
+ * @brief
+ *
+ * @author  Yonghwan, Roh (somma@somma.kr)
+ * @date    07.14.2022 21:59 created
+ * @copyright (C)Somma, Inc. All rights reserved.
+**/
 #include "stdafx.h"
+#include <wow64apiset.h>
 #include "Wow64Util.h"
 
-//////////////////////////////////////////////////////////////////////
-// Destructor
-//////////////////////////////////////////////////////////////////////
-CWow64Util::~CWow64Util()
-{	
-	if( m_hKernel32 ) FreeLibrary( m_hKernel32	);
-	if( m_hUser32	) FreeLibrary( m_hUser32	);
-}
-
-//////////////////////////////////////////////////////////////////////
-// 
-//////////////////////////////////////////////////////////////////////
-CWow64Util::CWow64Util()
-{	
-	m_pfnGetNativeSystemInfo			= NULL;
-	m_pfnIsWow64Process					= NULL;
-	m_pfnWow64EnableWow64FsRedirection	= NULL;
-	m_pfnGetSystemWow64Directory		= NULL;
-	m_pfnIsWow64Message					= NULL;
-
-	m_hKernel32	= LoadLibrary(	TEXT("Kernel32.DLL"));
-	m_hUser32	= LoadLibrary(	TEXT("User32.DLL")	);	
-	
-	if( m_hKernel32 )
-	{			
-		m_pfnGetNativeSystemInfo			= (LPFN_GetNativeSystemInfo)GetProcAddress(m_hKernel32, "GetNativeSystemInfo");
-		m_pfnIsWow64Process					= (LPFN_IsWow64Process)GetProcAddress(m_hKernel32, "IsWow64Process");
-		m_pfnWow64EnableWow64FsRedirection	= (LPFN_Wow64EnableWow64FsRedirection)GetProcAddress(m_hKernel32, "Wow64EnableWow64FsRedirection");
-		m_pfnGetSystemWow64Directory		= (LPFN_GetSystemWow64Directory)GetProcAddress(m_hKernel32, "GetSystemWow64Directory");
-	}
-
-	if( m_hUser32 )
-	{
-		m_pfnIsWow64Message					= (LPFN_IsWow64Message)GetProcAddress(m_hUser32, "IsWow64Message");
-	}
-}
-
-//////////////////////////////////////////////////////////////////////
-// 
-//////////////////////////////////////////////////////////////////////
-BOOL CWow64Util::IsWow64Process( VOID )
+/// @brief	
+bool is_wow64_process(HANDLE hProcess)
 {
-	BOOL bRtVal = FALSE;
-
-	if( m_pfnIsWow64Process )
+	BOOL wow = FALSE;
+	if (NULL == hProcess) hProcess = GetCurrentProcess();
+	if (!IsWow64Process(GetCurrentProcess(), &wow))
 	{
-		m_pfnIsWow64Process(GetCurrentProcess(), &bRtVal);
+		// 함수 호출 실패시 Wow 프로세스가 아닌걸로 
+		return false;
 	}
-
-	return bRtVal;
-}
-
-//////////////////////////////////////////////////////////////////////
-// 
-//////////////////////////////////////////////////////////////////////
-BOOL CWow64Util::IsWow64Process( HANDLE hProcess )
-{
-	BOOL bRtVal = FALSE;
-
-	if( NULL == hProcess ) hProcess = GetCurrentProcess();
-
-	if( m_pfnIsWow64Process)
+	else
 	{
-		m_pfnIsWow64Process(hProcess, &bRtVal);
+		return wow ? true : false;
 	}
-
-	return bRtVal;
 }
 
-//////////////////////////////////////////////////////////////////////
-// 
-//////////////////////////////////////////////////////////////////////
-BOOL CWow64Util::IsWow64Process( DWORD pid )
+/// @brief	
+bool is_wow64_process(DWORD pid)
 {
-	HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
-	if (NULL == hProc)
+	HANDLE proc = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+	if (NULL == proc)
 	{
-		return FALSE;
+		return false;
 	}
 
-	return IsWow64Process(hProc);
+	return is_wow64_process(proc);
 }
 
-//////////////////////////////////////////////////////////////////////
-// 
-//////////////////////////////////////////////////////////////////////
-BOOL CWow64Util::IsWow64Message( )
+/// @brief	
+bool is_wow64_message()
 {
-	BOOL bRtVal = FALSE;
-
-	if( m_pfnIsWow64Message)
-	{
-		bRtVal = m_pfnIsWow64Message();
-	}
-
-	return bRtVal;
+	return IsWow64Message();
 }
 
-//////////////////////////////////////////////////////////////////////
-// 
-//////////////////////////////////////////////////////////////////////
-BOOL CWow64Util::IsProcessorIA64( )
+
+/// @brief	현재 스레드의 file system redirection 기능을 끈다. 
+///			다시 켤때는 revert_handle 을 통해 revert_wow64_fs_redirection()
+//			함수를 사용해야 한다. 
+bool disable_wow64_fs_redirection(_Out_ void**& revert_handle)
 {
-	BOOL bRtVal = FALSE;
-	SYSTEM_INFO SystemInfo;
-
-	GetWow64SystemInfo( &SystemInfo );
-
-	if( SystemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64 )
-	{
-		bRtVal = TRUE;
-	}
-
-
-	return bRtVal;
+	return Wow64DisableWow64FsRedirection(revert_handle) ? true : false;
 }
 
-//////////////////////////////////////////////////////////////////////
-// 
-//////////////////////////////////////////////////////////////////////
-BOOL CWow64Util::IsProcessorAMD64( )
+/// @brief	현재 스레드의 file system redirection 기능을 다시 켠다.
+///			revert_handle 을 통해 disable_wow64_fs_redirection() 함수가
+///			리턴한 값을 사용해야 한다.
+bool revert_wow64_fs_redirection(_In_ void* revert_handle)
 {
-	BOOL bRtVal = FALSE;
-	SYSTEM_INFO SystemInfo;
-
-	GetWow64SystemInfo( &SystemInfo );
-
-	if( SystemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64 )
-	{
-		bRtVal = TRUE;
-	}
-
-	return bRtVal;
+	return Wow64RevertWow64FsRedirection(revert_handle) ? true : false;
 }
 
-//////////////////////////////////////////////////////////////////////
-// 
-//////////////////////////////////////////////////////////////////////
-BOOL CWow64Util::TurnOnWow64FSRedirection()
-{
-	BOOL bRtVal = FALSE;
 
-	if( m_pfnWow64EnableWow64FsRedirection )
-	{
-		bRtVal = m_pfnWow64EnableWow64FsRedirection(TRUE);
-	}
-
-	return bRtVal;
-}
-
-//////////////////////////////////////////////////////////////////////
-// 
-//////////////////////////////////////////////////////////////////////
-BOOL CWow64Util::TurnOffWow64FSRedirection()
-{
-	BOOL bRtVal = FALSE;
-	
-	if( m_pfnWow64EnableWow64FsRedirection )
-	{
-		bRtVal = m_pfnWow64EnableWow64FsRedirection(FALSE);
-	}
-
-	return bRtVal;
-}
-
-//////////////////////////////////////////////////////////////////////
-// 
-//////////////////////////////////////////////////////////////////////
-UINT CWow64Util::GetWow64SystemDirectory( LPTSTR lpBuffer,  UINT uSize )
-{
-	UINT uRtVal = 0;
-		
-	if( m_pfnGetSystemWow64Directory )
-	{			
-		uRtVal = m_pfnGetSystemWow64Directory ( lpBuffer, uSize );		
-	}
-	
-	return uRtVal;
-}
-
-//////////////////////////////////////////////////////////////////////
-// 
-//////////////////////////////////////////////////////////////////////
-VOID CWow64Util::GetWow64SystemInfo( LPSYSTEM_INFO lpSystemInfo )
-{
-	if(m_pfnGetNativeSystemInfo)
-	{
-		m_pfnGetNativeSystemInfo(lpSystemInfo);
-	}
-}
-//////////////////////////////////////////////////////////////////////
-//	END OF SOURCE
-//////////////////////////////////////////////////////////////////////

@@ -27,59 +27,132 @@ HKEY
 RUOpenKey(
 	_In_ HKEY RootKey, 
 	_In_ const wchar_t* SubKey,
-	_In_ bool ReadOnly);
+	_In_ bool ReadOnly, 
+	_In_ bool DisableWow = false
+);
 
 void
 RUCloseKey(
 	_In_ HKEY Key
-	);
+);
 
 HKEY 
 RUCreateKey(
 	_In_ HKEY RootKey,
 	_In_ const wchar_t* SubKey,
-	_In_ bool ReadOnly
-	);
+	_In_ bool ReadOnly, 
+	_In_ bool DisableWow = false
+);
+
+///
 
 DWORD 
 RUReadDword(	
 	_In_ HKEY key_handle, 
 	_In_ const wchar_t* value_name, 
 	_In_ DWORD DefaultValue
-	);
+);
+
+DWORD
+RUReadDwordEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ DWORD default_value,
+	_In_ bool disable_wow
+);
+
+///
 
 bool 
 RUWriteDword(
 	_In_ HKEY key_handle, 
 	_In_ const wchar_t* value_name, 
 	_In_ DWORD value
-	);
+);
+
+bool
+RUWriteDwordEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ DWORD value,
+	_In_ bool disable_wow
+);
+
+///
 
 uint64_t
 RUReadQword(
 	_In_ HKEY key_handle,
 	_In_ const wchar_t* value_name,
-	_In_ uint64_t DefaultValue);
+	_In_ uint64_t DefaultValue
+);
+
+uint64_t
+RUReadQwordEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ uint64_t default_value,
+	_In_ bool disable_wow
+);
+
+///
 
 bool
 RUWriteQword(
 	_In_ HKEY key_handle,
 	_In_ const wchar_t* value_name,
-	_In_ uint64_t value);
+	_In_ uint64_t value
+);
+
+bool
+RUWriteQwordEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ int64_t value,
+	_In_ bool disable_wow
+);
+
+///
 
 bool 
 RUReadString(
 	_In_ HKEY key_handle, 
 	_In_ const wchar_t* value_name, 
 	_Out_ std::wstring& value
-	);
+);
+
+bool
+RUReadStringEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key, 
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_Out_ std::wstring& value
+);
+
+///
 
 bool
 RUSetString(
 	_In_ HKEY key_handle,
 	_In_ const wchar_t* value_name,
 	_In_ const wchar_t* value
-	);
+);
+
+bool
+RUSetStringEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,	
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_In_ const wchar_t* value
+);
+
+///
 
 bool 
 RUSetExpandString(
@@ -87,55 +160,124 @@ RUSetExpandString(
 	_In_ const wchar_t* value_name, 
 	_In_ const wchar_t* value, 
 	_In_ DWORD cbValue
-	);
-
-bool 
-RUSetBinaryData(
-	_In_ HKEY key_handle, 
-	_In_ const wchar_t* value_name, 
-	_In_ const uint8_t* value, 
-	_In_ DWORD cbValue
-	);
+);
 
 bool
-RUSetMultiString(
+RUSetExpandStringEx(
 	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
 	_In_ const wchar_t* value_name,
-	_In_ std::vector<std::wstring>& values
-	);
+	_In_ bool disable_wow,
+	_In_ const wchar_t* value,
+	_In_ DWORD cbValue
+);
+
+///
 
 bool
 RUReadMultiString(
 	_In_ HKEY key_handle,
 	_In_ const wchar_t* value_name,
 	_Out_ std::vector<std::wstring>& values
-	);
+);
+
+bool
+RUReadMultiStringEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_Out_ std::vector<std::wstring>& values
+);
+
+///
+
+bool
+RUSetMultiString(
+	_In_ HKEY key_handle,	
+	_In_ const wchar_t* value_name,
+	_In_ std::vector<std::wstring>& values
+); 
+
+bool
+RUSetMultiString(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_In_ std::vector<std::wstring>& values
+);
+
+///
 
 uint8_t* 
 RUReadBinaryData(
 	_In_ HKEY key_handle, 
 	_In_ const wchar_t* value_name, 
 	_Out_ DWORD& cbValue
-	);
+);
 
-bool 
+uint8_t*
+RUReadBinaryDataEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_Out_ DWORD& cbValue
+);
+
+///
+
+bool
+RUSetBinaryData(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* value_name,
+	_In_ const uint8_t* value,
+	_In_ DWORD cbValue
+);
+
+bool
+RUSetBinaryDataEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow,
+	_In_ const uint8_t* value,
+	_In_ DWORD cbValue
+);
+
+///
+
+bool
 RUDeleteValue(
 	_In_ HKEY key_handle, 
 	_In_ const wchar_t* value_name
-	);
+);
+
+bool
+RUDeleteValueEx(
+	_In_ HKEY key_handle,
+	_In_ const wchar_t* sub_key,
+	_In_ const wchar_t* value_name,
+	_In_ bool disable_wow
+);
+
+///
 
 bool
 RUDeleteKey(
 	_In_ HKEY key_handle,
 	_In_ const wchar_t* sub_key,
-	_In_ bool recursive
-	);
+	_In_ bool recursive,
+	_In_ bool DisableWow = false
+);
 
 bool 
 RUIsKeyExists(
 	_In_ HKEY root_key, 
-	_In_ const wchar_t* sub_key
-	);
+	_In_ const wchar_t* sub_key, 
+	_In_ bool DisableWow = false
+);
 
 typedef
 bool(*fn_key_callback_tag)(
@@ -144,7 +286,7 @@ bool(*fn_key_callback_tag)(
 	_In_ const wchar_t* sub_key_name,
 	_In_ const wchar_t* class_name,
 	_In_ DWORD_PTR tag
-	);
+);
 
 typedef
 bool(*fn_key_value_callback_tag)(
@@ -154,7 +296,7 @@ bool(*fn_key_value_callback_tag)(
 	_In_ uint32_t value_data_size,
 	_In_ const uint8_t* value_data,
 	_In_ DWORD_PTR tag
-	);
+);
 
 bool
 reg_enum_key_values(
@@ -164,7 +306,7 @@ reg_enum_key_values(
 	_In_ DWORD_PTR key_cb_tag,
 	_In_ fn_key_value_callback_tag value_cb,
 	_In_ DWORD_PTR value_cb_tag
-	);
+);
 
 bool
 str_to_reg_key(
@@ -177,7 +319,7 @@ class RegHandle
 {
 public:
     RegHandle(HKEY key) : m_key(key) {}
-	~RegHandle()    { if (NULL != m_key) RegCloseKey(m_key);  }
+	~RegHandle()    { if (nullptr != m_key) RegCloseKey(m_key);  }
     HKEY get()      { return m_key; };
 protected:
 private:

@@ -100,7 +100,6 @@ public:
 	// http_file_upload 함수를 사용하면, 파일 이름은 서버로 전송된다.
 	// 만약, 추가적으로 전송할 데이터가 있다면 forms를 사용한다.
 	//
-#pragma todo("Forms 객체를 파라미터로 받지 않게. add_form() 형태로 리팩토링")
 	typedef std::map<std::string, std::string> Forms;
 	bool http_file_upload(
 		_In_z_ const char* url,

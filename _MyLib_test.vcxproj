@@ -226,6 +226,7 @@ echo "done." </Command>
     <ClInclude Include="src\injector.h" />
     <ClInclude Include="src\LeakWatcher.h" />
     <ClInclude Include="src\log.h" />
+    <ClInclude Include="src\machine_id.h" />
     <ClInclude Include="src\md5.h" />
     <ClInclude Include="src\net_util.h" />
     <ClInclude Include="src\net_util_typedef.h" />
@@ -268,6 +269,7 @@ echo "done." </Command>
     <ClCompile Include="src\GeneralHashFunctions.cpp" />
     <ClCompile Include="src\injector.cpp" />
     <ClCompile Include="src\log.cpp" />
+    <ClCompile Include="src\machine_id.cpp" />
     <ClCompile Include="src\md5.cpp" />
     <ClCompile Include="src\net_util.cpp" />
     <ClCompile Include="src\nt_name_conv.cpp" />
@@ -305,6 +307,7 @@ echo "done." </Command>
     <ClCompile Include="_test_dns_query.cpp" />
     <ClCompile Include="_test_file_io_helper.cpp" />
     <ClCompile Include="_test_log.cpp" />
+    <ClCompile Include="_test_machine_id.cpp" />
     <ClCompile Include="_test_net_util.cpp" />
     <ClCompile Include="_test_NtApi.cpp" />
     <ClCompile Include="_test_ppl.cpp" />

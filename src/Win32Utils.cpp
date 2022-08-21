@@ -36,6 +36,7 @@
 #pragma comment(lib, "version.lib")
 #pragma comment(lib, "Ole32.lib")
 #pragma comment(lib, "User32.lib")
+#pragma comment(lib, "Shlwapi.lib")
 
 #include "Win32Utils.h"
 #include "RegistryUtil.h"
@@ -2475,8 +2476,8 @@ SaveBinaryFile(
 	{
 		return false;
 	}
+
 	// create data directory
-	//
 	int ret = SHCreateDirectoryExW(NULL, Directory, NULL);
 	if (ERROR_SUCCESS != ret && ERROR_ALREADY_EXISTS != ret)
 	{
@@ -2496,33 +2497,36 @@ SaveBinaryFile(
 	{
 		log_err
 			"Can not generate target path, dir=%S, file=%S",
-			Directory, FileName
-			log_end
-			return false;
+			Directory,
+			FileName
+			log_end;
+		return false;
 	}
 
-	// 동일한 파일이 존재하는 경우 기존 파일을 삭제 후 새롭게 생성함
-	// 
+	// 동일한 파일이 존재하는 경우 기존 파일을 삭제
 	if (true == is_file_existsW(DataPath))
 	{
-		//log_err
-		//	"same file exists, file=%S will be replaced by new file",
-		//	DataPath
-		//	log_end
-		::DeleteFileW(DataPath);
+		if (!DeleteFileW(DataPath))
+		{
+			log_err
+				"DeleteFile() failed. file=%ws, gle=%u",
+				DataPath,
+				GetLastError()
+				log_end;
+			return false;
+		}
 	}
 
 	HANDLE hFile = open_file_to_write(DataPath);
 	if (INVALID_HANDLE_VALUE == hFile)
 	{
 		log_err
-			"Can not create file=%S, check path or privilege",
+			"Can not create file=%ws, check path or privilege",
 			DataPath
-			log_end
-			return false;
+			log_end;
+		return false;
 	}
 	SmrtHandle sh(hFile);
-
 	DWORD cbWritten = 0;
 	if (TRUE != ::WriteFile(hFile,
 							Data,
@@ -2531,10 +2535,11 @@ SaveBinaryFile(
 							NULL))
 	{
 		log_err
-			"WriteFile(path=%S) failed, gle=%u",
-			DataPath, GetLastError()
-			log_end
-			return false;
+			"WriteFile(path=%ws) failed, gle=%u",
+			DataPath,
+			GetLastError()
+			log_end;
+		return false;
 	}
 
 	return true;
@@ -9157,8 +9162,7 @@ const char* get_archtecture()
 #ifdef _WIN64
 	return "x64";
 #else
-	CWow64Util wow;
-	if (wow.IsWow64Process())
+	if (is_wow64_process(GetCurrentProcess()))
 	{
 		return "x64";
 	}

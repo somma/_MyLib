@@ -269,7 +269,8 @@ bool test_curl_http_post_with_response_header()
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
 		writer->write(root, &request_body);
 	}
-	catch (const std::exception& e) {
+	catch (const std::exception) 
+	{
 		log_err "Exception, Can not create request body with json." log_end;
 		return false;
 	}

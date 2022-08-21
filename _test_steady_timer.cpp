@@ -139,11 +139,13 @@ bool test_steady_timer_restart()
 	for (int i = 0; i < 3; ++i)
 	{
 		log_info "timer[%d]: start...", i log_end;
-		bool ret = timer.start(1,
-							   i,
-							   on_timer);
+		if (!timer.start(1, i, on_timer))
+		{
+			log_err "timer.start() failed." log_end;
+			return false;
+		}
+		
 		Sleep(6000);
-
 		log_info "timer[%d]: stop...", i log_end;
 		timer.stop();
 		Sleep(2000);
