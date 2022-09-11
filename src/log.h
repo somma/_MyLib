@@ -76,6 +76,7 @@ finalize_log(
 
 void
 set_log_format(
+	_In_ bool show_level,
 	_In_ bool show_current_time,
 	_In_ bool show_process_name, 
 	_In_ bool show_pid_tid,
@@ -84,6 +85,7 @@ set_log_format(
 
 void 
 get_log_format(
+	_Out_ bool& show_level,
 	_Out_ bool& show_current_time,
 	_Out_ bool& show_process_name,
 	_Out_ bool& show_pid_tid,

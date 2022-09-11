@@ -10,8 +10,8 @@
 #include <regex>
 #include <unordered_map>
 #include <winioctl.h>
-
 #include "libzippp/libzippp.h"
+#include <boost/program_options.hpp>
 
 #include "_MyLib/src/process_tree.h"
 #include "_MyLib/src/base64.h"
@@ -3463,15 +3463,7 @@ bool test_trivia()
 	};
 
 
-	//{
-	//	boost::wformat f = boost::wformat(L"%s\\%s") % get_current_module_dirEx().c_str() % L"_MyLib_tst.log";
-	//	if (true != initialize_log(log_mask_all,
-	//							   log_level_debug,
-	//							   log_to_all,
-	//							   f.str().c_str())) return;
-	//	set_log_format(false, false, true);
-	//}
-	set_log_format(false, false, false, false);
+	set_log_format(true, false, false, false, false);
 
 	//
 	//	std::string 관련
@@ -3983,6 +3975,66 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	UNREFERENCED_PARAMETER(argc);
 	UNREFERENCED_PARAMETER(argv);
+
+
+	//
+//	Parse program options
+//
+
+#define _src_path	"source"
+#define _dst_path	"destination"
+#define _pass		"passphrase"
+#define _help		"help"
+
+	namespace po = boost::program_options;
+	po::options_description desc("options");
+	desc.add_options()
+		(_help ", h", "help")
+		(_pass ", p", po::wvalue<std::wstring>(), "Passphrase")
+		(_src_path ", s", po::wvalue<std::wstring>(), "source path")
+		(_dst_path ", d", po::wvalue<std::wstring>(), "destination path");
+	/*	("help, h", "help")
+		("passphrase", po::wvalue<std::wstring>(), "Passphrase")
+		("source", po::wvalue<std::wstring>(), "source path")
+		("destination", po::wvalue<std::wstring>(), "destination path");
+*/
+	po::variables_map vm;
+	try
+	{
+		po::store(po::wcommand_line_parser(argc, argv).options(desc).run(), vm);
+		po::notify(vm);
+	}
+	catch (const std::exception& e)
+	{
+		log_err
+			"Invalid program options. e=%s",
+			e.what()
+			log_end;
+		return false;
+	}
+
+	if (!vm.count(_pass) || !vm.count(_src_path) || !vm.count(_dst_path) || vm.count("help"))
+	{
+		std::stringstream msg;
+		msg << desc;
+		log_info
+			"%s", msg.str().c_str()
+			log_end;
+		return false;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	if (argc == 1)
 	{

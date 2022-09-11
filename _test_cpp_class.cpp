@@ -221,15 +221,15 @@ bool test_copy_assign()
 
 bool test_cpp_class()
 {
-	bool b1, b2, b3, b4;
-	get_log_format(b1, b2, b3, b4);
-	set_log_format(false, false, false, true);
+	bool b0, b1, b2, b3, b4;
+	get_log_format(b0, b1, b2, b3, b4);
+	set_log_format(true, false, false, false, false, true);
 
 	if (true != test_call_order()) return false;
 	if (true != test_copy_assign()) return false;
 	if (true != test_template_method()) return false;
 	
-	set_log_format(b1, b2, b3, b4);
+	set_log_format(b0, b1, b2, b3, b4);
 
 	return true;
 }
