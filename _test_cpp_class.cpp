@@ -223,7 +223,7 @@ bool test_cpp_class()
 {
 	bool b0, b1, b2, b3, b4;
 	get_log_format(b0, b1, b2, b3, b4);
-	set_log_format(true, false, false, false, false, true);
+	set_log_format(true, false, false, false, false);
 
 	if (true != test_call_order()) return false;
 	if (true != test_copy_assign()) return false;
