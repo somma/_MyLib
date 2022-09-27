@@ -278,7 +278,7 @@ void run_test()
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_is_reserved_ipv4);
 	//assert_bool(true, test_ip_to_dns);
-	//assert_bool(true, test_dns_to_ip);
+	assert_bool(true, test_dns_to_ip);
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 
@@ -437,7 +437,7 @@ void run_test()
 
 	//assert_bool(true, test_template);
 
-	assert_bool(true, test_generate_machine_id);
+	//assert_bool(true, test_generate_machine_id);
 
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -3973,67 +3973,8 @@ bool test_print_percent()
 **/
 int _tmain(int argc, _TCHAR* argv[])
 {
-	UNREFERENCED_PARAMETER(argc);
-	UNREFERENCED_PARAMETER(argv);
-
-
-	//
-//	Parse program options
-//
-
-#define _src_path	"source"
-#define _dst_path	"destination"
-#define _pass		"passphrase"
-#define _help		"help"
-
-	namespace po = boost::program_options;
-	po::options_description desc("options");
-	desc.add_options()
-		(_help ", h", "help")
-		(_pass ", p", po::wvalue<std::wstring>(), "Passphrase")
-		(_src_path ", s", po::wvalue<std::wstring>(), "source path")
-		(_dst_path ", d", po::wvalue<std::wstring>(), "destination path");
-	/*	("help, h", "help")
-		("passphrase", po::wvalue<std::wstring>(), "Passphrase")
-		("source", po::wvalue<std::wstring>(), "source path")
-		("destination", po::wvalue<std::wstring>(), "destination path");
-*/
-	po::variables_map vm;
-	try
-	{
-		po::store(po::wcommand_line_parser(argc, argv).options(desc).run(), vm);
-		po::notify(vm);
-	}
-	catch (const std::exception& e)
-	{
-		log_err
-			"Invalid program options. e=%s",
-			e.what()
-			log_end;
-		return false;
-	}
-
-	if (!vm.count(_pass) || !vm.count(_src_path) || !vm.count(_dst_path) || vm.count("help"))
-	{
-		std::stringstream msg;
-		msg << desc;
-		log_info
-			"%s", msg.str().c_str()
-			log_end;
-		return false;
-	}
-
-
-
-
-
-
-
-
-
-
-
-
+	//UNREFERENCED_PARAMETER(argc);
+	//UNREFERENCED_PARAMETER(argv);
 
 
 	if (argc == 1)

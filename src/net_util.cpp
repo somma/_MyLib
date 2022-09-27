@@ -533,15 +533,19 @@ dns_to_ip(
 	std::string dns_query_ip;
 	PDNS_RECORD dns_record = nullptr;
 
-	DNS_STATUS status = DnsQuery_W(domain_name, 
-								   DNS_TYPE_A,
-								   (true == cache_only) ? DNS_QUERY_NO_WIRE_QUERY : (DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE),
-								   NULL,
-								   &dns_record,
-								   NULL);
+	DNS_STATUS status = 
+		DnsQuery_W(domain_name, 
+				   DNS_TYPE_A,
+					(true == cache_only) ? 
+						DNS_QUERY_NO_WIRE_QUERY : 
+						(DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE),
+					NULL,
+					&dns_record,
+					NULL);
 	if (ERROR_SUCCESS != status)
 	{
-		if (DNS_ERROR_RECORD_DOES_NOT_EXIST == status || DNS_ERROR_RCODE_NAME_ERROR == status)
+		if (DNS_ERROR_RECORD_DOES_NOT_EXIST == status || 
+			DNS_ERROR_RCODE_NAME_ERROR == status)
 		{
 			//
 			//	유효하지 않은 도메인 네임
@@ -563,10 +567,12 @@ dns_to_ip(
 
 		return false;
 	}
+
 	_ASSERTE(nullptr != dns_record);
 	if (nullptr == dns_record)
 	{
-		log_err "DnsQuery(cache_only=%s) succeeded but no recored. domain=%ws",
+		log_err 
+			"DnsQuery(cache_only=%s) succeeded but no recored. domain=%ws",
 			true == cache_only ? "O" : "X",
 			domain_name
 			log_end;
@@ -576,6 +582,15 @@ dns_to_ip(
 	
 	while(dns_record != nullptr)
 	{
+		//
+		//	dns_record type 이  DNS_TYPE_CNAME 같은 경우도 있으므로
+		//	아래의 비교 루틴은 수행하면 안된다.
+		//
+		//if (DnsNameCompare_W(dns_record->pName, domain_name) && 
+		//DNS_TYPE_A == dns_record->wType)
+		//{
+		//	ip_list.push_back(dns_record->Data.A.IpAddress);
+		//}
 		ip_list.push_back(dns_record->Data.A.IpAddress);
 		dns_record = dns_record->pNext;
 	}
