@@ -4390,7 +4390,7 @@ bool
 split_stringa(
 	_In_ const char* str,
 	_In_ const char* seps,
-	_Out_ std::vector<std::string>& tokens
+	_Out_ std::list<std::string>& tokens
 )
 {
 #define max_str_len     2048
@@ -4442,15 +4442,26 @@ bool
 split_stringw(
 	_In_ const wchar_t* str,
 	_In_ const wchar_t* seps,
-	_Out_ std::vector<std::wstring>& tokens
+	_Out_ std::list<std::wstring>& tokens
 )
 {
 #define max_str_len     2048
 
-	_ASSERTE(NULL != str);
-	if (NULL == str) return false;
-
-	tokens.clear();
+	_ASSERTE(nullptr != str);
+	_ASSERTE(nullptr != seps);
+	if (nullptr == str || nullptr == seps) return false;
+	
+	tokens.clear(); 
+	
+	size_t len_str = wcslen(str);
+	size_t len_seps = wcslen(seps);
+	if (0 == len_str || 0 == len_seps || len_str <= len_seps)
+	{
+		// split 할 문자열이 없거나
+		// source string 보다 seperater 가 더 길다면
+		// 연산 없이 성공을 리턴
+		return true;
+	}
 
 	//
 	//	strtok_s() modifies the `str` buffer.
@@ -4476,12 +4487,12 @@ split_stringw(
 
 	StringCbPrintfW(buf.get(), buf_len, L"%ws", str);
 
-	wchar_t* next_token = NULL;
+	wchar_t* next_token = nullptr;
 	wchar_t* token = wcstok_s(buf.get(), seps, &next_token);
-	while (NULL != token)
+	while (nullptr != token)
 	{
 		tokens.push_back(token);
-		token = wcstok_s(NULL, seps, &next_token);
+		token = wcstok_s(nullptr, seps, &next_token);
 	}
 	return true;
 }

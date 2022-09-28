@@ -126,6 +126,7 @@ bool test_ip_mac();
 bool test_ip_to_str();
 
 bool test_strtok();
+bool test_split_stringw();
 
 // test_process_tree.cpp
 extern bool test_process_tree();
@@ -278,7 +279,7 @@ void run_test()
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_is_reserved_ipv4);
 	//assert_bool(true, test_ip_to_dns);
-	assert_bool(true, test_dns_to_ip);
+	//assert_bool(true, test_dns_to_ip);
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 
@@ -308,9 +309,9 @@ void run_test()
 	//assert_bool(true, test_crc64);
 
 
-	//assert_bool(true, test_NameConverter_iterate);
-	//assert_bool(true, test_NameConverter_get_canon_name);
-	//assert_bool(true, test_NameConverter_dosname_to_devicename);
+	assert_bool(true, test_NameConverter_iterate);
+	assert_bool(true, test_NameConverter_get_canon_name);
+	assert_bool(true, test_NameConverter_dosname_to_devicename);
 
 	//assert_bool(true, test_wmi_client);
 	//assert_bool(true, test_NtCreateFile);
@@ -350,6 +351,7 @@ void run_test()
 	//assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
+	assert_bool(true, test_split_stringw);
 	//assert_bool(true, test_cpp_class);
 	//assert_bool(true, test_nt_name_to_dos_name);
 
@@ -946,6 +948,22 @@ bool test_strtok()
 	log_info "\n" log_end;
 
     return true;
+}
+
+bool test_split_stringw()
+{
+	std::list<std::wstring> ltokens;
+	_ASSERTE(split_stringw(L"AhnLab, Inc.|Somma, Inc.", L"|", ltokens));
+
+	std::vector<std::wstring> tokens(ltokens.cbegin(), ltokens.cend());
+	_ASSERTE(tokens[0] == L"AhnLab, Inc.");
+	_ASSERTE(tokens[1] == L"Somma, Inc.");
+
+	ltokens.clear();
+	_ASSERTE(split_stringw(_null_stringw.c_str(), L"|", ltokens));
+	_ASSERTE(ltokens.empty());
+
+	return true;
 }
 
 /// @brief	c:\temp\dbg			X

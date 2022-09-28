@@ -544,14 +544,14 @@ bool
 split_stringa(
     _In_ const char* str, 
     _In_ const char* seps, 
-    _Out_ std::vector<std::string>& tokens
+    _Out_ std::list<std::string>& tokens
     );
 
 bool
 split_stringw(
     _In_ const wchar_t* str,
     _In_ const wchar_t* seps,
-    _Out_ std::vector<std::wstring>& tokens
+    _Out_ std::list<std::wstring>& tokens
     );
 
 // string to hash
