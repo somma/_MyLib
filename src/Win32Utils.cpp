@@ -5747,13 +5747,17 @@ create_process_and_wait(
 	_In_ DWORD creation_flag,
 	_In_opt_z_ const wchar_t* current_dir,
 	_In_ DWORD timeout_secs,
-	_Out_ DWORD& exit_code
+	_Out_ PDWORD exit_code
 )
 {
 	HANDLE process_handle;
 	DWORD process_id;
 
-	if (!create_process(cmdline, creation_flag, current_dir, process_handle, process_id))
+	if (!create_process(cmdline, 
+						creation_flag, 
+						current_dir, 
+						process_handle, 
+						process_id))
 	{
 		log_err "create_process() failed. cmdline=%ws", cmdline log_end;
 		return false;
@@ -5762,7 +5766,10 @@ create_process_and_wait(
 	//
 	//	Wait for the process
 	//
-	DWORD wr = WaitForSingleObject(process_handle, timeout_secs == -1 ? INFINITE : timeout_secs * 1000);
+	DWORD wr = WaitForSingleObject(process_handle, 
+								   timeout_secs == -1 ? 
+								   INFINITE : 
+								   timeout_secs * 1000);
 	if (WAIT_OBJECT_0 != wr)
 	{
 		switch (wr)
@@ -5798,10 +5805,16 @@ create_process_and_wait(
 		TerminateProcess(process_handle, 0xffffffff);
 	}
 
-	if (!GetExitCodeProcess(process_handle, &exit_code))
+	if (nullptr != exit_code)
 	{
-		log_err "GetExitCodeProcess() failed. gle=%u", GetLastError() log_end;
-		exit_code = 0xffffffff;		// exit_code -1 로 간주
+		if (!GetExitCodeProcess(process_handle, exit_code))
+		{
+			log_err 
+				"GetExitCodeProcess() failed. gle=%u", 
+				GetLastError() 
+				log_end;
+			*exit_code = 0xffffffff;		// exit_code -1 로 간주
+		}
 	}
 
 	//

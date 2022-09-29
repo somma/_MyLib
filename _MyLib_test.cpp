@@ -952,16 +952,29 @@ bool test_strtok()
 
 bool test_split_stringw()
 {
-	std::list<std::wstring> ltokens;
-	_ASSERTE(split_stringw(L"AhnLab, Inc.|Somma, Inc.", L"|", ltokens));
+#define _str_aa "AhnLab, Inc."
+#define _str_ba "Somma, Inc."
+#define _str_sepa "|"
+#define _stra _str_aa#_str_sepa#_str_ba
 
-	std::vector<std::wstring> tokens(ltokens.cbegin(), ltokens.cend());
-	_ASSERTE(tokens[0] == L"AhnLab, Inc.");
-	_ASSERTE(tokens[1] == L"Somma, Inc.");
-
-	ltokens.clear();
-	_ASSERTE(split_stringw(_null_stringw.c_str(), L"|", ltokens));
-	_ASSERTE(ltokens.empty());
+#define _str_aw L"AhnLab, Inc."
+#define _str_bw L"Somma, Inc."
+#define _str_sepw L"|"
+#define _strw _str_aw _str_sepw _str_bw 
+	
+	{
+		std::list<std::wstring> ltokens;
+		_ASSERTE(split_stringw(_strw, _str_sepw, ltokens));
+		std::vector<std::wstring> tokens(ltokens.cbegin(), ltokens.cend());
+		_ASSERTE(tokens[0] == _str_aw);
+		_ASSERTE(tokens[1] == _str_bw);
+	}
+	
+	{
+		std::list<std::wstring> ltokens;
+		_ASSERTE(split_stringw(_null_stringw.c_str(), L"|", ltokens));
+		_ASSERTE(ltokens.empty());
+	}
 
 	return true;
 }
