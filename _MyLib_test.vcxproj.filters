@@ -173,9 +173,6 @@
     <ClCompile Include="_test_boost_bind.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="_test_std_map.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="_test_cpp_class.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -349,6 +346,9 @@
     </ClCompile>
     <ClCompile Include="src\machine_id.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_std_map_set.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

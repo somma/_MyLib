@@ -96,7 +96,7 @@ bool WmiClient::initialize()
         return false;
     }
 
-    log_dbg "Connected to ROOT\\CIMV2 WMI name space." log_end;
+    //log_dbg "Connected to ROOT\\CIMV2 WMI name space." log_end;
 
     // #5, Security levels on the proxy
     hres = CoSetProxyBlanket(_svc,                          // Indicates the proxy to set

@@ -183,7 +183,9 @@ extern bool boost_bind3();
 extern bool boost_bind4();
 extern bool boost_bind5();
 
-// _test_std_map.cpp
+// _test_std_map_set.cpp
+extern bool test_set_insert();
+extern bool test_map_insert();
 extern bool test_std_map();
 extern bool test_map_plus_algorithm_1();
 extern bool test_map_plus_algorithm_2();
@@ -309,9 +311,9 @@ void run_test()
 	//assert_bool(true, test_crc64);
 
 
-	assert_bool(true, test_NameConverter_iterate);
-	assert_bool(true, test_NameConverter_get_canon_name);
-	assert_bool(true, test_NameConverter_dosname_to_devicename);
+	//assert_bool(true, test_NameConverter_iterate);
+	//assert_bool(true, test_NameConverter_get_canon_name);
+	//assert_bool(true, test_NameConverter_dosname_to_devicename);
 
 	//assert_bool(true, test_wmi_client);
 	//assert_bool(true, test_NtCreateFile);
@@ -351,7 +353,7 @@ void run_test()
 	//assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
-	assert_bool(true, test_split_stringw);
+	//assert_bool(true, test_split_stringw);
 	//assert_bool(true, test_cpp_class);
 	//assert_bool(true, test_nt_name_to_dos_name);
 
@@ -389,6 +391,9 @@ void run_test()
 	//assert_bool(true, boost_bind5);
 	//assert_bool(true, test_boost_function);
 
+	assert_bool(true, test_set_insert);
+	assert_bool(true, test_map_insert);
+		
 	//assert_bool(true, test_std_map);
 	//assert_bool(true, test_map_plus_algorithm_1);
 	//assert_bool(true, test_map_plus_algorithm_2);

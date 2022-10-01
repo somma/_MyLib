@@ -174,6 +174,7 @@ curl_client::append_header(
 	_ASSERTE(nullptr != value);
 	if (nullptr == _curl || nullptr == key || nullptr == value) return;
 
+	// 이미 `key` 값이 존재한다면 새로운 값으로 대체
 	_header_fields[key] = value;
 }
 
