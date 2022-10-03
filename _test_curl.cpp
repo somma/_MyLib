@@ -234,6 +234,8 @@ bool test_curl_http_upload()
 
 bool test_curl_http_post_with_response_header()
 {
+_mem_check_begin
+{
 	pcurl_client _curl_client = new curl_client();
 	if (nullptr == _curl_client)
 	{
@@ -252,7 +254,7 @@ bool test_curl_http_post_with_response_header()
 	//	Python -m http.server
 	//
 	const char* url = nullptr;
-	
+
 	_ASSERTE(nullptr != url);
 	long http_response_code = 404;
 	CMemoryStream stream;
@@ -269,21 +271,86 @@ bool test_curl_http_post_with_response_header()
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
 		writer->write(root, &request_body);
 	}
-	catch (const std::exception) 
+	catch (const std::exception)
 	{
 		log_err "Exception, Can not create request body with json." log_end;
 		return false;
 	}
 
-	_ASSERTE(true == _curl_client->http_post(url, 
-											 request_body.str().c_str(),
-											 http_response_code, 
-											 http_response_header, 
-											 stream));
+	_ASSERTE(true == _curl_client->http_post(url,
+												request_body.str().c_str(),
+												http_response_code,
+												http_response_header,
+												stream));
 
 	_ASSERTE(0 < http_response_header.size());
 	_ASSERTE(_curl_client != nullptr);
 	delete _curl_client; _curl_client = nullptr;
+}
+_mem_check_end;
+	return true;
+}
+
+/// @brief	`python -m http.server` 명령으로 간단하게 웹서버 띄워놓고 테스트
+bool test_curl_http_patch()
+{
+_mem_check_begin
+{
+	pcurl_client _client = new curl_client();
+	if (nullptr == _client)
+	{
+		log_err "not enought memory" log_end;
+		return false;
+	}
+
+	if (true != _client->initialize())
+	{
+		log_err "curl client initialize() failed." log_end;
+		return false;
+	}
+
+	auto url = "localhost:8000";
+	_client->append_header("accept", "application/json");
+	_client->append_header("content-type", "application/json");
+	
+	Json::Value json;
+	json["data"]["revision"] = 0;	// 서버에서 관리하는 값이므로 무의미함
+	json["data"]["mode"] = 0;
+	json["data"]["allow_procs"].append("");
+	json["data"]["allow_ips"].append("");
+	json["data"]["allow_domains"].append("");
+	json["data"]["block_procs"].append("");
+	json["data"]["block_ips"].append("");
+	json["data"]["block_domains"].append("");
+
+	long http_response_code = 404;
+	CMemoryStream stream;
+
+	Json::StreamWriterBuilder builder;
+	std::stringstream request_body;
+	try
+	{
+		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+		writer->write(json, &request_body);
+	}
+	catch (const std::exception)
+	{
+		log_err "Exception, Can not create request body with json." log_end;
+		return false;
+	}
+
+	_ASSERTE(true == _client->http_patch(
+		url,
+		request_body.str().c_str(),
+		http_response_code,		
+		stream));
+
+	log_info "http requested. ret code=%u", http_response_code log_end;
+
+	_ASSERTE(_client != nullptr);
+	delete _client; _client = nullptr;
+}
+_mem_check_end;
 
 	return true;
 }

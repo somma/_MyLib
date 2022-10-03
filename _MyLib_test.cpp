@@ -209,6 +209,8 @@ bool test_curl_https();
 bool test_curl_http();
 bool test_curl_http_upload();
 bool test_curl_http_post_with_response_header();
+bool test_curl_http_patch();
+
 // thread_pool.h
 extern bool test_thread_pool();
 
@@ -391,8 +393,8 @@ void run_test()
 	//assert_bool(true, boost_bind5);
 	//assert_bool(true, test_boost_function);
 
-	assert_bool(true, test_set_insert);
-	assert_bool(true, test_map_insert);
+	//assert_bool(true, test_set_insert);
+	//assert_bool(true, test_map_insert);
 		
 	//assert_bool(true, test_std_map);
 	//assert_bool(true, test_map_plus_algorithm_1);
@@ -416,6 +418,8 @@ void run_test()
 	//assert_bool(true, test_curl_http);
 	//assert_bool(true, test_curl_http_upload);
 	//assert_bool(true, test_curl_http_post_with_response_header);
+	assert_bool(true, test_curl_http_patch);
+	
 	//assert_bool(true, test_alignment);
 	//assert_bool(true, test_create_string_from_buffer);
 	//assert_bool(true, test_stop_watch);

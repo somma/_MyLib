@@ -51,8 +51,8 @@ curl_client::initialize()
 	_curl = curl_easy_init();
 	if (nullptr == _curl)
 	{
-		log_err "curl_easy_init() failed." log_end
-			return false;
+		log_err "curl_easy_init() failed." log_end;
+		return false;
 	}
 
 	return true;
@@ -198,14 +198,14 @@ curl_client::http_get(
 	//
 	//	Prepare (set common options)
 	//
-	if (!prepare_perform(url))
+	if (!prepare_perform(url, false))
 	{
 		log_err "prepare_perform() failed. " log_end;
 		return false;
 	}
 
 	//
-	//	Set mothod specific options
+	//	응답데이터 처리
 	//
 	stream.ClearStream(); 
 	auto curl_code = curl_easy_setopt(_curl,
@@ -293,7 +293,7 @@ curl_client::http_download_file(
 	//
 	//	Prepare (set common options)
 	//	
-	if (!prepare_perform(ctx->url()))
+	if (!prepare_perform(ctx->url(), false))
 	{
 		log_err "prepare_perform() failed. " log_end;
 		return false;
@@ -403,7 +403,7 @@ curl_client::http_file_upload(
 	//
 	//	Prepare (set common options)
 	//
-	if (!prepare_perform(url))
+	if (!prepare_perform(url, true))
 	{
 		log_err "prepare_perform() failed. " log_end;
 		return false;
@@ -505,7 +505,7 @@ curl_client::http_post(
 	//
 	//	Prepare (set common options)
 	//
-	if (!prepare_perform(url))
+	if (!prepare_perform(url, true))
 	{
 		log_err "prepare_perform() failed. " log_end;
 		return false;
@@ -617,7 +617,7 @@ curl_client::http_post(
 	//
 	//	Prepare (set common options)
 	//
-	if (!prepare_perform(url))
+	if (!prepare_perform(url, true))
 	{
 		log_err "prepare_perform() failed. " log_end;
 		return false;
@@ -737,10 +737,181 @@ curl_client::http_post(
 	return true;
 }
 
+/// @brief	
+bool curl_client::http_patch(
+	_In_z_ const char* url,
+	_In_z_ const char* data,
+	_Out_  long& http_response_code,
+	_Out_  CMemoryStream& stream
+)
+{
+	_ASSERTE(nullptr != url);
+	_ASSERTE(nullptr != data);
+	if (nullptr == url || nullptr == data) return false;
+
+	//
+	//	Prepare (set common options)
+	//
+	if (!prepare_perform(url, true))
+	{
+		log_err "prepare_perform() failed. " log_end;
+		return false;
+	}
+
+	//
+	//	Set mothod specific options
+	//
+	bool ret = false;
+	do
+	{
+		//
+		//	Received data stuff
+		//
+		stream.ClearStream();
+		auto curl_code = curl_easy_setopt(_curl,
+										  CURLOPT_WRITEDATA,
+										  &stream);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_WRITEFUNCTION,
+									 curl_wcb_to_stream);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		//
+		//	HTTP PATCH stuff (https://curl.se/libcurl/c/CURLOPT_CUSTOMREQUEST.html)
+		//
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_CUSTOMREQUEST,
+									 "PATCH");
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		// 보내는 데이터는 CURLOPT_POSTFIELDSIZE 로 보내야 함
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_POSTFIELDSIZE,
+									 strlen(data));
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		curl_code = curl_easy_setopt(_curl,
+									 CURLOPT_POSTFIELDS,
+									 data);
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		ret = true;		//<!
+	} while (false);
+
+	if (!ret) return false;
+
+	//
+	//	Perform http(s) I/O
+	//
+	if (true != perform(http_response_code))
+	{
+		log_err "perform() failed." log_end;
+		return false;
+	}
+
+	return true;
+}
+
+/// @brief	
+bool curl_client::http_patch(
+	_In_z_ const char* url,
+	_In_z_ const char* data,
+	_Out_  long& http_response_code
+)
+{
+	_ASSERTE(nullptr != url);
+	_ASSERTE(nullptr != data);
+	if (nullptr == url || nullptr == data) return false;
+
+	//
+	//	Prepare (set common options)
+	//
+	if (!prepare_perform(url, true))
+	{
+		log_err "prepare_perform() failed. " log_end;
+		return false;
+	}
+
+	//
+	//	Set mothod specific options
+	//
+	bool ret = false;
+	do
+	{
+		//
+		//	HTTP PATCH stuff (https://curl.se/libcurl/c/CURLOPT_CUSTOMREQUEST.html)
+		//
+		auto curl_code = curl_easy_setopt(_curl,
+										  CURLOPT_CUSTOMREQUEST,
+										  "PATCH");
+		if (CURLE_OK != curl_code)
+		{
+			log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+				curl_code,
+				curl_easy_strerror(curl_code)
+				log_end;
+			break;
+		}
+
+		ret = true;		//<!
+
+	} while (false);
+	if (!ret) return false;
+
+	//
+	//	Perform http(s) I/O
+	//
+	if (true != perform(http_response_code))
+	{
+		log_err "perform() failed." log_end;
+		return false;
+	}
+
+	return true;
+}
+
 ///	@brief	HTTP(S) 요청의 공통 옵션들을 설정하고, 성공시 true 를 리턴
 bool 
 curl_client::prepare_perform(
-	_In_ const char* const url
+	_In_ const char* const url, 
+	_In_ const bool has_payload
 )
 {
 	_ASSERTE(nullptr != url);
@@ -764,6 +935,43 @@ curl_client::prepare_perform(
 				log_end;
 			break;
 		}
+		
+		//
+		//	전송하는 payload 가 없는 경우와 있는 경우에 따라서 CURLOPT_NOBODY 를 
+		//	켜거나 꺼줘야 함
+		//
+		//	REF: https://github.com/libcpr/cpr/blob/master/cpr/session.cpp
+		//	void Session::PrepareGet() {
+		//		// In case there is a body or payload for this request, we create 
+		//		// a custom GET-Request since a GET-Request with body is based on 
+		//		// the HTTP RFC **not** a leagal request.
+		//		if (hasBodyOrPayload_) {
+		//			curl_easy_setopt(curl_->handle, CURLOPT_NOBODY, 0L);
+		//			curl_easy_setopt(curl_->handle, CURLOPT_CUSTOMREQUEST, "GET");
+		//		}
+		//		else {
+		//			curl_easy_setopt(curl_->handle, CURLOPT_NOBODY, 0L);
+		//			curl_easy_setopt(curl_->handle, CURLOPT_CUSTOMREQUEST, nullptr);
+		//			curl_easy_setopt(curl_->handle, CURLOPT_HTTPGET, 1L);
+		//		}
+		//		prepareCommon();
+		//	}
+		//
+		if (has_payload)
+		{
+			curl_code = curl_easy_setopt(_curl,
+										 CURLOPT_NOBODY,
+										 0L);
+			if (CURLE_OK != curl_code)
+			{
+				log_err "curl_easy_setopt() failed. curl_code = %d, %s",
+					curl_code,
+					curl_easy_strerror(curl_code)
+					log_end;
+				break;
+			}
+		}
+
 
 		//
 		// Set timeout
@@ -1126,3 +1334,5 @@ On_Callback_response_header(
 
 	return (tCount);
 }
+
+
