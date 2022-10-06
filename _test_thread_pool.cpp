@@ -54,8 +54,7 @@ bool test_thread_pool()
 	thread_pool pool(8);
 	pool.run_task(work);                        // Function pointer.
 	pool.run_task(worker());                    // Callable object.
-	pool.run_task(boost::bind(more_work, 5)); // Callable object.
-	pool.run_task(worker());                    // Callable object.
+	pool.run_task(boost::bind(more_work, 5)); // Callable object.	
 
 	pool.run_task([]()								// lambda
 	{

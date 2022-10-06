@@ -96,6 +96,18 @@ public:
 		_Out_  long& http_response_code,
 		_Out_  std::string& response);
 
+	bool http_patch(
+		_In_z_ const char* url,
+		_In_z_ const char* data,
+		_Out_  long& http_response_code,
+		_Out_  CMemoryStream& stream);
+
+	/// @brief	http put request without response body
+	bool http_patch(
+		_In_z_ const char* url,
+		_In_z_ const char* data,
+		_Out_  long& http_response_code);
+
 	//
 	// http_file_upload 함수를 사용하면, 파일 이름은 서버로 전송된다.
 	// 만약, 추가적으로 전송할 데이터가 있다면 forms를 사용한다.
@@ -151,7 +163,7 @@ public:
 
 
 private:
-	bool prepare_perform(_In_ const char* const url);
+	bool prepare_perform(_In_ const char* const url, _In_ const bool has_payload);
 
 	bool perform(_Out_ long& http_response_code);
 

@@ -28,6 +28,7 @@
 **/
 static boost::mutex     _logger_lock;
 static slogger*		    _logger = nullptr;
+static bool				_show_level = true;
 static bool				_show_current_time = true;
 static bool			    _show_process_name = true;
 static bool			    _show_pid_tid = true;
@@ -219,6 +220,7 @@ finalize_log(
 **/
 void
 set_log_format(
+	_In_ bool show_level,
 	_In_ bool show_current_time,
 	_In_ bool show_process_name,
 	_In_ bool show_pid_tid,
@@ -226,6 +228,7 @@ set_log_format(
 )
 {
 	boost::lock_guard< boost::mutex > lock(_logger_lock);
+	_show_level = show_level;
 	_show_current_time = show_current_time;
 	_show_process_name = show_process_name;
 	_show_pid_tid = show_pid_tid;
@@ -234,6 +237,7 @@ set_log_format(
 
 void
 get_log_format(
+	_Out_ bool& show_level,
 	_Out_ bool& show_current_time,
 	_Out_ bool& show_process_name,
 	_Out_ bool& show_pid_tid,
@@ -241,6 +245,7 @@ get_log_format(
 )
 {
 	boost::lock_guard< boost::mutex > lock(_logger_lock);
+	show_level = _show_level;
 	show_current_time = _show_current_time;
 	show_process_name = _show_process_name;
 	show_pid_tid = _show_pid_tid;
@@ -417,19 +422,23 @@ log_write_fmt(
 	}
 
 	// log level
-	switch (log_level)
+	if (_show_level)
 	{
-	case log_level_debug: StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[DEBG] "); break;
-	case log_level_info:  StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[INFO] "); break;
-	case log_level_warn:  StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[WARN] "); break;
-	case log_level_error: StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[EROR] "); break;
-	default:
-		_ASSERTE(!"never reach here!");
-		return;
+		switch (log_level)
+		{
+		case log_level_debug: StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[DEBG] "); break;
+		case log_level_info:  StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[INFO] "); break;
+		case log_level_warn:  StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[WARN] "); break;
+		case log_level_error: StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[EROR] "); break;
+		default:
+			_ASSERTE(!"never reach here!");
+			return;
+		}
 	}
+	
 
 	//> show process name
-	if (true == _show_process_name)
+	if (_show_process_name)
 	{
 		StringCbPrintfExA(pos,
 						  remain,
@@ -442,7 +451,7 @@ log_write_fmt(
 	}
 
 	//> show pid, tid
-	if (true == _show_pid_tid)
+	if (_show_pid_tid)
 	{
 		StringCbPrintfExA(pos,
 						  remain,
@@ -456,7 +465,7 @@ log_write_fmt(
 	}
 
 	//> show function name
-	if (true == _show_function_name)
+	if (_show_function_name)
 	{
 		StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s : ", function);
 	}

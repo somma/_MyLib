@@ -69,12 +69,12 @@ bool
 ip_to_dns(
 	_In_ uint32_t ip_netbyte_order,
 	_In_ bool cache_only,
-	_Out_ std::wstring& domain_name
+	_Out_ std::string& domain_name
 );
 
 bool
 dns_to_ip(
-	_In_ const wchar_t* domain_name,
+	_In_ const char* domain_name,
 	_In_ bool cache_only,
 	_Out_ std::list<uint32_t>& ip_list
 );

@@ -629,13 +629,14 @@ NameConverter::resolve_device_prefix(
 			continue;
 		}
 
-		std::vector<std::wstring> tokens;
-		if (!split_stringw(small_rfn.c_str(), L";", tokens))
+		std::list<std::wstring> ltokens;
+		if (!split_stringw(small_rfn.c_str(), L";", ltokens))
 		{
 			log_err "split_stringw( %ws ) failed.", small_rfn.c_str() log_end;
 			return false;
 		}
 
+		std::vector<std::wstring> tokens(ltokens.cbegin(), ltokens.cend());
 		std::wstring mup_path;
 		size_t pos = 0;
 		switch (tokens.size())
@@ -862,7 +863,7 @@ bool NameConverter::update_mup_device_prefixes()
     //  HKLM\SYSTEM\CurrentControlSet\Services\[provider]\NetworkProvider 
 	//		:: DeviceName (REG_SZ)
     // 
-    std::vector<std::wstring> providers;
+    std::list<std::wstring> providers;
     if (!split_stringw(provider_order.c_str(), 
 					   L",", 
 					   providers))

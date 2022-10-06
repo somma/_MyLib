@@ -724,15 +724,34 @@ cprocess_tree::add_process(
 	DWORD session_id = 0xffffffff;
 	ProcessIdToSessionId(pid, &session_id);
 
-	pprocess p = new process(process_name,
-							 ppid,
-							 pid,
-							 session_id,
-							 *(uint64_t*)&creation_time,
-							 (is_wow64 ? true : false),
-							 full_path,
-							 false);
-	_proc_map.insert(std::make_pair(pid, p));
+	auto ret = _proc_map.insert(std::make_pair(pid, nullptr));
+	if (!ret.second)
+	{
+		log_warn
+			"process (pid=%u, %ws) exists and will be replaced with pid=%u, image=%ws",
+			ret.first->second->pid(),
+			ret.first->second->process_name(),
+			pid,
+			process_name
+			log_end;
+
+		_ASSERTE(nullptr != ret.first->second);
+		if (nullptr != ret.first->second)
+		{
+			delete ret.first->second;
+		}
+	}
+	else
+	{
+		ret.first->second = new process(process_name,
+										ppid,
+										pid,
+										session_id,
+										*(uint64_t*)&creation_time,
+										(is_wow64 ? true : false),
+										full_path,
+										false);
+	}
 }
 
 /**

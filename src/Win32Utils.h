@@ -479,6 +479,14 @@ extract_first_tokenExW(
 	_In_ bool forward
 	);
 
+std::wstring
+extract_first_tokenExW(
+	_In_ const std::wstring& org,
+	_In_ const std::wstring& token,
+	_In_ bool forward
+);
+
+
 bool
 extract_first_tokenA(
 		_In_ std::string& org_string,
@@ -494,6 +502,15 @@ extract_first_tokenExA(
 		_In_ const char* token,		
 		_In_ bool forward
 		);
+
+std::string
+extract_first_tokenExA(
+	_In_ const std::string& org,
+	_In_ const std::string& token,
+	_In_ bool forward
+);
+
+
 
 
 bool 
@@ -538,20 +555,18 @@ std::wstring  trimw(std::wstring& s, const std::wstring& drop = L" ");
 std::wstring rtrimw(std::wstring& s, const std::wstring& drop = L" ");
 std::wstring ltrimw(std::wstring& s, const std::wstring& drop = L" ");
 
-
-
 bool 
 split_stringa(
     _In_ const char* str, 
     _In_ const char* seps, 
-    _Out_ std::vector<std::string>& tokens
+    _Out_ std::list<std::string>& tokens
     );
 
 bool
 split_stringw(
     _In_ const wchar_t* str,
     _In_ const wchar_t* seps,
-    _Out_ std::vector<std::wstring>& tokens
+    _Out_ std::list<std::wstring>& tokens
     );
 
 // string to hash
@@ -641,7 +656,7 @@ bool	process_in_console_session(_In_ DWORD process_id);
 bool	get_current_session_id(_Out_ DWORD& session_id);
 
 bool create_process(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _Out_ HANDLE& process_handle, _Out_ DWORD& process_id);
-bool create_process_and_wait(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _In_ DWORD timeout_secs, _Out_ DWORD& exit_code);
+bool create_process_and_wait(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _In_ DWORD timeout_secs, _Out_ PDWORD exit_code);
 
 bool create_process_on_session(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _Out_ PROCESS_INFORMATION& pi);
 bool create_process_on_session_and_wait(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _In_ DWORD timeout_secs, _Out_ DWORD& exit_code);

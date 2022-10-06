@@ -10,8 +10,8 @@
 #include <regex>
 #include <unordered_map>
 #include <winioctl.h>
-
 #include "libzippp/libzippp.h"
+#include <boost/program_options.hpp>
 
 #include "_MyLib/src/process_tree.h"
 #include "_MyLib/src/base64.h"
@@ -126,6 +126,7 @@ bool test_ip_mac();
 bool test_ip_to_str();
 
 bool test_strtok();
+bool test_split_stringw();
 
 // test_process_tree.cpp
 extern bool test_process_tree();
@@ -182,7 +183,9 @@ extern bool boost_bind3();
 extern bool boost_bind4();
 extern bool boost_bind5();
 
-// _test_std_map.cpp
+// _test_std_map_set.cpp
+extern bool test_set_insert();
+extern bool test_map_insert();
 extern bool test_std_map();
 extern bool test_map_plus_algorithm_1();
 extern bool test_map_plus_algorithm_2();
@@ -206,6 +209,8 @@ bool test_curl_https();
 bool test_curl_http();
 bool test_curl_http_upload();
 bool test_curl_http_post_with_response_header();
+bool test_curl_http_patch();
+
 // thread_pool.h
 extern bool test_thread_pool();
 
@@ -350,6 +355,7 @@ void run_test()
 	//assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
+	//assert_bool(true, test_split_stringw);
 	//assert_bool(true, test_cpp_class);
 	//assert_bool(true, test_nt_name_to_dos_name);
 
@@ -387,6 +393,9 @@ void run_test()
 	//assert_bool(true, boost_bind5);
 	//assert_bool(true, test_boost_function);
 
+	//assert_bool(true, test_set_insert);
+	//assert_bool(true, test_map_insert);
+		
 	//assert_bool(true, test_std_map);
 	//assert_bool(true, test_map_plus_algorithm_1);
 	//assert_bool(true, test_map_plus_algorithm_2);
@@ -409,6 +418,8 @@ void run_test()
 	//assert_bool(true, test_curl_http);
 	//assert_bool(true, test_curl_http_upload);
 	//assert_bool(true, test_curl_http_post_with_response_header);
+	assert_bool(true, test_curl_http_patch);
+	
 	//assert_bool(true, test_alignment);
 	//assert_bool(true, test_create_string_from_buffer);
 	//assert_bool(true, test_stop_watch);
@@ -437,7 +448,7 @@ void run_test()
 
 	//assert_bool(true, test_template);
 
-	assert_bool(true, test_generate_machine_id);
+	//assert_bool(true, test_generate_machine_id);
 
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -946,6 +957,35 @@ bool test_strtok()
 	log_info "\n" log_end;
 
     return true;
+}
+
+bool test_split_stringw()
+{
+#define _str_aa "AhnLab, Inc."
+#define _str_ba "Somma, Inc."
+#define _str_sepa "|"
+#define _stra _str_aa#_str_sepa#_str_ba
+
+#define _str_aw L"AhnLab, Inc."
+#define _str_bw L"Somma, Inc."
+#define _str_sepw L"|"
+#define _strw _str_aw _str_sepw _str_bw 
+	
+	{
+		std::list<std::wstring> ltokens;
+		_ASSERTE(split_stringw(_strw, _str_sepw, ltokens));
+		std::vector<std::wstring> tokens(ltokens.cbegin(), ltokens.cend());
+		_ASSERTE(tokens[0] == _str_aw);
+		_ASSERTE(tokens[1] == _str_bw);
+	}
+	
+	{
+		std::list<std::wstring> ltokens;
+		_ASSERTE(split_stringw(_null_stringw.c_str(), L"|", ltokens));
+		_ASSERTE(ltokens.empty());
+	}
+
+	return true;
 }
 
 /// @brief	c:\temp\dbg			X
@@ -3463,15 +3503,7 @@ bool test_trivia()
 	};
 
 
-	//{
-	//	boost::wformat f = boost::wformat(L"%s\\%s") % get_current_module_dirEx().c_str() % L"_MyLib_tst.log";
-	//	if (true != initialize_log(log_mask_all,
-	//							   log_level_debug,
-	//							   log_to_all,
-	//							   f.str().c_str())) return;
-	//	set_log_format(false, false, true);
-	//}
-	set_log_format(false, false, false, false);
+	set_log_format(true, false, false, false, false);
 
 	//
 	//	std::string 관련
@@ -3981,8 +4013,9 @@ bool test_print_percent()
 **/
 int _tmain(int argc, _TCHAR* argv[])
 {
-	UNREFERENCED_PARAMETER(argc);
-	UNREFERENCED_PARAMETER(argv);
+	//UNREFERENCED_PARAMETER(argc);
+	//UNREFERENCED_PARAMETER(argv);
+
 
 	if (argc == 1)
 	{

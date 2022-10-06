@@ -4051,6 +4051,29 @@ extract_first_tokenExW(
 		return out_string;
 }
 
+std::wstring
+extract_first_tokenExW(
+	_In_ const std::wstring& org,
+	_In_ const std::wstring& token,
+	_In_ bool forward
+)
+{
+	_ASSERTE(!org.empty());
+	_ASSERTE(!token.empty());
+	if (org.empty() || token.empty()) return _null_stringw;
+
+	std::wstring out_string;
+	if (true != extract_first_tokenW(const_cast<std::wstring&>(org), 
+									 token, 
+									 out_string, 
+									 forward, 
+									 false))
+		return _null_stringw;
+	else
+		return out_string;
+}
+
+
 
 /**
  * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
@@ -4141,6 +4164,30 @@ extract_first_tokenExA(
 	else
 		return out_string;
 }
+
+std::string
+extract_first_tokenExA(
+	_In_ const std::string& org,
+	_In_ const std::string& token,
+	_In_ bool forward
+)
+{
+	_ASSERTE(!org.empty());
+	_ASSERTE(!token.empty());
+	if (org.empty() || token.empty()) return _null_stringa;
+
+	std::string out_string;
+	if (true != extract_first_tokenA(const_cast<std::string&>(org),
+									 token,
+									 out_string,
+									 forward,
+									 false))
+		return _null_stringa;
+	else
+		return out_string;
+}
+
+
 
 /**
  * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
@@ -4390,7 +4437,7 @@ bool
 split_stringa(
 	_In_ const char* str,
 	_In_ const char* seps,
-	_Out_ std::vector<std::string>& tokens
+	_Out_ std::list<std::string>& tokens
 )
 {
 #define max_str_len     2048
@@ -4442,15 +4489,26 @@ bool
 split_stringw(
 	_In_ const wchar_t* str,
 	_In_ const wchar_t* seps,
-	_Out_ std::vector<std::wstring>& tokens
+	_Out_ std::list<std::wstring>& tokens
 )
 {
 #define max_str_len     2048
 
-	_ASSERTE(NULL != str);
-	if (NULL == str) return false;
-
-	tokens.clear();
+	_ASSERTE(nullptr != str);
+	_ASSERTE(nullptr != seps);
+	if (nullptr == str || nullptr == seps) return false;
+	
+	tokens.clear(); 
+	
+	size_t len_str = wcslen(str);
+	size_t len_seps = wcslen(seps);
+	if (0 == len_str || 0 == len_seps || len_str <= len_seps)
+	{
+		// split 할 문자열이 없거나
+		// source string 보다 seperater 가 더 길다면
+		// 연산 없이 성공을 리턴
+		return true;
+	}
 
 	//
 	//	strtok_s() modifies the `str` buffer.
@@ -4476,12 +4534,12 @@ split_stringw(
 
 	StringCbPrintfW(buf.get(), buf_len, L"%ws", str);
 
-	wchar_t* next_token = NULL;
+	wchar_t* next_token = nullptr;
 	wchar_t* token = wcstok_s(buf.get(), seps, &next_token);
-	while (NULL != token)
+	while (nullptr != token)
 	{
 		tokens.push_back(token);
-		token = wcstok_s(NULL, seps, &next_token);
+		token = wcstok_s(nullptr, seps, &next_token);
 	}
 	return true;
 }
@@ -5736,13 +5794,17 @@ create_process_and_wait(
 	_In_ DWORD creation_flag,
 	_In_opt_z_ const wchar_t* current_dir,
 	_In_ DWORD timeout_secs,
-	_Out_ DWORD& exit_code
+	_Out_ PDWORD exit_code
 )
 {
 	HANDLE process_handle;
 	DWORD process_id;
 
-	if (!create_process(cmdline, creation_flag, current_dir, process_handle, process_id))
+	if (!create_process(cmdline, 
+						creation_flag, 
+						current_dir, 
+						process_handle, 
+						process_id))
 	{
 		log_err "create_process() failed. cmdline=%ws", cmdline log_end;
 		return false;
@@ -5751,7 +5813,10 @@ create_process_and_wait(
 	//
 	//	Wait for the process
 	//
-	DWORD wr = WaitForSingleObject(process_handle, timeout_secs == -1 ? INFINITE : timeout_secs * 1000);
+	DWORD wr = WaitForSingleObject(process_handle, 
+								   timeout_secs == -1 ? 
+								   INFINITE : 
+								   timeout_secs * 1000);
 	if (WAIT_OBJECT_0 != wr)
 	{
 		switch (wr)
@@ -5787,10 +5852,16 @@ create_process_and_wait(
 		TerminateProcess(process_handle, 0xffffffff);
 	}
 
-	if (!GetExitCodeProcess(process_handle, &exit_code))
+	if (nullptr != exit_code)
 	{
-		log_err "GetExitCodeProcess() failed. gle=%u", GetLastError() log_end;
-		exit_code = 0xffffffff;		// exit_code -1 로 간주
+		if (!GetExitCodeProcess(process_handle, exit_code))
+		{
+			log_err 
+				"GetExitCodeProcess() failed. gle=%u", 
+				GetLastError() 
+				log_end;
+			*exit_code = 0xffffffff;		// exit_code -1 로 간주
+		}
 	}
 
 	//

@@ -21,11 +21,11 @@ typedef class thread_pool
 private:
 	std::queue<std::function<void()>> _tasks;
 	std::list<std::thread*>	_threads;
-    std::size_t                             _pool_size;
-    std::size_t                             _available;
-	std::mutex	_lock;
+    std::size_t _pool_size;
+    std::size_t _available;
+	std::mutex _lock;
 	std::condition_variable _condition;
-    bool                                    _running;
+    bool _running;
 
 public:
     /// @brief  Constructor
@@ -64,12 +64,6 @@ public:
 				if (nullptr != t) t->join(); 
 			});
 			_threads.clear();
-            
-            //log_dbg 
-            //    "all thread joined. available = %u, remain task = %u ", 
-            //    this->_available, 
-            //    this->_tasks.size()
-            //log_end
         }
         catch (...) 
 		{
