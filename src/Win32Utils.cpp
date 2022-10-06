@@ -4051,6 +4051,29 @@ extract_first_tokenExW(
 		return out_string;
 }
 
+std::wstring
+extract_first_tokenExW(
+	_In_ const std::wstring& org,
+	_In_ const std::wstring& token,
+	_In_ bool forward
+)
+{
+	_ASSERTE(!org.empty());
+	_ASSERTE(!token.empty());
+	if (org.empty() || token.empty()) return _null_stringw;
+
+	std::wstring out_string;
+	if (true != extract_first_tokenW(const_cast<std::wstring&>(org), 
+									 token, 
+									 out_string, 
+									 forward, 
+									 false))
+		return _null_stringw;
+	else
+		return out_string;
+}
+
+
 
 /**
  * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
@@ -4141,6 +4164,30 @@ extract_first_tokenExA(
 	else
 		return out_string;
 }
+
+std::string
+extract_first_tokenExA(
+	_In_ const std::string& org,
+	_In_ const std::string& token,
+	_In_ bool forward
+)
+{
+	_ASSERTE(!org.empty());
+	_ASSERTE(!token.empty());
+	if (org.empty() || token.empty()) return _null_stringa;
+
+	std::string out_string;
+	if (true != extract_first_tokenA(const_cast<std::string&>(org),
+									 token,
+									 out_string,
+									 forward,
+									 false))
+		return _null_stringa;
+	else
+		return out_string;
+}
+
+
 
 /**
  * @brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.

@@ -83,7 +83,7 @@ bool test_ip_to_dns()
 		uint32_t ip_nb;
 		_ASSERTE(true == str_to_ipv4(ips[i], ip_nb));
 
-		std::wstring dns1, dns2;
+		std::string dns1, dns2;
 		if (true == ip_to_dns(ip_nb, true, dns1))
 		{
 			++cache;

@@ -443,7 +443,7 @@ bool
 ip_to_dns(
 	_In_ uint32_t ip_netbyte_order,
 	_In_ bool cache_only,
-	_Out_ std::wstring& domain_name
+	_Out_ std::string& domain_name
 )
 {
 	std::string dns_query_ip;
@@ -481,7 +481,7 @@ ip_to_dns(
 	//
 	//--------------------------------------------------------------------------------
 	DNS_STATUS status = 
-		DnsQuery_W(MbsToWcsEx(dns_query_ip.c_str()).c_str(),
+		DnsQuery_A(dns_query_ip.c_str(),
 				   DNS_TYPE_PTR,
 				   cache_only ? DNS_QUERY_NO_WIRE_QUERY : (DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE),
 				   NULL,
@@ -504,16 +504,16 @@ ip_to_dns(
 				log_end;
 		}
 
-		domain_name = L"";
+		domain_name = "";
 		return false;
 	}
 	_ASSERTE(nullptr != dns_record);
 	if (nullptr == dns_record)
 	{
-		domain_name = L"";
+		domain_name = "";
 		return false;
 	}
-	domain_name = dns_record->Data.PTR.pNameHost;
+	domain_name = WcsToMbsEx(dns_record->Data.PTR.pNameHost);
 
 	//
 	//	Free memory allocated for DNS records 
@@ -525,7 +525,7 @@ ip_to_dns(
 /// @brief	www.google.com -> 1.1.1.1 로 변환하는 함수
 bool
 dns_to_ip(
-	_In_ const wchar_t* domain_name,
+	_In_ const char* domain_name,
 	_In_ bool cache_only,
 	_Out_ std::list<uint32_t>& ip_list
 )
@@ -534,14 +534,14 @@ dns_to_ip(
 	PDNS_RECORD dns_record = nullptr;
 
 	DNS_STATUS status = 
-		DnsQuery_W(domain_name, 
+		DnsQuery_A(domain_name, 
 				   DNS_TYPE_A,
-					(true == cache_only) ? 
+				   (true == cache_only) ? 
 						DNS_QUERY_NO_WIRE_QUERY : 
 						(DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE),
-					NULL,
-					&dns_record,
-					NULL);
+				   NULL,
+				   &dns_record,
+				   NULL);
 	if (ERROR_SUCCESS != status)
 	{
 		if (DNS_ERROR_RECORD_DOES_NOT_EXIST == status || 
@@ -550,7 +550,7 @@ dns_to_ip(
 			//
 			//	유효하지 않은 도메인 네임
 			//
-			log_dbg "DnsQuery(cache_only=%s) failed. domain=%ws, status=%u",
+			log_dbg "DnsQuery(cache_only=%s) failed. domain=%s, status=%u",
 				true == cache_only ? "O" : "X",
 				domain_name,
 				status
@@ -560,7 +560,7 @@ dns_to_ip(
 		{
 			log_dbg "DnsQuery(cache_only=%s) failed. ip=%s, status=%u",
 				true == cache_only ? "O" : "X",
-				dns_query_ip.c_str(),
+				domain_name,
 				status
 				log_end;
 		}
@@ -572,7 +572,7 @@ dns_to_ip(
 	if (nullptr == dns_record)
 	{
 		log_err 
-			"DnsQuery(cache_only=%s) succeeded but no recored. domain=%ws",
+			"DnsQuery(cache_only=%s) succeeded but no recored. domain=%s",
 			true == cache_only ? "O" : "X",
 			domain_name
 			log_end;

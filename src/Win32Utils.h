@@ -479,6 +479,14 @@ extract_first_tokenExW(
 	_In_ bool forward
 	);
 
+std::wstring
+extract_first_tokenExW(
+	_In_ const std::wstring& org,
+	_In_ const std::wstring& token,
+	_In_ bool forward
+);
+
+
 bool
 extract_first_tokenA(
 		_In_ std::string& org_string,
@@ -494,6 +502,15 @@ extract_first_tokenExA(
 		_In_ const char* token,		
 		_In_ bool forward
 		);
+
+std::string
+extract_first_tokenExA(
+	_In_ const std::string& org,
+	_In_ const std::string& token,
+	_In_ bool forward
+);
+
+
 
 
 bool 
