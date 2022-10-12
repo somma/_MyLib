@@ -121,7 +121,7 @@ bool test_dns_to_ip()
 	_mem_check_begin
 	{
 		std::list<uint32_t> ipz;
-		_ASSERTE(true == dns_to_ip(L"naver.com", false, ipz));
+		_ASSERTE(true == dns_to_ip("naver.com", false, ipz));
 		log_info "naver.com :" log_end;
 		for (auto& ip : ipz)
 		{
@@ -129,7 +129,7 @@ bool test_dns_to_ip()
 		}
 
 		ipz.clear();
-		_ASSERTE(true != dns_to_ip(L"inv.invalid.xyz", false, ipz));
+		_ASSERTE(true != dns_to_ip("inv.invalid.xyz", false, ipz));
 	}
 	_mem_check_end;
 
