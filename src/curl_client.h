@@ -52,7 +52,24 @@
 //		}
 //
 
-#define HTTP_OK	200
+
+///	HTTP 응답코드 (https://restfulapi.net/http-status-codes/ 참고)
+
+#define HTTP_OK				200
+#define HTTP_OK_CREATED		201		// POST,PUT 에 대한응답으로 리소스가 생성되었음
+#define HTTP_OK_ACCEPTED	202		// 요청은 정상처리됨, 서버가 아직 요청을 완료하지 못함 (비동기)
+#define HTTP_OK_NO_CONTENT	204		// 요청은 정상처리됨, 응답 데이터는 없음
+									// PUT 에 변경된 데이터가 없는 경우, DELETE 에 리소스 삭제 등
+
+#define HTTP_ERROR			400
+#define HTTP_BAD_REQUEST	400		// 클라이언트의 요청이 유효하지 않음
+#define	HTTP_UNAUTHORIZED	401		// 인증되지 않은 클라이언트의 요청 (un-authenticated client)
+#define	HTTP_FORBIDDEN		403		// 인가되지 않은 클라이언트의 요청 (un-authorized client, 권한 부족)
+#define HTTP_NOT_FOUND		404		// 요청한 자원이 존재하지 않음
+#define HTTP_METHOD_NOT_ALLOWD	405	// 지원하지 않는 HTTP method
+#define HTTP_CONFLICT		409		// 클라이언트의 요청이 서버싀 상태와 충돌이 발생, _ASSERT 와 유사한 사용
+#define HTTP_TOO_MANY_REQUEST	429	// 일정시간 동안 너무 많은 요청 발생
+
 
 typedef class curl_client
 {
