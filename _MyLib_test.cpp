@@ -285,7 +285,7 @@ void run_test()
 	//assert_bool(true, test_ip_to_dns);
 	//assert_bool(true, test_dns_to_ip);
 	//assert_bool(true, test_iphelp_api);
-	//assert_bool(true, test_create_guid);
+	assert_bool(true, test_create_guid);
 
 	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
@@ -418,7 +418,7 @@ void run_test()
 	//assert_bool(true, test_curl_http);
 	//assert_bool(true, test_curl_http_upload);
 	//assert_bool(true, test_curl_http_post_with_response_header);
-	assert_bool(true, test_curl_http_patch);
+	//assert_bool(true, test_curl_http_patch);
 	
 	//assert_bool(true, test_alignment);
 	//assert_bool(true, test_create_string_from_buffer);

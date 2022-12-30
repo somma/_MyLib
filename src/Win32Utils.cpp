@@ -5121,6 +5121,9 @@ std::string directory_from_file_patha(_In_ const char* file_path)
 	return extract_last_tokenExA(file_path, "\\", true);
 }
 
+
+#define guid_cch_without_brace	36
+
 /// @brief	GUID 를 생성한다. 
 bool create_guid(_Out_ GUID& guid)
 {
@@ -5166,7 +5169,17 @@ wstring_to_guid(
 	_ASSERTE(nullptr != guid_string);
 	if (nullptr == guid_string) return false;
 
-	return SUCCEEDED(CLSIDFromString(guid_string, const_cast<LPCLSID>(&guid)));
+	size_t len = wcslen(guid_string);
+	if (guid_cch_without_brace == len)
+	{
+		std::wstringstream strm;
+		strm << L"{" << guid_string << L"}";
+		return SUCCEEDED(CLSIDFromString(strm.str().c_str(), const_cast<LPCLSID>(&guid)));
+	}
+	else
+	{
+		return SUCCEEDED(CLSIDFromString(guid_string, const_cast<LPCLSID>(&guid)));
+	}
 }
 
 /// @brief	
@@ -5179,42 +5192,28 @@ guid_to_string(
 	return WcsToMbsEx(guid_stringw.c_str());
 }
 
-/// @brief	
+/// @brief	GUID 를 {, } 문자는 포함하지 않는 string 을 리턴한다.
 std::wstring
 guid_to_stringw(
 	_In_ const GUID& guid
 )
 {
-	const wchar_t* null_guid = L"{00000000-0000-0000-0000-000000000000}";
-	wchar_t buf[40];
+	const wchar_t* null_guid = L"00000000-0000-0000-0000-000000000000";
+	wchar_t buf[64];
 
-	//
-	//	ret 는 buf 에 쓰여진 문자의 갯수 + NULL 
-	//	추가로 NULL Terminate 할 필요 없다. 
-	// 
 	int ret = StringFromGUID2(guid, buf, sizeof(buf) / sizeof(wchar_t));
 	if (0 == ret)
 	{
-		// 
-		//	not enough buffer
-		// 
-		wchar_t* buf2 = (wchar_t*)malloc(256);
-		if (nullptr == buf2) return null_guid;
-
-		ret = StringFromGUID2(guid, buf2, 256 / sizeof(wchar_t));
-		if (0 == ret)
-		{
-			//
-			//	Give up
-			// 
-			return null_guid;
-		}
-
-		return std::wstring(buf2);
+		return null_guid;
 	}
 	else
-	{
-		return std::wstring(buf);
+	{	
+		//	ret 는 buf 에 쓰여진 문자의 갯수 + NULL 포함
+		//	StringFromGUID2() 함수는 {, } 를 포함함
+		//	{,} 문자를 제거하고, 소문자로 변환 후 리턴한다.
+		std::wstring guid_string(&buf[1], ret - 3);
+		to_lower_string<std::wstring>(guid_string);
+		return guid_string;
 	}
 }
 
