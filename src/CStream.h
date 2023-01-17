@@ -53,6 +53,19 @@ public:
 	// 스트림 버퍼 포인터를 리턴한다.
 	const char* GetMemory() { return m_pMemory; };
 
+	// 스트림 객체를 문자열로 변환한다.
+	std::string to_str()
+	{
+		if (nullptr != m_pMemory && m_size > 0)
+		{
+			return std::string(GetMemory(), GetSize());
+		}
+		else
+		{
+			return _null_stringa;
+		}
+	}
+
 	// 메모리 포인터를 리턴(소유권을 이전)한다.
 	char* ReleaseMemory()
 	{
