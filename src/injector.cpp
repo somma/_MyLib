@@ -255,11 +255,11 @@ my_create_remote_thread(
  * @endcode	
  * @return	
 **/
-typedef struct _CLIENT_ID {
+typedef struct _ML_CLIENT_ID {
     HANDLE UniqueProcess;
     HANDLE UniqueThread;
-} CLIENT_ID;
-typedef CLIENT_ID *PCLIENT_ID;
+} ML_CLIENT_ID;
+typedef ML_CLIENT_ID *PML_CLIENT_ID;
 
 typedef long (WINAPI *LPFUN_RtlCreateUserThread)(
 		HANDLE,					// ProcessHandle
@@ -271,7 +271,7 @@ typedef long (WINAPI *LPFUN_RtlCreateUserThread)(
 	    PVOID,					// StartAddress
 		PVOID,					// StartParameter (OPTIONAL)
 	    PHANDLE,				// ThreadHandle
-		PCLIENT_ID				// ClientID
+		PML_CLIENT_ID				// ClientID
 );
 
 HANDLE bCreateUserThread(HANDLE hHandle, LPVOID loadLibAddr, LPVOID dllPathAddr) {
@@ -286,7 +286,7 @@ HANDLE bCreateUserThread(HANDLE hHandle, LPVOID loadLibAddr, LPVOID dllPathAddr)
 	HANDLE hRemoteThread = NULL;
 	LPVOID rtlCreateUserAddr = NULL;
 	
-	CLIENT_ID cid;
+	ML_CLIENT_ID cid;
 	
 	rtlCreateUserAddr = GetProcAddress(GetModuleHandle(TEXT("ntdll.dll")), "RtlCreateUserThread");
 
