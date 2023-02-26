@@ -27,7 +27,7 @@ bool test_map_insert()
 			//	pair<iterator,bool> insert (const pair<const Key, Type>& val);
 			//		pair.first 는 insert 한 entry iterator
 			//		pair.second 가 true 인 경우 insert 성공 (new)
-			//		pair.second 가 false 인 경우 insert 실패
+			//		pair.second 가 false 인 경우 insert 실패 (중복키 존재)
 			int_map[1] = 10;
 			int_map.insert(std::make_pair<int, int>(2, 20));
 

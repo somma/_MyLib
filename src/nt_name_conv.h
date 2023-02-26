@@ -10,8 +10,9 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #pragma once
-#include "Win32Utils.h"
-#include "RegistryUtil.h"
+#include "boost/thread/mutex.hpp"
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/src/RegistryUtil.h"
 #include <Winnetwk.h>
 #pragma comment(lib, "Mpr.lib")
 
