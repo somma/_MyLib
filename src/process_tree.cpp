@@ -142,7 +142,7 @@ cprocess_tree::~cprocess_tree()
 /// @brief	
 void cprocess_tree::clear_process_tree()
 {
-	for (auto& entry : _proc_map)
+	for (const auto& entry : _proc_map)
 	{
 		_ASSERTE(entry.second);
 		if (nullptr != entry.second)
@@ -452,7 +452,7 @@ cprocess_tree::iterate_process(
 	_ASSERTE(NULL != callback);
 	if (NULL == callback) return;
 
-	for (auto& process : _proc_map)
+	for (const auto& process : _proc_map)
 	{
 		if (true != callback(process.second))
 		{
