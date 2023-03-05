@@ -1,7 +1,7 @@
 ﻿#include "stdafx.h"
 #include <iostream>
 #include <boost\thread\thread.hpp>
-#include <boost\bind.hpp>
+#include <boost\bind\bind.hpp>
 #include <boost\thread\condition.hpp>
 #include "_MyLib/src/log.h"
 
