@@ -40,6 +40,7 @@ extern bool test_log_rotate();
 
 // _test_steady_timer.cpp
 extern bool test_steady_timer();
+extern bool test_steady_multiple_timer_in_single_thread();
 
 // _test_dns_query.cpp
 extern bool test_ip_to_dns();
@@ -279,13 +280,14 @@ void run_test()
 	//assert_bool(true, test_cstream_read_write_string);
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
+	assert_bool(true, test_steady_multiple_timer_in_single_thread);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_is_reserved_ipv4);
 	//assert_bool(true, test_ip_to_dns);
 	//assert_bool(true, test_dns_to_ip);
 	//assert_bool(true, test_iphelp_api);
-	assert_bool(true, test_create_guid);
+	//assert_bool(true, test_create_guid);
 
 	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);

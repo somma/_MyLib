@@ -162,3 +162,18 @@ bool test_steady_timer()
 	_ASSERTE(true == test_steady_timer_restart());
 	return true;
 }
+
+bool test_steady_multiple_timer_in_single_thread()
+{
+	SteadyTimer timer1;
+	timer1.start(1, 0, on_timer);
+	
+	SteadyTimer timer2;	
+	timer2.start(1, 0, on_timer);
+	
+	Sleep(4000);
+
+	timer1.stop();
+	timer2.stop();
+	return true;
+}

@@ -69,6 +69,7 @@ public:
 		_timer_task = Concurrency::create_task([&]()->void {
 			_io_service.reset();
 			_io_service.run();
+			log_info "returned" log_end;
 		});
 
 		_running = true;
@@ -83,6 +84,7 @@ public:
 		//	타이머 취소
 		//	
 		_timer.cancel();
+		Sleep(1);
 		_timer_task.wait();
 
 		_interval = 0;
