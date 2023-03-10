@@ -999,13 +999,16 @@ bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
 		{
 			if (sdn.DeviceType == FILE_DEVICE_DISK)
 			{
-				if (disk_numberz.end() == disk_numberz.find(sdn.DeviceNumber))
+				auto ret = disk_numberz.insert(sdn.DeviceNumber);
+				if (ret.second)
 				{
-					disk_numberz.insert(sdn.DeviceNumber);
-
+					// insertion took place
 					disk_numbers.push_back(sdn.DeviceNumber);
-					//log_dbg "disk number = %u, found.", sdn.DeviceNumber log_end
 				}
+				//else
+				//{
+				//	// already inserted
+				//}
 			}
 		}
 		CloseHandle(hFile);
