@@ -512,8 +512,8 @@ ip_to_dns(
 	{
 		domain_name = "";
 		return false;
-	}
-	domain_name = WcsToMbsEx(dns_record->Data.PTR.pNameHost);
+	}	
+	domain_name = (char*)dns_record->Data.pDataPtr;
 
 	//
 	//	Free memory allocated for DNS records 
