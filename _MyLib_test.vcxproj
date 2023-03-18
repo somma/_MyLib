@@ -292,6 +292,7 @@ echo "done." </Command>
     </ClCompile>
     <ClCompile Include="test_CSteream.cpp" />
     <ClCompile Include="test_iphelp_api.cpp" />
+    <ClCompile Include="test_std_future_async.cpp" />
     <ClCompile Include="test_unique_ptr.cpp" />
     <ClCompile Include="_MyLib_test.cpp" />
     <ClCompile Include="_test_aes256.cpp" />

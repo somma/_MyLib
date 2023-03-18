@@ -350,6 +350,9 @@
     <ClCompile Include="_test_std_map_set.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_std_future_async.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">

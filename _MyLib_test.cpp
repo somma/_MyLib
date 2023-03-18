@@ -30,6 +30,9 @@
 #include "_MyLib/src/CStream.h"
 #include "_MyLib/src/sched_client.h"
 
+// test_std_future_async.cpp
+extern bool test_std_future_async();
+
 // test_CStream.cpp
 extern bool test_cstream();
 extern bool test_cstream_read_only();
@@ -280,7 +283,8 @@ void run_test()
 	//assert_bool(true, test_cstream_read_write_string);
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
-	assert_bool(true, test_steady_multiple_timer_in_single_thread);
+	//assert_bool(true, test_steady_multiple_timer_in_single_thread);
+	assert_bool(true, test_std_future_async);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_is_reserved_ipv4);

@@ -145,6 +145,7 @@ void
 log_write_fmt_without_deco(
     _In_ uint32_t log_mask, 
     _In_ uint32_t log_level,    
+	_In_ bool linefeed,
     _In_z_ const char* fmt,
     _In_ ...
     );
@@ -156,7 +157,8 @@ log_write_fmt_without_deco(
 #define log_warn	log_write_fmt( log_mask_sys, log_level_warn, __FUNCTION__,  
 #define log_info	log_write_fmt( log_mask_sys, log_level_info, __FUNCTION__, 
 #define log_dbg		log_write_fmt( log_mask_sys, log_level_debug, __FUNCTION__, 
-#define log_msg     log_write_fmt_without_deco( log_mask_sys, log_level_warn,
+#define log_msg     log_write_fmt_without_deco( log_mask_sys, log_level_warn, true,
+#define log_msgnl	log_write_fmt_without_deco( log_mask_sys, log_level_warn, false,
 
 #define log_end		);
 

@@ -522,6 +522,7 @@ void
 log_write_fmt_without_deco(
 	_In_ uint32_t log_mask,
 	_In_ uint32_t log_level,
+	_In_ bool linefeed,
 	_In_z_ const char* fmt,
 	_In_ ...
 )
@@ -561,7 +562,10 @@ log_write_fmt_without_deco(
 	va_end(args);
 
 	// line feed
-	StringCbPrintfExA(pos, remain, &pos, &remain, 0, "\n");
+	if (linefeed)
+	{
+		StringCbPrintfExA(pos, remain, &pos, &remain, 0, "\n");
+	}	
 
 	// Let's write logs.
 	{
