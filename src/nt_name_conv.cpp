@@ -19,7 +19,7 @@
 /// @brief  
 bool NameConverter::load(_In_ bool force_reload)
 {
-	boost::lock_guard<boost::mutex> lock(_lock);
+	std::lock_guard<std::mutex> lock(_lock);
 	if (true == _loaded && true != force_reload) return true;
 		
 	do
@@ -231,7 +231,7 @@ NameConverter::is_removable_drive(
 		}
 	}
 
-	boost::lock_guard<boost::mutex> lock(_lock);
+	std::lock_guard<std::mutex> lock(_lock);
 	for (const auto& drive_info : _dos_devices)
 	{
 		if (0 != _wcsnicmp(drive_info->_device_name.c_str(),
@@ -260,7 +260,7 @@ NameConverter::is_network_path(
 
 	if (!load(false)) return false;
 
-	boost::lock_guard<boost::mutex> lock(_lock);
+	std::lock_guard<std::mutex> lock(_lock);
 	for (const auto& mup_device : _mup_devices)
 	{
 		if (0 != _wcsnicmp(mup_device.c_str(),
@@ -290,7 +290,7 @@ NameConverter::iterate_dos_devices(
 
 	if (!load(false)) return false;
 
-	boost::lock_guard<boost::mutex> lock(_lock);
+	std::lock_guard<std::mutex> lock(_lock);
 	for (const auto& ddi : _dos_devices)
 	{
 		if (!callback(ddi.get(), tag))
@@ -332,7 +332,7 @@ NameConverter::get_nt_path_by_dos_path(
 	bool found = false;
 	std::wstringstream out_path;
 	{
-		boost::lock_guard<boost::mutex> lock(_lock);
+		std::lock_guard<std::mutex> lock(_lock);
 		for (const auto& ddi : _dos_devices)
 		{
 			//
@@ -389,7 +389,7 @@ NameConverter::get_device_name_by_drive_letter(
 
 	bool found = false;	
 	{
-		boost::lock_guard<boost::mutex> lock(_lock);
+		std::lock_guard<std::mutex> lock(_lock);
 		for (const auto& ddi : _dos_devices)
 		{
 			//
@@ -467,7 +467,7 @@ NameConverter::get_drive_letter_by_device_name(
 	}
 
 	bool found = false;
-	boost::lock_guard<boost::mutex> lock(_lock);
+	std::lock_guard<std::mutex> lock(_lock);
 	for (const auto& ddi : _dos_devices)
 	{
 		if (0 != _wcsnicmp(ddi->_device_name.c_str(), device_name, compare_count))
@@ -573,7 +573,7 @@ NameConverter::resolve_device_prefix(
 		return true;
 	}
 
-	boost::lock_guard<boost::mutex> lock(this->_lock);
+	std::lock_guard<std::mutex> lock(this->_lock);
 
 	//
 	//	#1, is this a dos device?

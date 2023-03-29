@@ -10,7 +10,7 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #pragma once
-#include "boost/thread/mutex.hpp"
+#include <mutex>
 #include "_MyLib/src/Win32Utils.h"
 #include "_MyLib/src/RegistryUtil.h"
 #include <Winnetwk.h>
@@ -86,7 +86,7 @@ public:
     
 private:
 	bool _loaded;
-    boost::mutex _lock;
+    std::mutex _lock;
 
 	//	%SystemDrive% (e.g. c: )
 	//

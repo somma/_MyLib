@@ -22,11 +22,12 @@
 
 #include "stdafx.h"
 #include "log.h"
+#include <shared_mutex>
 
 /**
  * @brief
 **/
-static boost::shared_mutex	_logger_lock;
+static std::shared_mutex	_logger_lock;
 static slogger*		    _logger = nullptr;
 static bool				_show_level = true;
 static bool				_show_current_time = true;
@@ -138,7 +139,7 @@ initialize_log(
 	}
 
 	{
-		boost::lock_guard<boost::shared_mutex> lock(_logger_lock);
+		std::lock_guard<std::shared_mutex> lock(_logger_lock);
 		if (NULL != _logger) return true;
 
 		slogger* local_slogger = new slogger(log_level, 
@@ -195,7 +196,7 @@ void
 finalize_log(
 )
 {
-	boost::lock_guard<boost::shared_mutex> lock(_logger_lock);
+	std::lock_guard<std::shared_mutex> lock(_logger_lock);
 	if (NULL == _logger) return;
 	_logger->slog_stop();
 	delete _logger;  _logger = NULL;
@@ -211,7 +212,7 @@ set_log_format(
 	_In_ bool show_function_name
 )
 {
-	boost::lock_guard<boost::shared_mutex> lock(_logger_lock);
+	std::lock_guard<std::shared_mutex> lock(_logger_lock);
 	_show_level = show_level;
 	_show_current_time = show_current_time;
 	_show_process_name = show_process_name;
@@ -229,7 +230,7 @@ get_log_format(
 	_Out_ bool& show_function_name
 )
 {
-	boost::shared_lock_guard<boost::shared_mutex> lock(_logger_lock);
+	std::shared_lock<std::shared_mutex> lock(_logger_lock);
 	show_level = _show_level;
 	show_current_time = _show_current_time;
 	show_process_name = _show_process_name;
@@ -245,7 +246,7 @@ set_log_env(
 	_In_ uint32_t log_to
 )
 {
-	boost::lock_guard<boost::shared_mutex> lock(_logger_lock);
+	std::lock_guard<std::shared_mutex> lock(_logger_lock);
 
 	bool update_logger = false;
 	if (_log_mask != mask)
@@ -274,13 +275,13 @@ set_log_env(
 /// @brief	_log_mask 
 uint32_t get_log_mask()
 {
-	boost::shared_lock_guard<boost::shared_mutex> lock(_logger_lock);
+	std::shared_lock<std::shared_mutex> lock(_logger_lock);
 	return _log_mask;
 }
 
 void set_log_mask(_In_ uint32_t mask)
 {
-	boost::lock_guard<boost::shared_mutex> lock(_logger_lock);
+	std::lock_guard<std::shared_mutex> lock(_logger_lock);
 	if (_log_mask != mask)
 	{
 		_log_mask = mask;
@@ -290,13 +291,13 @@ void set_log_mask(_In_ uint32_t mask)
 /// @brief	_log_level
 uint32_t get_log_level()
 {
-	boost::shared_lock_guard<boost::shared_mutex> lock(_logger_lock);
+	std::shared_lock<std::shared_mutex> lock(_logger_lock);
 	return _log_level;
 }
 
 void set_log_level(_In_ uint32_t log_level)
 {
-	boost::lock_guard<boost::shared_mutex> lock(_logger_lock);
+	std::lock_guard<std::shared_mutex> lock(_logger_lock);
 	if (_log_level != log_level)
 	{
 		_log_level = log_level;
@@ -311,13 +312,13 @@ void set_log_level(_In_ uint32_t log_level)
 /// @briefg	_log_to 
 uint32_t get_log_to()
 {
-	boost::shared_lock_guard<boost::shared_mutex> lock(_logger_lock);
+	std::shared_lock<std::shared_mutex> lock(_logger_lock);
 	return _log_to;
 }
 
 uint32_t set_log_to(_In_ uint32_t log_to)
 {
-	boost::lock_guard<boost::shared_mutex> lock(_logger_lock);
+	std::lock_guard<std::shared_mutex> lock(_logger_lock);
 	uint32_t old = _log_to;
 
 	if (_log_to != log_to)
@@ -569,7 +570,7 @@ log_write_fmt_without_deco(
 
 	// Let's write logs.
 	{
-		boost::shared_lock_guard<boost::shared_mutex> lock(_logger_lock);
+		std::shared_lock<std::shared_mutex> lock(_logger_lock);
 		if (NULL != _logger)
 		{
 			_logger->slog_write(log_level, log_buffer);
@@ -685,7 +686,7 @@ bool slogger::slog_start()
 	}
 	
 	_stop_logger = false;
-	_logger_thread = new boost::thread(boost::bind(&slogger::slog_thread, this));
+	_logger_thread = new std::thread(std::bind(&slogger::slog_thread, this));
 	return true;
 }
 
@@ -702,7 +703,6 @@ void slogger::slog_stop()
 	if (NULL != _logger_thread)
 	{
 		_logger_thread->join();
-		//std::cout << boost::format("tid=0x%08x, %s logger thread joined. \n") % GetCurrentThreadId() % __FUNCTION__;
 		delete _logger_thread; _logger_thread = NULL;
 	}
 
@@ -735,7 +735,7 @@ slogger::slog_write(
 	// enqueue log
 	plog_entry le = new log_entry(level, log_message);
 
-	boost::lock_guard< boost::mutex > lock(_lock);
+	std::lock_guard<std::mutex> lock(_lock);
 	_log_queue.push(le);
 }
 
@@ -932,7 +932,7 @@ void slogger::slog_thread()
 
 		plog_entry log = NULL;
 		{
-			boost::lock_guard< boost::mutex > lock(_lock);
+			std::lock_guard<std::mutex> lock(_lock);
 			log = _log_queue.pop();
 		}
 		
@@ -1029,7 +1029,7 @@ void slogger::slog_thread()
 	//	console, ods 등은 그냥 버린다.
 	//
 	{
-		boost::lock_guard< boost::mutex > lock(_lock);
+		std::lock_guard<std::mutex> lock(_lock);
 
 		while (true != _log_queue.empty())
 		{
@@ -1082,9 +1082,6 @@ void slogger::slog_thread()
 
 			delete log;
 		}
-		//write_to_console(wtc_green, "done.\n");
-		//std::cout << boost::format("tid=0x%08x, %s logger thread terminated \n") % GetCurrentThreadId() % __FUNCTION__;
-
 		_ASSERTE(true == _log_queue.empty());
 	}
 }

@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "BaseWindowsHeader.h"
 
+#include <iomanip>
 #include <fstream>
 #include <random>
 #include <errno.h>

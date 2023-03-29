@@ -9,6 +9,7 @@
 
 #pragma once
 #include <Windows.h>
+#include <map>
 #include "CStream.h"
 #include "curl/curl.h"
 #include "_MyLib/src/curl_client_support.h"

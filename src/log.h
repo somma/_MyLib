@@ -23,9 +23,10 @@
 1>          C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\intsafe.h(176) : see previous definition of 'INT32_MAX'
 */
 #include <boost/noncopyable.hpp>
-#include <boost/thread.hpp>
 #pragma warning(default:4005)
-#include <boost/format.hpp>
+
+#include <thread>
+#include <mutex>
 
 #include "Win32Utils.h"
 #include "Queue.h"
@@ -179,7 +180,7 @@ public:
 
 	void set_log_env(_In_ uint32_t log_level, _In_ uint32_t log_to)
 	{
-		boost::lock_guard<boost::mutex> log(_lock);
+		std::lock_guard<std::mutex> log(_lock);
 		if (_log_level != log_level) { _log_level = log_level; }
 		if (_log_to != log_to) { _log_to = log_to; }
 	}
@@ -193,7 +194,7 @@ private:
 	uint32_t volatile _log_to;
 	uint32_t volatile _max_log_count;
 	uint32_t volatile _max_log_files;
-	boost::mutex _lock;
+	std::mutex _lock;
 
 	class log_file_and_ctime
 	{
@@ -222,7 +223,7 @@ private:
 	} *plog_entry;
 
 	Queue<plog_entry>	_log_queue;
-    boost::thread*		_logger_thread;
+    std::thread*		_logger_thread;
 		
 	int64_t _log_count;
 	std::wstring _log_file_path;
