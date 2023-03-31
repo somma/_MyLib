@@ -12,6 +12,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <atomic>
 
 class StopWatch
 {
@@ -40,4 +41,23 @@ public:
 	float GetDurationSecond() { return mTimeforDuration; }
 	float GetDurationMilliSecond() { return mTimeforDuration * 1000.f; }
 
+};
+
+class TimeAccumulator
+{
+public:
+	TimeAccumulator(std::atomic<uint64_t>& elapsed): _elapsed(elapsed)
+	{	
+		_sw.Start();
+	}
+
+	~TimeAccumulator()
+	{
+		_sw.Stop();
+		_elapsed.fetch_add(static_cast<uint64_t>(_sw.GetDurationMilliSecond()));
+	}
+
+private:
+	StopWatch _sw;
+	std::atomic<uint64_t>& _elapsed;
 };
