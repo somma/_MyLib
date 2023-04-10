@@ -569,6 +569,21 @@ split_stringw(
     _Out_ std::list<std::wstring>& tokens
     );
 
+/// @brief	src string 을 buf 에 복사하고, 복사된 문자열의 갯수를 리턴
+size_t
+copy_wstring_to_buf_with_null(
+	_In_ const std::wstring& src,
+	_In_ wchar_t* buf,
+	_In_ size_t buf_len
+);
+
+size_t
+copy_string_to_buf_with_null(
+	_In_ const std::string& src,
+	_In_ char* buf,
+	_In_ size_t buf_len
+);
+
 // string to hash
 uint32_t hash_string32(_In_ const char* s, _In_opt_ uint32_t seed = 0);
 uint64_t hash_string64(_In_ const char* s, _In_opt_ uint64_t seed = 0);

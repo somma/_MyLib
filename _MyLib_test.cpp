@@ -123,6 +123,7 @@ bool test_std_string_find_and_substr();
 bool test_to_lower_uppper_string();
 //bool test_const_position();	// 컴파일 불가 테스트
 bool test_initialize_string();
+bool test_partial_copy_string();
 
 bool test_base64();
 bool test_random();
@@ -284,7 +285,7 @@ void run_test()
 	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_steady_multiple_timer_in_single_thread);
-	assert_bool(true, test_std_future_async);
+	//assert_bool(true, test_std_future_async);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_is_reserved_ipv4);
@@ -349,6 +350,8 @@ void run_test()
 	//assert_bool(true, test_to_lower_uppper_string);
 
 	//assert_bool(true, test_initialize_string);
+	assert_bool(true, test_partial_copy_string);
+	
 
 	//assert_bool(true, test_process_tree);
 	//assert_bool(true, test_iterate_process_tree);	
@@ -765,6 +768,44 @@ bool test_initialize_string()
 	}
 */
 
+	return true;
+}
+
+bool test_partial_copy_string()
+{
+	size_t cc_copied = 0;
+	
+	{
+		std::string src = "01234567890123456789012345678901234567890123456789";
+
+		// buf 가 src 보다 작은 경우
+		char bufa[0xa] = { 0xcc };
+		cc_copied = copy_string_to_buf_with_null(src, bufa, sizeof(bufa));
+		_ASSERTE(cc_copied == sizeof(bufa)/sizeof(char) - sizeof(char));
+		log_info "%s", bufa log_end;
+		
+		// buf 가 src 보다 큰 경우
+		char bufx[1024] = { 0xcc };
+		cc_copied = copy_string_to_buf_with_null(src, bufx, sizeof(bufx));			
+		_ASSERTE(cc_copied == src.size());
+		log_info "%s", bufx log_end;
+	}
+
+	{
+		std::wstring src = L"01234567890123456789012345678901234567890123456789";
+
+		// buf 가 src 보다 작은 경우
+		wchar_t bufa[0xa] = { 0xcc };
+		cc_copied = copy_wstring_to_buf_with_null(src, bufa, sizeof(bufa));
+		_ASSERTE(cc_copied == sizeof(bufa)/sizeof(wchar_t) - sizeof(wchar_t));
+		log_info "%ws", bufa log_end;
+		
+		// buf 가 src 보다 큰 경우
+		wchar_t bufx[1024] = { 0xcc };
+		cc_copied = copy_wstring_to_buf_with_null(src, bufx, sizeof(bufx));
+		_ASSERTE(cc_copied == src.size());
+		log_info "%ws", bufx log_end;
+	}
 	return true;
 }
 

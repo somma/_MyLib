@@ -4548,6 +4548,51 @@ split_stringw(
 	return true;
 }
 
+/// @brief
+size_t
+copy_wstring_to_buf_with_null(
+	_In_ const std::wstring& src,
+	_In_ wchar_t* buf,
+	_In_ size_t buf_len
+)
+{
+	_ASSERTE(!src.empty());
+	_ASSERTE(nullptr != buf);
+	_ASSERTE(buf_len > 0);
+	if (src.empty()|| nullptr == buf || !(buf_len>0)) return 0;
+
+	size_t cc_target = min(src.size(),
+						   buf_len/sizeof(wchar_t) - sizeof(wchar_t));
+	size_t cc_copied = src.copy(buf, cc_target, 0);
+	_ASSERTE(cc_target, cc_copied);
+
+	// add null-terminator
+	buf[cc_copied] = 0x0000;
+	return cc_copied;
+}
+
+size_t
+copy_string_to_buf_with_null(
+	_In_ const std::string& src,
+	_In_ char* buf,
+	_In_ size_t buf_len
+)
+{
+	_ASSERTE(!src.empty());
+	_ASSERTE(nullptr != buf);
+	_ASSERTE(buf_len > 0);
+	if (src.empty() || nullptr == buf || !(buf_len > 0)) return 0;
+
+	size_t cc_target = min(src.size(),
+						   buf_len / sizeof(char) - sizeof(char));
+	size_t cc_copied = src.copy(buf, cc_target, 0);
+	_ASSERTE(cc_target, cc_copied);
+
+	// add null-terminator
+	buf[cc_copied] = 0x0000;
+	return cc_copied;
+}
+
 /// @brief  string to hash
 ///         http://stackoverflow.com/questions/98153/whats-the-best-hashing-algorithm-to-use-on-a-stl-string-when-using-hash-map?answertab=active
 ///
