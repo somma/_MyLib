@@ -4564,7 +4564,7 @@ copy_wstring_to_buf_with_null(
 	size_t cc_target = min(src.size(),
 						   buf_len/sizeof(wchar_t) - sizeof(wchar_t));
 	size_t cc_copied = src.copy(buf, cc_target, 0);
-	_ASSERTE(cc_target, cc_copied);
+	_ASSERTE(cc_target == cc_copied);
 
 	// add null-terminator
 	buf[cc_copied] = 0x0000;
@@ -4586,7 +4586,7 @@ copy_string_to_buf_with_null(
 	size_t cc_target = min(src.size(),
 						   buf_len / sizeof(char) - sizeof(char));
 	size_t cc_copied = src.copy(buf, cc_target, 0);
-	_ASSERTE(cc_target, cc_copied);
+	_ASSERTE(cc_target == cc_copied);
 
 	// add null-terminator
 	buf[cc_copied] = 0x0000;
