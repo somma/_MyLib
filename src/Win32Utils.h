@@ -574,14 +574,14 @@ size_t
 copy_wstring_to_buf_with_null(
 	_In_ const std::wstring& src,
 	_In_ wchar_t* buf,
-	_In_ size_t buf_len
+	_In_ size_t cb_buf
 );
 
 size_t
 copy_string_to_buf_with_null(
 	_In_ const std::string& src,
 	_In_ char* buf,
-	_In_ size_t buf_len
+	_In_ size_t cb_buf
 );
 
 // string to hash
