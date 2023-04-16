@@ -33,8 +33,4 @@
 #include <crtdbg.h>
 #endif//_DEBUG
 
-//
-//	include 순서 주의 (바꾸면 안됨)
-// 
-#include <winioctl.h>
-#include <initguid.h>
+//#include <winioctl.h>		// precompiled header 에서 include 해야 함

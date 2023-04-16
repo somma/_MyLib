@@ -38,6 +38,8 @@
 #ifndef _SYS_CRYPTO_RC4_RC4_H_
 #define _SYS_CRYPTO_RC4_RC4_H_
 
+#include <stdint.h>
+
 typedef struct _rc4_state 
 {
 	uint8_t	perm[256];

@@ -9,6 +9,9 @@
 #include "stdafx.h"
 #include "BaseWindowsHeader.h"
 
+// include <winioctl.h> in precompiled header
+#include <initguid.h>
+
 #include <iomanip>
 #include <fstream>
 #include <random>
