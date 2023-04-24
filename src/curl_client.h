@@ -55,6 +55,7 @@
 
 
 ///	HTTP 응답코드 (https://restfulapi.net/http-status-codes/ 참고)
+#define HTTP_CODE			uint32_t
 
 #define HTTP_OK				200
 #define HTTP_OK_CREATED		201		// POST,PUT 에 대한응답으로 리소스가 생성되었음

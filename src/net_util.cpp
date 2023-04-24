@@ -530,11 +530,15 @@ dns_to_ip(
 	_Out_ std::list<uint32_t>& ip_list
 )
 {
+	_ASSERTE(nullptr != domain_name);
+	if (nullptr == domain_name) return false;
+
 	std::string dns_query_ip;
-	PDNS_RECORD dns_record = nullptr;
+	DNS_RECORDW* dns_record = nullptr;
+	std::wstring dnsw = MbsToWcsEx(domain_name);
 
 	DNS_STATUS status = 
-		DnsQuery_A(domain_name, 
+		DnsQuery_W(dnsw.c_str(), 
 				   DNS_TYPE_A,
 				   (true == cache_only) ? 
 						DNS_QUERY_NO_WIRE_QUERY : 
@@ -582,16 +586,11 @@ dns_to_ip(
 	
 	while(dns_record != nullptr)
 	{
-		//
-		//	dns_record type 이  DNS_TYPE_CNAME 같은 경우도 있으므로
-		//	아래의 비교 루틴은 수행하면 안된다.
-		//
-		//if (DnsNameCompare_W(dns_record->pName, domain_name) && 
-		//DNS_TYPE_A == dns_record->wType)
-		//{
-		//	ip_list.push_back(dns_record->Data.A.IpAddress);
-		//}
-		ip_list.push_back(dns_record->Data.A.IpAddress);
+		if (dns_record->wType == DNS_TYPE_A)
+		{
+			ip_list.push_back(dns_record->Data.A.IpAddress);
+		}
+		
 		dns_record = dns_record->pNext;
 	}
 
