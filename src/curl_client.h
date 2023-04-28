@@ -84,48 +84,48 @@ public:
 
 	bool http_get(
 		_In_z_ const char* url,
-		_Out_ long& http_response_code,
+		_Out_ HTTP_CODE& http_response_code,
 		_Out_ CMemoryStream& stream);
 
 	bool http_get(
 		_In_z_ const char* url,
-		_Out_ long& http_response_code,
+		_Out_ HTTP_CODE& http_response_code,
 		_Out_ std::string& response);
 
 	bool http_download_file(
 		_In_ http_download_ctx* ctx,
-		_Out_ long& http_response_code);
+		_Out_ HTTP_CODE& http_response_code);
 
 	bool http_post(
 		_In_z_ const char* url,
 		_In_z_ const char* data,
-		_Out_  long& http_response_code,
+		_Out_  HTTP_CODE& http_response_code,
 		_Out_  CMemoryStream& stream);
 
 	bool http_post(
 		_In_z_ const char* url,
 		_In_z_ const char* data,
-		_Out_  long& http_response_code,
+		_Out_  HTTP_CODE& http_response_code,
 		_Out_  std::map<std::string, std::string>& http_response_header,
 		_Out_  CMemoryStream& stream);
 
 	bool http_post(
 		_In_z_ const char* url,
 		_In_z_ const char* data,
-		_Out_  long& http_response_code,
+		_Out_  HTTP_CODE& http_response_code,
 		_Out_  std::string& response);
 
 	bool http_patch(
 		_In_z_ const char* url,
 		_In_z_ const char* data,
-		_Out_  long& http_response_code,
+		_Out_  HTTP_CODE& http_response_code,
 		_Out_  CMemoryStream& stream);
 
 	/// @brief	http put request without response body
 	bool http_patch(
 		_In_z_ const char* url,
 		_In_z_ const char* data,
-		_Out_  long& http_response_code);
+		_Out_  HTTP_CODE& http_response_code);
 
 	//
 	// http_file_upload 함수를 사용하면, 파일 이름은 서버로 전송된다.
@@ -136,13 +136,13 @@ public:
 		_In_z_ const char* url,
 		_In_z_ const wchar_t* file_path,
 		_In_   Forms& forms,
-		_Out_  long& http_response_code,
+		_Out_  HTTP_CODE& http_response_code,
 		_Out_  CMemoryStream& stream);
 	bool http_file_upload(
 		_In_z_ const char* url,
 		_In_z_ const wchar_t* file_path,
 		_In_   Forms& forms,
-		_Out_  long& http_response_code,
+		_Out_  HTTP_CODE& http_response_code,
 		_Out_  std::string& response);
 
 private:
@@ -184,13 +184,13 @@ public:
 private:
 	bool prepare_perform(_In_ const char* const url, _In_ const bool has_payload);
 
-	bool perform(_Out_ long& http_response_code);
+	bool perform(_Out_ HTTP_CODE& http_response_code);
 
 	// multipart/form type을 request body data에 설정한 후 전송하는 함수
 	bool perform(
 		_In_ const char* file_path, 
 		_In_ Forms& forms, 
-		_Out_ long& http_response_code);
+		_Out_ HTTP_CODE& http_response_code);
 
 	void finalize();
 

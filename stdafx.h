@@ -34,8 +34,12 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <VersionHelpers.h>
+#define WIN32_NO_STATUS
+#include <winnt.h>
+#include <ntstatus.h>
 #include <winioctl.h>
+
+
 
 #define _CRTDBG_MAP_ALLOC  
 #include <stdlib.h>  

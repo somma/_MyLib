@@ -84,7 +84,7 @@ bool test_curl_https_down_with_auth()
 		//
 		//	download
 		//
-		long http_response_code = 404;		
+		HTTP_CODE http_response_code = 404;
 		_ASSERTE(true == _cc->http_download_file(&ctx,
 												 http_response_code));
 		if (200 == http_response_code)
@@ -139,7 +139,7 @@ bool test_curl_https()
 
 	const char* url = "https://www.google.com/";
 
-	long http_response_code = 404;
+	HTTP_CODE http_response_code = 404;
 	std::string res;
 	_ASSERTE(true == _curl_client->http_get(url, http_response_code, res));
 
@@ -165,7 +165,7 @@ bool test_curl_http()
 	}
 
 	const char* url = "http://192.168.10.200:5601/app/kibana#/monster?_g=()";
-	long http_response_code = 404;
+	HTTP_CODE http_response_code = 404;
 	CMemoryStream stream;
 	_ASSERTE(true == _curl_client->http_get(url, http_response_code, stream));
 
@@ -191,7 +191,7 @@ bool test_curl_http_upload()
 
 	const wchar_t* path = L"C:\\Windows\\System32\\notepad.exe";
 	const char*  url = "http://localhost:33330/upload";
-	long response_code;
+	HTTP_CODE response_code;
 	std::string response;
 	client->initialize();
 
@@ -256,7 +256,7 @@ _mem_check_begin
 	const char* url = nullptr;
 
 	_ASSERTE(nullptr != url);
-	long http_response_code = 404;
+	HTTP_CODE http_response_code = 404;
 	CMemoryStream stream;
 	std::map<std::string, std::string> http_response_header;
 	Json::Value root;
@@ -323,7 +323,7 @@ _mem_check_begin
 	json["data"]["block_ips"].append("");
 	json["data"]["block_domains"].append("");
 
-	long http_response_code = 404;
+	HTTP_CODE http_response_code = 404;
 	CMemoryStream stream;
 
 	Json::StreamWriterBuilder builder;

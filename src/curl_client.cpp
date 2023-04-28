@@ -187,7 +187,7 @@ curl_client::append_header(
 bool
 curl_client::http_get(
 	_In_ const char* url,
-	_Out_ long& http_response_code,
+	_Out_ HTTP_CODE& http_response_code,
 	_Out_ CMemoryStream& stream
 )
 {
@@ -253,7 +253,7 @@ curl_client::http_get(
 bool
 curl_client::http_get(
 	_In_ const char* url,
-	_Out_ long& http_response_code,
+	_Out_ HTTP_CODE& http_response_code,
 	_Out_ std::string& response
 	)
 {
@@ -283,7 +283,7 @@ curl_client::http_get(
 bool
 curl_client::http_download_file(
 	_In_ http_download_ctx* ctx,
-	_Out_ long& http_response_code
+	_Out_ HTTP_CODE& http_response_code
 	)
 {
 	_ASSERTE(nullptr != _curl);
@@ -352,7 +352,7 @@ bool
 curl_client::http_post(
 	_In_z_ const char* url,
 	_In_z_ const char* data,
-	_Out_  long& http_response_code,
+	_Out_  HTTP_CODE& http_response_code,
 	_Out_  std::string& response
 	)
 {
@@ -383,7 +383,7 @@ curl_client::http_file_upload(
 	_In_z_ const char* url,
 	_In_z_ const wchar_t* file_path,
 	_In_   Forms& forms,
-	_Out_  long& http_response_code,
+	_Out_  HTTP_CODE& http_response_code,
 	_Out_  CMemoryStream& stream
 	)
 {
@@ -457,7 +457,7 @@ curl_client::http_file_upload(
 	_In_z_ const char* url,
 	_In_z_ const wchar_t* file_path,
 	_In_   Forms& forms,
-	_Out_  long& http_response_code,
+	_Out_  HTTP_CODE& http_response_code,
 	_Out_  std::string& response)
 {
 	_ASSERTE(nullptr != url);
@@ -494,7 +494,7 @@ bool
 curl_client::http_post(
 	_In_z_ const char* url,
 	_In_z_ const char* data,
-	_Out_ long& http_response_code,
+	_Out_ HTTP_CODE& http_response_code,
 	_Out_ CMemoryStream& stream
 	)
 {
@@ -605,7 +605,7 @@ bool
 curl_client::http_post(
 	_In_ const char* url, 
 	_In_ const char* data, 
-	_Out_ long& http_response_code, 
+	_Out_ HTTP_CODE& http_response_code,
 	_Out_ std::map<std::string, std::string>& http_response_header,
 	_Out_ CMemoryStream& stream
 )
@@ -741,7 +741,7 @@ curl_client::http_post(
 bool curl_client::http_patch(
 	_In_z_ const char* url,
 	_In_z_ const char* data,
-	_Out_  long& http_response_code,
+	_Out_  HTTP_CODE& http_response_code,
 	_Out_  CMemoryStream& stream
 )
 {
@@ -850,10 +850,11 @@ bool curl_client::http_patch(
 }
 
 /// @brief	
-bool curl_client::http_patch(
+bool 
+curl_client::http_patch(
 	_In_z_ const char* url,
 	_In_z_ const char* data,
-	_Out_  long& http_response_code
+	_Out_  HTTP_CODE& http_response_code
 )
 {
 	_ASSERTE(nullptr != url);
@@ -1102,7 +1103,7 @@ curl_client::prepare_perform(
 
 /// @brief	HTTP(S) Request 를 전송하고, 응답코드를 확인한다.
 bool curl_client::perform(
-	_Out_ long& http_response_code
+	_Out_ HTTP_CODE& http_response_code
 )
 {
 	http_response_code = 0;
@@ -1196,7 +1197,7 @@ bool
 curl_client::perform(
 	_In_ const char* file_path,
 	_In_ Forms& forms,
-	_Out_ long& http_response_code
+	_Out_ HTTP_CODE& http_response_code
 )
 {
 	CURLcode curl_code = curl_easy_setopt(_curl, 
