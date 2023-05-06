@@ -270,7 +270,7 @@ bool test_print_percent();
 // _test_machine_id.cpp
 extern bool test_generate_machine_id();
 
-
+bool test_get_sid();
 
 
 void run_test()
@@ -350,7 +350,7 @@ void run_test()
 	//assert_bool(true, test_to_lower_uppper_string);
 
 	//assert_bool(true, test_initialize_string);
-	assert_bool(true, test_partial_copy_string);
+	//assert_bool(true, test_partial_copy_string);
 	
 
 	//assert_bool(true, test_process_tree);
@@ -458,6 +458,7 @@ void run_test()
 	//assert_bool(true, test_template);
 
 	//assert_bool(true, test_generate_machine_id);
+	assert_bool(true, test_get_sid);
 
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -4049,6 +4050,142 @@ bool test_print_percent()
 	return true;
 }
 
+
+bool ptcb_get_proc_extinfo(_In_ const process* const process_info)
+{
+	bool succeeded = false;
+	psid_info user_sid = nullptr;
+	std::list<pgroup_sid_info> groups;
+	std::list<pprivilege_info> privileges;
+	do
+	{
+		uint32_t _pid = process_info->pid();
+
+		///	Open process handle with PROCESS_QUERY_LIMITED_INFORMATION 
+		handle_ptr proc_handle(
+			OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
+						FALSE,
+						_pid),
+			[](_In_ HANDLE handle)
+			{
+				if (NULL != handle) { CloseHandle(handle); }
+			});
+		if (NULL == proc_handle.get())
+		{
+			///	프로세스 핸들을 획득하지 못하거나, 토큰에 접근하지 못하는 경우
+			///	확장정보는 없는 것으로 간주한다. 
+			break;
+		}
+
+		///	Open token handle
+		HANDLE th;
+		if (TRUE != OpenProcessToken(proc_handle.get(),
+									 TOKEN_QUERY,
+									 &th))
+		{
+			///	프로세스 핸들을 획득하지 못하거나, 토큰에 접근하지 못하는 경우
+			///	확장정보는 없는 것으로 간주한다. 
+			break;
+		}
+		handle_ptr token_handle(th, [](_In_ HANDLE th) {CloseHandle(th); });
+
+		user_sid = get_process_user(token_handle.get());
+		if (nullptr == user_sid)
+		{
+			/// NOP
+		}
+
+		if (true != get_process_group(token_handle.get(),
+									  groups))
+		{
+			/// NOP
+		}
+
+		if (true != get_process_privilege(token_handle.get(),
+										  privileges))
+		{
+			/// NOP
+		}
+
+		succeeded = true;
+
+	} while (false);
+
+	// cleanup
+	if (nullptr != user_sid)
+	{
+		delete user_sid;
+		user_sid = nullptr;
+	}
+
+	std::for_each(groups.cbegin(), groups.cend(),
+				  [](pgroup_sid_info group)
+				  {
+					  _ASSERTE(nullptr != group);
+					  delete group;
+				  });
+	groups.clear();
+
+	std::for_each(privileges.cbegin(), privileges.cend(),
+				  [](pprivilege_info privilege)
+				  {
+					  _ASSERTE(nullptr != privilege);
+					  delete privilege;
+				  });
+	privileges.clear();
+
+	// ret
+	if (succeeded)
+	{
+		/*log_info "[SUCCESS] pid = %u, name = %ws, path = %ws",
+			process_info->pid(),
+			process_info->process_name(),
+			process_info->process_path()
+			log_end*/
+	}
+	else
+	{
+		log_info "[FAILED ] pid = %u, name = %ws, path = %ws",
+			process_info->pid(),
+			process_info->process_name(),
+			process_info->process_path()
+			log_end
+	}
+
+	return true;		//<!
+}
+
+bool test_get_sid()
+{
+	_mem_check_begin
+	{
+		cprocess_tree pt;
+		if (!pt.build_process_tree(true))
+		{
+			log_err "build_process_tree() failed." log_end;
+			return false;
+		}
+
+		for (int i = 0; i < 512; ++i)
+		{
+			pt.iterate_process(ptcb_get_proc_extinfo);
+		}		
+
+		// test 2
+
+		for (int i = 0; i < 512; ++i)
+		{
+			psid_info sid_info;
+			sid_info = get_file_owner(get_current_module_pathEx().c_str());
+			_ASSERTE(nullptr != sid_info);
+			//log_info "name=monster_test.exe, sid=%ws", sid_info->_sid.c_str() log_end;
+			delete sid_info;
+		}
+	}
+	_mem_check_end;
+	return true;
+}
+
 /**
  * @brief
  * @param
@@ -4173,4 +4310,5 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 	}
 }
+
 
