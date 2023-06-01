@@ -350,7 +350,7 @@ void run_test()
 	//assert_bool(true, test_to_lower_uppper_string);
 
 	//assert_bool(true, test_initialize_string);
-	assert_bool(true, test_partial_copy_string);
+	//assert_bool(true, test_partial_copy_string);
 	
 
 	//assert_bool(true, test_process_tree);
@@ -366,13 +366,13 @@ void run_test()
 	//assert_bool(true, test_strtok);
 	//assert_bool(true, test_split_stringw);
 	//assert_bool(true, test_cpp_class);
-	//assert_bool(true, test_nt_name_to_dos_name);
+	assert_bool(true, test_nt_name_to_dos_name);
 
 	//assert_bool(true, test_query_dos_device);
 	//assert_bool(true, test_get_filepath_by_handle);
 	//assert_bool(true, test_find_files);
 	//
-	//assert_bool(true, test_bin_to_hex);
+	assert_bool(true, test_bin_to_hex);
 	//assert_bool(true, test_str_to_xxx);
 	//assert_bool(true, test_set_get_file_position);
 	//assert_bool(true, test_get_module_path);
@@ -671,10 +671,10 @@ bool test_to_lower_uppper_string()
 {
 	std::wstring str = L"ABCDEFGh1234";
 	log_dbg "str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
-	to_lower_string(str);
+	str = to_lower_string(str);
 	log_dbg "after to_lower, str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
 
-	to_upper_string(str);
+	str = to_upper_string(str);
 	log_dbg "after to_upper, str = %s", WcsToMbsEx(str.c_str()).c_str() log_end
 
 	return true;
@@ -1177,25 +1177,20 @@ bool test_get_filepath_by_handle()
 **/
 bool test_nt_name_to_dos_name()
 {
-	WCHAR*	nt_name = L"\\Device\\HarddiskVolume2\\Windows\\System32\\drivers\\etc\\hosts";
+	WCHAR*	nt_name = L"\\Device\\HarddiskVolume3\\Windows\\System32\\drivers\\etc\\hosts";
 	std::wstring dos_name;
 
 	bool ret = nt_name_to_dos_name(nt_name, dos_name);
-	if (true == ret)
+	if (!ret || dos_name != L"C:\\Windows\\System32\\drivers\\etc\\hosts")
 	{
-		log_dbg
-			"nt_name=%ws -> dos_name=%ws",
-			nt_name,
-			dos_name.c_str()
-		log_end
+		return false;
 	}
-	else
-	{
-		log_err
-			"nt_name=%ws -> dos_name=failed.",
-			nt_name
-			log_end;
-	}
+		
+	log_dbg
+		"nt_name=%ws -> dos_name=%ws",
+		nt_name,
+		dos_name.c_str()
+	log_end
 	return true;
 }
 

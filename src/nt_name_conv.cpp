@@ -561,8 +561,7 @@ NameConverter::resolve_device_prefix(
 	}
 
 	std::wstring revised_file_name = strm.str();
-	std::wstring small_rfn = revised_file_name;
-	to_lower_string(small_rfn);
+	std::wstring small_rfn = to_lower_string(revised_file_name);
 
 	//
 	// #0, \Device\HarddiskVolumeShadowCopy 라면 그대로 리턴한다.
@@ -585,9 +584,7 @@ NameConverter::resolve_device_prefix(
         //	dos_device._device_name 필드는 `\Device\HarddiskVolume1\` 처럼 `\` 로 끝난다.
 		//
 
-		std::wstring smal_dn = dos_device->_device_name;
-		to_lower_string(smal_dn);
-
+		std::wstring smal_dn = to_lower_string(dos_device->_device_name);
         size_t pos = small_rfn.find(smal_dn);
         if (pos == 0)
         {
@@ -698,8 +695,7 @@ bool NameConverter::load_env_values()
 	// 
 	if (get_environment_value(L"%SystemDrive%", value))
 	{
-		to_lower_string(value);
-		_system_drive = value;
+		_system_drive = to_lower_string(value);
 	}
 
 	//
@@ -707,8 +703,7 @@ bool NameConverter::load_env_values()
 	//
 	if (get_environment_value(L"%SystemRoot%", value))
 	{
-		to_lower_string(value);
-		_system_root = value;
+		_system_root = to_lower_string(value);
 	}
 	
 	return true;

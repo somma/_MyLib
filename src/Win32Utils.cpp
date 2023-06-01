@@ -770,9 +770,8 @@ nt_name_to_dos_name(
 			return false;
 	}
 
-	std::wstring nt_namel(nt_name);
-	to_lower_string(nt_namel);			// 소문자로 모두 변환
-
+	std::wstring nt_name_str(nt_name);
+	std::wstring nt_namel(to_lower_string(nt_name_str));	// 소문자로 모두 변환
 	for (DWORD i = 0; i < length / 4; ++i)
 	{
 		// C:  --> \Device\HarddiskVolume1 매핑 정보를 조회 
@@ -789,7 +788,7 @@ nt_name_to_dos_name(
 				log_end
 				return false;
 		}
-		to_lower_string(nt_device);
+		nt_device = to_lower_string(nt_device);
 
 		// nt_name 의 device_name 부분이 일치하는지 비교
 		// 
@@ -806,8 +805,9 @@ nt_name_to_dos_name(
 		else
 		{
 			// we found!
+			
 			dos_name = dos_device_name;
-			dos_name += nt_namel.substr(pos + nt_device.size(), nt_namel.size());
+			dos_name += nt_name_str.substr(pos + nt_device.size(), nt_name_str.size());
 
 			ret = true;
 			break;
@@ -5262,8 +5262,7 @@ guid_to_stringw(
 		//	StringFromGUID2() 함수는 {, } 를 포함함
 		//	{,} 문자를 제거하고, 소문자로 변환 후 리턴한다.
 		std::wstring guid_string(&buf[1], ret - 3);
-		to_lower_string<std::wstring>(guid_string);
-		return guid_string;
+		return to_lower_string<std::wstring>(guid_string);
 	}
 }
 
@@ -7390,12 +7389,12 @@ psid_info get_sid_info(_In_ PSID sid)
 	wchar_t* domain = nullptr;
 	SID_NAME_USE sid_name_use = SidTypeUnknown;
 	LookupAccountSid(nullptr,
-					 sid,
-					 nullptr,
-					 &cch_name,
-					 nullptr,
-					 &cch_domain,
-					 &sid_name_use);
+						sid,
+						nullptr,
+						&cch_name,
+						nullptr,
+						&cch_domain,
+						&sid_name_use);
 	if (cch_name > 0)
 	{
 		name = (wchar_t*)malloc((cch_name + 1) * sizeof(wchar_t));
@@ -7412,9 +7411,16 @@ psid_info get_sid_info(_In_ PSID sid)
 		if (nullptr == name)
 		{
 			log_err "Not enough memory. " log_end;
+
+			if (nullptr != name)
+			{
+				free(name);
+			}
+
 			return nullptr;
 		}
 	}
+	
 	wchar_ptr name_ptr(name, [](_In_ wchar_t* ptr) {if (nullptr != ptr) { free(ptr); }});
 	wchar_ptr domain_ptr(domain, [](_In_ wchar_t* ptr) {if (nullptr != ptr) { free(ptr); }});
 
@@ -8908,11 +8914,11 @@ bin_to_hexa(
 	hex_string = hex_buf.get();
 	if (true == upper_case)
 	{
-		to_upper_string(hex_string);
+		hex_string = to_upper_string(hex_string);
 	}
 	else
 	{
-		to_lower_string(hex_string);
+		hex_string = to_lower_string(hex_string);
 	}
 
 	return true;

@@ -1244,11 +1244,11 @@ str_to_reg_key(
 	_ASSERTE(nullptr != key_path);
 	if (nullptr == key_path) return false;
 
-	std::wstring root_key_str = extract_first_tokenExW(key_path,
-													   L"\\",
-													   true);
-	to_lower_string(root_key_str);
-
+	std::wstring root_key_str = to_lower_string(
+		extract_first_tokenExW(key_path,
+							   L"\\",
+							   true)
+	);
 	bool ret = false;
 	do
 	{

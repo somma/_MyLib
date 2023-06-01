@@ -460,8 +460,22 @@ template <typename T> void clear_sstream(T& strm)
 }
 
 //> T = std::string || std::wstring
-template <typename T> void to_upper_string(_Inout_ T& input){ boost::algorithm::to_upper(input);}
-template <typename T> void to_lower_string(_Inout_ T& input){ boost::algorithm::to_lower(input);}
+template <typename T> 
+T
+to_upper_string(_Inout_ const T& input)
+{ 
+	T tmp(input);
+	boost::algorithm::to_upper(tmp);
+	return tmp;
+}
+
+template <typename T> 
+T to_lower_string(_Inout_ const T& input)
+{ 
+	T tmp(input);
+	boost::algorithm::to_lower(tmp);
+	return tmp;
+}
 
 bool 
 extract_first_tokenW(
