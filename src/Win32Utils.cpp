@@ -4590,7 +4590,7 @@ copy_string_to_buf_with_null(
 	_ASSERTE(cc_target == cc_copied);
 
 	// add null-terminator
-	buf[cc_copied] = 0x0000;
+	buf[cc_copied] = 0x00;
 	return cc_copied;
 }
 
