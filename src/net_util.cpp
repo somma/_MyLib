@@ -540,9 +540,7 @@ dns_to_ip(
 	DNS_STATUS status = 
 		DnsQuery_W(dnsw.c_str(), 
 				   DNS_TYPE_A,
-				   (true == cache_only) ? 
-						DNS_QUERY_NO_WIRE_QUERY : 
-						(DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE),
+				   (true == cache_only) ? DNS_QUERY_NO_WIRE_QUERY : DNS_QUERY_STANDARD,
 				   NULL,
 				   &dns_record,
 				   NULL);
