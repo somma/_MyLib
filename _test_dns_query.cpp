@@ -120,16 +120,25 @@ bool test_dns_to_ip()
 {
 	_mem_check_begin
 	{
+		std::list<std::string> cnames;
 		std::list<uint32_t> ipz;
-		_ASSERTE(true == dns_to_ip("naver.com", false, ipz));
-		log_info "naver.com :" log_end;
-		for (auto& ip : ipz)
+		_ASSERTE(true == dns_to_ip("www.naver.com", false, cnames, ipz));
+		log_info "www.naver.com :" log_end;
+		for (const  auto& ip : ipz)
 		{
-			log_info "  - %s", ipv4_to_str(ip).c_str() log_end;
+			log_info " - %s", ipv4_to_str(ip).c_str() log_end;
 		}
 
+		for (const auto& cname : cnames)
+		{
+			log_info " - %s", cname.c_str() log_end;
+		}
+
+
+
+		cnames.clear();
 		ipz.clear();
-		_ASSERTE(true != dns_to_ip("inv.invalid.xyz", false, ipz));
+		_ASSERTE(true != dns_to_ip("inv.invalid.xyz", false, cnames, ipz));
 	}
 	_mem_check_end;
 

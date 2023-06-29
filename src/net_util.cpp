@@ -437,7 +437,6 @@ SocketAddressToStr(
 	231.220.243.103.in-addr.arpa
 		name = 175.bm-nginx-loadbalancer.mgmt.sin1.adnexus.net
 		ttl = 3004 (50 mins 4 secs)
-
 */
 bool
 ip_to_dns(
@@ -527,7 +526,8 @@ bool
 dns_to_ip(
 	_In_ const char* domain_name,
 	_In_ bool cache_only,
-	_Out_ std::list<uint32_t>& ip_list
+	_Out_ std::list<std::string>& cnames,
+	_Out_ std::list<uint32_t>& ips
 )
 {
 	_ASSERTE(nullptr != domain_name);
@@ -540,7 +540,7 @@ dns_to_ip(
 	DNS_STATUS status = 
 		DnsQuery_W(dnsw.c_str(), 
 				   DNS_TYPE_A,
-				   (true == cache_only) ? DNS_QUERY_NO_WIRE_QUERY : DNS_QUERY_STANDARD,
+				   cache_only ? DNS_QUERY_NO_WIRE_QUERY : (DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE),
 				   NULL,
 				   &dns_record,
 				   NULL);
@@ -560,7 +560,7 @@ dns_to_ip(
 		}
 		else
 		{
-			log_dbg "DnsQuery(cache_only=%s) failed. ip=%s, status=%u",
+			log_dbg "DnsQuery(cache_only=%s) failed. domain=%s, status=%u",
 				true == cache_only ? "O" : "X",
 				domain_name,
 				status
@@ -586,7 +586,17 @@ dns_to_ip(
 	{
 		if (dns_record->wType == DNS_TYPE_A)
 		{
-			ip_list.push_back(dns_record->Data.A.IpAddress);
+			ips.push_back(dns_record->Data.A.IpAddress);
+		}
+		// refac - test
+		else if (dns_record->wType == DNS_TYPE_CNAME)
+		{			
+			cnames.push_back(WcsToMbsEx(dns_record->Data.CNAME.pNameHost));
+			//log_info 
+			//	"ip=%s, cname=%ws",
+			//	ipv4_to_str(dns_record->Data.A.IpAddress).c_str(),
+			//	dns_record->Data.CNAME.pNameHost
+			//	log_end;
 		}
 		
 		dns_record = dns_record->pNext;

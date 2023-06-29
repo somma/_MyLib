@@ -53,6 +53,8 @@ extern bool test_dns_to_ip();
 extern bool test_get_adapters();
 extern bool test_get_addr_info();
 extern bool test_is_reserved_ipv4();
+extern bool test_ip_to_dns();
+extern bool test_dns_to_ip();
 
 // test_iphelp_api.cpp
 extern bool test_iphelp_api();
@@ -290,7 +292,7 @@ void run_test()
 	//assert_bool(true, test_get_addr_info);
 	//assert_bool(true, test_is_reserved_ipv4);
 	//assert_bool(true, test_ip_to_dns);
-	//assert_bool(true, test_dns_to_ip);
+	assert_bool(true, test_dns_to_ip);
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 
@@ -366,13 +368,12 @@ void run_test()
 	//assert_bool(true, test_strtok);
 	//assert_bool(true, test_split_stringw);
 	//assert_bool(true, test_cpp_class);
-	assert_bool(true, test_nt_name_to_dos_name);
+	//assert_bool(true, test_nt_name_to_dos_name);
 
 	//assert_bool(true, test_query_dos_device);
 	//assert_bool(true, test_get_filepath_by_handle);
 	//assert_bool(true, test_find_files);
-	//
-	assert_bool(true, test_bin_to_hex);
+	//assert_bool(true, test_bin_to_hex);
 	//assert_bool(true, test_str_to_xxx);
 	//assert_bool(true, test_set_get_file_position);
 	//assert_bool(true, test_get_module_path);
@@ -779,13 +780,13 @@ bool test_partial_copy_string()
 		std::string src = "01234567890123456789012345678901234567890123456789";
 
 		// buf 가 src 보다 작은 경우
-		char bufa[0xa] = { 0xcc };
+		char bufa[0xa] = { 0 };
 		cc_copied = copy_string_to_buf_with_null(src, bufa, sizeof(bufa));
 		_ASSERTE(cc_copied == sizeof(bufa)/sizeof(char) - sizeof(char));
 		log_info "%s", bufa log_end;
 		
 		// buf 가 src 보다 큰 경우
-		char bufx[1024] = { 0xcc };
+		char bufx[1024] = { 0x0 };
 		cc_copied = copy_string_to_buf_with_null(src, bufx, sizeof(bufx));			
 		_ASSERTE(cc_copied == src.size());
 		log_info "%s", bufx log_end;
