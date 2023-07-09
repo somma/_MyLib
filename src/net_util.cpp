@@ -377,7 +377,7 @@ SocketAddressToStr(
 	return true;
 }
 
-///	@brief	
+///	@brief	DNS 이름이 있다면 true, 없으면 False 를 리턴한다.	
 /*
 	수동으로 ip -> DNS 조회 테스트 해보기
 
@@ -442,7 +442,7 @@ bool
 ip_to_dns(
 	_In_ uint32_t ip_netbyte_order,
 	_In_ bool cache_only,
-	_Out_ std::string& domain_name
+	_Out_opt_ std::list<std::string>* names
 )
 {
 	std::string dns_query_ip;
@@ -479,13 +479,17 @@ ip_to_dns(
 	//	빠르기 때문에 1st try, 2nd try 간 차이가 DNS_QUERY_STANDARD 보다 더 큼
 	//
 	//--------------------------------------------------------------------------------
-	DNS_STATUS status = 
-		DnsQuery_A(dns_query_ip.c_str(),
-				   DNS_TYPE_PTR,
-				   cache_only ? DNS_QUERY_NO_WIRE_QUERY : (DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE),
-				   NULL,
-				   &dns_record,
-				   NULL);
+	DWORD option = DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE;
+	if (cache_only)
+	{
+		option |= DNS_QUERY_CACHE_ONLY;
+	}
+	DNS_STATUS status = DnsQuery_A(dns_query_ip.c_str(),
+								   DNS_TYPE_PTR,
+								   option,
+								   nullptr,
+								   &dns_record,
+								   nullptr);
 	if (ERROR_SUCCESS != status)
 	{
 		if (DNS_ERROR_RECORD_DOES_NOT_EXIST == status || DNS_ERROR_RCODE_NAME_ERROR == status)
@@ -496,23 +500,24 @@ ip_to_dns(
 		}
 		else
 		{
-			log_dbg "DnsQuery(cache_only=%s) failed. ip=%s, status=%u",
-				true == cache_only ? "O" : "X",
+			log_dbg "DnsQuery() failed. ip=%s, status=%u",
 				dns_query_ip.c_str(),
 				status
 				log_end;
 		}
 
-		domain_name = "";
+		if (nullptr != names)
+		{
+			names->clear();
+		}
 		return false;
 	}
-	_ASSERTE(nullptr != dns_record);
-	if (nullptr == dns_record)
+	
+	while (dns_record != nullptr && nullptr != names)
 	{
-		domain_name = "";
-		return false;
-	}	
-	domain_name = (char*)dns_record->Data.pDataPtr;
+		names->push_back((char*)dns_record->Data.pDataPtr);
+		dns_record = dns_record->pNext;
+	}
 
 	//
 	//	Free memory allocated for DNS records 
@@ -521,29 +526,34 @@ ip_to_dns(
 	return true;
 }
 
-/// @brief	www.google.com -> 1.1.1.1 로 변환하는 함수
+/// @brief	domain name 에 매칭되는 cname 목록과 ip 목록을 리턴하는 함수
 bool
 dns_to_ip(
-	_In_ const char* domain_name,
+	_In_ const char* domain_name,	
 	_In_ bool cache_only,
-	_Out_ std::list<std::string>& cnames,
-	_Out_ std::list<uint32_t>& ips
+	_Out_opt_ std::list<std::string>* cnames,
+	_Out_opt_ std::list<uint32_t>* ips
 )
 {
 	_ASSERTE(nullptr != domain_name);
 	if (nullptr == domain_name) return false;
+	if (nullptr == cnames && nullptr == ips) return true;
 
 	std::string dns_query_ip;
 	DNS_RECORDW* dns_record = nullptr;
 	std::wstring dnsw = MbsToWcsEx(domain_name);
 
-	DNS_STATUS status = 
-		DnsQuery_W(dnsw.c_str(), 
-				   DNS_TYPE_A,
-				   cache_only ? DNS_QUERY_NO_WIRE_QUERY : (DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE),
-				   NULL,
-				   &dns_record,
-				   NULL);
+	DWORD option = DNS_QUERY_NO_MULTICAST | DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE;
+	if (cache_only)
+	{
+		option |= DNS_QUERY_CACHE_ONLY;
+	}
+	DNS_STATUS status = DnsQuery_W(dnsw.c_str(), 
+								   DNS_TYPE_A,
+								   option,
+								   nullptr,
+								   &dns_record,
+								   nullptr);
 	if (ERROR_SUCCESS != status)
 	{
 		if (DNS_ERROR_RECORD_DOES_NOT_EXIST == status || 
@@ -552,16 +562,14 @@ dns_to_ip(
 			//
 			//	유효하지 않은 도메인 네임
 			//
-			log_dbg "DnsQuery(cache_only=%s) failed. domain=%s, status=%u",
-				true == cache_only ? "O" : "X",
+			log_dbg "DNS record does not exists. domain=%s, status=%u",
 				domain_name,
 				status
 				log_end;
 		}
 		else
 		{
-			log_dbg "DnsQuery(cache_only=%s) failed. domain=%s, status=%u",
-				true == cache_only ? "O" : "X",
+			log_dbg "DnsQuery() failed. domain=%s, status=%u",
 				domain_name,
 				status
 				log_end;
@@ -574,8 +582,7 @@ dns_to_ip(
 	if (nullptr == dns_record)
 	{
 		log_err 
-			"DnsQuery(cache_only=%s) succeeded but no recored. domain=%s",
-			true == cache_only ? "O" : "X",
+			"DnsQuery() succeeded but no recored. domain=%s",
 			domain_name
 			log_end;
 
@@ -586,19 +593,19 @@ dns_to_ip(
 	{
 		if (dns_record->wType == DNS_TYPE_A)
 		{
-			ips.push_back(dns_record->Data.A.IpAddress);
+			if (nullptr != ips)
+			{
+				ips->push_back(dns_record->Data.A.IpAddress);
+			}
+			
 		}
-		// refac - test
 		else if (dns_record->wType == DNS_TYPE_CNAME)
-		{			
-			cnames.push_back(WcsToMbsEx(dns_record->Data.CNAME.pNameHost));
-			//log_info 
-			//	"ip=%s, cname=%ws",
-			//	ipv4_to_str(dns_record->Data.A.IpAddress).c_str(),
-			//	dns_record->Data.CNAME.pNameHost
-			//	log_end;
-		}
-		
+		{		
+			if (nullptr != cnames)
+			{
+				cnames->push_back(WcsToMbsEx(dns_record->Data.CNAME.pNameHost));
+			}
+		}		
 		dns_record = dns_record->pNext;
 	}
 
