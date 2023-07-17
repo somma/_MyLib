@@ -2736,8 +2736,8 @@ bool WUCreateDirectory(_In_ const wchar_t* DirectoryPath)
 			log_err
 				"SHCreateDirectoryExW( path=%ws ) failed. gle=%u",
 				DirectoryPath, GetLastError()
-				log_end
-				return false;
+				log_end;
+			return false;
 		}
 	}
 

@@ -17,19 +17,17 @@
 #ifndef _log_h_
 #define _log_h_
 
-#pragma warning(disable:4005)
-/*
-1>C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdint.h(78): warning C4005: 'INT32_MAX' : macro redefinition
-1>          C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\intsafe.h(176) : see previous definition of 'INT32_MAX'
-*/
-#include <boost/noncopyable.hpp>
-#pragma warning(default:4005)
-
-#include <thread>
+// refac
+//#pragma warning(disable:4005)
+///*
+//1>C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdint.h(78): warning C4005: 'INT32_MAX' : macro redefinition
+//1>          C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\intsafe.h(176) : see previous definition of 'INT32_MAX'
+//*/
+//#pragma warning(default:4005)
 #include <mutex>
 
-#include "Win32Utils.h"
-#include "Queue.h"
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/src/Queue.h"
 
 /// @brief log level
 #define log_level_debug         3
@@ -45,6 +43,9 @@
 #define log_to_con		0x00000004
 #define log_to_all		(log_to_file | log_to_ods | log_to_con)
 
+/// @brief	log_id
+#define log_id_base		0xffffffff
+
 /// @brief  log_mask
 #define log_mask_all    0xffffffff		// 모든 로그를 활성화
 #define log_mask_sys    0x00000001      // for log_info, log_err, xxx
@@ -57,12 +58,20 @@
 ///			가장 오래된 로그파일을 삭제한다. 
 #define _max_log_files_def 20
 
+
 //
-// C like APIs
+// C interface
 //
+
+void 
+dbg_print(
+	_In_ uint32_t log_level, 
+	_In_ const char* msg
+);
 
 bool 
 initialize_log(
+	_In_ uint32_t log_id,
 	_In_ uint32_t log_mask,
 	_In_ uint32_t log_level,
 	_In_ uint32_t log_to,
@@ -73,10 +82,12 @@ initialize_log(
 
 void 
 finalize_log(
+	_In_ uint32_t log_id
 	);
 
-void
+bool
 set_log_format(
+	_In_ uint32_t log_id,
 	_In_ bool show_level,
 	_In_ bool show_current_time,
 	_In_ bool show_process_name, 
@@ -84,8 +95,9 @@ set_log_format(
 	_In_ bool show_function_name
 	);
 
-void 
+bool
 get_log_format(
+	_In_ uint32_t log_id,
 	_Out_ bool& show_level,
 	_Out_ bool& show_current_time,
 	_Out_ bool& show_process_name,
@@ -93,33 +105,26 @@ get_log_format(
 	_Out_ bool& show_function_name
 	);
 
-void
+bool
 set_log_env(
-	_In_ uint32_t mask,
-	_In_ uint32_t log_level,
-	_In_ uint32_t log_to
-	);
+	_In_ uint32_t log_id,
+	_In_ uint32_t log_mask,
+	_In_ uint32_t log_level
+);
 
-uint32_t get_log_mask();
-void set_log_mask(_In_ uint32_t mask);
-
-uint32_t get_log_level();
-void set_log_level(_In_ uint32_t log_level);
-
-uint32_t get_log_to();
-uint32_t set_log_to(_In_ uint32_t log_to);
-
-
-
-const char* log_level_to_str(_In_ uint32_t log_level);
-const char* log_to_to_str(_In_ uint32_t log_to);
-
+bool
+get_log_env(
+	_In_ uint32_t log_id,
+	_Out_ uint32_t& log_mask,
+	_Out_ uint32_t& log_level
+);
 
 #ifdef _NO_LOG_
 
 inline
 void
 log_write_fmt(
+	_In_ uint32_t log_id,
 	_In_ uint32_t log_mask,
 	_In_ uint32_t log_level,	
 	_In_z_ const char* function,
@@ -133,6 +138,7 @@ log_write_fmt(
 
 void
 log_write_fmt(
+	_In_ uint32_t log_id,
 	_In_ uint32_t log_mask,
 	_In_ uint32_t log_level,	
 	_In_z_ const char* function,
@@ -142,108 +148,15 @@ log_write_fmt(
 
 #endif // _NO_LOG_
 
-void
-log_write_fmt_without_deco(
-    _In_ uint32_t log_mask, 
-    _In_ uint32_t log_level,    
-	_In_ bool linefeed,
-    _In_z_ const char* fmt,
-    _In_ ...
-    );
 
 //
 // define macro for convenience
 //
-#define log_err		log_write_fmt( log_mask_sys, log_level_error, __FUNCTION__, 
-#define log_warn	log_write_fmt( log_mask_sys, log_level_warn, __FUNCTION__,  
-#define log_info	log_write_fmt( log_mask_sys, log_level_info, __FUNCTION__, 
-#define log_dbg		log_write_fmt( log_mask_sys, log_level_debug, __FUNCTION__, 
-#define log_msg     log_write_fmt_without_deco( log_mask_sys, log_level_warn, true,
-#define log_msgnl	log_write_fmt_without_deco( log_mask_sys, log_level_warn, false,
-
+#define log_err		log_write_fmt( log_id_base, log_mask_sys, log_level_error, __FUNCTION__, 
+#define log_warn	log_write_fmt( log_id_base, log_mask_sys, log_level_warn, __FUNCTION__,  
+#define log_info	log_write_fmt( log_id_base, log_mask_sys, log_level_info, __FUNCTION__, 
+#define log_dbg		log_write_fmt( log_id_base, log_mask_sys, log_level_debug, __FUNCTION__, 
 #define log_end		);
-
-
-/// @brief	logger_impl class
-typedef class slogger: private boost::noncopyable
-{
-public:
-    explicit slogger(_In_ uint32_t log_level,
-					 _In_ uint32_t log_to, 
-					 _In_opt_z_ const wchar_t*log_file_path,
-					 _In_ uint32_t max_log_count = _max_log_count_def, 
-					 _In_ uint32_t max_log_files = _max_log_files_def);
-    ~slogger();
-
-    bool slog_start();
-	void slog_stop();
-
-	void set_log_env(_In_ uint32_t log_level, _In_ uint32_t log_to)
-	{
-		std::lock_guard<std::mutex> log(_lock);
-		if (_log_level != log_level) { _log_level = log_level; }
-		if (_log_to != log_to) { _log_to = log_to; }
-	}
-
-	uint32_t log_level() { return _log_level; }
-	uint32_t log_to() { return _log_to; }
-	void slog_write(_In_ uint32_t level, _In_z_ const char* log_message);
-private:
-    bool volatile _stop_logger;
-    uint32_t volatile _log_level;
-	uint32_t volatile _log_to;
-	uint32_t volatile _max_log_count;
-	uint32_t volatile _max_log_files;
-	std::mutex _lock;
-
-	class log_file_and_ctime
-	{
-	public:		
-		log_file_and_ctime(): ctime{0, 0} { }
-		log_file_and_ctime(const wchar_t* log_file_path, FILETIME& log_file_ctime) :
-			path(log_file_path),
-			ctime(log_file_ctime)
-		{}
-
-		std::wstring path;
-		FILETIME ctime;
-	};
-	std::list<log_file_and_ctime> _log_files;
-
-	typedef class log_entry
-	{
-	public:
-		log_entry(_In_ uint32_t log_level, const char* log_message)
-            : _log_level(log_level), _msg(log_message)
-        {
-        }
-
-        uint32_t    _log_level;
-        std::string _msg;
-	} *plog_entry;
-
-	Queue<plog_entry>	_log_queue;
-    std::thread*		_logger_thread;
-		
-	int64_t _log_count;
-	std::wstring _log_file_path;
-	volatile HANDLE _log_file_handle;
-
-private:
-	bool rotate_log_file(_In_ const wchar_t* log_file_path);
-	bool enum_old_log_files();
-	void remove_old_log_files();
-
-    void slog_thread();
-	
-#ifdef MYLIB_TEST
-	friend bool test_log_rotate_with_ext();
-	friend bool test_log_rotate_without_ext();
-#endif
-
-} *pslogger;
-
-
 
 
 #endif//_log_h_

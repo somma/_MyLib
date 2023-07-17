@@ -318,13 +318,13 @@ void test_future_wait_for()
 			// 아직 준비 안되었음
 			if (status == std::future_status::timeout)
 			{
-				log_msgnl ">" log_end;
+				log_dbg ">" log_end;
 			}			
 
 			// 준비 완료
 			else if (status == std::future_status::ready)
 			{
-				log_msg "" log_end;
+				log_dbg "" log_end;
 				break;
 			}
 		}

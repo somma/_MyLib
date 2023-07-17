@@ -66,9 +66,6 @@ bool test_ip_to_dns()
 
 	};
 
-	uint32_t log_to = get_log_to();
-	set_log_to(log_to_con | log_to_ods);
-
 	uint32_t succ = 0;
 	uint32_t cache = 0;
 	uint32_t wire = 0;
@@ -112,7 +109,7 @@ bool test_ip_to_dns()
 		cache,
 		wire,
 		sw.GetDurationMilliSecond() log_end;
-	set_log_to(log_to);
+	
 	return true;
 }
 

@@ -283,7 +283,7 @@ void run_test()
 	//assert_bool(true, test_cstream);	
 	//assert_bool(true, test_cstream_read_only);
 	//assert_bool(true, test_cstream_read_write_string);
-	//assert_bool(true, test_log_rotate);
+	assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_steady_multiple_timer_in_single_thread);
 	//assert_bool(true, test_std_future_async);
@@ -292,7 +292,7 @@ void run_test()
 	//assert_bool(true, test_is_reserved_ipv4);
 	//assert_bool(true, test_ip_to_dns);
 	//assert_bool(true, test_dns_to_ip);
-	assert_bool(true, test_ip_to_dns2);
+	//assert_bool(true, test_ip_to_dns2);
 	//assert_bool(true, test_iphelp_api);
 	//assert_bool(true, test_create_guid);
 
@@ -480,8 +480,6 @@ void run_test()
 		_pass_count,
 		_fail_count
 	log_end
-
-	finalize_log();
 }
 
 
@@ -1528,8 +1526,6 @@ bool test_get_module_path()
 **/
 bool test_dump_memory()
 {
-	auto lt = set_log_to(log_to_all);
-	
 	unsigned char buf[512] = {0};
 	RtlCopyMemory(buf, GetModuleHandle(NULL), 128);
 
@@ -1546,8 +1542,6 @@ bool test_dump_memory()
 		log_info "%s", its.c_str() log_end
 
 	}
-
-	set_log_to(lt);
 	return true;
 }
 
@@ -2831,25 +2825,24 @@ bool test_log_xxx()
 {
 	_ASSERTE(attach_console());
 
-	set_log_env(log_mask_all, log_level_debug, log_to_con);
+
+	uint32_t log_mask;
+	uint32_t log_level;
+	get_log_env(log_id_base, log_mask, log_level);
+
+	set_log_env(log_id_base, log_mask_all, log_level_debug);
 	log_dbg "you can see this log, console" log_end;
 	log_info "you can see this log, console" log_end;
 	log_warn "you can see this log, console" log_end;
 	log_err "you can see this log, console" log_end;
 
-	set_log_env(log_mask_all, log_level_error, log_to_ods);
+	set_log_env(log_id_base, log_mask_all, log_level_error);
 	log_dbg "you can't see this log, ods" log_end;
 	log_info "you can't see this log, ods" log_end;
 	log_warn "you can't see this log, ods" log_end;
 	log_err "you can see this log, ods" log_end;
 
-	set_log_env(log_mask_all, log_level_error, log_to_file);
-	log_dbg "you can't see this log, file" log_end;
-	log_info "you can't see this log, file" log_end;
-	log_warn "you can't see this log, file" log_end;
-	log_err "you can see this log, file" log_end;
-
-	set_log_env(log_mask_all, log_level_debug, log_to_all);
+	set_log_env(log_id_base, log_mask_all, log_level_info);
 	return true;
 }
 
@@ -3546,8 +3539,6 @@ bool test_trivia()
 	};
 
 
-	set_log_format(true, false, false, false, false);
-
 	//
 	//	std::string 관련
 	//
@@ -3597,14 +3588,6 @@ bool test_trivia()
 	//
 	ccc c(true);
 	c.run();
-
-	// log :: rotate_log_file() 함수 테스트
-	//for (int i=0; ; ++i)
-	//{
-	//	log_info "%d", i log_end;
-	//	Sleep(500);
-	//}
-
 
 	return true;
 }
@@ -4056,117 +4039,109 @@ bool test_print_percent()
 **/
 int _tmain(int argc, _TCHAR* argv[])
 {
-	//UNREFERENCED_PARAMETER(argc);
-	//UNREFERENCED_PARAMETER(argv);
+	initialize_log(log_id_base, log_mask_sys, log_level_info, (log_to_ods | log_to_con), nullptr);
 
-
-	if (argc == 1)
+	do
 	{
-		set_log_to(log_to_ods|log_to_con);
-		set_log_level(log_level_info);
-
-		_mem_dump_console
-		_mem_check_begin
+		if (argc == 1)
 		{
-			run_test();
-		}
-		_mem_check_end;		
-		return 0;
-	}
-	else
-	{
-		set_log_to(log_to_con);
-		set_log_level(log_level_info);
-
-		//
-		//	mylib.exe /filetime_to_str 131618627540824506
-		//
-		if (argc == 3 && (0 == _wcsicmp(&argv[1][1], L"filetime_to_str")))
-		{
-			uint64_t ftime;
-			if (true != wstr_to_uint64(argv[2], ftime))
+			_mem_dump_console
+			_mem_check_begin
 			{
-				log_err "wstr_to_uint64() failed. str=%ws",
-					argv[2]
-					log_end;
-				return -1;
+				run_test();
 			}
-
-			log_info 
-				"Input=%llu, Local Time=%s",
-				ftime,
-				file_time_to_str(ftime, true, true).c_str()
-				log_end;
-			return 0;
-		}
-		//
-		//	mylib.exe /ip_to_netint 192.168.0.1
-		//
-		else if (argc == 3 && (0 == _wcsicmp(&argv[1][1], L"ip_to_netint")))
-		{
-			wchar_t* ip_str = argv[2];
-			uint32_t ip;
-			if (!str_to_ipv4(ip_str, ip))
-			{
-				log_err
-					"str_to_ipv4() failed. Input=%ws",
-					ip_str
-					log_end; 				
-				return -1;
-			}
-			else
-			{
-				log_info
-					"Input=%ws, IP(network bytes order)=%u",
-					ip_str,
-					ip
-					log_end;
-			}
-
-			return 0;
-		}
-		//
-		//	mylib.exe /session_info
-		//
-		else if (argc == 2 && (0 == _wcsicmp(&argv[1][1], L"session_info")))
-		{
-			DWORD console_session_id = WTSGetActiveConsoleSessionId();
-			DWORD process_session_id = 0xffffffff;
-			if (!ProcessIdToSessionId(GetCurrentProcessId(), &process_session_id))
-			{
-				log_err
-					"ProcessIdToSessionId() failed. gle=%u",
-					GetLastError()
-					log_end;
-			}
-			else
-			{
-				log_info
-					"\n"\
-					"Active console session  id=%u \n"
-					"Current process session id=%u ",
-					console_session_id,
-					process_session_id
-					log_end;
-			}
-
-			return 0;
+			_mem_check_end;
 		}
 		else
 		{
-			log_err
-				"\nUsage:\n\n"\
-				"%ws /?	show help \n"\
-				"%ws /filetime_to_str 131618627540824506\n"\
-				"%ws /ip_to_netint 192.168.0.1\n"\
-				"%ws /session_info \n",
-				argv[0],
-				argv[0],
-				argv[0],
-				argv[0]
-				log_end;
-			return -1;
+			//
+			//	mylib.exe /filetime_to_str 131618627540824506
+			//
+			if (argc == 3 && (0 == _wcsicmp(&argv[1][1], L"filetime_to_str")))
+			{
+				uint64_t ftime;
+				if (true != wstr_to_uint64(argv[2], ftime))
+				{
+					log_err "wstr_to_uint64() failed. str=%ws",
+						argv[2]
+						log_end;					
+				}
+				else
+				{
+					log_info
+						"Input=%llu, Local Time=%s",
+						ftime,
+						file_time_to_str(ftime, true, true).c_str()
+						log_end;
+				}
+			}
+
+			//
+			//	mylib.exe /ip_to_netint 192.168.0.1
+			//
+			else if (argc == 3 && (0 == _wcsicmp(&argv[1][1], L"ip_to_netint")))
+			{
+				wchar_t* ip_str = argv[2];
+				uint32_t ip;
+				if (!str_to_ipv4(ip_str, ip))
+				{
+					log_err
+						"str_to_ipv4() failed. Input=%ws",
+						ip_str
+						log_end;
+				}
+				else
+				{
+					log_info
+						"Input=%ws, IP(network bytes order)=%u",
+						ip_str,
+						ip
+						log_end;
+				}				
+			}
+			//
+			//	mylib.exe /session_info
+			//
+			else if (argc == 2 && (0 == _wcsicmp(&argv[1][1], L"session_info")))
+			{
+				DWORD console_session_id = WTSGetActiveConsoleSessionId();
+				DWORD process_session_id = 0xffffffff;
+				if (!ProcessIdToSessionId(GetCurrentProcessId(), &process_session_id))
+				{
+					log_err
+						"ProcessIdToSessionId() failed. gle=%u",
+						GetLastError()
+						log_end;
+				}
+				else
+				{
+					log_info
+						"\n"\
+						"Active console session  id=%u \n"
+						"Current process session id=%u ",
+						console_session_id,
+						process_session_id
+						log_end;
+				}
+			}
+			else
+			{
+				log_err
+					"\nUsage:\n\n"\
+					"%ws /?	show help \n"\
+					"%ws /filetime_to_str 131618627540824506\n"\
+					"%ws /ip_to_netint 192.168.0.1\n"\
+					"%ws /session_info \n",
+					argv[0],
+					argv[0],
+					argv[0],
+					argv[0]
+					log_end;
+			}
 		}
-	}
+	} while (false);
+
+
+	finalize_log(log_id_base);
 }
 
