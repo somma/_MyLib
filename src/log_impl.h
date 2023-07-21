@@ -137,9 +137,7 @@ private:
 	
 	std::mutex _lock;
 	Queue<plog_entry>	_log_queue;
-	std::thread*		_logger_thread;
-
-	
+	std::thread*		_logger_thread;	
 
 private:
 	bool rotate_log_file(_In_ const wchar_t* log_file_path);

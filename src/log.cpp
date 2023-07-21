@@ -31,24 +31,6 @@ static std::shared_mutex	_logger_lock;
 static std::map<uint32_t, slogger*> _loggers;
 
 
-
-
-// refac - slogger 클래스 내부로 이동
-//static bool				_show_level = true;
-//static bool				_show_current_time = true;
-//static bool			    _show_process_name = true;
-//static bool			    _show_pid_tid = true;
-//static bool			    _show_function_name = true;
-//
-//static uint32_t         _log_mask = log_mask_all;
-//#ifdef _DEBUG
-//static uint32_t			_log_level = log_level_debug;
-//#else
-//static uint32_t			_log_level = log_level_info;
-//#endif
-//static uint32_t			_log_to = log_to_ods;
-
-
 /// @brief	ntdll::DbgPrintEx 
 ///			(ref) dpfilter.h
 #define DPFLTR_ERROR_LEVEL 0

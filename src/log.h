@@ -17,15 +17,7 @@
 #ifndef _log_h_
 #define _log_h_
 
-// refac
-//#pragma warning(disable:4005)
-///*
-//1>C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdint.h(78): warning C4005: 'INT32_MAX' : macro redefinition
-//1>          C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\intsafe.h(176) : see previous definition of 'INT32_MAX'
-//*/
-//#pragma warning(default:4005)
 #include <mutex>
-
 #include "_MyLib/src/Win32Utils.h"
 #include "_MyLib/src/Queue.h"
 
