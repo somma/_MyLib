@@ -49,6 +49,14 @@ public:
 		_In_z_ const char* fmt,
 		_In_ va_list args
 	);
+
+	void slog_write(
+		_In_ uint32_t log_mask,
+		_In_ uint32_t log_level,
+		_In_z_ const char* function,
+		_In_z_ const char* fmt,
+		...
+	);
 	
 	void set_log_format(
 		_In_ bool show_level,
@@ -74,10 +82,6 @@ public:
 		_Out_ uint32_t& log_mask,
 		_Out_ uint32_t& log_level
 	);
-
-	// refac del
-	//const char* log_level_to_str(_In_ uint32_t log_level);
-	//const char* log_to_to_str(_In_ uint32_t log_to);
 
 private:
 	std::atomic<bool> _stop_logger; 

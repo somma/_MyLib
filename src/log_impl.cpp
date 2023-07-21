@@ -169,7 +169,8 @@ slogger::slog_write(
 )
 {
 	_ASSERTE(nullptr != function);
-	if (nullptr == function) return;
+	_ASSERTE(nullptr != fmt);
+	if (nullptr == function || nullptr == fmt) return;
 
 	if (log_mask != (_log_mask & log_mask)) return;
 	if (log_level > _log_level) return;
@@ -231,7 +232,7 @@ slogger::slog_write(
 	}
 
 	//> show function name
-	if (_show_function_name)
+	if (_show_function_name && nullptr != function)
 	{
 		StringCbPrintfExA(pos, 
 						  remain, 
@@ -269,6 +270,21 @@ slogger::slog_write(
 
 	std::lock_guard<std::mutex> lock(_lock);
 	_log_queue.push(le);
+}
+
+/// @brief	
+void slogger::slog_write(
+	_In_ uint32_t log_mask,
+	_In_ uint32_t log_level,
+	_In_z_ const char* function,
+	_In_z_ const char* fmt,
+	...
+)
+{
+	va_list args;
+	va_start(args, fmt);
+	this->slog_write(log_mask, log_level, function, fmt, args);
+	va_end(args);
 }
 
 /// @brief	

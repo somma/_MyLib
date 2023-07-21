@@ -279,56 +279,6 @@ get_log_format(
 	}
 }
 
-// refac - del
-///// @brief	log 설정 갱신
-//void
-//set_log_env(
-//	_In_ uint32_t mask,
-//	_In_ uint32_t log_level,
-//	_In_ uint32_t log_to
-//)
-//{
-//	std::lock_guard<std::shared_mutex> lock(_logger_lock);
-//
-//	bool update_logger = false;
-//	if (_log_mask != mask)
-//	{
-//		_log_mask = mask;
-//	}
-//
-//	if (_log_level != log_level)
-//	{
-//		_log_level = log_level;
-//		update_logger = true;
-//	}
-//
-//	if (_log_to != log_to)
-//	{
-//		_log_to = log_to;
-//		update_logger = true;
-//	}
-//
-//	if (nullptr != _logger && true == update_logger)
-//	{
-//		_logger->set_log_env(log_level, log_to);
-//	}
-//}
-//
-///// @brief	_log_mask 
-//uint32_t get_log_mask(_In_ uint32_t log_id)
-//{
-//	std::shared_lock<std::shared_mutex> lock(_logger_lock);
-//	const auto& entry = _loggers.find(log_id);
-//	if (entry != _loggers.cend() && nullptr == entry->second)
-//	{
-//		return entry->second->get_log_mask();
-//	}
-//	else
-//	{
-//		return log_mask_all;
-//	}
-//}
-
 /// @brief	
 bool 
 set_log_env(
@@ -371,111 +321,9 @@ get_log_env(
 	}
 }
 
-
-/*
-
-void set_log_mask(_In_ uint32_t log_id, _In_ uint32_t mask)
-{
-	std::shared_lock<std::shared_mutex> lock(_logger_lock);
-	const auto& entry = _loggers.find(log_id);
-	if (entry != _loggers.cend() && nullptr == entry->second)
-	{
-		entry->second->set_log_mask(mask);
-	}
-}
-
-/// @brief	_log_level
-uint32_t get_log_level(_In_ uint32_t log_id)
-{
-	std::shared_lock<std::shared_mutex> lock(_logger_lock);
-	const auto& entry = _loggers.find(log_id);
-	if (entry != _loggers.cend() && nullptr == entry->second)
-	{
-		return entry->second->get_log_level();
-	}
-	else
-	{
-		return log_level_error;
-	}
-}
-
-void set_log_level(_In_ uint32_t log_id, _In_ uint32_t log_level)
-{
-	std::shared_lock<std::shared_mutex> lock(_logger_lock);
-	const auto& entry = _loggers.find(log_id);
-	if (entry != _loggers.cend() && nullptr == entry->second)
-	{
-		entry->second->set_log_level(log_level);
-	}
-}
-
-/// @briefg	_log_to 
-uint32_t get_log_to(_In_ uint32_t log_id)
-{
-	std::shared_lock<std::shared_mutex> lock(_logger_lock);
-	const auto& entry = _loggers.find(log_id);
-	if (entry != _loggers.cend() && nullptr == entry->second)
-	{
-		return entry->second->get_log_to();
-	}
-	else
-	{
-		return log_to_none;
-	}
-}
-
-void set_log_to(_In_ uint32_t log_id, _In_ uint32_t log_to)
-{
-	std::shared_lock<std::shared_mutex> lock(_logger_lock);
-	const auto& entry = _loggers.find(log_id);
-	if (entry != _loggers.cend() && nullptr == entry->second)
-	{
-		entry->second->set_log_to(log_to);
-	}
-}*/
-
-// refac
-//
-//const char* log_level_to_str(_In_ uint32_t log_level)
-//{
-//	switch (log_level)
-//	{
-//	case log_level_debug: return "debug";
-//	case log_level_info: return "info";
-//	case log_level_warn: return "warn";
-//	case log_level_error: return "error";
-//	}
-//	return "unknown";
-//}
-//
-//const char* log_to_to_str(_In_ uint32_t log_to)
-//{
-//	switch (log_to)
-//	{
-//	case log_to_none: return "none";
-//	case log_to_file: return"file";
-//	case log_to_ods: return "ods";
-//	case log_to_con: return "con";
-//	case (log_to_file | log_to_ods): return "file|ods";
-//	case (log_to_file | log_to_con): return "file|con";
-//	case (log_to_ods | log_to_con): return "ods|con";
-//	case log_to_all: return "file|ods|con";
-//	}
-//	return "unknown";
-//}
-
-
-/**
- * @brief
- * @param
- * @see
- * @remarks
- * @code
- * @endcode
- * @return
-**/
 #ifndef _NO_LOG_
 
+/// @brief	
 void
 log_write_fmt(
 	_In_ uint32_t log_id,
@@ -557,32 +405,32 @@ log_write_fmt(
 
 		//> show pid, tid		
 		StringCbPrintfExA(pos,
-							remain,
-							&pos,
-							&remain,
-							0,
-							"(%+5u:%+5u) : ",
-							GetCurrentProcessId(),
-							GetCurrentThreadId());
-	
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  "(%+5u:%+5u) : ",
+						  GetCurrentProcessId(),
+						  GetCurrentThreadId());
+
 		//> show function name		
 		StringCbPrintfExA(pos,
-							remain,
-							&pos,
-							&remain,
-							0,
-							"%s : ",
-							function);
+						  remain,
+						  &pos,
+						  &remain,
+						  0,
+						  "%s : ",
+						  function);
 		
 		va_list args;
 		va_start(args, fmt);
 		HRESULT hRes = StringCbVPrintfExA(pos,
-											remain,
-											&pos,
-											&remain,
-											0,
-											fmt,
-											args);
+										  remain,
+										  &pos,
+										  &remain,
+										  0,
+										  fmt,
+										  args);
 
 		if (S_OK != hRes)
 		{
@@ -601,93 +449,8 @@ log_write_fmt(
 
 		write_to_console(color, log_buffer);
 		dbg_print(log_level, log_buffer);
-	}	
+	}
 }
 #endif// _NO_LOG_
 
 
-// refac - del
-///// @brief  Writes log without decoration
-//void
-//log_write_fmt_without_deco(
-//	_In_ uint32_t log_id,
-//	_In_ uint32_t log_mask,
-//	_In_ uint32_t log_level,
-//	_In_ bool linefeed,
-//	_In_z_ const char* fmt,
-//	_In_ ...
-//)
-//{
-//	// check log mask & level
-//	if (log_mask != (_log_mask & log_mask)) return;
-//	if (log_level > _log_level) return;
-//
-//	if (NULL == fmt) return;
-//
-//	char log_buffer[2048];
-//	size_t remain = sizeof(log_buffer);
-//	char* pos = log_buffer;
-//	va_list args;
-//
-//	va_start(args, fmt);
-//	HRESULT hRes = StringCbVPrintfExA(pos,
-//									  remain,
-//									  &pos,
-//									  &remain,
-//									  0,
-//									  fmt,
-//									  args
-//	);
-//
-//	if (S_OK != hRes)
-//	{
-//		// invalid character 가 끼어있는 경우 발생 할 수 있음
-//		StringCbPrintfExA(pos,
-//						  remain,
-//						  &pos,
-//						  &remain,
-//						  0,
-//						  "invalid function call parameters"
-//		);
-//	}
-//	va_end(args);
-//
-//	// line feed
-//	if (linefeed)
-//	{
-//		StringCbPrintfExA(pos, remain, &pos, &remain, 0, "\n");
-//	}	
-//
-//	// Let's write logs.
-//	{
-//		std::shared_lock<std::shared_mutex> lock(_logger_lock);
-//		if (NULL != _logger)
-//		{
-//			_logger->slog_write(log_level, log_buffer);
-//		}
-//		else
-//		{
-//			if (FlagOn(_log_to, log_to_con))
-//			{
-//				switch (log_level)
-//				{
-//				case log_level_error: // same as log_level_critical
-//					write_to_console(fc_red, log_buffer);
-//					break;
-//				case log_level_info:
-//				case log_level_warn:
-//					write_to_console(fc_green, log_buffer);
-//					break;
-//				default:
-//					write_to_console(fc_none, log_buffer);
-//				}
-//			}
-//
-//			if (FlagOn(_log_to, log_to_ods))
-//			{
-//				dbg_print(log_level, log_buffer);
-//			}
-//		}
-//	}
-//
-//}
