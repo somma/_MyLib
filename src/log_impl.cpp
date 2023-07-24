@@ -684,35 +684,3 @@ void slogger::get_log_env(
 	log_mask = _log_mask;
 	log_level = _log_level;
 }
-
-
-
-
-// refac - del
-//const char* log_level_to_str(_In_ uint32_t log_level)
-//{
-//	switch (log_level)
-//	{
-//	case log_level_debug: return "debug";
-//	case log_level_info: return "info";
-//	case log_level_warn: return "warn";
-//	case log_level_error: return "error";
-//	}
-//	return "unknown";
-//}
-//
-//const char* log_to_to_str(_In_ uint32_t log_to)
-//{
-//	switch (log_to)
-//	{
-//	case log_to_none: return "none";
-//	case log_to_file: return"file";
-//	case log_to_ods: return "ods";
-//	case log_to_con: return "con";
-//	case (log_to_file | log_to_ods): return "file|ods";
-//	case (log_to_file | log_to_con): return "file|con";
-//	case (log_to_ods | log_to_con): return "ods|con";
-//	case log_to_all: return "file|ods|con";
-//	}
-//	return "unknown";
-//}
