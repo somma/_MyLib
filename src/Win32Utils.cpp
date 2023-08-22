@@ -7340,7 +7340,10 @@ void dump_privilege_attributes(_In_ uint32_t privilege_attributes)
 }
 
 /// @brief	
-psid_info get_sid_info(_In_ PSID sid)
+psid_info 
+get_sid_info(
+	_In_ PSID sid
+)
 {
 	_ASSERTE(nullptr != sid);
 	if (nullptr == sid) return nullptr;
@@ -7389,12 +7392,12 @@ psid_info get_sid_info(_In_ PSID sid)
 	wchar_t* domain = nullptr;
 	SID_NAME_USE sid_name_use = SidTypeUnknown;
 	LookupAccountSid(nullptr,
-						sid,
-						nullptr,
-						&cch_name,
-						nullptr,
-						&cch_domain,
-						&sid_name_use);
+					 sid,
+					 nullptr,
+					 &cch_name,
+					 nullptr,
+					 &cch_domain,
+					 &sid_name_use);
 	if (cch_name > 0)
 	{
 		name = (wchar_t*)malloc((cch_name + 1) * sizeof(wchar_t));
@@ -7473,7 +7476,7 @@ get_process_user(
 			pid,
 			GetLastError()
 			log_end;
-		return false;
+		return nullptr;
 	}
 
 	//
@@ -7487,7 +7490,7 @@ get_process_user(
 		log_err "OpenProcessToken() failed. gle=%u",
 			GetLastError()
 			log_end;
-		return false;
+		return nullptr;
 	}
 	handle_ptr token_handle(th, [](_In_ HANDLE th) {CloseHandle(th); });
 	return get_process_user(token_handle.get());
