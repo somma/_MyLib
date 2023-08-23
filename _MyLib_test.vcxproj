@@ -226,6 +226,7 @@ echo "done." </Command>
     <ClInclude Include="src\injector.h" />
     <ClInclude Include="src\LeakWatcher.h" />
     <ClInclude Include="src\log.h" />
+    <ClInclude Include="src\log_impl.h" />
     <ClInclude Include="src\machine_id.h" />
     <ClInclude Include="src\md5.h" />
     <ClInclude Include="src\net_util.h" />
@@ -269,6 +270,7 @@ echo "done." </Command>
     <ClCompile Include="src\GeneralHashFunctions.cpp" />
     <ClCompile Include="src\injector.cpp" />
     <ClCompile Include="src\log.cpp" />
+    <ClCompile Include="src\log_impl.cpp" />
     <ClCompile Include="src\machine_id.cpp" />
     <ClCompile Include="src\md5.cpp" />
     <ClCompile Include="src\net_util.cpp" />

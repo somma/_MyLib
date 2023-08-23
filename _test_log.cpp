@@ -27,7 +27,9 @@ bool test_log_rotate_with_no_file()
 	//
 	// init file log
 	//
-	_ASSERTE(true == initialize_log(log_mask_all,
+	uint32_t log_id = GetCurrentProcessId();
+	_ASSERTE(true == initialize_log(log_id, 
+									log_mask_all,
 									log_level_debug,
 									log_to_con | log_to_ods,
 									nullptr));
@@ -45,12 +47,14 @@ bool test_log_rotate_with_no_file()
 	// finalize file log
 	//
 	log_info "end log rotate test" log_end;
-	finalize_log();
+	finalize_log(log_id);
 	return true;
 }
 
 bool test_log_rotate_with_ext()
 {
+	uint32_t log_id = GetCurrentProcessId();
+
 	//
 	// init file log
 	//
@@ -58,7 +62,8 @@ bool test_log_rotate_with_ext()
 	log_file_path
 		<< get_current_module_dirEx()
 		<< L"\\test_log_rotate.log";
-	_ASSERTE(true == initialize_log(log_mask_all,
+	_ASSERTE(true == initialize_log(log_id, 
+									log_mask_all,
 									log_level_debug,
 									log_to_all,
 									log_file_path.str().c_str(),
@@ -83,7 +88,7 @@ bool test_log_rotate_with_ext()
 	// finalize file log
 	//
 	log_info "end log rotate test" log_end;
-	finalize_log();
+	finalize_log(log_id);
 	return true;
 }
 
@@ -96,7 +101,8 @@ bool test_log_rotate_without_ext()
 	log_file_path
 		<< get_current_module_dirEx()
 		<< L"\\test_log_rotate_no_ext";
-	_ASSERTE(true == initialize_log(log_mask_all,
+	_ASSERTE(true == initialize_log(GetCurrentProcessId(),
+									log_mask_all,
 									log_level_debug,
 									log_to_all,
 									log_file_path.str().c_str(),
@@ -121,6 +127,6 @@ bool test_log_rotate_without_ext()
 	// finalize file log
 	//
 	log_info "end log rotate test" log_end;
-	finalize_log();
+	finalize_log(GetCurrentProcessId());
 	return true;
 }

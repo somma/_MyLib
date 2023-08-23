@@ -68,16 +68,17 @@ get_inet6_adapters(
 
 bool
 ip_to_dns(
-	_In_ uint32_t ip_netbyte_order,
+	_In_ uint32_t ip_netbyte_order,	
 	_In_ bool cache_only,
-	_Out_ std::string& domain_name
+	_Out_opt_ std::list<std::string>* names
 );
 
 bool
 dns_to_ip(
 	_In_ const char* domain_name,
 	_In_ bool cache_only,
-	_Out_ std::list<uint32_t>& ip_list
+	_Out_opt_ std::list<std::string>* cnames,
+	_Out_opt_ std::list<uint32_t>* ips
 );
 
 //

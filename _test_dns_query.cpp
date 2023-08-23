@@ -66,9 +66,6 @@ bool test_ip_to_dns()
 
 	};
 
-	uint32_t log_to = get_log_to();
-	set_log_to(log_to_con | log_to_ods);
-
 	uint32_t succ = 0;
 	uint32_t cache = 0;
 	uint32_t wire = 0;
@@ -83,15 +80,16 @@ bool test_ip_to_dns()
 		uint32_t ip_nb;
 		_ASSERTE(true == str_to_ipv4(ips[i], ip_nb));
 
-		std::string dns1, dns2;
-		if (true == ip_to_dns(ip_nb, true, dns1))
+		std::list<std::string> dns1;
+		std::list<std::string> dns2;
+		if (true == ip_to_dns(ip_nb, false, &dns1))
 		{
 			++cache;
 			++succ;
 		}
 		else
 		{
-			if (true == ip_to_dns(ip_nb, false, dns2))
+			if (true == ip_to_dns(ip_nb, false, &dns2))
 			{
 				++wire;
 				++succ;
@@ -111,28 +109,75 @@ bool test_ip_to_dns()
 		cache,
 		wire,
 		sw.GetDurationMilliSecond() log_end;
-	set_log_to(log_to);
+	
 	return true;
 }
 
+bool test_ip_to_dns2()
+{
+	_mem_check_begin
+	{
+		//Non - authoritative answer :
+		//Name:    e6030.a.akamaiedge.net
+		//Address : 23.40.44.189
+		//Aliases : www.naver.com
+		//			www.naver.com.nheos.com
+		//			www.naver.com.edgekey.net
+		std::string ip = "23.40.44.189";
+		std::list<std::string> names;
+		bool ret = ip_to_dns(str_to_ipv4(ip.c_str()), false, &names);
+		if (true == ret)
+		{
+			std::stringstream strm;
+			for (const auto& name : names)
+			{
+				strm << name << ",";
+			}
+
+			log_info
+				"ip=%s, name=%s",
+				ip.c_str(),
+				strm.str().c_str()
+				log_end;
+		}
+		else
+		{
+			log_err
+				"ip=%s, no name.",
+				ip.c_str()
+				log_end;
+		}
+	}
+	_mem_check_end;
+
+	return true;
+}
 
 bool test_dns_to_ip()
 {
 	_mem_check_begin
 	{
-		std::list<uint32_t> ipz;
-		_ASSERTE(true == dns_to_ip("naver.com", false, ipz));
-		log_info "naver.com :" log_end;
-		for (auto& ip : ipz)
+		std::list<std::string> cnames;
+		std::list<uint32_t> ips;
+		_ASSERTE(true == dns_to_ip("www.naver.com", false, &cnames, &ips));
+		log_info "www.naver.com :" log_end;
+		for (const  auto& ip : ips)
 		{
-			log_info "  - %s", ipv4_to_str(ip).c_str() log_end;
+			log_info " - %s", ipv4_to_str(ip).c_str() log_end;
 		}
 
-		ipz.clear();
-		_ASSERTE(true != dns_to_ip("inv.invalid.xyz", false, ipz));
+		for (const auto& cname : cnames)
+		{
+			log_info " - %s", cname.c_str() log_end;
+		}
+
+
+
+		cnames.clear();
+		ips.clear();
+		_ASSERTE(true != dns_to_ip("inv.invalid.xyz", false, &cnames, &ips));
 	}
 	_mem_check_end;
-
 
 	return true;
 }

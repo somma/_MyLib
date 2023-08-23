@@ -17,7 +17,7 @@ void dump_adapter(_In_ const PInetAdapter adapter)
 	//
 	//	Aapter information
 	//
-	log_msg
+	log_dbg
 		"\nAdapter, type=%u, friendly name=%ws, name=%s, desc=%ws, mac=%s",
 		adapter->interface_type,
 		adapter->friendly_name.c_str(),
@@ -29,29 +29,29 @@ void dump_adapter(_In_ const PInetAdapter adapter)
 	//
 	//	DNS list
 	//
-	log_msg "+ Dump DNS lists" log_end;
+	log_dbg "+ Dump DNS lists" log_end;
 	for (auto& dns : adapter->dns_list)
 	{
-		log_msg "  - dns=%s", ipv4_to_str(dns).c_str() log_end;
+		log_dbg "  - dns=%s", ipv4_to_str(dns).c_str() log_end;
 	}
 
 	//
 	//	Gateway list
 	//
-	log_msg "+ Dump gateway lists" log_end;
+	log_dbg "+ Dump gateway lists" log_end;
 	for (auto& gw : adapter->gateway_list)
 	{
 		
-		log_msg "  - gw=%s", ipv4_to_str(gw).c_str() log_end;
+		log_dbg "  - gw=%s", ipv4_to_str(gw).c_str() log_end;
 	}
 
 	//
 	//	IP information list
 	//
-	log_msg "+ Dump IP assignments" log_end;
+	log_dbg "+ Dump IP assignments" log_end;
 	for (auto& ip : adapter->ip_info_list)
 	{
-		log_msg
+		log_dbg
 			"  - %s/%s",
 			ipv4_to_str(ip->ip).c_str(),
 			ipv4_to_str(ip->mask).c_str()
@@ -64,9 +64,6 @@ bool test_get_adapters()
 {
 	_mem_check_begin
 	{
-		uint32_t log_to = get_log_to();
-		set_log_to(log_to_con | log_to_ods);
-
 		init_net_util();
 		do
 		{
@@ -85,10 +82,6 @@ bool test_get_adapters()
 			adapters.clear();
 		} while (false);
 		cleanup_net_util();
-
-		
-
-		set_log_to(log_to);
 	}
 	_mem_check_end;
 	return true;
@@ -189,3 +182,4 @@ bool test_is_reserved_ipv4()
 
 	return true;
 }
+

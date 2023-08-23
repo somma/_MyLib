@@ -770,9 +770,8 @@ nt_name_to_dos_name(
 			return false;
 	}
 
-	std::wstring nt_namel(nt_name);
-	to_lower_string(nt_namel);			// 소문자로 모두 변환
-
+	std::wstring nt_name_str(nt_name);
+	std::wstring nt_namel(to_lower_string(nt_name_str));	// 소문자로 모두 변환
 	for (DWORD i = 0; i < length / 4; ++i)
 	{
 		// C:  --> \Device\HarddiskVolume1 매핑 정보를 조회 
@@ -789,7 +788,7 @@ nt_name_to_dos_name(
 				log_end
 				return false;
 		}
-		to_lower_string(nt_device);
+		nt_device = to_lower_string(nt_device);
 
 		// nt_name 의 device_name 부분이 일치하는지 비교
 		// 
@@ -806,8 +805,9 @@ nt_name_to_dos_name(
 		else
 		{
 			// we found!
+			
 			dos_name = dos_device_name;
-			dos_name += nt_namel.substr(pos + nt_device.size(), nt_namel.size());
+			dos_name += nt_name_str.substr(pos + nt_device.size(), nt_name_str.size());
 
 			ret = true;
 			break;
@@ -2736,8 +2736,8 @@ bool WUCreateDirectory(_In_ const wchar_t* DirectoryPath)
 			log_err
 				"SHCreateDirectoryExW( path=%ws ) failed. gle=%u",
 				DirectoryPath, GetLastError()
-				log_end
-				return false;
+				log_end;
+			return false;
 		}
 	}
 
@@ -4590,7 +4590,7 @@ copy_string_to_buf_with_null(
 	_ASSERTE(cc_target == cc_copied);
 
 	// add null-terminator
-	buf[cc_copied] = 0x0000;
+	buf[cc_copied] = 0x00;
 	return cc_copied;
 }
 
@@ -5262,8 +5262,7 @@ guid_to_stringw(
 		//	StringFromGUID2() 함수는 {, } 를 포함함
 		//	{,} 문자를 제거하고, 소문자로 변환 후 리턴한다.
 		std::wstring guid_string(&buf[1], ret - 3);
-		to_lower_string<std::wstring>(guid_string);
-		return guid_string;
+		return to_lower_string<std::wstring>(guid_string);
 	}
 }
 
@@ -7341,7 +7340,10 @@ void dump_privilege_attributes(_In_ uint32_t privilege_attributes)
 }
 
 /// @brief	
-psid_info get_sid_info(_In_ PSID sid)
+psid_info 
+get_sid_info(
+	_In_ PSID sid
+)
 {
 	_ASSERTE(nullptr != sid);
 	if (nullptr == sid) return nullptr;
@@ -7412,9 +7414,16 @@ psid_info get_sid_info(_In_ PSID sid)
 		if (nullptr == name)
 		{
 			log_err "Not enough memory. " log_end;
+
+			if (nullptr != name)
+			{
+				free(name);
+			}
+
 			return nullptr;
 		}
 	}
+	
 	wchar_ptr name_ptr(name, [](_In_ wchar_t* ptr) {if (nullptr != ptr) { free(ptr); }});
 	wchar_ptr domain_ptr(domain, [](_In_ wchar_t* ptr) {if (nullptr != ptr) { free(ptr); }});
 
@@ -7467,7 +7476,7 @@ get_process_user(
 			pid,
 			GetLastError()
 			log_end;
-		return false;
+		return nullptr;
 	}
 
 	//
@@ -7481,7 +7490,7 @@ get_process_user(
 		log_err "OpenProcessToken() failed. gle=%u",
 			GetLastError()
 			log_end;
-		return false;
+		return nullptr;
 	}
 	handle_ptr token_handle(th, [](_In_ HANDLE th) {CloseHandle(th); });
 	return get_process_user(token_handle.get());
@@ -8908,11 +8917,11 @@ bin_to_hexa(
 	hex_string = hex_buf.get();
 	if (true == upper_case)
 	{
-		to_upper_string(hex_string);
+		hex_string = to_upper_string(hex_string);
 	}
 	else
 	{
-		to_lower_string(hex_string);
+		hex_string = to_lower_string(hex_string);
 	}
 
 	return true;
