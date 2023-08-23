@@ -332,7 +332,7 @@ log_write_fmt(
 	else
 	{
 		//
-		//	logger 를 초기화 하지 않았다면 console | ods 에 모두 출력한다.
+		//	logger 를 초기화 하지 않았다면 ods 에 출력한다.
 		//
 		char log_buffer[2048];
 		size_t remain = sizeof(log_buffer);
@@ -428,8 +428,6 @@ log_write_fmt(
 
 		// line feed
 		StringCbPrintfExA(pos, remain, &pos, &remain, 0, "\n");
-
-		write_to_console(color, log_buffer);
 		dbg_print(log_level, log_buffer);
 	}
 }
