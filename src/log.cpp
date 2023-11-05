@@ -144,14 +144,16 @@ initialize_log(
 		if (nullptr == logger)
 		{
 			dbg_print(log_level_error, "[ERR ] Can not initialize logger(insufficient resource)\n");
+			_loggers.erase(log_id);	//<!
 			return false;
 		}
 
 		if (true != logger->slog_start())
 		{
-
 			dbg_print(log_level_error, "[ERR ] Can not start logger\n");
 			delete logger;
+
+			_loggers.erase(log_id);	//<!
 			return false;
 		}
 		
