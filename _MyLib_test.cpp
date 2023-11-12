@@ -30,6 +30,9 @@
 #include "_MyLib/src/CStream.h"
 #include "_MyLib/src/sched_client.h"
 
+// test_match.cpp
+extern bool test_match();
+
 // test_std_future_async.cpp
 extern bool test_std_future_async();
 
@@ -280,10 +283,11 @@ void run_test()
 	UINT32 _fail_count = 0;
 		
 	bool ret = false;
+	assert_bool(true, test_match);
 	//assert_bool(true, test_cstream);	
 	//assert_bool(true, test_cstream_read_only);
 	//assert_bool(true, test_cstream_read_write_string);
-	assert_bool(true, test_log_rotate);
+	//assert_bool(true, test_log_rotate);
 	//assert_bool(true, test_steady_timer);
 	//assert_bool(true, test_steady_multiple_timer_in_single_thread);
 	//assert_bool(true, test_std_future_async);
@@ -459,7 +463,7 @@ void run_test()
 	//assert_bool(true, test_template);
 
 	//assert_bool(true, test_generate_machine_id);
-	assert_bool(true, test_get_sid);
+	//assert_bool(true, test_get_sid);
 
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -473,7 +477,7 @@ void run_test()
 		"----------------------------------------------------"
 		log_end;
 
-	//_pause;
+	_pause;
 
 	log_info
 		"total test = %u, pass = %u, fail = %u",
@@ -4176,8 +4180,6 @@ bool test_get_sid()
 **/
 int _tmain(int argc, _TCHAR* argv[])
 {
-	initialize_log(log_id_base, log_mask_sys, log_level_info, (log_to_ods | log_to_con), nullptr);
-
 	do
 	{
 		if (argc == 1)
@@ -4277,9 +4279,6 @@ int _tmain(int argc, _TCHAR* argv[])
 			}
 		}
 	} while (false);
-
-
-	finalize_log(log_id_base);
 }
 
 

@@ -162,6 +162,9 @@
     <ClInclude Include="src\log_impl.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="match.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -358,6 +361,12 @@
     </ClCompile>
     <ClCompile Include="src\log_impl.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\match.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_match.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
