@@ -5079,7 +5079,7 @@ std::wstring get_current_module_fileEx()
 std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name)
 {
 	_ASSERTE(NULL != nt_name);
-	if (NULL == nt_name) return false;
+	if (NULL == nt_name) return _null_stringw;
 
 	// 문자열 길이를 계산
 	// input: \Device\HarddiskVolume4\
@@ -7702,7 +7702,7 @@ get_privilege_info(
 			"LookupPrivilegeNameW failed. gle=%u",
 			GetLastError()
 			log_end;
-		return false;
+		return nullptr;
 	}
 
 

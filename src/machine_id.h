@@ -8,6 +8,7 @@
 **/
 #pragma once
 #include "BaseWindowsHeader.h"
+#include <intrin.h>
 
 bool generate_machine_id(_Out_ std::string& machine_id);
 
