@@ -497,7 +497,7 @@ FileIoHelper::GetFilePointer(
 		return nullptr;
 	}
 
-	if (true != Initialized()) return false;
+	if (true != Initialized()) return nullptr;
 	if (IsReadOnly() && !read_only)
 	{
 		log_err "file mapped read only." log_end;

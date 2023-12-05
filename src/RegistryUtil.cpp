@@ -749,7 +749,7 @@ RUReadBinaryData(
 {
 	_ASSERTE(nullptr != key_handle);
 	_ASSERTE(nullptr != value_name);
-	if (nullptr == key_handle || nullptr == value_name) return false;
+	if (nullptr == key_handle || nullptr == value_name) return nullptr;
 
 	void* old = nullptr;
 	cbValue = 1024;
@@ -812,7 +812,7 @@ RUReadBinaryDataEx(
 		nullptr == sub_key ||
 		nullptr == value_name)
 	{
-		return false;
+		return nullptr;
 	}
 
 	RegHandle rh(RUOpenKey(key_handle, sub_key, true, disable_wow));

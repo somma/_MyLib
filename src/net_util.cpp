@@ -1059,7 +1059,7 @@ get_mac_by_ip_v4(
 )
 {
 	_ASSERTE(nullptr != ip_str);
-	if (nullptr == ip_str) return false;
+	if (nullptr == ip_str) return "00-00-00-00-00-00";
 
 	uint32_t ip = 0xffffffff;
 	if (true != str_to_ipv4(MbsToWcsEx(ip_str).c_str(), ip))
