@@ -162,9 +162,6 @@
     <ClInclude Include="src\log_impl.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="match.h">
-      <Filter>src</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -366,6 +363,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="_test_match.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_unicode_string_wcsstr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

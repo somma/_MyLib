@@ -208,7 +208,6 @@ echo "done." </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="match.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\account_info.h" />
     <ClInclude Include="src\AirCrypto.h" />
@@ -297,6 +296,7 @@ echo "done." </Command>
     <ClCompile Include="test_CSteream.cpp" />
     <ClCompile Include="test_iphelp_api.cpp" />
     <ClCompile Include="test_std_future_async.cpp" />
+    <ClCompile Include="test_unicode_string_wcsstr.cpp" />
     <ClCompile Include="test_unique_ptr.cpp" />
     <ClCompile Include="_MyLib_test.cpp" />
     <ClCompile Include="_test_aes256.cpp" />

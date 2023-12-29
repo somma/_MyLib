@@ -30,6 +30,9 @@
 #include "_MyLib/src/CStream.h"
 #include "_MyLib/src/sched_client.h"
 
+// test_unicode_string_wcsstr.cpp
+extern bool test_uni_wcsstr();
+
 // test_match.cpp
 extern bool test_match();
 
@@ -283,7 +286,8 @@ void run_test()
 	UINT32 _fail_count = 0;
 		
 	bool ret = false;
-	assert_bool(true, test_match);
+	assert_bool(true, test_uni_wcsstr);
+	//assert_bool(true, test_match);
 	//assert_bool(true, test_cstream);	
 	//assert_bool(true, test_cstream_read_only);
 	//assert_bool(true, test_cstream_read_write_string);
@@ -4168,6 +4172,7 @@ bool test_get_sid()
 	_mem_check_end;
 	return true;
 }
+
 
 /**
  * @brief
