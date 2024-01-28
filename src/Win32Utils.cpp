@@ -64,7 +64,7 @@ char _int_to_char_table[] = {
 	"{|}~" /* 65 - 68 */
 };
 
-char _int_to_uchar_table[] = {
+char _int_to_upper_char_table[] = {
 	"0123456789" /* 0 - 9 */
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ" /* 10 - 35 */
 	" !\"#$%&'()*+,-./" /* 36 - 51 */
@@ -8982,7 +8982,7 @@ bin_to_hexa_fast(
 	char* table = _int_to_char_table;
 	if (true == upper_case)
 	{
-		table = _int_to_uchar_table;
+		table = _int_to_upper_char_table;
 	}
 
 	uint32_t buffer_size = ((size * 2) + 1) * sizeof(char);
@@ -9017,7 +9017,7 @@ bin_to_hexw_fast(
 	char* table = _int_to_char_table;
 	if (true == upper_case)
 	{
-		table = _int_to_uchar_table;
+		table = _int_to_upper_char_table;
 	}
 
 	uint32_t buffer_size = ((size * 2) + 1) * sizeof(wchar_t);

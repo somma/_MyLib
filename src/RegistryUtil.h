@@ -68,7 +68,8 @@ bool
 RUWriteDword(
 	_In_ HKEY key_handle, 
 	_In_ const wchar_t* value_name, 
-	_In_ DWORD value
+	_In_ DWORD value, 
+	_In_ bool big_endian = false
 );
 
 bool
@@ -77,6 +78,7 @@ RUWriteDwordEx(
 	_In_ const wchar_t* sub_key,
 	_In_ const wchar_t* value_name,
 	_In_ DWORD value,
+	_In_ bool big_endian,
 	_In_ bool disable_wow
 );
 

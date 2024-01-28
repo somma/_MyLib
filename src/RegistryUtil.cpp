@@ -177,8 +177,9 @@ RUReadDwordEx(
 bool 
 RUWriteDword(
 	_In_ HKEY key_handle,
-	_In_ const wchar_t* value_name,	
-    _In_ DWORD value
+	_In_ const wchar_t* value_name,
+	_In_ DWORD value,
+	_In_ bool big_endian
     )
 {
 	_ASSERTE(nullptr != key_handle); 
@@ -188,7 +189,7 @@ RUWriteDword(
     DWORD ret = RegSetValueExW(key_handle, 
 							   value_name, 
 							   0, 
-							   REG_DWORD, 
+							   (false == big_endian) ? REG_DWORD : REG_DWORD_BIG_ENDIAN,
 							   (PBYTE)&value, 
 							   sizeof(DWORD));
     if (ERROR_SUCCESS != ret)
@@ -205,6 +206,7 @@ RUWriteDwordEx(
 	_In_ const wchar_t* sub_key,
 	_In_ const wchar_t* value_name,
 	_In_ DWORD value,
+	_In_ bool big_endian,
 	_In_ bool disable_wow
 )
 {
@@ -224,7 +226,7 @@ RUWriteDwordEx(
 		return false;
 	}
 
-	return RUWriteDword(rh.get(), value_name, value);
+	return RUWriteDword(rh.get(), value_name, value, big_endian);
 }
 
 uint64_t 
