@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "net_util.h"
 #include "log.h"
+#include <regex>
 
 
 //
@@ -1239,13 +1240,6 @@ get_addr_infow(
 	return true;
 }
 
-
-
-
-
-
-
-
 /// @brief	예약된 IP 주소인 경우 true 를 리턴한다.
 bool
 is_reserved_ipv4(
@@ -1272,4 +1266,22 @@ is_reserved_ipv4(
 	}
 
 	return false;
+}
+
+/// @brief  dotted deciaml 형태의 유효한 IPv4 문자열인 경우 True 를 리턴한다.
+bool
+is_valid_ipv4(
+	_In_ const std::string ip
+)
+{
+	std::smatch match;
+	std::regex pattern(R"(^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)(\.(?!$)|$)){4}$)",
+					   std::regex_constants::ECMAScript |
+					   std::regex_constants::icase);
+	if (true != std::regex_match(ip, match, pattern) || 0 == match.size())
+	{
+		return false;
+	}
+	
+	return true;
 }

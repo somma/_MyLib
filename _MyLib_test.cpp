@@ -60,6 +60,7 @@ extern bool test_dns_to_ip();
 extern bool test_get_adapters();
 extern bool test_get_addr_info();
 extern bool test_is_reserved_ipv4();
+extern bool test_is_valid_ipv4();
 
 // test_iphelp_api.cpp
 extern bool test_iphelp_api();
@@ -297,7 +298,8 @@ void run_test()
 	//assert_bool(true, test_std_future_async);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
-	//assert_bool(true, test_is_reserved_ipv4);
+	assert_bool(true, test_is_reserved_ipv4);
+	assert_bool(true, test_is_valid_ipv4);
 	//assert_bool(true, test_ip_to_dns);
 	//assert_bool(true, test_dns_to_ip);
 	//assert_bool(true, test_ip_to_dns2);

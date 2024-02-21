@@ -183,3 +183,36 @@ bool test_is_reserved_ipv4()
 	return true;
 }
 
+/// @biref	
+bool test_is_valid_ipv4()
+{
+	const static struct ip_and_result
+	{
+		const char* ip;
+		const bool result;
+
+	} iar[] = {
+		{"10.0.0.2", true},
+		{"192.168.1.1", true},
+		{"1.0.0.-1", false},
+		{"1.0.0.0", true},
+		{"-1.0.2.1", false},
+		{"255.255.255.255", true},
+		{"2555.52.2.2", false},
+		{"255.255.1.256", false}
+	};
+
+	_mem_dump_console
+	_mem_check_begin
+	{
+		for (int i = 0; i < sizeof(iar) / sizeof(ip_and_result); ++i)
+		{
+			_ASSERTE(is_valid_ipv4(iar[i].ip) == iar[i].result);
+			log_dbg "(%s), ip=%s ", iar[i].result == true ? "valid" : "invalid", iar[i].ip log_end;
+		}
+	}
+	_mem_check_end;
+
+	return true;
+}
+
