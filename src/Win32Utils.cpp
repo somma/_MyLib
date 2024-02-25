@@ -4439,116 +4439,102 @@ std::wstring ltrimw(std::wstring& s, const std::wstring& drop)
 	return s.erase(0, s.find_first_not_of(drop));
 }
 
-/// @brief  sprit `str` using `seps` and save each token into `tokens`. 
-bool
-split_stringa(
-	_In_ const char* str,
-	_In_ const char* seps,
-	_Out_ std::list<std::string>& tokens
+/// @brief  source 문자열을 token 스트링으로 토크나이징한 결과를 리스트로 리턴한다.
+///			token 문자열이 없는 경우 source 문자열이 그대로 리스트로 반환된다.
+///			token 문자열이 source 문자열보다 길거나 같은경우 source 문자열이 그대로 리스트로 반환된다.
+///			token 문자열이 공백문자인 경우 remove_space 파라미터는 무시된다.
+std::list<std::string>
+split_string_a(
+	_In_ const std::string source,
+	_In_ const std::string token,
+	_In_ const bool remove_space
 )
 {
-#define max_str_len     2048
-
-	_ASSERTE(NULL != str);
-	if (NULL == str) return false;
-
-	tokens.clear();
-
-	//
-	//	strtok_s() modifies the `str` buffer.
-	//	So we have to use copy `str` for out use only.
-	// 
-	size_t buf_len = (strlen(str) * sizeof(char)) + sizeof(char);
-	if (max_str_len < buf_len)
+	if (source.empty()) return std::list<std::string>();
+	if (token.empty() || source.size() <= token.size())
 	{
-		return false;
+		return std::list<std::string>{ source };
 	}
 
-	char_ptr buf((char*)malloc(buf_len), [](char* p) {
-		if (nullptr != p)
+	std::list<std::string> out;
+	size_t pos_s = 0;
+	size_t pos_e = source.find(token);
+	while (pos_e != std::string::npos)
+	{
+		//	tokenize 된 문자열이 token 과 동일한 경우 substring 문자열은 
+		//	빈 문자열이 되므로 결과에 포함되지 않는다.
+		auto s = source.substr(pos_s, pos_e - pos_s);
+		if (true != s.empty())
 		{
-			free(p);
+			if (true == remove_space && token != " ")
+			{
+				s = trima(s, " ");
+			}
+			out.push_back(s);			
 		}
-	});
-
-	if (nullptr == buf.get())
-	{
-		return false;
+		
+		pos_s = pos_e + token.size();
+		pos_e = source.find(token, pos_s);
 	}
 
-	StringCbPrintfA(buf.get(), buf_len, "%s", str);
-
-	//	
-	//	wcstok_s() 함수에서 separator 문자열이 연속되는 경우 알아서 건너뛴다.
-	//
-	char* next_token = NULL;
-	char* token = strtok_s(buf.get(), seps, &next_token);
-	while (NULL != token)
+	auto remain = source.substr(pos_s, pos_e - pos_s);
+	if (true != remain.empty())
 	{
-		tokens.push_back(token);
-		token = strtok_s(NULL, seps, &next_token);
+		if (true == remove_space && token != " ")
+		{
+			remain = trima(remain, " ");
+		}
+		out.push_back(remain);
 	}
 
-	return true;
+	return out;
 }
 
-bool
-split_stringw(
-	_In_ const wchar_t* str,
-	_In_ const wchar_t* seps,
-	_Out_ std::list<std::wstring>& tokens
+std::list<std::wstring>
+split_string_w(
+	_In_ const std::wstring source,
+	_In_ const std::wstring token,
+	_In_ const bool remove_space
 )
 {
-#define max_str_len     2048
-
-	_ASSERTE(nullptr != str);
-	_ASSERTE(nullptr != seps);
-	if (nullptr == str || nullptr == seps) return false;
-	
-	tokens.clear(); 
-	
-	size_t len_str = wcslen(str);
-	size_t len_seps = wcslen(seps);
-	if (0 == len_str || 0 == len_seps || len_str <= len_seps)
+	if (source.empty()) return std::list<std::wstring>();
+	if (token.empty() || source.size() <= token.size())
 	{
-		// split 할 문자열이 없거나
-		// source string 보다 seperater 가 더 길다면
-		// 연산 없이 성공을 리턴
-		return true;
+		return std::list<std::wstring>{ source };
 	}
 
-	//
-	//	strtok_s() modifies the `str` buffer.
-	//	so we should make copy.
-	//
-	size_t buf_len = (wcslen(str) * sizeof(wchar_t)) + sizeof(wchar_t);
-	if (max_str_len < buf_len)
+	std::list<std::wstring> out;
+	size_t pos_s = 0;
+	size_t pos_e = source.find(token);
+	while (pos_e != std::wstring::npos)
 	{
-		return false;
-	}
-
-	wchar_ptr buf((wchar_t*)malloc(buf_len), [](wchar_t* p) {
-		if (nullptr != p)
+		//	tokenize 된 문자열이 token 과 동일한 경우 substring 문자열은 
+		//	빈 문자열이 되므로 결과에 포함되지 않는다.
+		auto s = source.substr(pos_s, pos_e - pos_s);
+		if (true != s.empty())
 		{
-			free(p);
+			if (true == remove_space && token != L" ")
+			{
+				s = trimw(s, L" ");
+			}
+			out.push_back(s);
 		}
-	});
 
-	if (nullptr == buf.get())
-	{
-		return false;
+		pos_s = pos_e + token.size();
+		pos_e = source.find(token, pos_s);
 	}
 
-	StringCbPrintfW(buf.get(), buf_len, L"%ws", str);
-
-	wchar_t* next_token = nullptr;
-	wchar_t* token = wcstok_s(buf.get(), seps, &next_token);
-	while (nullptr != token)
+	auto remain = source.substr(pos_s, pos_e - pos_s);
+	if (true != remain.empty())
 	{
-		tokens.push_back(token);
-		token = wcstok_s(nullptr, seps, &next_token);
+		if (true == remove_space && token != L" ")
+		{
+			remain = trimw(remain, L" ");
+		}
+		out.push_back(remain);
 	}
-	return true;
+
+	return out;
 }
 
 /// @brief

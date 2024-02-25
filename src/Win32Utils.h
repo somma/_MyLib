@@ -569,19 +569,22 @@ std::wstring  trimw(std::wstring& s, const std::wstring& drop = L" ");
 std::wstring rtrimw(std::wstring& s, const std::wstring& drop = L" ");
 std::wstring ltrimw(std::wstring& s, const std::wstring& drop = L" ");
 
-bool 
-split_stringa(
-    _In_ const char* str, 
-    _In_ const char* seps, 
-    _Out_ std::list<std::string>& tokens
-    );
+/// @brief  source 문자열을 token 스트링으로 토크나이징한 결과를 리스트로 리턴한다.
+///			token 문자열이 없는 경우 source 문자열이 그대로 리스트로 반환된다.
+///			token 문자열이 source 문자열보다 길거나 같은경우 source 문자열이 그대로 리스트로 반환된다.
+std::list<std::string>
+split_string_a(
+	_In_ const std::string source,
+	_In_ const std::string token,
+	_In_ const bool remove_space = false
+);
 
-bool
-split_stringw(
-    _In_ const wchar_t* str,
-    _In_ const wchar_t* seps,
-    _Out_ std::list<std::wstring>& tokens
-    );
+std::list<std::wstring>
+split_string_w(
+	_In_ const std::wstring source,
+	_In_ const std::wstring token,
+	_In_ const bool remove_space = false
+);
 
 /// @brief	src string 을 buf 에 복사하고, 복사된 문자열의 갯수를 리턴
 size_t

@@ -279,6 +279,7 @@ bool test_print_percent();
 extern bool test_generate_machine_id();
 
 bool test_get_sid();
+bool test_std_string_find();
 
 
 void run_test()
@@ -287,7 +288,7 @@ void run_test()
 	UINT32 _fail_count = 0;
 		
 	bool ret = false;
-	assert_bool(true, test_uni_wcsstr);
+	//assert_bool(true, test_uni_wcsstr);
 	//assert_bool(true, test_match);
 	//assert_bool(true, test_cstream);	
 	//assert_bool(true, test_cstream_read_only);
@@ -298,8 +299,8 @@ void run_test()
 	//assert_bool(true, test_std_future_async);
 	//assert_bool(true, test_get_adapters);
 	//assert_bool(true, test_get_addr_info);
-	assert_bool(true, test_is_reserved_ipv4);
-	assert_bool(true, test_is_valid_ipv4);
+	//assert_bool(true, test_is_reserved_ipv4);
+	//assert_bool(true, test_is_valid_ipv4);
 	//assert_bool(true, test_ip_to_dns);
 	//assert_bool(true, test_dns_to_ip);
 	//assert_bool(true, test_ip_to_dns2);
@@ -376,7 +377,7 @@ void run_test()
 	//assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
-	//assert_bool(true, test_split_stringw);
+	assert_bool(true, test_split_stringw);
 	//assert_bool(true, test_cpp_class);
 	//assert_bool(true, test_nt_name_to_dos_name);
 
@@ -470,6 +471,8 @@ void run_test()
 
 	//assert_bool(true, test_generate_machine_id);
 	//assert_bool(true, test_get_sid);
+
+	assert_bool(true, test_std_string_find);
 
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -1029,16 +1032,15 @@ bool test_split_stringw()
 #define _strw _str_aw _str_sepw _str_bw 
 	
 	{
-		std::list<std::wstring> ltokens;
-		_ASSERTE(split_stringw(_strw, _str_sepw, ltokens));
+		std::list<std::wstring> ltokens = split_string_w(_strw, _str_sepw, true);
+		_ASSERTE(!ltokens.empty());
 		std::vector<std::wstring> tokens(ltokens.cbegin(), ltokens.cend());
 		_ASSERTE(tokens[0] == _str_aw);
 		_ASSERTE(tokens[1] == _str_bw);
 	}
 	
 	{
-		std::list<std::wstring> ltokens;
-		_ASSERTE(split_stringw(_null_stringw.c_str(), L"|", ltokens));
+		std::list<std::wstring> ltokens = split_string_w(_null_stringw, L"|", true);		
 		_ASSERTE(ltokens.empty());
 	}
 
@@ -4172,6 +4174,83 @@ bool test_get_sid()
 		}
 	}
 	_mem_check_end;
+	return true;
+}
+
+bool test_std_string_find()
+{
+	_mem_check_begin
+	{
+		struct _test_data {
+			const char* source;
+			const char* token;
+			const int count;
+
+		} const test_data [] = {
+			{
+				"abc | def | cde | xyz",
+				"|",
+				4
+			},
+
+
+			// source 가 empty 인 경우 빈 리스트가 리턴
+			{
+				"",
+				"|",
+				0
+			},
+
+			// token 이 더 긴경우 source 문자열 리스트 리턴
+			{
+				"abcde",
+				"aaaaaaaaaaaaaaa",
+				1
+			},
+
+			// source 와 token 의 길이가 같은 경우 source 문자열 리스트 리턴
+			{
+				"abcde",
+				"abcde",
+				1
+			},
+
+			// source 와 token 의 길이가 같은 경우 source 문자열 리스트 리턴 (문자열이 일치하지 않아도..)
+			{
+				"abcde",
+				"abcdX",
+				1
+			},
+
+			// token 이 연속되는 경우 token 은 반환값에 포함되지 않는다.
+			{
+				"abcdeFabcdeabcdeabcdeFFFF",
+				"abcde",
+				2
+			},
+
+			// token 이 공백문자열인 경우 remove_space 옵션을 무시되며
+			// token 자체가 공백이기 때문에 space 는 제외한 나머지만 리턴됨
+			{
+				"  abcde       abcde abcd",
+				" ",
+				3
+			},
+		};
+		
+		for (int i = 0; i < sizeof(test_data) / sizeof(_test_data); ++i)
+		{
+			auto out = split_string_a(test_data[i].source, test_data[i].token, true);
+			for (const auto& s : out)
+			{
+				log_info "%s", s.c_str() log_end;
+			}
+
+			_ASSERTE(out.size() == (size_t)test_data[i].count);
+		}
+	}
+	_mem_check_end;
+
 	return true;
 }
 
