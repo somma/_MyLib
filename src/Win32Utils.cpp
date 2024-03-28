@@ -2838,7 +2838,7 @@ bool create_directory_ex(
 
 	__retry:
 		out_dir = std::wstring(dir_create) + L"_" + std::to_wstring(rc);
-
+		rc++;
 	} while (rc < retry_count);
 
 	return false;
