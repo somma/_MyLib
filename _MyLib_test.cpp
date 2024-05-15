@@ -30,6 +30,9 @@
 #include "_MyLib/src/CStream.h"
 #include "_MyLib/src/sched_client.h"
 
+
+extern bool ntp_client();
+
 // test_unicode_string_wcsstr.cpp
 extern bool test_uni_wcsstr();
 
@@ -288,6 +291,7 @@ void run_test()
 	UINT32 _fail_count = 0;
 		
 	bool ret = false;
+	assert_bool(true, ntp_client);
 	//assert_bool(true, test_uni_wcsstr);
 	//assert_bool(true, test_match);
 	//assert_bool(true, test_cstream);	
@@ -377,7 +381,7 @@ void run_test()
 	//assert_bool(true, test_ip_to_str);
 
 	//assert_bool(true, test_strtok);
-	assert_bool(true, test_split_stringw);
+	//assert_bool(true, test_split_stringw);
 	//assert_bool(true, test_cpp_class);
 	//assert_bool(true, test_nt_name_to_dos_name);
 
@@ -472,7 +476,7 @@ void run_test()
 	//assert_bool(true, test_generate_machine_id);
 	//assert_bool(true, test_get_sid);
 
-	assert_bool(true, test_std_string_find);
+	//assert_bool(true, test_std_string_find);
 
 
 //	유닛테스트에 포함되지 않는 그냥 테스트용 코드
@@ -1690,8 +1694,7 @@ bool test_get_account_infos()
 
 	for (auto& account : accounts)
 	{
-		FILETIME logon_filetime;
-		unixtime_to_filetime(account->last_logon_timestamp(), &logon_filetime);
+		FILETIME logon_filetime = unixtime_to_filetime(account->last_logon_timestamp());
 		std::wstring last_logon_kst = MbsToWcsEx(file_time_to_str(&logon_filetime, true, false).c_str());
 		log_info
 			"name(%ws) : sid(%ws) priv(%ws) attrib(%d) last_logon(%ws) log_on_count(%u) last_password_change(%u)",

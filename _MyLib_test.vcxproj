@@ -316,6 +316,7 @@ echo "done." </Command>
     <ClCompile Include="_test_match.cpp" />
     <ClCompile Include="_test_net_util.cpp" />
     <ClCompile Include="_test_NtApi.cpp" />
+    <ClCompile Include="_test_ntp_client.cpp" />
     <ClCompile Include="_test_ppl.cpp" />
     <ClCompile Include="_test_process_token.cpp" />
     <ClCompile Include="_test_process_tree.cpp" />

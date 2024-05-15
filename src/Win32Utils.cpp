@@ -243,24 +243,23 @@ large_int_to_file_time(
 	file_time->dwHighDateTime = large_int->HighPart;
 }
 
-/// @brief	unixtime(DWORD) -> FILETIME
+/// @brief	unixtime(QWORD) -> FILETIME
 ///	@remark	Do not cast a pointer to a FILETIME structure to either a ULARGE_INTEGER* or __int64*
 ///			https://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
 ///			https://support.microsoft.com/en-us/help/167296/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime
-void
+FILETIME 
 unixtime_to_filetime(
-	_In_ uint32_t unix_time,
-	_Out_ PFILETIME const file_time)
+	_In_ uint64_t unix_time
+)
 {
-	_ASSERTE(nullptr != file_time);
-	if (nullptr == file_time) return;
-
 	//
 	// time_t to filetime
 	//
 	LONGLONG ll = Int32x32To64(unix_time, 10000000) + 116444736000000000;
-	file_time->dwLowDateTime = (DWORD)ll;
-	file_time->dwHighDateTime = ll >> 32;
+	FILETIME file_time; 
+	file_time.dwLowDateTime = (DWORD)ll;
+	file_time.dwHighDateTime = ll >> 32;
+	return file_time;
 }
 
 /// @brief	ftl, ftr 값의 차를 밀리세컨드 단위로 리턴한다. 
@@ -343,6 +342,18 @@ std::string	time_now_to_str2()
 	GetSystemTime(&utc_system_time);
 
 	return sys_time_to_str2(&utc_system_time);
+}
+
+/// @brief  현재 시각을 FILETIME 으로 리턴한다.
+FILETIME now_as_filetime()
+{
+	SYSTEMTIME utc_system_time;
+	GetSystemTime(&utc_system_time);
+
+	FILETIME filetime;
+	SystemTimeToFileTime(&utc_system_time, &filetime);
+
+	return filetime;
 }
 
 /// @brief  FILETIME to `yyyy-mm-dd hh:mi:ss` string representation.
