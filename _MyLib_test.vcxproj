@@ -231,6 +231,7 @@ echo "done." </Command>
     <ClInclude Include="src\md5.h" />
     <ClInclude Include="src\net_util.h" />
     <ClInclude Include="src\net_util_typedef.h" />
+    <ClInclude Include="src\ntp_client.h" />
     <ClInclude Include="src\nt_name_conv.h" />
     <ClInclude Include="src\process_tree.h" />
     <ClInclude Include="src\Queue.h" />
@@ -257,6 +258,7 @@ echo "done." </Command>
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ntp_client.cpp" />
     <ClCompile Include="src\account_info.cpp" />
     <ClCompile Include="src\AirCrypto.cpp" />
     <ClCompile Include="src\AKSyncObjs.cpp" />

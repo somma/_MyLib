@@ -162,6 +162,9 @@
     <ClInclude Include="src\log_impl.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\ntp_client.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -370,6 +373,9 @@
     </ClCompile>
     <ClCompile Include="_test_ntp_client.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ntp_client.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
