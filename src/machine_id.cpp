@@ -88,17 +88,6 @@ bool generate_machine_id(_Out_ std::string& machine_id)
 		strm << cpuidx;
 
 		//
-		//	Computer name
-		//
-		std::wstring host_name;
-		if (!get_host_name(host_name))
-		{
-			log_err "get_host_name() failed." log_end;
-			break;
-		}
-		strm << WcsToMbsUTF8Ex(host_name);
-
-		//
 		//	hash it!
 		//
 		MD5_CTX md5 = { 0 };
