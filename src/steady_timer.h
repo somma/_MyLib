@@ -84,13 +84,14 @@ public:
 		//	타이머 취소
 		//	
 		_timer.cancel();
-		Sleep(1);
-		_timer_task.wait();
-
 		_interval = 0;
 		_tag = 0;
 		_callback = 0;
 		_running = false;
+
+		Sleep(1);
+		_timer_task.wait();
+
 	}
 
 private:
