@@ -8831,7 +8831,7 @@ IMAGE_TYPE get_image_type(_In_ HANDLE file_handle)
 		}
 
 	}
-	catch (std::exception& e)
+	catch (const std::exception& e)
 	{
 		log_warn "Invalid/Malformed pe file, exception=%s", e.what() log_end;
 		return IT_UNKNOWN;

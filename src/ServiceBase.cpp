@@ -434,7 +434,7 @@ void CServiceBase::Stop()
         // Tell SCM that the service is stopped.
         SetServiceStatus(SERVICE_STOPPED);
     }
-    catch (DWORD dwError)
+    catch (const DWORD& dwError)
     {
         // Log the error.
         WriteErrorLogEntry(L"Service Stop", dwError);
@@ -489,7 +489,7 @@ void CServiceBase::Pause()
         // Tell SCM that the service is paused.
         SetServiceStatus(SERVICE_PAUSED);
     }
-    catch (DWORD dwError)
+    catch (const DWORD& dwError)
     {
         // Log the error.
         WriteErrorLogEntry(L"Service Pause", dwError);
@@ -542,7 +542,7 @@ void CServiceBase::Continue()
         // Tell SCM that the service is running.
         SetServiceStatus(SERVICE_RUNNING);
     }
-    catch (DWORD dwError)
+    catch (const DWORD& dwError)
     {
         // Log the error.
         WriteErrorLogEntry(L"Service Continue", dwError);
@@ -591,7 +591,7 @@ void CServiceBase::Shutdown()
         // Tell SCM that the service is stopped.
         SetServiceStatus(SERVICE_STOPPED);
     }
-    catch (DWORD dwError)
+    catch (const DWORD& dwError)
     {
         // Log the error.
         WriteErrorLogEntry(L"Service Shutdown", dwError);

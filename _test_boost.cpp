@@ -38,9 +38,9 @@ bool boost_lexical_cast()
     {
         std::cout << boost::lexical_cast<int>("abcd") << std::endl;
     }
-    catch (boost::bad_lexical_cast)
+    catch (const boost::bad_lexical_cast& ex)
     {
-        std::cout << "bad lexical cast" << std::endl;
+        std::cout << "bad lexical cast, ex=" << ex.what() << std::endl;
     }
 
 	return true;

@@ -271,9 +271,9 @@ _mem_check_begin
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
 		writer->write(root, &request_body);
 	}
-	catch (const std::exception)
+	catch (const std::exception& ex)
 	{
-		log_err "Exception, Can not create request body with json." log_end;
+		log_err "Exception, Can not create request body with json. ex=%s", ex.what() log_end;
 		return false;
 	}
 
@@ -333,9 +333,9 @@ _mem_check_begin
 		std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
 		writer->write(json, &request_body);
 	}
-	catch (const std::exception)
+	catch (const std::exception& ex)
 	{
-		log_err "Exception, Can not create request body with json." log_end;
+		log_err "Exception, Can not create request body with json. ex=%s", ex.what() log_end;
 		return false;
 	}
 

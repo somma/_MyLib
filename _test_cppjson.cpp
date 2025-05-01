@@ -58,7 +58,7 @@ bool test_cpp_joson()
 				strm.str().c_str()
 				log_end;
 		}
-		catch (std::exception e)
+		catch (const std::exception& e)
 		{
 			log_err
 				"exception, event id=%s",
@@ -84,7 +84,7 @@ bool test_cpp_joson()
 					strm.str().c_str()
 					log_end;
 			}
-			catch (std::exception e)
+			catch (const std::exception& e)
 			{
 				log_err
 					"exception, event id=%s",
