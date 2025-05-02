@@ -31,6 +31,9 @@
 #include "_MyLib/src/sched_client.h"
 
 
+// test_get_mbr_or_gpt_info.cpp
+extern bool get_mbr_gpt_info();
+
 extern bool ntp_client();
 
 // test_unicode_string_wcsstr.cpp
@@ -291,7 +294,8 @@ void run_test()
 	UINT32 _fail_count = 0;
 		
 	bool ret = false;
-	assert_bool(true, ntp_client);
+	assert_bool(true, get_mbr_gpt_info);
+	//assert_bool(true, ntp_client);
 	//assert_bool(true, test_uni_wcsstr);
 	//assert_bool(true, test_match);
 	//assert_bool(true, test_cstream);	

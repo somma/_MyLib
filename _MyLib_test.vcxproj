@@ -285,6 +285,7 @@ echo "done." </Command>
     <ClCompile Include="src\scm_context.cpp" />
     <ClCompile Include="src\ServiceBase.cpp" />
     <ClCompile Include="src\sha2.cpp" />
+    <ClCompile Include="src\test_get_mbr_or_gpt_info.cpp" />
     <ClCompile Include="src\ThreadManager.cpp" />
     <ClCompile Include="src\Win32Utils.cpp" />
     <ClCompile Include="src\wmi_client.cpp" />
