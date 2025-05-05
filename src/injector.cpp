@@ -62,6 +62,18 @@ typedef NTSTATUS (WINAPI *pNtCreateThreadEx) (
 */
 bool inject_dll(_In_ DWORD pid, _In_z_ const char* dll_path)
 {
+	if (nullptr == dll_path)
+	{
+		log_err "no dll path supplied. " log_end;
+		return false;
+	}
+
+	if (true != is_file_existsA(dll_path))
+	{
+		log_err "no dll exists. path=%s", dll_path log_end;
+		return false;
+	}
+
 	// 타겟 프로세스 오픈		
 	DWORD rights = PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ;
 		
@@ -86,9 +98,7 @@ bool inject_dll(_In_ DWORD pid, _In_z_ const char* dll_path)
 
 	if (NULL == process_handle)
 	{
-		//log_err "Can not access process. pid=%u",
-		//	pid
-		//	log_end;
+		log_err "OpenProcess() failed. pid=%u", pid log_end;
 		return false;
 	}
 
