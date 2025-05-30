@@ -952,9 +952,11 @@ bool get_disk_numbers(_Out_ std::vector<uint32_t>& disk_numbers)
 		dos_device_name[1] = 0x0000;
 		std::wstringstream path;
 		path << L"\\\\.\\" << dos_device_name << ":";
+
+		// 파일핸들은 조회권한만 있으면 되므로 최소권한(0)으로 핸들을 오픈
 		HANDLE hFile = CreateFileW(
 			path.str().c_str(), //L"\\\\.\\c:", 
-			GENERIC_READ,
+			0, 
 			FILE_SHARE_READ | FILE_SHARE_WRITE,
 			NULL,
 			OPEN_EXISTING,  // for device or file, only if exists.
