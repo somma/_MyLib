@@ -200,7 +200,7 @@ curl_client::http_get(
 	//
 	if (!prepare_perform(url, false))
 	{
-		log_err "prepare_perform() failed. " log_end;
+		//log_err "prepare_perform() failed. " log_end;
 		return false;
 	}
 
@@ -237,7 +237,7 @@ curl_client::http_get(
 	//
 	if (true != perform(http_response_code))
 	{
-		log_err "perform() failed." log_end;
+		//log_err "perform() failed." log_end;
 		return false;
 	}
 
@@ -336,7 +336,7 @@ curl_client::http_download_file(
 	//
 	if (true != perform(http_response_code))
 	{
-		log_err "perform() failed." log_end;
+		//log_err "perform() failed." log_end;
 		return false;
 	}
 
@@ -445,7 +445,7 @@ curl_client::http_file_upload(
 						forms, 
 						http_response_code))
 	{
-		log_err "perform() failed." log_end;
+		//log_err "perform() failed." log_end;
 		return false;
 	}
 
@@ -476,7 +476,7 @@ curl_client::http_file_upload(
 	CMemoryStream stream;
 	if (true != http_file_upload(url, file_path, forms, http_response_code, stream))
 	{
-		log_err "http_post() failed. url=%s", url log_end;
+		log_err "http_file_upload() failed. url=%s", url log_end;
 		return false;
 	}
 
@@ -594,7 +594,7 @@ curl_client::http_post(
 	//
 	if (true != perform(http_response_code))
 	{
-		log_err "perform() failed." log_end;
+		//log_err "perform() failed." log_end;
 		return false;
 	}
 
@@ -730,7 +730,7 @@ curl_client::http_post(
 	//
 	if (true != perform(http_response_code))
 	{
-		log_err "perform() failed." log_end;
+		//log_err "perform() failed." log_end;
 		return false;
 	}
 
@@ -842,7 +842,7 @@ bool curl_client::http_patch(
 	//
 	if (true != perform(http_response_code))
 	{
-		log_err "perform() failed." log_end;
+		//log_err "perform() failed." log_end;
 		return false;
 	}
 
@@ -901,7 +901,7 @@ curl_client::http_patch(
 	//
 	if (true != perform(http_response_code))
 	{
-		log_err "perform() failed." log_end;
+		//log_err "perform() failed." log_end;
 		return false;
 	}
 
@@ -1146,10 +1146,10 @@ bool curl_client::perform(
 		curl_code = curl_easy_perform(_curl);
 		if (CURLE_OK != curl_code)
 		{
-			log_err "curl_easy_perform() failed. curl_code = %d, %s",
-				curl_code,
-				curl_easy_strerror(curl_code)
-				log_end;
+			//log_err "curl_easy_perform() failed. curl_code = %d, %s",
+			//	curl_code,
+			//	curl_easy_strerror(curl_code)
+			//	log_end;
 			break;
 		}
 
