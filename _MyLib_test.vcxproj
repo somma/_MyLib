@@ -223,7 +223,6 @@ echo "done." </Command>
     <ClInclude Include="src\FileIoHelperClass.h" />
     <ClInclude Include="src\GeneralHashFunctions.h" />
     <ClInclude Include="src\gpt_partition_guid.h" />
-    <ClInclude Include="src\injector.h" />
     <ClInclude Include="src\LeakWatcher.h" />
     <ClInclude Include="src\log.h" />
     <ClInclude Include="src\log_impl.h" />
@@ -270,7 +269,6 @@ echo "done." </Command>
     <ClCompile Include="src\FileIoHelper.cpp" />
     <ClCompile Include="src\FileIoHelperClass.cpp" />
     <ClCompile Include="src\GeneralHashFunctions.cpp" />
-    <ClCompile Include="src\injector.cpp" />
     <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\log_impl.cpp" />
     <ClCompile Include="src\machine_id.cpp" />

@@ -69,9 +69,6 @@
     <ClInclude Include="src\gpt_partition_guid.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\injector.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\LeakWatcher.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -270,9 +267,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\GeneralHashFunctions.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\injector.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\log.cpp">
