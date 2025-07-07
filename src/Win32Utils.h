@@ -680,13 +680,14 @@ std::wstring Win32ErrorToStringW(IN DWORD ErrorCode);
 
 std::list<std::string> dump_memory(_In_ uint64_t base_offset, _In_ unsigned char* buf, _In_ UINT32 buf_len);
 
-bool	set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable);
+bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable, _In_ bool auto_revert = false);
+template<typename Func> bool execute_with_debug_privilege(Func&& func);
 
-bool    get_active_window_pid(_Out_ DWORD& pid, _Out_ DWORD& tid);
-DWORD	get_active_console_session_id();
-bool	get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id);
-bool	process_in_console_session(_In_ DWORD process_id);
-bool	get_current_session_id(_Out_ DWORD& session_id);
+bool get_active_window_pid(_Out_ DWORD& pid, _Out_ DWORD& tid);
+DWORD get_active_console_session_id();
+bool get_session_id_by_pid(_In_ DWORD process_id, _Out_ DWORD& session_id);
+bool process_in_console_session(_In_ DWORD process_id);
+bool get_current_session_id(_Out_ DWORD& session_id);
 
 bool create_process(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _Out_ HANDLE& process_handle, _Out_ DWORD& process_id);
 bool create_process_and_wait(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _In_ DWORD timeout_secs, _Out_ PDWORD exit_code);

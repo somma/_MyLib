@@ -5533,28 +5533,52 @@ dump_memory(
 	return rs;
 }
 
+/// @brief SE_DEBUG_NAME 권한을 임시로 활성화하고 작업을 수행하는 헬퍼 함수
+///        Thread token을 사용하여 은밀하게 권한을 관리하고 작업 완료 후 자동으로 해제
+template<typename Func>
+bool execute_with_debug_privilege(Func&& func)
+{
+	// SE_DEBUG_NAME 권한 활성화 (Thread token 사용으로 은밀하게)
+	// auto_revert=true로 함수 종료 시 자동으로 RevertToSelf() 호출
+	bool privilege_set = set_privilege(SE_DEBUG_NAME, true);
+
+	// 권한 활성화 실패해도 작업 시도 (권한이 이미 있을 수 있음)
+	if (!privilege_set)
+	{
+		log_dbg "SE_DEBUG_NAME privilege activation failed, attempting operation anyway" log_end;
+	}
+
+	// 사용자 함수 실행
+	bool result = func();
+
+	// set_privilege에서 자동으로 RevertToSelf() 호출됨 (auto_revert=true)
+	return result;
+}
+
 /**
-* @brief	http://support.microsoft.com/kb/131065/EN-US/
-* @param	privilege	e.g. SE_DEBUG_NAME
-* @see
-* @remarks
-* @code
-* @endcode
-* @return
-*/
-bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
+ * @brief SE_DEBUG_NAME 등의 권한을 설정하고 RevertToSelf 호출 여부를 제어할 수 있는 함수
+ * @param privilege 설정할 권한 이름 (예: SE_DEBUG_NAME)
+ * @param enable true면 권한 활성화, false면 비활성화
+ * @param auto_revert true면 함수 종료 시 RevertToSelf() 자동 호출, false면 호출하지 않음
+ *                    RevertToSelf() 를 호출하지 않으면 활성화된 권한이 유지됨
+ * @return 성공 시 true, 실패 시 false
+ * @remarks auto_revert=false인 경우 명시적으로 RevertToSelf()를 호출해야 함
+ */
+bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable, _In_ bool auto_revert)
 {
 	if (!IsWindowsXPOrGreater())
 	{
 		return true;
 	}
 		
-	//	[참고]
-	//	AdjustToken() 호출 시 Thread token 을 사용하면 process explorer 
-	//	등에서privilige enable/disable 상태가 보이지 않는다 (당연히 
-	//	Process token 을 사용하면 보이고)
-	//	
 	HANDLE hToken;
+	bool needs_revert = false;
+	
+	// AdjustToken() 호출 시 Thread token 을 사용하면 process explorer 
+	// 등에서 privilege enable/disable 상태가 보이지 않는다.
+	// (당연히 Process token 을 사용하면 보이고)
+	// process explorer 등에서 권한 설정 정보가 안보이는 등의 은밀성을 위한다면
+	// Thread  token 이 조금 유리함
 	if (TRUE != OpenThreadToken(GetCurrentThread(),
 								TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
 								FALSE,
@@ -5562,34 +5586,31 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 	{
 		if (GetLastError() == ERROR_NO_TOKEN)
 		{
+			// Impersonate 되지 않은 상태인 경우 Thread 는 Access token 을 가지고 있지 
+			// 않기 때문에 항상 ERROR_NO_TOKEN 이 리턴한다.
 			//
-			//    Impersonate 되지 않은 상태인 경우 Thread 는 Access token 을 가지고 있지 
-			//    때문에 항상 ERROR_NO_TOKEN 이 리턴한다.
-			//
-			//    이 경우 OpenProcessToken() 을 호출해서 프로세스의 Access token 을 얻어서
-			//    프로세스의 Privilige 를 변경할 수 있다. 
-			// 
-			//    아니면 ImpersonateSelf() 를 호출해서 현재 스레드의 Access token 을 생성하고
-			//    (생성된 token 은 현재 스레드에서만 유효) 현재 스레드의 Privilege 만 변경할 
-			//    수 있다. Privilege 변경 후 할일이 끝나면 RevertToSelf() 를 호출해서 
-			//    Impersion 을 끝낼 수 있다.
-			//
+			// ImpersonateSelf() 를 호출해서 현재 스레드의 Access token 을 생성하고
+			// (생성된 token 은 현재 스레드에서만 유효) 현재 스레드의 Privilege 만 변경할 
+			// 수 있다. Privilege 변경 후 할일이 끝나면 RevertToSelf() 를 호출해서 
+			// Impersonation 을 끝낼 수 있다.
 			if (ImpersonateSelf(SecurityImpersonation) != TRUE)
 			{
-				log_err "ImpersonateSelf( ) failed. gle=%u",
+				log_err "ImpersonateSelf() failed. gle=%u",
 					GetLastError()
 					log_end;
 				return false;
 			}
+			needs_revert = true;
 
 			if (TRUE != OpenThreadToken(GetCurrentThread(),
 										TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
 										FALSE,
 										&hToken))
 			{
-				log_err "OpenThreadToken() failed. gle=%u",
+				log_err "OpenThreadToken() failed after ImpersonateSelf. gle=%u",
 					GetLastError()
 					log_end;
+				if (needs_revert) RevertToSelf();
 				return false;
 			}
 		}
@@ -5601,29 +5622,28 @@ bool set_privilege(_In_z_ const wchar_t* privilege, _In_ bool enable)
 			return false;
 		}
 	}
+
+	// auto_revert 설정에 따른 조건부 RAII
+	struct ConditionalTokenGuard {
+		HANDLE token;
+		bool needs_revert;
+		bool should_auto_revert;
 		
-	//
-	//	Process token 을 사용하려면... 
-	//
-	//if (!OpenProcessToken(GetCurrentProcess(),
-	//					  TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
-	//					  &hToken))
-	//{
-	//	log_err
-	//		"OpenProcessToken() failed. gle=%u",
-	//		GetLastError()
-	//		log_end;
-	//	return false;
-	//}
+		ConditionalTokenGuard(HANDLE h, bool revert, bool auto_rev) 
+			: token(h), needs_revert(revert), should_auto_revert(auto_rev) {}
+		
+		~ConditionalTokenGuard() {
+			if (token) CloseHandle(token);
+			if (should_auto_revert && needs_revert) RevertToSelf();
+		}
+		
+		ConditionalTokenGuard(const ConditionalTokenGuard&) = delete;
+		ConditionalTokenGuard& operator=(const ConditionalTokenGuard&) = delete;
+	};
+	
+	ConditionalTokenGuard token_guard(hToken, needs_revert, auto_revert);
 
-	handle_ptr token_ptr(hToken, [](_In_ HANDLE h)
-	{
-		CloseHandle(h); 
-	});
-
-	//
-	//	현재 프로세스에 요청한 Privilige 가 있는지 확인
-	//
+	// 현재 스레드에 요청한 Privilege 가 있는지 확인
 	TOKEN_PRIVILEGES tp = { 0 };
 	tp.PrivilegeCount = 1;
 	if (!LookupPrivilegeValue(nullptr,
