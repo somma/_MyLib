@@ -5113,21 +5113,32 @@ std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name)
 std::wstring 
 file_name_from_file_pathw(
 	_In_ const wchar_t* file_path, 
-	_In_ const bool include_ext)
+	_In_ const bool include_ext, 
+	_In_ const bool include_ads)
 {
 	_ASSERTE(nullptr != file_path);
 	if (nullptr == file_path) return _null_stringw;
 
+	std::wstring ret = extract_last_tokenExW(file_path, L"\\", false);
+
 	if (include_ext)
 	{
-		return extract_last_tokenExW(file_path, L"\\", false);
+		// ADS 포함 여부는 ext 를 포함한 경우에만 유효하다. 
+		if (true == include_ads)
+		{
+			return ret;
+		}
+		else
+		{
+			// :ADS 부분을 잘라내고 리턴한다. 
+			return extract_last_tokenExW(ret.c_str(), L":", false);			
+		}
 	}
 	else
 	{
 		auto file_name = extract_last_tokenExW(file_path, L"\\", false);
 		return extract_last_tokenExW(file_name.c_str(), L".", true);
-	}
-	
+	}	
 }
 
 std::string 

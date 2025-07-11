@@ -362,7 +362,8 @@ std::wstring device_name_from_nt_name(_In_ const wchar_t* nt_name);
 std::wstring 
 file_name_from_file_pathw(
 	_In_ const wchar_t* file_path,
-	_In_ const bool include_ext=true);
+	_In_ const bool include_ext=true, 
+	_In_ const bool include_ads=false);
 
 std::string 
 file_name_from_file_patha(
