@@ -3035,7 +3035,7 @@ image_path_by_pid(
 	HANDLE phandle = NULL;
 	do
 	{
-		phandle = OpenProcess(PROCESS_QUERY_INFORMATION,
+		phandle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
 							  FALSE,
 							  process_id);
 		if (NULL != phandle) break;
@@ -3046,7 +3046,7 @@ image_path_by_pid(
 			break;
 		}
 
-		phandle = OpenProcess(PROCESS_QUERY_INFORMATION,
+		phandle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION,
 							  FALSE,
 							  process_id);
 	} while (false);
@@ -3977,6 +3977,39 @@ is_same_string(
 	}
 }
 
+/// @brief
+std::string to_upper_string(const std::string& input) {
+	std::string tmp(input);
+	if (!tmp.empty()) {
+		CharUpperA(&tmp[0]);
+	}
+	return tmp;
+}
+
+std::wstring to_upper_string(const std::wstring& input) {
+	std::wstring tmp(input);
+	if (!tmp.empty()) {
+		CharUpperW(&tmp[0]);
+	}
+	return tmp;
+}
+
+/// @brief
+std::string to_lower_string(const std::string& input) {
+	std::string tmp(input);
+	if (!tmp.empty()) {
+		CharLowerA(&tmp[0]);
+	}
+	return tmp;
+}
+
+std::wstring to_lower_string(const std::wstring& input) {
+	std::wstring tmp(input);
+	if (!tmp.empty()) {
+		CharLowerW(&tmp[0]);
+	}
+	return tmp;
+}
 
 /**
  * \brief	org_string 에서 token 을 검색해서 문자열을 잘라낸다.
@@ -5272,7 +5305,7 @@ guid_to_stringw(
 		//	StringFromGUID2() 함수는 {, } 를 포함함
 		//	{,} 문자를 제거하고, 소문자로 변환 후 리턴한다.
 		std::wstring guid_string(&buf[1], ret - 3);
-		return to_lower_string<std::wstring>(guid_string);
+		return to_lower_string(guid_string);
 	}
 }
 

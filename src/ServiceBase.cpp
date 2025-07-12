@@ -100,7 +100,7 @@ CServiceBase::ServiceMain(
 	PWSTR *pszArgv
 	)
 {
-    assert(s_service != NULL);
+    _ASSERTE(s_service != NULL);
 
     // Register the handler function for the service
     s_service->m_statusHandle = RegisterServiceCtrlHandler(s_service->m_name, 
@@ -161,7 +161,7 @@ CServiceBase::ServiceMainEx(
 	LPWSTR *pszArgv
 	)
 {
-	assert(s_service != NULL);
+	_ASSERTE(s_service != NULL);
 
 	//
 	//	Register the handler function for the service	

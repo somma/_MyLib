@@ -61,8 +61,8 @@ bool test_iterate_process_tree()
 				top_level_proc->process_path()
 				log_end;
 
-			proc_tree.iterate_process_tree(top_level_proc,
-										   [&](_In_ const process* const process_info)->bool
+			proc_tree.iterate_process_tree(const_cast<process*>(top_level_proc), 
+										   [&](_In_ process* const process_info)->bool
 			{
 				log_info "    pid = %u, name = %ws, path = %ws",
 					process_info->pid(),
@@ -90,7 +90,7 @@ bool test_process_tree()
 		// 프로세스 열거 테스트 (by callback)
 		proc_tree.iterate_process(proc_tree_callback);
 		proc_tree.find_process(L"cmd.exe", 
-							   [&](_In_ const process* const process_info)->bool 
+							   [&](_In_ process* const process_info)->bool 
 		{
 			proc_tree.iterate_process_tree(process_info->pid(),
 										   proc_tree_callback);
@@ -99,7 +99,7 @@ bool test_process_tree()
 		
 
 		// 프로세스 열거 테스트 (by lambda)
-		proc_tree.iterate_process([](_In_ const process* const process_info)->bool
+		proc_tree.iterate_process([](_In_ process* const process_info)->bool
 		{
 			log_info "pid = %u, name = %ws, path = %ws",
 				process_info->pid(),
@@ -111,7 +111,7 @@ bool test_process_tree()
 
 		// 프로세스 열거 테스트 (by boost::function, lambda with capture)
 		int count = 0;
-		auto callback = [&count](_In_ const process* const process_info)->bool
+		auto callback = [&count](_In_ process* const process_info)->bool
 		{
 			log_info "pid = %u, name = %ws, path = %ws",
 				process_info->pid(),
@@ -126,7 +126,7 @@ bool test_process_tree()
 
 		// 프로세스 열거 테스트 (by lambda with capture local variable)
 		count = 0;
-		proc_tree.iterate_process([&count](_In_ const process* const process_info)->bool
+		proc_tree.iterate_process([&count](_In_ process* const process_info)->bool
 		{
 			log_info "pid = %u, name = %ws, path = %ws",
 				process_info->pid(),

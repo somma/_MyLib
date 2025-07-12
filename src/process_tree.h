@@ -13,6 +13,7 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <functional>
 
 #include "Win32Utils.h"
 
@@ -47,7 +48,7 @@ public:
 
 	bool kill(_In_ DWORD exit_code, _In_ bool enable_debug_priv);
 	bool suspend() { /* not implemented yet */ return true; }
-	bool resume()  { /* not implemented yet */ return true; }
+	bool resume() { /* not implemented yet */ return true; }
 
 	const wchar_t*	process_name() const 
 	{ 
@@ -80,7 +81,7 @@ private:
 
 ///	@brief	place holder for running processes
 using process_map = std::map<DWORD, pprocess>;
-using on_proc_walk = boost::function<bool(_In_ const process* const process_info)>;
+using on_proc_walk = std::function<bool(_In_ process* const process_info)>;
 
 class cprocess_tree
 {
@@ -105,7 +106,7 @@ public:
 
 	void iterate_process(_In_ on_proc_walk callback);
 	void iterate_process_tree(_In_ DWORD root_pid, _In_ on_proc_walk callback);
-	void iterate_process_tree(_In_ const process* const root, _In_ on_proc_walk callback);
+	void iterate_process_tree(_In_ process* const root, _In_ on_proc_walk callback);
 
 	void print_process_tree(_In_ DWORD root_pid);
 	void print_process_tree(_In_ const wchar_t* root_process_name);

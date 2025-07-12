@@ -13,7 +13,8 @@
 
 #include <conio.h>
 #include "BaseWindowsHeader.h"
-#include "boost/algorithm/string.hpp"	// to_uppper, to_lower
+#include <functional>
+#include <list>
 
 //
 //  _pointer 가 _alignment 바운더리에 있는지 확인 (fltKernel.h 에 정의되어있음)
@@ -250,7 +251,7 @@ bool get_file_position(_In_ HANDLE file_handle, _Out_ int64_t& position);
 bool set_file_position(_In_ HANDLE file_handle, _In_ int64_t distance, _Out_opt_ int64_t* new_position);
 bool set_file_size(_In_ HANDLE file_handle, _In_ int64_t new_size);
 
-typedef boost::function<bool(_In_ const char* const line)> cb_rdline;
+typedef std::function<bool(_In_ const char* const line)> cb_rdline;
 bool read_line(_In_ const wchar_t* file_path, cb_rdline cb);
 
 
@@ -310,7 +311,7 @@ get_file_hash_by_filehandle(
 //		// success
 //	}
 //
-typedef boost::function<
+typedef std::function<
 	bool (_In_ DWORD_PTR tag, _In_ const wchar_t* path)
 > fnFindFilesCallback;
 
@@ -461,23 +462,12 @@ template <typename T> void clear_sstream(T& strm)
 	strm.clear();
 }
 
-//> T = std::string || std::wstring
-template <typename T> 
-T
-to_upper_string(_Inout_ const T& input)
-{ 
-	T tmp(input);
-	boost::algorithm::to_upper(tmp);
-	return tmp;
-}
+//> 문자열 대소문자 변환 함수
+std::string to_upper_string(_In_ const std::string& input);
+std::wstring to_upper_string(_In_ const std::wstring& input);
 
-template <typename T> 
-T to_lower_string(_Inout_ const T& input)
-{ 
-	T tmp(input);
-	boost::algorithm::to_lower(tmp);
-	return tmp;
-}
+std::string to_lower_string(_In_ const std::string& input);
+std::wstring to_lower_string(_In_ const std::wstring& input);
 
 bool 
 extract_first_tokenW(

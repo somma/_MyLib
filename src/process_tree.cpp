@@ -486,7 +486,7 @@ cprocess_tree::iterate_process_tree(
 ///			콜백함수가 false 를 리턴하면 순회를 즉시 멈춘다.
 void
 cprocess_tree::iterate_process_tree(
-	_In_ const process* const root,
+	_In_ process* const root,
 	_In_ on_proc_walk callback
 )
 {
