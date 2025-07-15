@@ -327,7 +327,7 @@ cprocess_tree::find_process(
 
 	for (const auto& process : _proc_map)
 	{
-		if (rstrnicmp(process.second->process_name(), process_name))
+		if (rstrnicmp(process.second->process_name(), process_name, true))
 		{
 			// found
 			if (!callback(process.second))
