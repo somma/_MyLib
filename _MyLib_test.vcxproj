@@ -283,7 +283,6 @@ echo "done." </Command>
     <ClCompile Include="src\scm_context.cpp" />
     <ClCompile Include="src\ServiceBase.cpp" />
     <ClCompile Include="src\sha2.cpp" />
-    <ClCompile Include="src\test_get_mbr_or_gpt_info.cpp" />
     <ClCompile Include="src\ThreadManager.cpp" />
     <ClCompile Include="src\Win32Utils.cpp" />
     <ClCompile Include="src\wmi_client.cpp" />
@@ -295,6 +294,7 @@ echo "done." </Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="test_CSteream.cpp" />
+    <ClCompile Include="test_get_mbr_or_gpt_info.cpp" />
     <ClCompile Include="test_iphelp_api.cpp" />
     <ClCompile Include="test_std_future_async.cpp" />
     <ClCompile Include="test_unicode_string_wcsstr.cpp" />

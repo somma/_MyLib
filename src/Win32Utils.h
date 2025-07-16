@@ -683,10 +683,28 @@ bool get_current_session_id(_Out_ DWORD& session_id);
 bool create_process(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _Out_ HANDLE& process_handle, _Out_ DWORD& process_id);
 bool create_process_and_wait(_In_ const wchar_t* cmdline, _In_ DWORD creation_flag, _In_opt_z_ const wchar_t* current_dir, _In_ DWORD timeout_secs, _Out_ PDWORD exit_code);
 
-bool create_process_on_session(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _Out_ PROCESS_INFORMATION& pi);
-bool create_process_on_session_and_wait(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _In_ DWORD timeout_secs, _Out_ DWORD& exit_code);
+/// @brief 프로세스 실행 권한 레벨
+enum class process_privilege_level
+{
+	user_privilege,			///< 로그인된 사용자 권한
+	administrator_privilege	///< 관리자 권한
+};
 
-bool create_process_as_login_user(_In_ uint32_t session_id, _In_ const wchar_t* cmdline, _Out_ PROCESS_INFORMATION& pi);
+/// @brief 지정된 권한 레벨로 프로세스를 생성한다.
+/// @param privilege_level 실행 권한 레벨 (사용자/관리자)
+/// @param session_id 대상 세션 ID (0xffffffff인 경우 활성 콘솔 세션 사용, 관리자 권한시 무시됨)
+/// @param cmdline 실행할 명령줄
+/// @param pi 생성된 프로세스 정보를 받을 구조체 (nullptr 가능)
+/// @param wait true일 경우 프로세스 종료를 기다림
+/// @param exit_code wait가 true일 때 프로세스 종료 코드를 받을 포인터 (nullptr 가능)
+/// @return 성공시 true, 실패시 false
+/// @remark explorer.exe의 토큰을 사용하여 프로세스 생성. 관리자 권한시 linked token 사용
+bool create_process_with_privilege(_In_ process_privilege_level privilege_level, 
+								   _In_ uint32_t session_id, 
+								   _In_ const wchar_t* cmdline, 
+								   _Out_opt_ PROCESS_INFORMATION* pi = nullptr,
+								   _In_ bool wait = false,
+								   _Out_opt_ DWORD* exit_code = nullptr);
 
 bool set_security_attributes_type1(_Out_ SECURITY_ATTRIBUTES& sa);
 bool set_security_attributes_type2(_Out_ SECURITY_ATTRIBUTES& sa);

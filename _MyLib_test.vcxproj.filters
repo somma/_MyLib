@@ -371,7 +371,7 @@
     <ClCompile Include="ntp_client.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\test_get_mbr_or_gpt_info.cpp">
+    <ClCompile Include="test_get_mbr_or_gpt_info.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
