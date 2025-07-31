@@ -45,6 +45,17 @@ typedef struct _continuous_memory
 #define _set_bit(val, pos) (val |= (1 << pos))
 #define _clear_bit(val, pos) (val &= ~(1 << pos))
 
+// minwindef.h
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
+
+
+
 /// @brief	from ntifs.h
 #ifndef FlagOn
 #define FlagOn(_F,_SF)        ((_F) & (_SF))
