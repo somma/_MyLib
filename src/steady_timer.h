@@ -110,18 +110,23 @@ private:
 				//
 				//	타이머 취소 요청
 				//
+				log_dbg "timer stop requested." log_end;
 				timer.cancel();
 			}
 			else
 			{
-				//
-				//	타이머 재 시작
-				//				
-				timer.expires_from_now(std::chrono::seconds(this->_interval));
-				timer.async_wait(boost::bind(&SteadyTimer::internal_callback,
-											 this,
-											 boost::asio::placeholders::error,
-											 boost::ref(timer)));
+				if (true == _running)
+				{
+					log_dbg "timer restart." log_end;
+					//
+					//	타이머 재 시작
+					//				
+					timer.expires_from_now(std::chrono::seconds(this->_interval));
+					timer.async_wait(boost::bind(&SteadyTimer::internal_callback,
+												 this,
+												 boost::asio::placeholders::error,
+												 boost::ref(timer)));
+				}
 			}
 		}
 		else if (boost::asio::error::operation_aborted == error.value())
@@ -133,17 +138,19 @@ private:
 		}
 		else
 		{
-			//
-			//	에러가 나도 타이머는 재 시작한다. 
-			log_err "timer error, err=0x%08x", error.value() log_end;
-			timer.expires_from_now(std::chrono::seconds(1));
-			timer.async_wait(boost::bind(&SteadyTimer::internal_callback,
-										 this,
-										 boost::asio::placeholders::error,
-										 boost::ref(timer)));
-
+			if (true == _running)
+			{
+				//	에러가 나도 running 상태일때만 타이머를 재시작한다. 
+				log_err "timer error, err=0x%08x", error.value() log_end;
+				timer.expires_from_now(std::chrono::seconds(1));
+				timer.async_wait(boost::bind(&SteadyTimer::internal_callback,
+											 this,
+											 boost::asio::placeholders::error,
+											 boost::ref(timer)));
+			}
 		}
 	}
+
 private:
 	bool _running;
 	uint32_t _interval;	
