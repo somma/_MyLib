@@ -11,6 +11,7 @@
 #include "machine_id.h"
 #include "net_util.h"
 #include "md5.h"
+#include <algorithm>
 
 
 /// @brief	Generates almost unique id based on installed hardware.
@@ -41,7 +42,7 @@ bool generate_machine_id(_Out_ std::string& machine_id)
 		{
 			strm << mac_to_str(adapter->physical_address);
 		}
-
+		
 		std::for_each(adapters.cbegin(),
 					  adapters.cend(),
 					  [](_In_ const PInetAdapter& p)

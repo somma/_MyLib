@@ -2670,7 +2670,7 @@ get_file_hash_by_filehandle(
 		while (pos < file_size)
 		{
 			if (err) break;
-
+						
 			uint32_t size = (uint32_t)min(fio.GetOptimizedBlockSize(), file_size - pos);
 			uint8_t* ptr = fio.GetFilePointer(true, pos, size);
 

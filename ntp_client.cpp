@@ -30,7 +30,7 @@ get_ntp_time_delta(
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Exception: " << e.what() << std::endl;
+        log_err "can not adjust ntp time delta, e=%s", e.what() log_end;
         
         //  에러가 발생한 경우 시스템 로컬 타임을 그대로 사용해야 하므로
         //  0 을 리턴한다.
