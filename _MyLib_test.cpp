@@ -53,6 +53,10 @@ extern bool test_cstream_read_write_string();
 // _test_log.cpp
 extern bool test_log_rotate();
 
+// _test_memory_leak.cpp
+extern bool test_memory_leak();
+extern bool test_aes256_crypt_buffer();
+
 // _test_steady_timer.cpp
 extern bool test_steady_timer();
 extern bool test_steady_multiple_timer_in_single_thread();
@@ -74,7 +78,9 @@ extern bool test_iphelp_api();
 // _test_process_token.cpp
 extern bool test_process_token();
 
-bool test_log_xxx();
+// _test_monster_checksum_verifier.cpp
+extern bool test_monster_checksum_verifier_main();
+
 bool test_set_security_attributes();
 
 bool test_GeneralHashFunctions();
@@ -240,7 +246,7 @@ extern bool test_boost_thread();
 extern bool test_std_thread_with_lambda();
 
 //_test_aes256.cpp
-extern bool test_aes256();
+extern bool test_aes256_encrypt_decrypt_file();
 
 // _test_sched_client.cpp
 extern bool test_sched_client();
@@ -294,7 +300,10 @@ void run_test()
 	UINT32 _fail_count = 0;
 		
 	bool ret = false;
-	assert_bool(true, get_mbr_gpt_info);
+	assert_bool(true, test_aes256_crypt_buffer);
+	assert_bool(true, test_aes256_encrypt_decrypt_file)
+
+	//assert_bool(true, get_mbr_gpt_info);
 	//assert_bool(true, ntp_client);
 	//assert_bool(true, test_uni_wcsstr);
 	//assert_bool(true, test_match);
@@ -318,7 +327,6 @@ void run_test()
 	//assert_bool(true, test_process_token);
 	//assert_bool(true, test_is_executable_file_w);
 	//assert_bool(true, test_singleton);
-	//assert_bool(true, test_log_xxx);
 	//assert_bool(true, test_set_security_attributes);
 	//assert_bool(true, test_GeneralHashFunctions);
 	//assert_bool(true, test_GeneralHashFunctions2);
@@ -440,7 +448,7 @@ void run_test()
 	//assert_bool(true, test_read_mouted_device);
 	//assert_bool(true, test_set_binary_data);
 	//assert_bool(true, test_reg_multi_value);
-	//assert_bool(true, test_aes256);
+	//assert_bool(true, test_aes256_encrypt_decrypt_file);
 
 	//assert_bool(true, test_curl_https_down_with_auth);
 	//assert_bool(true, test_curl_https);
@@ -2841,31 +2849,6 @@ bool test_singleton()
 }
 
 
-bool test_log_xxx()
-{
-	_ASSERTE(attach_console());
-
-
-	uint32_t log_mask;
-	uint32_t log_level;
-	get_log_env(log_id_base, log_mask, log_level);
-
-	set_log_env(log_id_base, log_mask_all, log_level_debug);
-	log_dbg "you can see this log, console" log_end;
-	log_info "you can see this log, console" log_end;
-	log_warn "you can see this log, console" log_end;
-	log_err "you can see this log, console" log_end;
-
-	set_log_env(log_id_base, log_mask_all, log_level_error);
-	log_dbg "you can't see this log, ods" log_end;
-	log_info "you can't see this log, ods" log_end;
-	log_warn "you can't see this log, ods" log_end;
-	log_err "you can see this log, ods" log_end;
-
-	set_log_env(log_id_base, log_mask_all, log_level_info);
-	return true;
-}
-
 bool test_set_security_attributes()
 {
 	//
@@ -4277,12 +4260,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		if (argc == 1)
 		{
-			_mem_dump_console
-			_mem_check_begin
-			{
-				run_test();
-			}
-			_mem_check_end;
+			run_test();
 		}
 		else
 		{

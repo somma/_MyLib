@@ -61,8 +61,9 @@ bool test_cpp_joson()
 		catch (const std::exception& e)
 		{
 			log_err
-				"exception, event id=%s",
-				root["event_id"].asString().c_str()
+				"exception, event id=%s, e=%s",
+				root["event_id"].asString().c_str(), 
+				e.what()
 				log_end;
 		}
 
@@ -87,8 +88,9 @@ bool test_cpp_joson()
 			catch (const std::exception& e)
 			{
 				log_err
-					"exception, event id=%s",
-					root["event_id"].asString().c_str()
+					"exception, event id=%s, e=%s",
+					root["event_id"].asString().c_str(),
+					e.what()
 					log_end;
 			}
 		} 

@@ -348,6 +348,10 @@ curl_client::http_download_file(
 ///	@param	post_data		전송할 데이터
 ///	@param	response		response data 를 저장하기위한 자료구조
 ///	@return	성공시 true, 실패시 false
+/// @remark	payload 의 형식이 JSON 이라면 http_post() 호출전에 header 를 꼭 
+///			넣어줘야 422 에러가 발생하지 않는다.
+///			
+///			_cli.append_header("Content-Type", "application/json; charset=utf-8");
 bool
 curl_client::http_post(
 	_In_z_ const char* url,

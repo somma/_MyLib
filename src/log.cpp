@@ -22,24 +22,68 @@
 
 #include "stdafx.h"
 #include "_MyLib/src/log.h"
-#include "_MyLib/src/log_impl.h"
+#include "_MyLib/src/Win32Utils.h"
+#include "_MyLib/src/log_rotated_file.h"
 
 #include <map>
 #include <shared_mutex>
+#include <atomic>
 
-static std::shared_mutex	_logger_lock;
-static std::map<uint32_t, slogger*> _loggers;
+/// @brief	log_id 에 따른 로거 객체 관리를 위한 클래스
+class LogContext
+{
+public:
+	LogContext(LogParam& param) :_param(param), _file_logger(nullptr)
+	{
+	}
+
+	LogContext() : _file_logger(nullptr)
+	{
+	}
+
+	~LogContext()
+	{
+		finalize();
+	}
+
+	bool initialize()
+	{
+		if (nullptr != _file_logger) { return true; }
+		_file_logger = new LogRotatedFile();
+		if (!_file_logger->initialize(_param._log_file_path,
+									  _param._log_file_size,
+									  _param._log_file_backup_count))
+		{
+			delete _file_logger; _file_logger = nullptr;
+			return false;
+		}
+
+		return true;
+	}
+
+	void finalize()
+	{
+		if (nullptr != _file_logger)
+		{
+			_file_logger->finalize();
+			delete _file_logger; _file_logger = nullptr;
+		}
+	}
+
+	LogParam _param;
+	LogRotatedFile* _file_logger;
+};
 
 
-/// @brief	ntdll::DbgPrintEx 
-///			(ref) dpfilter.h
-#define DPFLTR_ERROR_LEVEL 0
-#define DPFLTR_WARNING_LEVEL 1
-#define DPFLTR_TRACE_LEVEL 2
-#define DPFLTR_INFO_LEVEL 3
-#define DPFLTR_MASK 0x80000000
+//
+// 전역 변수/객체
+//
+static std::shared_mutex _logger_lock;
+static std::map<uint32_t, LogContext*> _loggers;		// log_id 기반 로거 객체
+static LogContext _default_logger;						// initialize_log() 호출 없이 log_xxx 만 호출했을때 처리를 위한 객체
 
-#define DPFLTR_IHVDRIVER_ID 77
+
+constexpr const size_t _max_log_buf = 2048;
 
 typedef 
 ULONG (__cdecl *fnDbgPrintEx) (
@@ -108,63 +152,38 @@ void dbg_print(_In_ uint32_t log_level, _In_ const char* msg)
  * @endcode
  * @return
 **/
-bool
-initialize_log(
-	_In_ uint32_t log_id,
-	_In_ uint32_t log_mask,
-	_In_ uint32_t log_level,
-	_In_ uint32_t log_to,
-	_In_opt_z_ const wchar_t* log_file_path,
-	_In_ uint32_t max_log_count,
-	_In_ uint32_t max_log_files
-)
+bool initialize_log(_In_ LogParam& param)
 {
 	//	Check the input 
-	if (nullptr == log_file_path && FlagOn(log_to, log_to_file))
+	if (FlagOn(param._log_to, log_to_file) && param._log_file_path.empty())
 	{
-		dbg_print(log_level_error, "[ERR ] initialize_log(), Invalid parameter mix\n");
-		return false;
+		ClearFlag(param._log_to, log_to_file);		
 	}
-	
-	//	Lock
+
+	// Lock and Register logger object
 	std::lock_guard<std::shared_mutex> lock(_logger_lock);
 
-	//	Register logger object
-	auto ret = _loggers.insert(std::make_pair(log_id, nullptr));
+	auto ret = _loggers.insert(std::make_pair(param._log_id, nullptr));
 	if (ret.second)
 	{
-		// 새로운 logger 객체 생성 후 등록
-		slogger* logger = new slogger(log_id,
-									  log_mask,
-									  log_level,
-									  log_to,
-									  log_file_path,
-									  max_log_count,
-									  max_log_files);
-		if (nullptr == logger)
+		LogContext* ctx = new LogContext(param);
+		if (!ctx->initialize())
 		{
-			dbg_print(log_level_error, "[ERR ] Can not initialize logger(insufficient resource)\n");
-			_loggers.erase(log_id);	//<!
+			dbg_print(log_level_error, "[ERR ] Failed to initialize logger.\n");
+			delete ctx;
 			return false;
 		}
 
-		if (true != logger->slog_start())
-		{
-			dbg_print(log_level_error, "[ERR ] Can not start logger\n");
-			delete logger;
-
-			_loggers.erase(log_id);	//<!
-			return false;
-		}
+		ctx->_file_logger->add_log(LOG_BEGIN, CB_LOG_BEGIN); 
+		ret.first->second = ctx;	//<!		
 		
-		ret.first->second = logger;	//<!
 	}
 	else
 	{
 		// 이미 동일한 log_id 의 객체가 등록되어있음
-		dbg_print(log_level_warn, "[WARN] logger already registered.");		
+		dbg_print(log_level_warn, "[WARN] logger already registered.");
 	}
-
+	
 	return true;
 }
 
@@ -184,126 +203,149 @@ finalize_log(
 	_ASSERTE(nullptr != entry->second);
 	if (nullptr != entry->second)
 	{
-		entry->second->slog_stop();
+		entry->second->_file_logger->add_log(LOG_END, CB_LOG_END);
+		entry->second->finalize();
 		delete entry->second;
 	}
 	_loggers.erase(entry);
 }
 
 /// @brief	
-bool
-set_log_format(
+void
+get_log_param(
 	_In_ uint32_t log_id,
-	_In_ bool show_level,
-	_In_ bool show_current_time,
-	_In_ bool show_process_name,
-	_In_ bool show_pid_tid,
-	_In_ bool show_function_name
+	_Out_ LogParam& param
 )
 {
 	std::shared_lock<std::shared_mutex> lock(_logger_lock);
-	
 	const auto entry = _loggers.find(log_id);
 	if (entry == _loggers.cend())
 	{
-		return false;
-	}
-
-	_ASSERTE(nullptr != entry->second);
-	if (nullptr != entry->second)
-	{
-		entry->second->set_log_format(show_level,
-									  show_current_time,
-									  show_process_name,
-									  show_pid_tid,
-									  show_function_name);
-		return true;
+		param = _default_logger._param;
 	}
 	else
 	{
-		return false;
+		param = entry->second->_param;
 	}
 }
 
+
 /// @brief	
-bool
-get_log_format(
-	_In_ uint32_t log_id,
-	_Out_ bool& show_level,
-	_Out_ bool& show_current_time,
-	_Out_ bool& show_process_name,
-	_Out_ bool& show_pid_tid,
-	_Out_ bool& show_function_name
+void
+set_log_param(
+	_In_ LogParam& param
 )
 {
-	std::shared_lock<std::shared_mutex> lock(_logger_lock);
-
-	const auto entry = _loggers.find(log_id);
+	std::lock_guard<std::shared_mutex> lock(_logger_lock);
+	const auto entry = _loggers.find(param._log_id);
 	if (entry == _loggers.cend())
 	{
-		return false;
-	}
-
-	_ASSERTE(nullptr != entry->second);
-	if (nullptr != entry->second)
-	{
-		entry->second->get_log_format(
-			show_level,
-			show_current_time,
-			show_process_name,
-			show_pid_tid,
-			show_function_name
-		);
-
-		return true;
+		_default_logger._param = param;
 	}
 	else
 	{
-		return false;
+		entry->second->_param = param;
 	}
 }
 
-/// @brief	
-bool 
-set_log_env(
-	_In_ uint32_t log_id,
-	_In_ uint32_t log_mask,
-	_In_ uint32_t log_level
-)
-{
-	std::shared_lock<std::shared_mutex> lock(_logger_lock);
-	const auto& entry = _loggers.find(log_id);
-	if (entry != _loggers.cend() && nullptr == entry->second)
-	{
-		entry->second->set_log_env(log_mask, log_level);
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
+///// @brief	
+//bool
+//set_log_format(
+//	_In_ uint32_t log_id,
+//	_In_ bool show_level,
+//	_In_ bool show_current_time,
+//	_In_ bool show_process_name,
+//	_In_ bool show_pid_tid,
+//	_In_ bool show_function_name
+//)
+//{
+//	_show_level = show_level;
+//	_show_current_time = show_current_time;
+//	_show_process_name = show_process_name;
+//	_show_pid_tid = show_pid_tid;
+//	_show_function_name = show_function_name;
+//	return true;
+//}
 
-/// @brief	
-bool
-get_log_env(
-	_In_ uint32_t log_id,
-	_Out_ uint32_t& log_mask,
-	_Out_ uint32_t& log_level
-)
-{
-	std::shared_lock<std::shared_mutex> lock(_logger_lock);
-	const auto& entry = _loggers.find(log_id);
-	if (entry != _loggers.cend() && nullptr == entry->second)
-	{
-		entry->second->get_log_env(log_mask, log_level);
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
+///// @brief	
+//bool
+//get_log_format(
+//	_In_ uint32_t log_id,
+//	_Out_ bool& show_level,
+//	_Out_ bool& show_current_time,
+//	_Out_ bool& show_process_name,
+//	_Out_ bool& show_pid_tid,
+//	_Out_ bool& show_function_name
+//)
+//{
+//	std::shared_lock<std::shared_mutex> lock(_logger_lock);
+//
+//	const auto entry = _loggers.find(log_id);
+//	if (entry == _loggers.cend())
+//	{
+//		return false;
+//	}
+//
+//	_ASSERTE(nullptr != entry->second);
+//	if (nullptr != entry->second)
+//	{
+//		entry->second->get_log_format(
+//			show_level,
+//			show_current_time,
+//			show_process_name,
+//			show_pid_tid,
+//			show_function_name
+//		);
+//
+//		return true;
+//	}
+//	else
+//	{
+//		return false;
+//	}
+//}
+
+///// @brief	
+//bool 
+//set_log_env(
+//	_In_ uint32_t log_id,
+//	_In_ uint32_t log_mask,
+//	_In_ uint32_t log_level
+//)
+//{
+//	std::shared_lock<std::shared_mutex> lock(_logger_lock);
+//	const auto& entry = _loggers.find(log_id);
+//	if (entry != _loggers.cend() && nullptr == entry->second)
+//	{
+//		entry->second->set_log_env(log_mask, log_level);
+//		return true;
+//	}
+//	else
+//	{
+//		return false;
+//	}
+//}
+
+///// @brief	
+//bool
+//get_log_env(
+//	_In_ uint32_t log_id,
+//	_Out_ uint32_t& log_mask,
+//	_Out_ uint32_t& log_level
+//)
+//{
+//	std::shared_lock<std::shared_mutex> lock(_logger_lock);
+//	const auto& entry = _loggers.find(log_id);
+//	if (entry != _loggers.cend() && nullptr == entry->second)
+//	{
+//		entry->second->get_log_env(log_mask, log_level);
+//		return true;
+//	}
+//	else
+//	{
+//		return false;
+//	}
+//}
 
 #ifndef _NO_LOG_
 
@@ -320,117 +362,137 @@ log_write_fmt(
 {
 	_ASSERTE(nullptr != function);
 	_ASSERTE(nullptr != fmt);
-	if (nullptr == function || nullptr == fmt) return; 
-	
+	if (nullptr == function || nullptr == fmt) return;
+
+	char log_buffer[_max_log_buf];
+	size_t remain = sizeof(log_buffer);
+	char* pos = log_buffer;
+	console_font_color color = fc_none;
+
 	std::shared_lock<std::shared_mutex> lock(_logger_lock);
-	auto entry = _loggers.find(log_id);
-	if (entry != _loggers.cend() && nullptr != entry->second)
+
+	//
+	// find log context 
+	//
+
+	LogContext* ctx = nullptr;	
+	const auto entry = _loggers.find(log_id);
+	if (entry == _loggers.cend())
 	{
-		va_list args;
-		va_start(args, fmt);
-		entry->second->slog_write(log_mask, log_level, function, fmt, args);
-		va_end(args);
+		ctx = &_default_logger;		
 	}
 	else
 	{
-		//
-		//	logger 를 초기화 하지 않았다면 ods 에 출력한다.
-		//
-		char log_buffer[2048];
-		size_t remain = sizeof(log_buffer);
-		char* pos = log_buffer;
+		ctx = entry->second;
+	}	
+	LogParam* param = &ctx->_param;
 
+	//
+	// filter 
+	//
+	if (!FlagOn(param->_log_mask, log_mask))
+	{
+		return;
+	}
+
+	if (param->_log_level < log_level)
+	{
+		return;
+	}
+
+	//
+	// build log message 
+	//
+	do
+	{	
 		//> time
-		StringCbPrintfExA(
-			pos,
-			remain,
-			&pos,
-			&remain,
-			0,
-			"%s ",
-			time_now_to_str(true, false).c_str());
-
-		//> log level
-		console_font_color color = fc_none;
-		switch (log_level)
+		if (param->_show_time)
 		{
-		case log_level_debug: 
-			StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[DEBG] "); 
-			break;
+			StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s ", current_time_to_iso8601().c_str());
+		}
 
-		case log_level_info:  
-			StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[INFO] "); 
-			color = fc_green;
-			break;
+		//> log level		
+		if (param->_show_level)
+		{
+			switch (log_level)
+			{
+			case log_level_debug:
+				StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[DEBG] ");
+				break;
 
-		case log_level_warn:  
-			StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[WARN] "); 
-			color = fc_green;
-			break;
+			case log_level_info:
+				StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[INFO] ");
+				color = fc_green;
+				break;
 
-		case log_level_error: 
-			StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[EROR] "); 
-			color = fc_red;
-			break;
+			case log_level_warn:
+				StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[WARN] ");
+				color = fc_green;
+				break;
 
-		default:
-			_ASSERTE(!"never reach here!");
-			return;
+			case log_level_error:
+				StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s", "[EROR] ");
+				color = fc_red;
+				break;
+
+			default:
+				_ASSERTE(!"never reach here!");
+				return;
+			}
 		}
 
 		//> show process name
-		StringCbPrintfExA(pos,
-						  remain,
-						  &pos,
-						  &remain,
-						  0,
-						  "%ws",
-						  get_current_module_fileEx().c_str());
+		if (param->_show_process)
+		{
+			StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%ws", get_current_module_fileEx().c_str());
+		}
 
 		//> show pid, tid		
-		StringCbPrintfExA(pos,
-						  remain,
-						  &pos,
-						  &remain,
-						  0,
-						  "(%+5u:%+5u) : ",
-						  GetCurrentProcessId(),
-						  GetCurrentThreadId());
+		if (param->_show_pid_tid)
+		{
+			StringCbPrintfExA(pos, remain, &pos, &remain, 0, "(%+5u:%+5u) : ", GetCurrentProcessId(), GetCurrentThreadId());
+		}
 
 		//> show function name		
-		StringCbPrintfExA(pos,
-						  remain,
-						  &pos,
-						  &remain,
-						  0,
-						  "%s : ",
-						  function);
-		
+		if (param->_show_function)
+		{
+			StringCbPrintfExA(pos, remain, &pos, &remain, 0, "%s : ", function);
+		}
+
 		va_list args;
 		va_start(args, fmt);
-		HRESULT hRes = StringCbVPrintfExA(pos,
-										  remain,
-										  &pos,
-										  &remain,
-										  0,
-										  fmt,
-										  args);
-
+		HRESULT hRes = StringCbVPrintfExA(pos, remain, &pos, &remain, 0, fmt, args);
 		if (S_OK != hRes)
 		{
 			// invalid character 가 끼어있는 경우 발생 할 수 있음
-			StringCbPrintfExA(pos,
-							  remain,
-							  &pos,
-							  &remain,
-							  0,
-							  "invalid function call parameters");
+			StringCbPrintfExA(pos, remain, &pos, &remain, 0, "invalid function call parameters");
 		}
 		va_end(args);
 
+	} while (false);
+	
+	//
+	// write log 
+	//	
+	if (FlagOn(param->_log_to, log_to_file))
+	{
+		_ASSERTE(nullptr != ctx->_file_logger);
+		if (nullptr != ctx->_file_logger)
+		{
+			ctx->_file_logger->add_log(log_buffer, (_max_log_buf - remain));
+		}
+	}
+
+	if (FlagOn(param->_log_to, log_to_ods))
+	{
+		dbg_print(log_level, log_buffer);
+	}
+		
+	if (FlagOn(param->_log_to, log_to_con))
+	{
 		// line feed
 		StringCbPrintfExA(pos, remain, &pos, &remain, 0, "\n");
-		dbg_print(log_level, log_buffer);
+		write_to_console(color, log_buffer);
 	}
 }
 #endif// _NO_LOG_

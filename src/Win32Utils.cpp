@@ -334,7 +334,6 @@ std::string	time_now_to_str(_In_ bool localtime, _In_ bool show_misec)
 	return sys_time_to_str(&utc_system_time, localtime, show_misec);
 }
 
-
 /// @brief	현재 시각을 `2017-05-23T21:23:24.821+09:00` 포맷 문자열로 출력한다. 
 std::string	time_now_to_str2()
 {
@@ -495,6 +494,50 @@ sys_time_to_str2(
 	return std::string(buf);
 }
 
+/// @brief	현재 시간을 ISO 8601 UTC 형식으로 변환
+/// @return ISO 8601 형식의 문자열 (예: "2025-09-14T06:33:39Z")
+///			pydantic 의 경우 milisecond 부분 파싱에 문제가 발생하는 경우가 
+///			있다고 해서 ms 부분은 사용하지 않는다.
+std::string current_time_to_iso8601()
+{
+	try
+	{
+		// 현재 시간을 시스템 클럭으로 가져옴
+		auto now = std::chrono::system_clock::now();
+		auto time_t = std::chrono::system_clock::to_time_t(now);
+
+		// 밀리초 부분을 별도로 계산함
+		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+			now.time_since_epoch()
+			) % 1000;
+
+		// UTC 시간으로 안전하게 변환 (gmtime_s 사용)
+		std::tm utc_tm = {};
+		errno_t err = gmtime_s(&utc_tm, &time_t);
+		if (err != 0)
+		{
+			log_err "gmtime_s failed with error, err=%d" log_end;
+			return std::string("1601-01-01T00:00:00Z");
+		}
+
+		// ISO 8601 형식으로 포매팅
+		std::ostringstream oss;
+		oss << std::put_time(&utc_tm, "%Y-%m-%dT%H:%M:%S");		
+		oss << 'Z';
+
+		return oss.str();
+	}
+	catch (const std::exception& e)
+	{
+		log_err "Exception in current_time_to_iso8601, err=%s", e.what() log_end;
+		return std::string("1601-01-01T00:00:00Z");
+	}
+	catch (...)
+	{
+		log_err "Unknown exception in current_time_to_iso8601" log_end;
+		return std::string("1601-01-01T00:00:00Z");
+	}
+}
 
 bool is_file_existsW(_In_ const std::wstring& file_path)
 {
@@ -5982,6 +6025,355 @@ create_process_and_wait(
 	return true;
 }
 
+/// @brief	session_id  검증
+bool 
+validate_and_get_session_id(
+	_In_ uint32_t session_id, 
+	_Out_ uint32_t& target_session_id
+)
+{
+	target_session_id = session_id;	
+	if (session_id == 0xffffffff)
+	{
+		target_session_id = WTSGetActiveConsoleSessionId();
+		if (target_session_id == 0xffffffff)
+		{
+			log_err "Failed to get active console session id. gle=%u", GetLastError() log_end;
+			return false;
+		}
+
+		log_dbg "Active console session detected: %u", target_session_id log_end;
+		return true;
+	}
+
+	// 지정된 세션이 유효한지 검증
+	WTS_SESSION_INFO* session_info = nullptr;
+	DWORD session_count = 0;
+	bool session_valid = false;	
+	if (WTSEnumerateSessions(WTS_CURRENT_SERVER_HANDLE, 0, 1, &session_info, &session_count))
+	{
+		for (DWORD i = 0; i < session_count; i++)
+		{
+			if (session_info[i].SessionId == session_id)
+			{
+				session_valid = true;
+				log_dbg "Target session %u is valid (state: %d)", session_id, session_info[i].State log_end;
+				break;
+			}
+		}
+		WTSFreeMemory(session_info);
+	}
+	
+	if (!session_valid)
+	{
+		log_err "Specified session %u is not valid, session id=%u", session_id log_end;
+		return false;		
+	}
+	
+	return true;
+}
+
+/// @brief 여러 프로세스에서 토큰을 획득함 (우선순위 순서대로 시도)
+/// @param process_names 시도할 프로세스 이름 배열 (우선순위 순서)
+/// @param process_count 프로세스 이름 배열 크기
+/// @param target_session_id 대상 세션 ID
+/// @param privilege_level 권한 레벨
+/// @param out_token [OUT] 획득한 토큰
+/// @param out_process_name [OUT] 토큰을 획득한 프로세스 이름 (nullptr 가능)
+/// @return 성공 시 true
+bool get_token_from_processes(
+	_In_ const wchar_t** process_names,
+	_In_ size_t process_count,
+	_In_ DWORD target_session_id,
+	_In_ process_privilege_level privilege_level,
+	_Out_ HANDLE* out_token,
+	_Out_opt_ const wchar_t** out_process_name)
+{
+	if (nullptr == process_names || process_count == 0 || nullptr == out_token)
+	{
+		return false;
+	}
+
+	*out_token = nullptr;
+	if (out_process_name) *out_process_name = nullptr;
+
+	// 프로세스 트리를 한 번만 구성함
+	cprocess_tree pt;
+	if (!pt.build_process_tree(true))
+	{
+		log_warn "pt.build_process_tree() failed. gle=%u", GetLastError() log_end;
+		return false;
+	}
+
+	// 우선순위 순서대로 프로세스에서 토큰 획득 시도
+	for (size_t i = 0; i < process_count; i++)
+	{
+		const wchar_t* process_name = process_names[i];
+		if (nullptr == process_name) continue;
+
+		log_dbg "Trying to get token from %ws", process_name log_end;
+
+		bool token_created = false;
+		pt.find_process(process_name,
+			[&](_In_ const process* const process_info) ->bool
+			{
+				if (nullptr == process_info) return false;
+
+				DWORD proc_session_id = 0;
+				if (!ProcessIdToSessionId(process_info->pid(), &proc_session_id) ||
+					proc_session_id != target_session_id)
+				{
+					return false; // 다른 세션의 프로세스는 건너뜀
+				}
+
+				// 프로세스 핸들 획득
+				HANDLE proc_handle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process_info->pid());
+				if (nullptr == proc_handle)
+				{
+					log_warn "OpenProcess() failed for %ws. pid=%u, gle=%u",
+						process_name, process_info->pid(), GetLastError() log_end;
+					return false;
+				}
+
+				// 프로세스의 액세스 토큰 획득
+				HANDLE proc_token = nullptr;
+				if (TRUE != OpenProcessToken(proc_handle, TOKEN_QUERY | TOKEN_DUPLICATE, &proc_token))
+				{
+					log_warn "OpenProcessToken() failed for %ws. pid=%u, gle=%u",
+						process_name, process_info->pid(), GetLastError() log_end;
+					CloseHandle(proc_handle);
+					return false;
+				}
+
+				// 권한 레벨에 따른 토큰 처리
+				if (privilege_level == process_privilege_level::administrator_privilege)
+				{
+					// UAC Linked Token 활용
+					TOKEN_LINKED_TOKEN linkedToken = { 0 };
+					DWORD dwSize = sizeof(TOKEN_LINKED_TOKEN);
+					
+					if (TRUE != GetTokenInformation(proc_token, TokenLinkedToken, &linkedToken, dwSize, &dwSize))
+					{
+						log_warn "GetTokenInformation() failed for linked token from %ws. pid=%u, gle=%u, using original token",
+							process_name, process_info->pid(), GetLastError() log_end;
+
+						// 원본 토큰 복제
+						if (TRUE != DuplicateTokenEx(proc_token, MAXIMUM_ALLOWED, NULL, SecurityImpersonation, TokenPrimary, out_token))
+						{
+							log_warn "DuplicateTokenEx() with original token failed for %ws. gle=%u", process_name, GetLastError() log_end;
+							CloseHandle(proc_token);
+							CloseHandle(proc_handle);
+							return false;
+						}
+					}
+					else
+					{
+						// linked token 복제
+						if (TRUE != DuplicateTokenEx(linkedToken.LinkedToken, MAXIMUM_ALLOWED, NULL, SecurityImpersonation, TokenPrimary, out_token))
+						{
+							log_warn "DuplicateTokenEx() with linked token failed for %ws. gle=%u", process_name, GetLastError() log_end;
+							CloseHandle(proc_token);
+							CloseHandle(proc_handle);
+							return false;
+						}
+					}
+				}
+				else
+				{
+					// 사용자 권한 프로세스 생성: Standard Token 사용
+					if (TRUE != DuplicateTokenEx(proc_token, MAXIMUM_ALLOWED, NULL, SecurityIdentification, TokenPrimary, out_token))
+					{
+						log_warn "DuplicateTokenEx() failed for %ws. gle=%u", process_name, GetLastError() log_end;
+						CloseHandle(proc_token);
+						CloseHandle(proc_handle);
+						return false;
+					}
+
+					// 사용자 권한에서는 명시적 세션 설정이 필요할 수 있음
+					if (TRUE != SetTokenInformation(*out_token, TokenSessionId, (void*)(DWORD_PTR)target_session_id, sizeof(DWORD)))
+					{
+						log_warn "SetTokenInformation() failed for %ws. gle=%u, continue anyway.", process_name, GetLastError() log_end;
+					}
+				}
+
+				CloseHandle(proc_token);
+				CloseHandle(proc_handle);
+				token_created = true;
+				
+				if (out_process_name) *out_process_name = process_name;
+				log_info "Successfully obtained token from %ws for session %u", process_name, target_session_id log_end;
+				return true;
+			});
+
+		// 토큰을 성공적으로 획득했으면 종료
+		if (token_created && *out_token != nullptr)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/// @brief 다양한 방법으로 토큰을 획득함 (explorer -> winlogon -> current process)
+/// @param target_session_id 대상 세션 ID
+/// @param privilege_level 권한 레벨
+/// @param out_token [OUT] 획득한 토큰
+/// @param out_env_block [OUT] 환경 블록 (사용자 권한일 때만)
+/// @return 성공 시 true
+bool acquire_execution_token(
+	_In_ DWORD target_session_id,
+	_In_ process_privilege_level privilege_level,
+	_Out_ HANDLE* out_token,
+	_Out_opt_ LPVOID* out_env_block)
+{
+	if (nullptr == out_token)
+	{
+		return false;
+	}
+
+	*out_token = nullptr;
+	if (out_env_block) *out_env_block = nullptr;
+
+	// 우선순위 순서로 프로세스 이름 배열 구성
+	const wchar_t* process_names[] = { L"explorer.exe", L"winlogon.exe" };
+	const size_t process_count = sizeof(process_names) / sizeof(process_names[0]);
+	const wchar_t* used_process_name = nullptr;
+
+	// 프로세스에서 토큰 획득 시도 (한 번의 프로세스 트리 구성으로 처리)
+	if (!get_token_from_processes(process_names, 
+								  process_count, 
+								  target_session_id, 
+								  privilege_level, 
+								  out_token, 
+								  &used_process_name))
+	{
+		log_err "Failed to get token from explorer or winlogon for session %u", target_session_id log_end;
+		return false;
+	}
+	
+	_ASSERTE(nullptr != *out_token);
+	if (nullptr == *out_token)
+	{
+		log_err "Oops no token retrieved. session_id=%u", target_session_id log_end;
+		return false;
+	}
+
+	// 사용자 권한일 때만 환경 블록 생성
+	if (privilege_level == process_privilege_level::user_privilege && out_env_block)
+	{
+		if (TRUE == CreateEnvironmentBlock(out_env_block, *out_token, TRUE))
+		{
+			log_dbg "Environment block created successfully" log_end;
+		}
+		else
+		{
+			log_warn "CreateEnvironmentBlock() failed. gle=%u, continuing without environment block", GetLastError() log_end;
+		}
+	}
+
+	return true;
+}
+
+/// @brief CreateProcessAsUserW를 여러 방법으로 재시도함
+/// @param execute_token 실행 토큰
+/// @param cmdline 명령줄
+/// @param privilege_level 권한 레벨
+/// @param env_block 환경 블록
+/// @param out_pi [OUT] 프로세스 정보
+/// @return 성공 시 true
+bool create_process_with_retry(
+	_In_ HANDLE execute_token,
+	_In_ wchar_t* cmdline,
+	_In_ process_privilege_level privilege_level,
+	_In_opt_ LPVOID env_block,
+	_Out_ PROCESS_INFORMATION* out_pi)
+{
+	if (nullptr == execute_token || nullptr == cmdline || nullptr == out_pi)
+	{
+		return false;
+	}
+
+	ZeroMemory(out_pi, sizeof(PROCESS_INFORMATION));
+
+	STARTUPINFO si = { 0 };
+	si.cb = sizeof(STARTUPINFO);
+	si.lpDesktop = (LPWSTR)L"winsta0\\default";
+
+	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
+	if (env_block != nullptr)
+	{
+		creation_flags |= CREATE_UNICODE_ENVIRONMENT;
+	}
+
+	if (privilege_level == process_privilege_level::user_privilege)
+	{
+		creation_flags |= CREATE_NEW_CONSOLE;
+		si.wShowWindow = SW_HIDE;
+	}
+
+	// 첫 번째 시도: 기본 설정으로 프로세스 생성
+	if (TRUE == CreateProcessAsUserW(execute_token, nullptr, cmdline, nullptr, nullptr, 
+									FALSE, creation_flags, env_block, nullptr, &si, out_pi))
+	{
+		log_dbg "Process created successfully on first attempt. pid=%u", out_pi->dwProcessId log_end;
+		return true;
+	}
+
+	DWORD creation_gle = GetLastError();
+	log_dbg "CreateProcessAsUserW() first attempt failed. gle=%u, trying fallback methods", creation_gle log_end;
+
+	// 재시도 1: 환경 블록 없이 시도
+	if (env_block != nullptr)
+	{
+		log_dbg "Retrying without environment block" log_end;
+		DWORD retry_flags = creation_flags & ~CREATE_UNICODE_ENVIRONMENT;
+		
+		if (TRUE == CreateProcessAsUserW(execute_token, nullptr, cmdline, nullptr, nullptr, 
+										FALSE, retry_flags, nullptr, nullptr, &si, out_pi))
+		{
+			log_dbg "Process created successfully without environment block. pid=%u", out_pi->dwProcessId log_end;
+			return true;
+		}
+		log_dbg "Retry without environment block failed. gle=%u", GetLastError() log_end;
+	}
+
+	// 재시도 2: 콘솔 생성 플래그 변경
+	log_dbg "Retrying with modified console creation flags" log_end;
+	DWORD retry_flags = NORMAL_PRIORITY_CLASS;
+	if (privilege_level == process_privilege_level::administrator_privilege)
+	{
+		retry_flags |= CREATE_NEW_CONSOLE; // 관리자 권한일 때는 새 콘솔 생성
+	}
+	
+	if (TRUE == CreateProcessAsUserW(execute_token, nullptr, cmdline, nullptr, nullptr, 
+									FALSE, retry_flags, nullptr, nullptr, &si, out_pi))
+	{
+		log_dbg "Process created successfully with modified flags. pid=%u", out_pi->dwProcessId log_end;
+		return true;
+	}
+	log_dbg "Retry with modified flags failed. gle=%u", GetLastError() log_end;
+
+	// 재시도 3: 데스크톱 지정 없이 시도
+	log_info "Retrying without desktop specification" log_end;
+	STARTUPINFO retry_si = si;
+	retry_si.lpDesktop = nullptr;
+	
+	if (TRUE == CreateProcessAsUserW(execute_token, nullptr, cmdline, nullptr, nullptr, 
+									FALSE, NORMAL_PRIORITY_CLASS, nullptr, nullptr, &retry_si, out_pi))
+	{
+		log_dbg "Process created successfully without desktop specification. pid=%u", out_pi->dwProcessId log_end;
+		return true;
+	}
+
+	log_err 
+		"All CreateProcessAsUserW() attempts failed. original_gle=%u, final_gle=%u", 
+		creation_gle,
+		GetLastError() 
+		log_end;
+	return false;
+}
+
 /// @brief 지정된 권한 레벨과 세션에서 프로세스를 생성한다.
 /// 
 /// @details
@@ -6037,9 +6429,9 @@ create_process_and_wait(
 /// @param pi [OUT] 생성된 프로세스 정보 (nullptr 가능)
 /// 
 /// @return 성공 시 true, 실패 시 false
-/// 
-/// @note 관리자 권한 생성 시에도 지정된 세션의 explorer를 찾아 해당 세션에서 실행됩니다.
-/// @warning 대상 세션에 explorer.exe가 실행 중이어야 합니다.
+/// @brief 세션 ID를 검증하고 유효한 세션 ID를 반환함
+/// @param session_id 요청된 세션 ID (0xffffffff: 활성 콘솔 세션)
+/// @return 유효한 세션 ID
 bool
 create_process_with_privilege(
 	_In_ process_privilege_level privilege_level,
@@ -6053,57 +6445,55 @@ create_process_with_privilege(
 	_ASSERTE(nullptr != cmdline);
 	if (nullptr == cmdline)
 	{
-		log_err "cmdline is null" log_end;
+		log_err "cmdline parameter is null" log_end;
 		return false;
 	}
 
-	if (wcslen(cmdline) == 0)
+	size_t cmd_len = wcslen(cmdline);
+	if (cmd_len == 0)
 	{
 		log_err "cmdline is empty" log_end;
 		return false;
 	}
+	
+	if (cmd_len > (MAX_PATH * 2))
+	{
+		log_err "cmdline is too long. len=%zu, max_allowed=%zu", cmd_len, (MAX_PATH * 2) log_end;
+		return false;
+	}
 
-	// 출력 매개변수 초기화
+	log_dbg 
+		"Creating process with privilege. cmd=%ws, privilege=%s, session=%u", 
+		cmdline, 
+		(privilege_level == process_privilege_level::administrator_privilege) ? "admin" : "user",
+		session_id 
+		log_end;
+
 	if (nullptr != pi)
 	{
 		ZeroMemory(pi, sizeof(PROCESS_INFORMATION));
 	}
 
-	bool ret = false;
-	
-	// 리소스 핸들들 - RAII 스타일로 관리
-	HANDLE explorer_handle = nullptr;
-	HANDLE explorer_token = nullptr;
+	// Internal resources wih RAII
 	HANDLE execute_token = nullptr;
 	LPVOID env_block = nullptr;
 	wchar_t* cmd_buffer = nullptr;
 
-	// RAII helper class for automatic cleanup
 	class ResourceGuard 
 	{
 	private:
-		HANDLE* handles[3];
+		HANDLE* token;
 		LPVOID* env;
 		wchar_t** buffer;
 
 	public:
-		ResourceGuard(HANDLE* h1, HANDLE* h2, HANDLE* h3, LPVOID* e, wchar_t** b)
-			: env(e), buffer(b)
-		{
-			handles[0] = h1;
-			handles[1] = h2;
-			handles[2] = h3;
-		}
-
+		ResourceGuard(HANDLE* t, LPVOID* e, wchar_t** b) : token(t), env(e), buffer(b) {}
 		~ResourceGuard()
 		{
-			for (int i = 0; i < 3; ++i)
+			if (token && *token && *token != INVALID_HANDLE_VALUE)
 			{
-				if (handles[i] && *handles[i] && *handles[i] != INVALID_HANDLE_VALUE)
-				{
-					CloseHandle(*handles[i]);
-					*handles[i] = nullptr;
-				}
+				CloseHandle(*token);
+				*token = nullptr;
 			}
 			if (env && *env)
 			{
@@ -6117,195 +6507,51 @@ create_process_with_privilege(
 			}
 		}
 	};
-
-	ResourceGuard guard(&explorer_handle, &explorer_token, &execute_token, &env_block, &cmd_buffer);
+	ResourceGuard guard(&execute_token, &env_block, &cmd_buffer);
 
 	do
 	{
-		// ===== 1단계: 대상 세션의 Explorer 프로세스 탐색 =====
-		// Cross-Session 안전성을 위해 대상 세션에서 실행 중인 explorer.exe를 찾습니다.
-		// 이는 해당 세션에 이미 바인딩된 토큰을 획득하기 위함입니다.
-		cprocess_tree pt;
-		if (!pt.build_process_tree(true))
+		// 1. 세션 ID 검증 및 획득
+		uint32_t target_session_id = 0xffffffff;
+		if (!validate_and_get_session_id(session_id, target_session_id))
 		{
-			log_err "pt.build_process_tree() failed." log_end;
+			return false;
+		}
+
+		// 2. 토큰 및 환경 블록 획득
+		if (!acquire_execution_token(target_session_id, privilege_level, &execute_token, &env_block))
+		{
+			log_err "Failed to acquire execution token for session %u", target_session_id log_end;
 			break;
 		}
 
-		// 세션 ID 결정: 0xffffffff인 경우 활성 콘솔 세션 자동 감지
-		DWORD target_session_id = session_id;
-		if (session_id == 0xffffffff)
-		{
-			target_session_id = WTSGetActiveConsoleSessionId();
-			if (target_session_id == 0xffffffff)
-			{
-				log_err "Failed to get active console session id" log_end;
-				break;
-			}
-		}
-
-		// ===== 2단계: 대상 세션의 Explorer 프로세스에서 토큰 획득 =====
-		bool explorer_found = false;
-		pt.find_process(L"explorer.exe",
-			[&](_In_ const process* const process_info) ->bool
-			{
-				if (nullptr == process_info)
-				{
-					return false;
-				}
-
-				// 세션 검증: 지정된 세션의 explorer만 사용
-				// 이를 통해 올바른 세션에 바인딩된 토큰을 획득합니다.
-				DWORD explorer_session_id = 0;
-				if (!ProcessIdToSessionId(process_info->pid(), &explorer_session_id) ||
-					explorer_session_id != target_session_id)
-				{
-					return false; // 다른 세션의 explorer는 건너뜀
-				}
-
-				do
-				{
-					// Explorer 프로세스 핸들 획득
-					explorer_handle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process_info->pid());
-					if (nullptr == explorer_handle)
-					{
-						log_err "OpenProcess() failed. name=%ws, pid=%u, gle=%u",
-							process_info->process_name(), process_info->pid(), GetLastError() log_end;
-						break;
-					}
-
-					// Explorer 프로세스의 액세스 토큰 획득
-					if (TRUE != OpenProcessToken(explorer_handle, TOKEN_QUERY | TOKEN_DUPLICATE, &explorer_token))
-					{
-						log_err "OpenProcessToken() failed. pid=%u, gle=%u",
-							process_info->pid(), GetLastError() log_end;
-						break;
-					}
-
-					// ===== 3단계: 권한 레벨에 따른 토큰 처리 =====
-					if (privilege_level == process_privilege_level::administrator_privilege)
-					{
-						// === 관리자 권한: UAC Linked Token 활용 ===
-						// UAC 환경에서 각 사용자 토큰은 Standard Token과 Elevated Token(Linked Token)을 가집니다.
-						// 관리자 권한이 필요한 경우 Linked Token을 사용하여 권한을 상승시킵니다.
-						TOKEN_LINKED_TOKEN linkedToken = { 0 };
-						DWORD dwSize = sizeof(TOKEN_LINKED_TOKEN);
-						
-						if (TRUE != GetTokenInformation(explorer_token, TokenLinkedToken, &linkedToken, dwSize, &dwSize))
-						{
-							DWORD gle = GetLastError();
-							log_warn "GetTokenInformation() failed. pid=%u, gle=%u, trying original token",
-								process_info->pid(), gle log_end;
-
-							// Linked Token이 없는 경우: 이미 관리자 권한이거나 UAC 비활성화 상태
-							// 원본 토큰을 그대로 사용
-							if (TRUE != DuplicateTokenEx(explorer_token, MAXIMUM_ALLOWED, NULL, 
-														SecurityImpersonation, TokenPrimary, &execute_token))
-							{
-								log_err "DuplicateTokenEx() with original token failed. gle=%u", GetLastError() log_end;
-								break;
-							}
-						}
-						else
-						{
-							// linked token 복제
-							if (TRUE != DuplicateTokenEx(linkedToken.LinkedToken, MAXIMUM_ALLOWED, NULL,
-														SecurityImpersonation, TokenPrimary, &execute_token))
-							{
-								log_err "DuplicateTokenEx() with linked token failed. gle=%u", GetLastError() log_end;
-								break;
-							}
-						}
-
-						// === 핵심: Linked Token은 이미 올바른 세션에 바인딩되어 있음 ===
-						// Explorer에서 가져온 Linked Token은 해당 세션에 자연스럽게 바인딩되어 있으므로
-						// SetTokenInformation(TokenSessionId) 호출이 불필요하며, 호출 시 실패할 수 있습니다.
-						// 이는 UAC 보안 정책에 의한 정상적인 동작입니다.
-					}
-					else
-					{
-						// === 사용자 권한: Standard Token 사용 ===
-						if (TRUE != DuplicateTokenEx(explorer_token, MAXIMUM_ALLOWED, NULL,
-													SecurityIdentification, TokenPrimary, &execute_token))
-						{
-							log_err "DuplicateTokenEx() failed. gle=%u", GetLastError() log_end;
-							break;
-						}
-
-						// 사용자 권한에서는 명시적 세션 설정이 필요할 수 있음
-						if (TRUE != SetTokenInformation(execute_token, TokenSessionId,
-														(void*)(DWORD_PTR)target_session_id, sizeof(DWORD)))
-						{
-							log_warn "SetTokenInformation() failed. gle=%u, continuing anyway", GetLastError() log_end;
-						}
-
-						// 사용자 환경 블록 생성 (환경 변수, 사용자 프로필 등)
-						if (TRUE == CreateEnvironmentBlock(&env_block, execute_token, TRUE))
-						{
-							log_dbg "Environment block created successfully" log_end;
-						}
-						else
-						{
-							log_warn "CreateEnvironmentBlock() failed. gle=%u, continuing without environment block",
-								GetLastError() log_end;
-						}
-					}
-
-					explorer_found = true;
-
-				} while (false);
-
-				return true;
-			});
-
-		if (!explorer_found || nullptr == execute_token)
-		{
-			log_err "Failed to find appropriate explorer.exe or create token" log_end;
-			break;
-		}
-
-		// ===== 4단계: 프로세스 생성 준비 =====
-		// 명령줄 문자열 복사 (CreateProcessAsUser에서 수정 가능하므로 복사본 사용)
-		size_t cmd_len = wcslen(cmdline) + 1;
-		cmd_buffer = static_cast<wchar_t*>(malloc(cmd_len * sizeof(wchar_t)));
+		// 3. 명령줄 문자열 복사 (CreateProcessAsUser에서 수정 가능하므로 복사본 사용)
+		cmd_buffer = static_cast<wchar_t*>(malloc((cmd_len + 1) * sizeof(wchar_t)));
 		if (nullptr == cmd_buffer)
 		{
-			log_err "Failed to allocate memory for command line" log_end;
+			log_err "Failed to allocate memory for command line. size=%zu", (cmd_len + 1) * sizeof(wchar_t) log_end;
 			break;
 		}
 
-		if (FAILED(StringCbCopyW(cmd_buffer, cmd_len * sizeof(wchar_t), cmdline)))
+		if (FAILED(StringCbCopyW(cmd_buffer, (cmd_len + 1) * sizeof(wchar_t), cmdline)))
 		{
-			log_err "Failed to copy command line" log_end;
+			log_err "Failed to copy command line. gle=%u", GetLastError() log_end;
 			break;
 		}
 
-		// ===== 5단계: CreateProcessAsUser를 통한 최종 프로세스 생성 =====
-		STARTUPINFO si = { 0 };
+		// 4. 프로세스 생성 (재시도 로직 포함)
 		PROCESS_INFORMATION local_pi = { 0 };
-		si.cb = sizeof(STARTUPINFO);
-		si.lpDesktop = (LPWSTR)L"winsta0\\default";  // 대화형 데스크톱 지정
-
-		DWORD creation_flags = NORMAL_PRIORITY_CLASS;
-		if (env_block != nullptr)
+		if (!create_process_with_retry(execute_token, 
+									   cmd_buffer, 
+									   privilege_level,
+									   env_block, 
+									   &local_pi))
 		{
-			creation_flags |= CREATE_UNICODE_ENVIRONMENT;
-		}
-
-		if (privilege_level == process_privilege_level::user_privilege)
-		{
-			creation_flags |= CREATE_NEW_CONSOLE;
-			si.wShowWindow = SW_HIDE;
-		}
-
-		if (TRUE != CreateProcessAsUserW(execute_token, nullptr, cmd_buffer, nullptr, nullptr, 
-										FALSE, creation_flags, env_block, nullptr, &si, &local_pi))
-		{
-			log_err "CreateProcessAsUserW() failed. cmd=%ws, gle=%u", cmdline, GetLastError() log_end;
+			log_err "Failed to create process after all retry attempts" log_end;
 			break;
 		}
 
-		// 성공 - 프로세스 정보 복사 및 wait 처리
+		// 5. 성공 - 프로세스 정보 복사 및 wait 처리
 		if (nullptr != pi)
 		{
 			*pi = local_pi;
@@ -6358,16 +6604,18 @@ create_process_with_privilege(
 			if (local_pi.hThread != NULL) CloseHandle(local_pi.hThread);
 		}
 
-		ret = true;
+		log_info 
+			"Process created successfully. pid=%u, session=%u, cmd=%ws", 
+			local_pi.dwProcessId, 
+			target_session_id, 
+			cmdline
+			log_end;
+		return true; // 성공
 
 	} while (false);
 
-	// ===== 자동 리소스 정리 =====
-	// ResourceGuard 소멸자에 의해 모든 핸들과 메모리가 자동으로 정리됩니다.
-	// - explorer_handle, explorer_token, execute_token: CloseHandle 호출
-	// - env_block: DestroyEnvironmentBlock 호출  
-	// - cmd_buffer: free 호출
-	return ret;
+	// 실패 시 false 반환 - ResourceGuard가 자동으로 리소스 정리
+	return false;
 }
 
 /// @brief	서비스에서 생성한 커널오브젝트에 로그인 사용자 프로그램에서 

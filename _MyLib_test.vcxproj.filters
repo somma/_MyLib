@@ -72,9 +72,6 @@
     <ClInclude Include="src\LeakWatcher.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\log.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\md5.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -156,10 +153,16 @@
     <ClInclude Include="src\machine_id.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\log_impl.h">
+    <ClInclude Include="src\ntp_client.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\ntp_client.h">
+    <ClInclude Include="src\openssl_leak_checker.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\log_rotated_file.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\log.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
@@ -209,9 +212,6 @@
     <ClCompile Include="_test_ppl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="_test_aes256.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="_test_process_tree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -228,9 +228,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="_test_steady_timer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="_test_log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="_test_sched_client.cpp">
@@ -267,9 +264,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\GeneralHashFunctions.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\log.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\md5.cpp">
@@ -353,9 +347,6 @@
     <ClCompile Include="test_std_future_async.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\log_impl.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\match.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -368,11 +359,20 @@
     <ClCompile Include="_test_ntp_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ntp_client.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="test_get_mbr_or_gpt_info.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="_test_ssl_encrypt_memory_leak.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ntp_client.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\log_rotated_file.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\log.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -116,8 +116,7 @@ private:
 			else
 			{
 				if (true == _running)
-				{
-					log_dbg "timer restart." log_end;
+				{					
 					//
 					//	타이머 재 시작
 					//				

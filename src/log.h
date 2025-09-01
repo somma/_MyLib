@@ -21,39 +21,109 @@
 #include "_MyLib/src/Win32Utils.h"
 #include "_MyLib/src/Queue.h"
 
-/// @brief log level
-#define log_level_debug         3
-#define log_level_info          2
-#define log_level_warn          1
-#define log_level_critical      0
-#define log_level_error         log_level_critical
-
-/// @brief log to 
-#define log_to_none		0x00000000
-#define log_to_file		0x00000001
-#define log_to_ods		0x00000002
-#define log_to_con		0x00000004
-#define log_to_all		(log_to_file | log_to_ods | log_to_con)
+// refac: todo: log_id 는 필요가 없는데??????????
 
 /// @brief	log_id
-#define log_id_base		0xffffffff
+constexpr const uint32_t log_id_base = 0xffffffff;
 
 /// @brief  log_mask
-#define log_mask_all    0xffffffff		// 모든 로그를 활성화
-#define log_mask_sys    0x00000001      // for log_info, log_err, xxx
+constexpr const uint32_t log_mask_all = 0xffffffff;		// 모든 로그를 활성화
+constexpr const uint32_t log_mask_sys = 0x00000001;      // for log_info, log_err, xxx
+														 
+/// @brief log level
+constexpr const uint32_t log_level_debug = 3;
+constexpr const uint32_t log_level_info = 2;
+constexpr const uint32_t log_level_warn = 1;
+constexpr const uint32_t log_level_critical = 0;
+constexpr const uint32_t log_level_error = log_level_critical;
 
-/// @brief	 Maximum log count on single log file.
-#define	_max_log_count_def 60000
+/// @brief log to 
+constexpr const uint32_t log_to_none = 0x00000000;
+constexpr const uint32_t log_to_file = 0x00000001;
+constexpr const uint32_t log_to_ods = 0x00000002;
+constexpr const uint32_t log_to_con = 0x00000004;
+constexpr const uint32_t log_to_all = (log_to_file | log_to_ods | log_to_con);
 
-/// @brief	로테이팅 된 로그 파일의 최대 갯수
-///			이 갯수 보다 많은 로그 파일이 존재하는 경우 로그 로테이팅 시 
-///			가장 오래된 로그파일을 삭제한다. 
-#define _max_log_files_def 20
+constexpr const size_t _max_log_file_size = 100 * 1024 * 1024;		// 100MB
+constexpr const int _max_log_file_backup = 5;
+
+constexpr const char* LOG_BEGIN = "LOG INITIALIZED >>>";
+#define CB_LOG_BEGIN strlen(LOG_BEGIN)
+constexpr const char* LOG_END = "<<< LOG FINALIZED";
+#define CB_LOG_END strlen(LOG_END)
+
+typedef class _LogParam
+{
+public:
+	_LogParam(uint32_t log_id, uint32_t log_mask, uint32_t log_level, uint32_t log_to,			  
+			  bool show_level, bool show_time, bool show_process, bool show_pid_tid, bool show_function,
+			  std::wstring log_file_path, 
+			  size_t log_file_size = _max_log_file_size, 
+			  int log_file_backup = _max_log_file_backup)
+		noexcept
+		:
+		_log_id(log_id),
+		_log_mask(log_mask),
+		_log_level(log_level),
+		_log_to(log_to),
+		_log_file_path(log_file_path),
+		_log_file_size(log_file_size),
+		_log_file_backup_count(log_file_backup),
+		_show_level(show_level),
+		_show_time(show_time),
+		_show_process(show_process),
+		_show_pid_tid(show_pid_tid),
+		_show_function(show_function)
+	{
+	}
+
+	_LogParam() noexcept:
+		_log_id(log_id_base),
+		_log_mask(log_mask_all),
+		_log_level(log_level_info),
+		_log_to(log_to_ods),
+		_log_file_path(_null_stringw),
+		_log_file_size(0),
+		_log_file_backup_count(0),
+		_show_level(true),
+		_show_time(true),
+		_show_process(false),
+		_show_pid_tid(true),
+		_show_function(false)
+	{
+	}
+
+	uint32_t _log_id;
+
+	uint32_t _log_mask;
+	uint32_t _log_level;
+	uint32_t _log_to;
+
+    std::wstring _log_file_path;
+    size_t _log_file_size;
+    int _log_file_backup_count;
+
+	bool _show_level;
+	bool _show_time;
+	bool _show_process;
+	bool _show_pid_tid;
+	bool _show_function;
+
+} LogParam;
 
 
 //
 // C interface
 //
+
+/// @brief	ntdll::DbgPrintEx 
+///			(ref) dpfilter.h
+#define DPFLTR_ERROR_LEVEL 0
+#define DPFLTR_WARNING_LEVEL 1
+#define DPFLTR_TRACE_LEVEL 2
+#define DPFLTR_INFO_LEVEL 3
+#define DPFLTR_MASK 0x80000000
+#define DPFLTR_IHVDRIVER_ID 77
 
 void 
 dbg_print(
@@ -63,52 +133,23 @@ dbg_print(
 
 bool 
 initialize_log(
-	_In_ uint32_t log_id,
-	_In_ uint32_t log_mask,
-	_In_ uint32_t log_level,
-	_In_ uint32_t log_to,
-	_In_opt_z_ const wchar_t* log_file_path,
-	_In_ uint32_t max_log_count = _max_log_count_def,
-	_In_ uint32_t max_log_files = _max_log_files_def
-	);
+	_In_ LogParam& param
+);
 
 void 
 finalize_log(
 	_In_ uint32_t log_id
 	);
 
-bool
-set_log_format(
+void
+get_log_param(
 	_In_ uint32_t log_id,
-	_In_ bool show_level,
-	_In_ bool show_current_time,
-	_In_ bool show_process_name, 
-	_In_ bool show_pid_tid,
-	_In_ bool show_function_name
-	);
-
-bool
-get_log_format(
-	_In_ uint32_t log_id,
-	_Out_ bool& show_level,
-	_Out_ bool& show_current_time,
-	_Out_ bool& show_process_name,
-	_Out_ bool& show_pid_tid,
-	_Out_ bool& show_function_name
-	);
-
-bool
-set_log_env(
-	_In_ uint32_t log_id,
-	_In_ uint32_t log_mask,
-	_In_ uint32_t log_level
+	_Out_ LogParam& param
 );
 
-bool
-get_log_env(
-	_In_ uint32_t log_id,
-	_Out_ uint32_t& log_mask,
-	_Out_ uint32_t& log_level
+void
+set_log_param(
+	_In_ LogParam& param
 );
 
 #ifdef _NO_LOG_
