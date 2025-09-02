@@ -137,8 +137,7 @@ install_fs_filter(
 	_In_z_ const wchar_t* service_name,
 	_In_z_ const wchar_t* service_display_name,
 	_In_z_ const wchar_t* altitude,
-	_In_ const uint32_t fs_filter_flag, 
-	_In_ const DWORD start_type
+	_In_ const uint32_t fs_filter_flag
 )
 {
 	_ASSERTE(nullptr != bin_path);
@@ -186,60 +185,53 @@ install_fs_filter(
 	//
 	std::wstringstream sys_path;	
 	DWORD service_type = SERVICE_KERNEL_DRIVER;	
-	if (start_type == SERVICE_BOOT_START)
-	{
-		// 
-		//	StartType = SERVICE_BOOT_START 
-		//	으로 지정하려면 드라이버파일의 경로가 반드시 system32\drivers 에 있어야 함
-		// 
+
+	// 참고: 
+	// StartType = SERVICE_BOOT_START 이며, 드라이버파일은 반드시 
+	// system32\drivers 에 있어야 함
 	
-		std::wstring windows_dir;
-		if (!get_windows_dir(windows_dir))
-		{
-			log_err "get_windows_dir() failed. " log_end;
-			return false;
-		}
+	std::wstring windows_dir;
+	if (!get_windows_dir(windows_dir))
+	{
+		log_err "get_windows_dir() failed. " log_end;
+		return false;
+	}
 
-		sys_path
-			<< windows_dir
-			<< L"\\system32\\drivers\\"
-			<< file_name_from_file_pathw(bin_path);
+	sys_path
+		<< windows_dir
+		<< L"\\system32\\drivers\\"
+		<< file_name_from_file_pathw(bin_path);
 
-		//
-		//	현재 드라이버 파일의 경로가 system32\driver.sys 가 아니라면
-		//	기존 드라이버파일을 삭제하고, 현재 드라이버 파일을 복사한다.
-		//
-		if (0 != sys_path.str().compare(bin_path))
+	//
+	//	현재 드라이버 파일의 경로가 system32\driver.sys 가 아니라면
+	//	기존 드라이버파일을 삭제하고, 현재 드라이버 파일을 복사한다.
+	//
+	if (0 != sys_path.str().compare(bin_path))
+	{
+		if (is_file_existsW(sys_path.str()))
 		{
-			if (is_file_existsW(sys_path.str()))
-			{
-				if (!DeleteFileW(sys_path.str().c_str()))
-				{
-					log_err
-						"Can not delete (old) fs driver. path=%ws, gle=%u",
-						sys_path.str().c_str(),
-						GetLastError()
-						log_end;
-						return false;
-				}
-			}
-			
-			if (!CopyFile(bin_path, sys_path.str().c_str(), TRUE))
+			if (!DeleteFileW(sys_path.str().c_str()))
 			{
 				log_err
-					"Can not copy fs driver. src path=%ws, to path=%ws, gle=%u",
-					bin_path, 
+					"Can not delete (old) fs driver. path=%ws, gle=%u",
 					sys_path.str().c_str(),
 					GetLastError()
 					log_end;
-				return false;
+					return false;
 			}
 		}
-	}
-	else
-	{
-		sys_path << bin_path;
-	}
+			
+		if (!CopyFile(bin_path, sys_path.str().c_str(), TRUE))
+		{
+			log_err
+				"Can not copy fs driver. src path=%ws, to path=%ws, gle=%u",
+				bin_path, 
+				sys_path.str().c_str(),
+				GetLastError()
+				log_end;
+			return false;
+		}
+	}	
 
 	//
 	//	Open service manager for create new service
@@ -268,7 +260,7 @@ install_fs_filter(
 										   service_display_name,
 										   GENERIC_READ,
 										   service_type,
-										   start_type,
+										   SERVICE_BOOT_START,
 										   SERVICE_ERROR_NORMAL,
 										   sys_path.str().c_str(),
 										   L"FSFilter Activity Monitor",
