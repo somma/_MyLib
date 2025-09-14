@@ -236,6 +236,7 @@ echo "done." </Command>
     <ClInclude Include="src\net_util_typedef.h" />
     <ClInclude Include="src\ntp_client.h" />
     <ClInclude Include="src\nt_name_conv.h" />
+    <ClInclude Include="src\openssl_leak_checker.h" />
     <ClInclude Include="src\process_tree.h" />
     <ClInclude Include="src\Queue.h" />
     <ClInclude Include="src\rc4.h" />
@@ -261,7 +262,6 @@ echo "done." </Command>
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ntp_client.cpp" />
     <ClCompile Include="src\account_info.cpp" />
     <ClCompile Include="src\AirCrypto.cpp" />
     <ClCompile Include="src\AKSyncObjs.cpp" />
@@ -279,6 +279,7 @@ echo "done." </Command>
     <ClCompile Include="src\match.cpp" />
     <ClCompile Include="src\md5.cpp" />
     <ClCompile Include="src\net_util.cpp" />
+    <ClCompile Include="src\ntp_client.cpp" />
     <ClCompile Include="src\nt_name_conv.cpp" />
     <ClCompile Include="src\process_tree.cpp" />
     <ClCompile Include="src\rc4.cpp" />
@@ -304,7 +305,6 @@ echo "done." </Command>
     <ClCompile Include="test_unicode_string_wcsstr.cpp" />
     <ClCompile Include="test_unique_ptr.cpp" />
     <ClCompile Include="_MyLib_test.cpp" />
-    <ClCompile Include="_test_aes256.cpp" />
     <ClCompile Include="_test_asm.cpp" />
     <ClCompile Include="_test_boost.cpp" />
     <ClCompile Include="_test_boost_asio_timer.cpp" />
@@ -319,6 +319,7 @@ echo "done." </Command>
     <ClCompile Include="_test_log.cpp" />
     <ClCompile Include="_test_machine_id.cpp" />
     <ClCompile Include="_test_match.cpp" />
+    <ClCompile Include="_test_ssl_encrypt_memory_leak.cpp" />
     <ClCompile Include="_test_net_util.cpp" />
     <ClCompile Include="_test_NtApi.cpp" />
     <ClCompile Include="_test_ntp_client.cpp" />

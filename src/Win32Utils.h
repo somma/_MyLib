@@ -187,6 +187,10 @@ std::string file_time_to_str(_In_ uint64_t file_time, _In_ bool localtime, _In_ 
 std::string sys_time_to_str(_In_ const PSYSTEMTIME utc_sys_time, _In_ bool localtime, _In_ bool show_misec = false);
 std::string sys_time_to_str2(_In_ const PSYSTEMTIME utc_sys_time);
 
+/// @brief 현재 시간을 ISO 8601 UTC 형식으로 변환
+/// @return ISO 8601 형식의 문자열 (예: "2025-09-14T06:33:39.471Z")
+std::string current_time_to_iso8601();
+
 
 
 /******************************************************************************

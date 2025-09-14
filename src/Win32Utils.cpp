@@ -334,7 +334,6 @@ std::string	time_now_to_str(_In_ bool localtime, _In_ bool show_misec)
 	return sys_time_to_str(&utc_system_time, localtime, show_misec);
 }
 
-
 /// @brief	현재 시각을 `2017-05-23T21:23:24.821+09:00` 포맷 문자열로 출력한다. 
 std::string	time_now_to_str2()
 {
@@ -495,6 +494,50 @@ sys_time_to_str2(
 	return std::string(buf);
 }
 
+/// @brief	현재 시간을 ISO 8601 UTC 형식으로 변환
+/// @return ISO 8601 형식의 문자열 (예: "2025-09-14T06:33:39Z")
+///			pydantic 의 경우 milisecond 부분 파싱에 문제가 발생하는 경우가 
+///			있다고 해서 ms 부분은 사용하지 않는다.
+std::string current_time_to_iso8601()
+{
+	try
+	{
+		// 현재 시간을 시스템 클럭으로 가져옴
+		auto now = std::chrono::system_clock::now();
+		auto time_t = std::chrono::system_clock::to_time_t(now);
+
+		// 밀리초 부분을 별도로 계산함
+		auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+			now.time_since_epoch()
+			) % 1000;
+
+		// UTC 시간으로 안전하게 변환 (gmtime_s 사용)
+		std::tm utc_tm = {};
+		errno_t err = gmtime_s(&utc_tm, &time_t);
+		if (err != 0)
+		{
+			log_err "gmtime_s failed with error, err=%d" log_end;
+			return std::string("1601-01-01T00:00:00Z");
+		}
+
+		// ISO 8601 형식으로 포매팅
+		std::ostringstream oss;
+		oss << std::put_time(&utc_tm, "%Y-%m-%dT%H:%M:%S");		
+		oss << 'Z';
+
+		return oss.str();
+	}
+	catch (const std::exception& e)
+	{
+		log_err "Exception in current_time_to_iso8601, err=%s", e.what() log_end;
+		return std::string("1601-01-01T00:00:00Z");
+	}
+	catch (...)
+	{
+		log_err "Unknown exception in current_time_to_iso8601" log_end;
+		return std::string("1601-01-01T00:00:00Z");
+	}
+}
 
 bool is_file_existsW(_In_ const std::wstring& file_path)
 {
