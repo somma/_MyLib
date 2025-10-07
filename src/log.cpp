@@ -493,6 +493,7 @@ log_write_fmt(
 		// line feed
 		StringCbPrintfExA(pos, remain, &pos, &remain, 0, "\n");
 		write_to_console(color, log_buffer);
+		write_to_console(fc_green, log_buffer);
 	}
 }
 #endif// _NO_LOG_
