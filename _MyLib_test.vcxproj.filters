@@ -19,6 +19,9 @@
     <Filter Include="src">
       <UniqueIdentifier>{26ff1700-93eb-4edf-be4e-a415d26a9d80}</UniqueIdentifier>
     </Filter>
+    <Filter Include="docs">
+      <UniqueIdentifier>{b18cfa02-6554-42d9-8787-64b38c00d715}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -163,6 +166,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\log.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ProcessLauncher.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
@@ -374,10 +380,18 @@
     <ClCompile Include="src\log.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\ProcessLauncher.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <masm Include="x64.asm">
       <Filter>Source Files\asm</Filter>
     </masm>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\ProcessLauncher.md">
+      <Filter>docs</Filter>
+    </None>
   </ItemGroup>
 </Project>

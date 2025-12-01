@@ -256,6 +256,7 @@ echo "done." </Command>
     <ClInclude Include="src\thread_pool.h" />
     <ClInclude Include="src\version.h" />
     <ClInclude Include="src\Win32Utils.h" />
+    <ClInclude Include="src\ProcessLauncher.h" />
     <ClInclude Include="src\wmi_client.h" />
     <ClInclude Include="src\Wow64Util.h" />
     <ClInclude Include="stdafx.h" />
@@ -290,6 +291,7 @@ echo "done." </Command>
     <ClCompile Include="src\sha2.cpp" />
     <ClCompile Include="src\ThreadManager.cpp" />
     <ClCompile Include="src\Win32Utils.cpp" />
+    <ClCompile Include="src\ProcessLauncher.cpp" />
     <ClCompile Include="src\wmi_client.cpp" />
     <ClCompile Include="src\Wow64Util.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -350,6 +352,9 @@ echo "done." </Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </masm>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\ProcessLauncher.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
