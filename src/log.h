@@ -19,11 +19,8 @@
 
 #include <mutex>
 #include "_MyLib/src/Win32Utils.h"
-#include "_MyLib/src/Queue.h"
 
-// refac: todo: log_id 는 필요가 없는데??????????
-
-/// @brief	log_id
+/// @brief  log_id
 constexpr const uint32_t log_id_base = 0xffffffff;
 
 /// @brief  log_mask
@@ -34,8 +31,7 @@ constexpr const uint32_t log_mask_sys = 0x00000001;      // for log_info, log_er
 constexpr const uint32_t log_level_debug = 3;
 constexpr const uint32_t log_level_info = 2;
 constexpr const uint32_t log_level_warn = 1;
-constexpr const uint32_t log_level_critical = 0;
-constexpr const uint32_t log_level_error = log_level_critical;
+constexpr const uint32_t log_level_error = 0;
 
 /// @brief log to 
 constexpr const uint32_t log_to_none = 0x00000000;
@@ -52,64 +48,63 @@ constexpr const char* LOG_BEGIN = "LOG INITIALIZED >>>";
 constexpr const char* LOG_END = "<<< LOG FINALIZED";
 #define CB_LOG_END strlen(LOG_END)
 
-typedef class _LogParam
+/// @brief  Log parameters class
+class LogParam
 {
 public:
-	_LogParam(uint32_t log_id, uint32_t log_mask, uint32_t log_level, uint32_t log_to,			  
-			  bool show_level, bool show_time, bool show_process, bool show_pid_tid, bool show_function,
-			  std::wstring log_file_path, 
-			  size_t log_file_size = _max_log_file_size, 
-			  int log_file_backup = _max_log_file_backup)
-		noexcept
-		:
-		_log_id(log_id),
-		_log_mask(log_mask),
-		_log_level(log_level),
-		_log_to(log_to),
-		_log_file_path(log_file_path),
-		_log_file_size(log_file_size),
-		_log_file_backup_count(log_file_backup),
-		_show_level(show_level),
-		_show_time(show_time),
-		_show_process(show_process),
-		_show_pid_tid(show_pid_tid),
-		_show_function(show_function)
-	{
-	}
+    LogParam(
+        uint32_t log_id, uint32_t log_mask, uint32_t log_level, uint32_t log_to,
+        bool show_level, bool show_time, bool show_process, bool show_pid_tid, bool show_function,
+        std::wstring log_file_path,
+        size_t log_file_size = _max_log_file_size,
+        int log_file_backup = _max_log_file_backup
+    ) noexcept
+        : _log_id(log_id)
+        , _log_mask(log_mask)
+        , _log_level(log_level)
+        , _log_to(log_to)
+        , _log_file_path(log_file_path)
+        , _log_file_size(log_file_size)
+        , _log_file_backup_count(log_file_backup)
+        , _show_level(show_level)
+        , _show_time(show_time)
+        , _show_process(show_process)
+        , _show_pid_tid(show_pid_tid)
+        , _show_function(show_function)
+    {
+    }
 
-	_LogParam() noexcept:
-		_log_id(log_id_base),
-		_log_mask(log_mask_all),
-		_log_level(log_level_info),
-		_log_to(log_to_ods),
-		_log_file_path(_null_stringw),
-		_log_file_size(0),
-		_log_file_backup_count(0),
-		_show_level(true),
-		_show_time(true),
-		_show_process(false),
-		_show_pid_tid(true),
-		_show_function(false)
-	{
-	}
+    LogParam() noexcept
+        : _log_id(log_id_base)
+        , _log_mask(log_mask_all)
+        , _log_level(log_level_info)
+        , _log_to(log_to_ods)
+        , _log_file_path(_null_stringw)
+        , _log_file_size(0)
+        , _log_file_backup_count(0)
+        , _show_level(true)
+        , _show_time(true)
+        , _show_process(false)
+        , _show_pid_tid(true)
+        , _show_function(false)
+    {
+    }
 
-	uint32_t _log_id;
-
-	uint32_t _log_mask;
-	uint32_t _log_level;
-	uint32_t _log_to;
+    uint32_t _log_id;
+    uint32_t _log_mask;
+    uint32_t _log_level;
+    uint32_t _log_to;
 
     std::wstring _log_file_path;
     size_t _log_file_size;
     int _log_file_backup_count;
 
-	bool _show_level;
-	bool _show_time;
-	bool _show_process;
-	bool _show_pid_tid;
-	bool _show_function;
-
-} LogParam;
+    bool _show_level;
+    bool _show_time;
+    bool _show_process;
+    bool _show_pid_tid;
+    bool _show_function;
+};
 
 
 //

@@ -1,6 +1,6 @@
 ﻿/**
  * @file    log_rotated_file
- * @brief   file logging module that roate old logs.
+ * @brief   file logging module that rotates old logs.
  *
  * @author  Yonhgwhan, Roh (somma@somma.kr)
  * @date    2025-09-18 created
@@ -9,13 +9,14 @@
 
 #include "stdafx.h"
 #include "_MyLib/src/log_rotated_file.h"
-#include "_MyLib/src/log.h"
-#include <iomanip>
-#include <chrono>
+#include "_MyLib/src/log_internal.h"
+#include "_MyLib/src/Win32Utils.h"
 #include <filesystem>
 
+// Use log_internal namespace for cleaner code
+using log_internal::dbg_log;
 
-/// @brief 생성자
+/// @brief  Constructor
 LogRotatedFile::LogRotatedFile(): 
     _stop_requested(false), 
     _initialized(false), 
@@ -25,13 +26,13 @@ LogRotatedFile::LogRotatedFile():
 {
 }
 
-/// @brief 소멸자
+/// @brief  Destructor
 LogRotatedFile::~LogRotatedFile()
 {
     finalize();
 }
 
-/// @brief 로거 초기화
+/// @brief  Initialize logger
 bool LogRotatedFile::initialize(
     _In_ const std::wstring& log_file_path, 
     _In_ size_t max_file_size,
@@ -40,7 +41,7 @@ bool LogRotatedFile::initialize(
 {
     if (_initialized.load())
     {
-        return true; // 이미 초기화됨
+        return true; // Already initialized
     }
 
     try
@@ -50,7 +51,7 @@ bool LogRotatedFile::initialize(
         _max_backup_files = max_backup_files;
         _current_file_size = 0;
 
-        // 로그 파일 디렉토리 생성        
+        // Create log file directory        
         std::filesystem::path log_path(_log_file_path);
         std::filesystem::path log_dir = log_path.parent_path();
         
@@ -59,47 +60,55 @@ bool LogRotatedFile::initialize(
             std::filesystem::create_directories(log_dir);
         }
 
-        // 로그 파일 열기 (append 모드)
+        // Open log file in append mode
         _log_file.open(_log_file_path, std::ios::out | std::ios::app);
         if (!_log_file.is_open())
         {
+            // Get detailed error information
+            DWORD last_error = GetLastError();
+            int err_no = errno;
+            char errno_buf[256] = { 0 };
+            strerror_s(errno_buf, sizeof(errno_buf), err_no);
+
+            dbg_log(LOG_INTERNAL_DPFLTR_ERROR_LEVEL, __FUNCTION__,
+                "Failed to open log file. path=%s, gle=%u, errno=%d (%s)",
+                std::filesystem::path(_log_file_path).string().c_str(),
+                last_error, err_no, errno_buf);
             return false;
         }
 
-        // 현재 파일 크기 확인
+        // Check current file size
         if (std::filesystem::exists(_log_file_path))
         {
             _current_file_size = std::filesystem::file_size(_log_file_path);
         }
 
-        // 로그 처리 쓰레드 시작
+        // Start log processing thread
         _stop_requested = false;
         _log_thread = std::thread(&LogRotatedFile::log_thread_proc, this);
 
         _initialized = true;
 
-        // 초기화 완료 로그
-        dbg_print(DPFLTR_INFO_LEVEL, "LogRotatedFile initialized successfully.\n");
+        // Initialization complete log
+        dbg_log(LOG_INTERNAL_DPFLTR_INFO_LEVEL, __FUNCTION__, "LogRotatedFile initialized successfully.");
         return true;
     }
     catch (const std::exception& e)
     {
-        // 오류 발생 시 정리
+        // Clean up on error
         if (_log_file.is_open())
         {
             _log_file.close();
         }
         
-        // 예외 정보를 디버그 출력 (파일 로그는 불가능)
-        std::string error_msg = "LogRotatedFile initialization failed: ";
-        error_msg += e.what();
-        error_msg += "\n";
-        dbg_print(DPFLTR_ERROR_LEVEL, error_msg.c_str());        
+        // Output exception info to debug (file log unavailable)
+        dbg_log(LOG_INTERNAL_DPFLTR_ERROR_LEVEL, __FUNCTION__,
+            "LogRotatedFile initialization failed: %s", e.what());        
         return false;
     }
 }
 
-/// @brief 로거 종료
+/// @brief  Finalize logger
 void LogRotatedFile::finalize()
 {
     if (!_initialized.load())
@@ -109,19 +118,19 @@ void LogRotatedFile::finalize()
 
     try
     {
-        // 종료 로그 추가
-        dbg_print(DPFLTR_INFO_LEVEL, "Finalizing LogRotatedFile...\n");
+        // Finalization start log
+        dbg_log(LOG_INTERNAL_DPFLTR_INFO_LEVEL, __FUNCTION__, "Finalizing LogRotatedFile...");
 
-        // 쓰레드 종료 요청
+        // Request thread termination
         _stop_requested = true;
 
-        // 쓰레드 종료 대기
+        // Wait for thread to finish
         if (_log_thread.joinable())
         {
             _log_thread.join();
         }
 
-        // 남은 로그 모두 처리
+        // Process all remaining logs
         std::string log_entry;
         while (_logs.try_pop(log_entry))
         {
@@ -133,7 +142,7 @@ void LogRotatedFile::finalize()
             }
         }
 
-        // 파일 닫기
+        // Close file
         if (_log_file.is_open())
         {
             _log_file.close();
@@ -143,15 +152,13 @@ void LogRotatedFile::finalize()
     }
     catch (const std::exception& e)
     {
-        // 종료 중 예외 발생 시 디버그 출력
-        std::string error_msg = "LogRotatedFile finalization error: ";
-        error_msg += e.what();
-        error_msg += "\n";
-        dbg_print(DPFLTR_ERROR_LEVEL, error_msg.c_str());
+        // Output exception during finalization
+        dbg_log(LOG_INTERNAL_DPFLTR_ERROR_LEVEL, __FUNCTION__,
+            "LogRotatedFile finalization error: %s", e.what());
     }
 }
 
-/// @brief 로그 추가
+/// @brief  Add log entry
 void LogRotatedFile::add_log(_In_ const char* data, _In_ size_t size)
 {
     if (!_initialized.load())
@@ -174,11 +181,11 @@ void LogRotatedFile::add_log(_In_ const char* data, _In_ size_t size)
     }
     catch (const std::exception&)
     {
-        // 로그 추가 실패 시 무시 (무한 루프 방지)
+        // Ignore add_log failure to prevent infinite loop
     }
 }
 
-/// @brief 로그 처리 쓰레드 함수
+/// @brief  Log processing thread function
 void LogRotatedFile::log_thread_proc()
 {
     try
@@ -187,21 +194,21 @@ void LogRotatedFile::log_thread_proc()
         {
             std::string log_entry;
             
-            // 로그 큐에서 항목 가져오기 (100ms 간격으로 체크)
+            // Get item from log queue (checks every 100ms)
             if (_logs.try_pop(log_entry))
             {
                 std::lock_guard<std::mutex> lock(_file_mutex);
                 
                 if (_log_file.is_open())
                 {
-                    // 파일에 로그 기록
+                    // Write log to file
                     _log_file << log_entry << std::endl;
                     _log_file.flush();
                     
-                    // 파일 크기 업데이트
+                    // Update file size
                     _current_file_size += log_entry.length() + 1; // +1 for newline
                     
-                    // 파일 크기 체크 및 로테이션
+                    // Check file size and rotate if needed
                     if (_current_file_size >= _max_file_size)
                     {
                         rotate_log_file();
@@ -210,27 +217,25 @@ void LogRotatedFile::log_thread_proc()
             }
             else
             {
-                // 로그가 없으면 잠시 대기
+                // Sleep briefly when queue is empty
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
         }
     }
     catch (const std::exception& e)
     {
-        // 쓰레드 예외 발생 시 디버그 출력
-        std::string error_msg = "LogRotatedFile thread error: ";
-        error_msg += e.what();
-        error_msg += "\n";
-        dbg_print(DPFLTR_ERROR_LEVEL, error_msg.c_str());
+        // Output thread exception
+        dbg_log(LOG_INTERNAL_DPFLTR_ERROR_LEVEL, __FUNCTION__,
+            "LogRotatedFile thread error: %s", e.what());
     }
 }
 
-/// @brief 파일 로테이션 처리
+/// @brief  Rotate log file
 void LogRotatedFile::rotate_log_file()
 {
     try
     {
-        // 현재 파일 닫기
+        // Close current file
         if (_log_file.is_open())
         {
             _log_file.close();
@@ -241,7 +246,7 @@ void LogRotatedFile::rotate_log_file()
         std::wstring extension = log_path.extension().wstring();
         std::wstring directory = log_path.parent_path().wstring();
 
-        // 기존 백업 파일들을 순서대로 이동
+        // Shift existing backup files in order
         for (int i = _max_backup_files - 1; i >= 1; --i)
         {
             std::wstring old_backup = directory + L"\\" + base_name + L"." + std::to_wstring(i) + extension;
@@ -251,29 +256,29 @@ void LogRotatedFile::rotate_log_file()
             {
                 if (i == _max_backup_files - 1)
                 {
-                    // 가장 오래된 파일 삭제
+                    // Delete the oldest file
                     std::filesystem::remove(old_backup);
                 }
                 else
                 {
-                    // 파일 이름 변경
+                    // Rename file
                     std::filesystem::rename(old_backup, new_backup);
                 }
             }
         }
 
-        // 현재 로그 파일을 .1로 이동
+        // Move current log file to .1
         std::wstring first_backup = directory + L"\\" + base_name + L".1" + extension;
         if (std::filesystem::exists(_log_file_path))
         {
             std::filesystem::rename(_log_file_path, first_backup);
         }
 
-        // 새 로그 파일 생성
+        // Create new log file
         _log_file.open(_log_file_path, std::ios::out | std::ios::trunc);
         _current_file_size = 0;
 
-        // 로테이션 완료 로그
+        // Log rotation complete message
         if (_log_file.is_open())
         {
             auto timestr = time_now_to_str(true, false);
@@ -286,13 +291,11 @@ void LogRotatedFile::rotate_log_file()
     }
     catch (const std::exception& e)
     {
-        // 로테이션 실패 시 디버그 출력
-        std::string error_msg = "Log rotation failed: ";
-        error_msg += e.what();
-        error_msg += "\n";
-        dbg_print(DPFLTR_ERROR_LEVEL, error_msg.c_str());
+        // Output rotation failure
+        dbg_log(LOG_INTERNAL_DPFLTR_ERROR_LEVEL, __FUNCTION__,
+            "Log rotation failed: %s", e.what());
         
-        // 새 파일로 다시 시도
+        // Try to reopen the file
         try
         {
             if (!_log_file.is_open())
@@ -302,8 +305,9 @@ void LogRotatedFile::rotate_log_file()
         }
         catch (const std::exception&)
         {
-            // 완전 실패
-            dbg_print(DPFLTR_ERROR_LEVEL, "Failed to reopen log file after rotation failure.\n");
+            // Complete failure
+            dbg_log(LOG_INTERNAL_DPFLTR_ERROR_LEVEL, __FUNCTION__,
+                "Failed to reopen log file after rotation failure.");
         }
     }
 }
