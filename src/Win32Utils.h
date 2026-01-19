@@ -1045,12 +1045,14 @@ bin_to_hexw(
 	);
 
 bool str_to_int32(_In_ const char* int32_string, _Out_ int32_t& int32_val);
+bool str_to_uint16(_In_ const char* uint16_string, _Out_ uint16_t& uint16_val);
 bool str_to_uint32(_In_ const char* uint32_string, _Out_ uint32_t& uint32_val);
 bool str_to_int64(_In_ const char* int64_string, _Out_ int64_t& int64_val);
 bool str_to_uint64(_In_ const char* uint64_string, _Out_ uint64_t& uint64_val);
     
 
 bool wstr_to_int32(_In_ const wchar_t* int32_string, _Out_ int32_t& int32_val);
+bool wstr_to_uint16(_In_ const wchar_t* uint16_string, _Out_ uint16_t& uint16_val);
 bool wstr_to_uint32(_In_ const wchar_t* uint32_string, _Out_ uint32_t& uint32_val);
 bool wstr_to_int64(_In_ const wchar_t* int64_string, _Out_ int64_t& int64_val);
 bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ uint64_t& uint64_val);

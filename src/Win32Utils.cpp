@@ -8633,6 +8633,28 @@ bool str_to_int32(_In_ const char* int32_string, _Out_ int32_t& int32_val)
 	return true;
 }
 
+/// @brief Convert string to uint16_t with range validation (0 ~ 65535)
+bool str_to_uint16(_In_ const char* uint16_string, _Out_ uint16_t& uint16_val)
+{
+	if (NULL == uint16_string) return false;
+
+	//> Remove leading/trailing whitespace, reject negative numbers
+	std::string str = uint16_string;
+	trima(str);
+	if (str.empty() || str[0] == '-') return false;
+
+	//> Convert to uint32_t first
+	errno = 0;
+	unsigned long val = strtoul(str.c_str(), NULL, 10);
+	if (ERANGE == errno) { return false; }
+
+	//> Range check for uint16_t (0 ~ 65535)
+	if (val > 0xFFFF) { return false; }
+
+	uint16_val = static_cast<uint16_t>(val);
+	return true;
+}
+
 bool str_to_uint32(_In_ const char* uint32_string, _Out_ uint32_t& uint32_val)
 {
 	if (NULL == uint32_string) return false;
@@ -8706,6 +8728,12 @@ bool wstr_to_int32(_In_ const wchar_t* int32_string, _Out_ int32_t& int32_val)
 {
 	if (NULL == int32_string) return false;
 	return str_to_int32(WcsToMbsEx(int32_string).c_str(), int32_val);
+}
+
+bool wstr_to_uint16(_In_ const wchar_t* uint16_string, _Out_ uint16_t& uint16_val)
+{
+	if (NULL == uint16_string) return false;
+	return str_to_uint16(WcsToMbsEx(uint16_string).c_str(), uint16_val);
 }
 
 bool wstr_to_uint32(_In_ const wchar_t* uint32_string, _Out_ uint32_t& uint32_val)
