@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * @file    Custom UNICODE_STRING substring routine test
  * @brief
  * @ref
@@ -56,7 +56,7 @@ uni_wcsstr(
 	USHORT const cnt_haystack = haystack->Length / sizeof(wchar_t);
 	USHORT const cnt_needle = needle->Length / sizeof(wchar_t);
 
-	// needle ÀÇ »çÀÌÁî¸¦ Ç°À» ¼ö ÀÖ´Â ¿µ¿ª±îÁö¸¸ °Ë»çÇÏ¸é µÇ¹Ç·Î.
+	// needle ì˜ ì‚¬ì´ì¦ˆë¥¼ í’ˆì„ ìˆ˜ ìˆëŠ” ì˜ì—­ê¹Œì§€ë§Œ ê²€ì‚¬í•˜ë©´ ë˜ë¯€ë¡œ.
 	USHORT const last_index = cnt_haystack - cnt_needle;
 
 	if (true != reverse)
@@ -128,7 +128,7 @@ bool test_uni_wcsstr()
 
 		UNICODE_STRING hay;
 		hay.Buffer = (wchar_t*)data[i].haystack;
-		// test ¸¦ À§ÇØ¼­ ÀÏºÎ·¯ null ¹®ÀÚ ±æÀÌ¸¦ »­
+		// test ë¥¼ ìœ„í•´ì„œ ì¼ë¶€ëŸ¬ null ë¬¸ì ê¸¸ì´ë¥¼ ëºŒ
 		hay.Length = hay.MaximumLength = (USHORT)wcslen(data[i].haystack)*sizeof(wchar_t) - sizeof(wchar_t);
 		
 		UNICODE_STRING needle;

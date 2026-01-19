@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * @file    _test_std_future_async.cpp
  * @brief
  *
@@ -68,7 +68,7 @@ producer(
 		pages->push(content);
 		lock->unlock();
 
-		// consumer ¿¡°Ô content °¡ Ãß°¡µÇ¾úÀ½À» ¾Ë¸°´Ù. 
+		// consumer ì—ê²Œ content ê°€ ì¶”ê°€ë˜ì—ˆìŒì„ ì•Œë¦°ë‹¤. 
 		cv->notify_one();
 	}
 }
@@ -86,15 +86,15 @@ void consumer(
 		cv->wait(
 			lk,
 			[&](){
-				// Á¶°ÇÀÌ °ÅÁşÀÎ °æ¿ì unlock ÇÏ°í, sleep ÇÑ´Ù.
-				//	-> true ¸¦ ¸®ÅÏÇÏ¸é ±ú¾î³ª°í, 
-				//	-> false ¸¦ ¸®ÅÏÇÏ¸é °è¼Ó sleep
+				// ì¡°ê±´ì´ ê±°ì§“ì¸ ê²½ìš° unlock í•˜ê³ , sleep í•œë‹¤.
+				//	-> true ë¥¼ ë¦¬í„´í•˜ë©´ ê¹¨ì–´ë‚˜ê³ , 
+				//	-> false ë¥¼ ë¦¬í„´í•˜ë©´ ê³„ì† sleep
 				return !pages->empty() || *num_processed == 25;
 			}
 		);
 
 		//
-		// lock µÈ »óÅÂ·Î ±ú¾î³µÀ½
+		// lock ëœ ìƒíƒœë¡œ ê¹¨ì–´ë‚¬ìŒ
 		//
 
 		if (*num_processed == 25)
@@ -156,7 +156,7 @@ void test_condition_variable_producer_consumer()
 			producers[i].join();
 		}
 
-		// consumer µéÀ» ¸ğµÎ ±ú¿î´Ù. 
+		// consumer ë“¤ì„ ëª¨ë‘ ê¹¨ìš´ë‹¤. 
 		cv.notify_all();
 
 		for (int i = 0; i < 3; ++i)
@@ -167,8 +167,8 @@ void test_condition_variable_producer_consumer()
 	_mem_check_end;
 }
 
-/// @brief	cv->notify_one() È£Ãâ°¹¼ö¿Í cv->wait() ÀÌ ±ú¾î³ª´Â ¼ö´Â º¸ÀåÀÌ µÊ
-///			notify_one °ú wait ÀÌ ±ú¾î³ª´Â È½¼ö°¡ °ÆÁ¤µÇ¸é wait_for ¾²¸é µÊ
+/// @brief	cv->notify_one() í˜¸ì¶œê°¯ìˆ˜ì™€ cv->wait() ì´ ê¹¨ì–´ë‚˜ëŠ” ìˆ˜ëŠ” ë³´ì¥ì´ ë¨
+///			notify_one ê³¼ wait ì´ ê¹¨ì–´ë‚˜ëŠ” íšŸìˆ˜ê°€ ê±±ì •ë˜ë©´ wait_for ì“°ë©´ ë¨
 void test_condition_variable_producer_consumer_2()
 {
 	_mem_check_begin
@@ -200,7 +200,7 @@ void test_condition_variable_producer_consumer_2()
 			{
 				std::unique_lock<std::mutex> lock(pages_lock);
 				cv.wait(lock, [&]() {
-					return !pages.empty();		// content °¡ ÀÖÀ¸¸é ±ú¾î³²
+					return !pages.empty();		// content ê°€ ìˆìœ¼ë©´ ê¹¨ì–´ë‚¨
 					});
 
 				std::string content = pages.front();
@@ -217,7 +217,7 @@ void test_condition_variable_producer_consumer_2()
 		
 		p.join();
 
-		// consumer µéÀ» ¸ğµÎ ±ú¿î´Ù. 
+		// consumer ë“¤ì„ ëª¨ë‘ ê¹¨ìš´ë‹¤. 
 		cv.notify_all();
 		c.join();
 
@@ -315,13 +315,13 @@ void test_future_wait_for()
 		{
 			std::future_status status = data.wait_for(std::chrono::seconds(1));
 
-			// ¾ÆÁ÷ ÁØºñ ¾ÈµÇ¾úÀ½
+			// ì•„ì§ ì¤€ë¹„ ì•ˆë˜ì—ˆìŒ
 			if (status == std::future_status::timeout)
 			{
 				log_dbg ">" log_end;
 			}			
 
-			// ÁØºñ ¿Ï·á
+			// ì¤€ë¹„ ì™„ë£Œ
 			else if (status == std::future_status::ready)
 			{
 				log_dbg "" log_end;

@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * @file    test for std::move, RVO and ...
  * @brief
  * @ref
@@ -12,7 +12,7 @@
 #define _size	4
 
 
-///	@brief	Move semantic ÀÌ Àû¿ëµÇÁö ¾ÊÀº Å¬·¡½º
+///	@brief	Move semantic ì´ ì ìš©ë˜ì§€ ì•Šì€ í´ë˜ìŠ¤
 class my
 {
 public:
@@ -50,7 +50,7 @@ public:
 
 
 
-///	@brief	Move semantic ÀÌ Àû¿ëµÈ Å¬·¡½º
+///	@brief	Move semantic ì´ ì ìš©ëœ í´ë˜ìŠ¤
 class my_move
 {
 public:
@@ -158,16 +158,16 @@ std::vector<my> return_big_container_vector_no_reserve()
 		StringCbPrintfA(buf, _buf_size, "value=%u", i);
 		
 		//
-		//	my °´Ã¼ »ı¼º
-		//	push_back() ¿¡ ÆÄ¶ó¹ÌÅÍ·Î ³Ñ¾î°¥¶§ º¹»ç
-		//	my °´Ã¼ ¼Ò¸êÀÚ È£Ãâ
+		//	my ê°ì²´ ìƒì„±
+		//	push_back() ì— íŒŒë¼ë¯¸í„°ë¡œ ë„˜ì–´ê°ˆë•Œ ë³µì‚¬
+		//	my ê°ì²´ ì†Œë©¸ì í˜¸ì¶œ
 		//
 		bc.push_back(my(buf));
 	}
 
 	// 
-	//	STL container ´Â ÀÌ¹Ì move semantic ÀÌ Àû¿ëµÇ¾úÀÖ±â¶§¹®¿¡ 
-	//	ºÒÇÊ¿äÇÑ º¹»ç´Â ÀÏ¾î³ªÁö ¾Ê´Â´Ù.
+	//	STL container ëŠ” ì´ë¯¸ move semantic ì´ ì ìš©ë˜ì—ˆìˆê¸°ë•Œë¬¸ì— 
+	//	ë¶ˆí•„ìš”í•œ ë³µì‚¬ëŠ” ì¼ì–´ë‚˜ì§€ ì•ŠëŠ”ë‹¤.
 	//
 	return bc;
 }
@@ -178,9 +178,9 @@ std::vector<my> return_big_container_vector()
 	std::vector<my> bc;
 
 	//
-	//	vector °´Ã¼¿¡ item ÀÌ Ãß°¡µÇ¸é¼­ vector »çÀÌÁî¸¦ Å°¿ì°í
-	//	ÀÌÀü vector ¿¡ ÀÖ´ø item µéÀ» º¹»ç
-	//	µû¶ó¼­ vector »ç¿ë½Ã reserve() ´Â ÇÊ¼ö
+	//	vector ê°ì²´ì— item ì´ ì¶”ê°€ë˜ë©´ì„œ vector ì‚¬ì´ì¦ˆë¥¼ í‚¤ìš°ê³ 
+	//	ì´ì „ vector ì— ìˆë˜ item ë“¤ì„ ë³µì‚¬
+	//	ë”°ë¼ì„œ vector ì‚¬ìš©ì‹œ reserve() ëŠ” í•„ìˆ˜
 	//
 	bc.reserve(_size);
 
@@ -191,17 +191,17 @@ std::vector<my> return_big_container_vector()
 
 
 		//
-		//	my °´Ã¼ »ı¼º
-		//	push_back() ¿¡ ÆÄ¶ó¹ÌÅÍ·Î ³Ñ¾î°¥¶§ º¹»ç
-		//	my °´Ã¼ ¼Ò¸êÀÚ È£Ãâ
+		//	my ê°ì²´ ìƒì„±
+		//	push_back() ì— íŒŒë¼ë¯¸í„°ë¡œ ë„˜ì–´ê°ˆë•Œ ë³µì‚¬
+		//	my ê°ì²´ ì†Œë©¸ì í˜¸ì¶œ
 		//
 		bc.push_back(my(buf));
 	}
 
 
 	// 
-	//	STL container ´Â ÀÌ¹Ì move semantic ÀÌ Àû¿ëµÇ¾úÀÖ±â¶§¹®¿¡ 
-	//	ºÒÇÊ¿äÇÑ º¹»ç´Â ÀÏ¾î³ªÁö ¾Ê´Â´Ù.
+	//	STL container ëŠ” ì´ë¯¸ move semantic ì´ ì ìš©ë˜ì—ˆìˆê¸°ë•Œë¬¸ì— 
+	//	ë¶ˆí•„ìš”í•œ ë³µì‚¬ëŠ” ì¼ì–´ë‚˜ì§€ ì•ŠëŠ”ë‹¤.
 	//
 	return bc;
 }
@@ -218,17 +218,17 @@ std::list<my> return_big_container_list()
 
 
 		//
-		//	my °´Ã¼ »ı¼º
-		//	push_back() ¿¡ ÆÄ¶ó¹ÌÅÍ·Î ³Ñ¾î°¥¶§ º¹»ç
-		//	my °´Ã¼ ¼Ò¸êÀÚ È£Ãâ
+		//	my ê°ì²´ ìƒì„±
+		//	push_back() ì— íŒŒë¼ë¯¸í„°ë¡œ ë„˜ì–´ê°ˆë•Œ ë³µì‚¬
+		//	my ê°ì²´ ì†Œë©¸ì í˜¸ì¶œ
 		//
 		bc.push_back(my(buf));
 	}
 
 
 	// 
-	//	STL container ´Â ÀÌ¹Ì move semantic ÀÌ Àû¿ëµÇ¾úÀÖ±â¶§¹®¿¡ 
-	//	ºÒÇÊ¿äÇÑ º¹»ç´Â ÀÏ¾î³ªÁö ¾Ê´Â´Ù.
+	//	STL container ëŠ” ì´ë¯¸ move semantic ì´ ì ìš©ë˜ì—ˆìˆê¸°ë•Œë¬¸ì— 
+	//	ë¶ˆí•„ìš”í•œ ë³µì‚¬ëŠ” ì¼ì–´ë‚˜ì§€ ì•ŠëŠ”ë‹¤.
 	//
 	return bc;
 }
@@ -245,17 +245,17 @@ std::list<my_move> return_big_container_list_move()
 
 
 		//
-		//	my °´Ã¼ »ı¼º
-		//	push_back() ¿¡ ÆÄ¶ó¹ÌÅÍ·Î ³Ñ¾î°¥¶§ º¹»ç
-		//	my °´Ã¼ ¼Ò¸êÀÚ È£Ãâ
+		//	my ê°ì²´ ìƒì„±
+		//	push_back() ì— íŒŒë¼ë¯¸í„°ë¡œ ë„˜ì–´ê°ˆë•Œ ë³µì‚¬
+		//	my ê°ì²´ ì†Œë©¸ì í˜¸ì¶œ
 		//
 		bc.push_back(my_move(buf));
 	}
 
 
 	// 
-	//	STL container ´Â ÀÌ¹Ì move semantic ÀÌ Àû¿ëµÇ¾úÀÖ±â¶§¹®¿¡ 
-	//	ºÒÇÊ¿äÇÑ º¹»ç´Â ÀÏ¾î³ªÁö ¾Ê´Â´Ù.
+	//	STL container ëŠ” ì´ë¯¸ move semantic ì´ ì ìš©ë˜ì—ˆìˆê¸°ë•Œë¬¸ì— 
+	//	ë¶ˆí•„ìš”í•œ ë³µì‚¬ëŠ” ì¼ì–´ë‚˜ì§€ ì•ŠëŠ”ë‹¤.
 	//
 	return bc;
 }

@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * @file    
  * @brief
  *
@@ -43,19 +43,19 @@ struct GPT_HEADER {
     uint32_t partitionEntryArrayCRC32;
 };
 
-// GPT ÆÄÆ¼¼Ç ¿£Æ®¸® ±¸Á¶Ã¼ Ãß°¡
+// GPT íŒŒí‹°ì…˜ ì—”íŠ¸ë¦¬ êµ¬ì¡°ì²´ ì¶”ê°€
 struct GPT_PARTITION_ENTRY {
     uint8_t partitionTypeGUID[16];
     uint8_t uniquePartitionGUID[16];
     uint64_t startingLBA;
     uint64_t endingLBA;
     uint64_t attributes;
-    WCHAR partitionName[36]; // UTF-16 ÀÎÄÚµù, 36 ±ÛÀÚ(72 ¹ÙÀÌÆ®)
+    WCHAR partitionName[36]; // UTF-16 ì¸ì½”ë”©, 36 ê¸€ì(72 ë°”ì´íŠ¸)
 };
 
 #pragma pack(pop)
 
-// Ä¿½ºÅÒ HANDLE deleter
+// ì»¤ìŠ¤í…€ HANDLE deleter
 struct HandleDeleter {
     void operator()(_In_opt_ HANDLE handle) const {
         if (handle && handle != INVALID_HANDLE_VALUE) {
@@ -66,7 +66,7 @@ struct HandleDeleter {
 
 using unique_handle = std::unique_ptr<std::remove_pointer<HANDLE>::type, HandleDeleter>;
 
-// GUID Ãâ·Â ÇÔ¼ö
+// GUID ì¶œë ¥ í•¨ìˆ˜
 void PrintGUID(_In_reads_(16) const uint8_t* guid)
 {
     printf("%08x-%04x-%04x-",
@@ -78,9 +78,9 @@ void PrintGUID(_In_reads_(16) const uint8_t* guid)
     for (int i = 10; i < 16; ++i) printf("%02x", guid[i]);
 }
 
-// GPT ÆÄÆ¼¼Ç Å¸ÀÔ ÀÌ¸§ ¹İÈ¯ ÇÔ¼ö
+// GPT íŒŒí‹°ì…˜ íƒ€ì… ì´ë¦„ ë°˜í™˜ í•¨ìˆ˜
 const char* GetPartitionTypeName(const uint8_t* guid) {
-    // ÀÚÁÖ »ç¿ëµÇ´Â ÆÄÆ¼¼Ç Å¸ÀÔ GUID
+    // ìì£¼ ì‚¬ìš©ë˜ëŠ” íŒŒí‹°ì…˜ íƒ€ì… GUID
     static const struct {
         uint8_t guid[16];
         const char* name;
@@ -92,7 +92,7 @@ const char* GetPartitionTypeName(const uint8_t* guid) {
         { {0x0F, 0x88, 0x9D, 0xA1, 0xFC, 0x05, 0x3B, 0x4D, 0xA0, 0x06, 0x74, 0x3F, 0x0F, 0x84, 0x91, 0x1E}, "Linux LVM" },
         { {0xAF, 0x3D, 0xC6, 0x0F, 0x83, 0x84, 0x72, 0x47, 0x8E, 0x79, 0x3D, 0x69, 0xD8, 0x47, 0x7D, 0xE4}, "Linux Home" },
         { {0x4F, 0x68, 0xBC, 0xE3, 0xE8, 0xCD, 0x4D, 0xB1, 0x96, 0x10, 0x65, 0xA3, 0x55, 0x1E, 0x28, 0xEB}, "Apple HFS+" },
-        // Ãß°¡ Å¸ÀÔÀº ÇÊ¿ä¿¡ µû¶ó È®Àå °¡´É
+        // ì¶”ê°€ íƒ€ì…ì€ í•„ìš”ì— ë”°ë¼ í™•ì¥ ê°€ëŠ¥
     };
 
     for (const auto& type : KNOWN_PARTITION_TYPES) {
@@ -104,7 +104,7 @@ const char* GetPartitionTypeName(const uint8_t* guid) {
     return "Unknown";
 }
 
-// ¼½ÅÍ ÀĞ±â ÇÔ¼ö
+// ì„¹í„° ì½ê¸° í•¨ìˆ˜
 _Success_(return != false)
 bool ReadSector(
     _In_ HANDLE hDisk,
@@ -185,31 +185,31 @@ bool get_mbr_gpt_info()
             log_info "    Number of Partition Entries: %u", gpt->numberOfPartitionEntries log_end;
             log_info "    Size of Partition Entry: %u", gpt->sizeOfPartitionEntry log_end;
 
-            // ÆÄÆ¼¼Ç ¿£Æ®¸® ÀĞ±â
+            // íŒŒí‹°ì…˜ ì—”íŠ¸ë¦¬ ì½ê¸°
             log_info "[+] GPT Partition Entries : " log_end;
 
-            // ÆÄÆ¼¼Ç ¿£Æ®¸®´Â ÀÏ¹İÀûÀ¸·Î Å©±â°¡ 128¹ÙÀÌÆ®ÀÌ¸ç, ¼½ÅÍ´ç ÃÖ´ë 4°³ÀÇ ¿£Æ®¸®°¡ µé¾î°¥ ¼ö ÀÖÀ½
-            // ½ÇÁ¦ ¿£Æ®¸®ÀÇ Å©±â´Â gpt->sizeOfPartitionEntry¿¡ ÀúÀåµÇ¾î ÀÖÀ½
+            // íŒŒí‹°ì…˜ ì—”íŠ¸ë¦¬ëŠ” ì¼ë°˜ì ìœ¼ë¡œ í¬ê¸°ê°€ 128ë°”ì´íŠ¸ì´ë©°, ì„¹í„°ë‹¹ ìµœëŒ€ 4ê°œì˜ ì—”íŠ¸ë¦¬ê°€ ë“¤ì–´ê°ˆ ìˆ˜ ìˆìŒ
+            // ì‹¤ì œ ì—”íŠ¸ë¦¬ì˜ í¬ê¸°ëŠ” gpt->sizeOfPartitionEntryì— ì €ì¥ë˜ì–´ ìˆìŒ
             const DWORD entriesPerSector = 512 / gpt->sizeOfPartitionEntry;
             auto partitionEntriesSector = std::make_unique<BYTE[]>(512);
 
             for (UINT i = 0; i < gpt->numberOfPartitionEntries; i++) {
-                // ÇöÀç ÆÄÆ¼¼Ç ¿£Æ®¸®ÀÇ ¼½ÅÍ ¹× ¼½ÅÍ ³» ¿ÀÇÁ¼Â °è»ê
+                // í˜„ì¬ íŒŒí‹°ì…˜ ì—”íŠ¸ë¦¬ì˜ ì„¹í„° ë° ì„¹í„° ë‚´ ì˜¤í”„ì…‹ ê³„ì‚°
                 DWORD64 sectorIndex = gpt->partitionEntryLBA + (i / entriesPerSector);
                 DWORD offsetInSector = (i % entriesPerSector) * gpt->sizeOfPartitionEntry;
 
-                // ÇÊ¿äÇÑ °æ¿ì¿¡¸¸ »õ ¼½ÅÍ ÀĞ±â
+                // í•„ìš”í•œ ê²½ìš°ì—ë§Œ ìƒˆ ì„¹í„° ì½ê¸°
                 if (i % entriesPerSector == 0) {
                     if (!ReadSector(hDisk.get(), sectorIndex, partitionEntriesSector.get())) {
                         log_err "Failed to read GPT partition entry sector" log_end;
                     }
                 }
 
-                // ÆÄÆ¼¼Ç ¿£Æ®¸® ÂüÁ¶
+                // íŒŒí‹°ì…˜ ì—”íŠ¸ë¦¬ ì°¸ì¡°
                 const GPT_PARTITION_ENTRY* entry = reinterpret_cast<const GPT_PARTITION_ENTRY*>(
                     partitionEntriesSector.get() + offsetInSector);
 
-                // ºñ¾îÀÖÁö ¾ÊÀº ÆÄÆ¼¼Ç¸¸ Ãâ·Â (Type GUID°¡ ¸ğµÎ 0ÀÌ¸é ºñ¾îÀÖ´Â ÆÄÆ¼¼Ç)
+                // ë¹„ì–´ìˆì§€ ì•Šì€ íŒŒí‹°ì…˜ë§Œ ì¶œë ¥ (Type GUIDê°€ ëª¨ë‘ 0ì´ë©´ ë¹„ì–´ìˆëŠ” íŒŒí‹°ì…˜)
                 bool isEmpty = true;
                 for (int j = 0; j < 16; j++) {
                     if (entry->partitionTypeGUID[j] != 0) {

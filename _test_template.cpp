@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * @file    
  * @brief
  *
@@ -24,10 +24,10 @@ void func_has_template_param(
 bool test_template()
 {
 	//
-	//	¾Ë¾Æ¼­ Çüº¯È¯ÀÌ µÇ´Â Å¸ÀÔµéÀº template parameter ¸¦ ¸í½ÃÇÏÁö 
-	//	¾Ê¾Æµµ ÄÄÆÄÀÏ µÊ
-	//	@@@ ÇÏÁö¸¸ ÀÇµµÇÏÁö ¾ÊÀº Å¸ÀÔÀ¸·Î Ä³½ºÆÃµÇ°Å³ª ÀÇµµÇÏÁö ¾ÊÀº 
-	//		»óÈ²ÀÌ µÉ ¼ö ÀÖÀ¸¹Ç·Î ¸í½ÃÀûÀ¸·Î ¾²´Â°Ô ÁÁÀ½ @@@
+	//	ì•Œì•„ì„œ í˜•ë³€í™˜ì´ ë˜ëŠ” íƒ€ìž…ë“¤ì€ template parameter ë¥¼ ëª…ì‹œí•˜ì§€ 
+	//	ì•Šì•„ë„ ì»´íŒŒì¼ ë¨
+	//	@@@ í•˜ì§€ë§Œ ì˜ë„í•˜ì§€ ì•Šì€ íƒ€ìž…ìœ¼ë¡œ ìºìŠ¤íŒ…ë˜ê±°ë‚˜ ì˜ë„í•˜ì§€ ì•Šì€ 
+	//		ìƒí™©ì´ ë  ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ëª…ì‹œì ìœ¼ë¡œ ì“°ëŠ”ê²Œ ì¢‹ìŒ @@@
 	//
 	
 	// OK

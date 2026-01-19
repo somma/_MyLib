@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * @file    _test_cppjson.cpp
  * @brief   
  *
@@ -18,7 +18,7 @@ bool test_cpp_joson()
 		FILETIME now; GetSystemTimeAsFileTime(&now);
 
 		//
-		//	json ¾²±â
+		//	json ì“°ê¸°
 		//
 
 		root["group_guid"] = "group_guid";
@@ -35,7 +35,7 @@ bool test_cpp_joson()
 		root["parent"]["process_timestamp"] = file_time_to_int(&now);
 
 		//
-		//	array ¾²±â
+		//	array ì“°ê¸°
 		//
 		Json::Value ar;
 		for (int i = 0; i < 8; ++i)

@@ -1,7 +1,7 @@
-/**
+ï»¿/**
  * @file    openssl_leak_checker
- * @brief   OpenSSL Àº ÃÊ±âÈ­½Ã¿¡ ³»ºÎÀûÀ¸·Î Á¤Àû °´Ã¼(?)µîÀ» ¿ÕÃ¢ ÇÒ´çÇÏ´Â°Í °°À½ (ÄÚµå·¹º§¿¡¼­ º»Àû¾øÀ¸³ª)
- *          Memory Leak Check ÇÒ¶§ ÀÌ°Í¶§¹®¿¡ °¡Â¥ Leak ÀÌ ÀÚ²Ù Ãâ·ÂµÇ¾î À¯Æ¿¸®Æ¼¸¦ ¸¸µë
+ * @brief   OpenSSL ì€ ì´ˆê¸°í™”ì‹œì— ë‚´ë¶€ì ìœ¼ë¡œ ì •ì  ê°ì²´(?)ë“±ì„ ì™•ì°½ í• ë‹¹í•˜ëŠ”ê²ƒ ê°™ìŒ (ì½”ë“œë ˆë²¨ì—ì„œ ë³¸ì ì—†ìœ¼ë‚˜)
+ *          Memory Leak Check í• ë•Œ ì´ê²ƒë•Œë¬¸ì— ê°€ì§œ Leak ì´ ìê¾¸ ì¶œë ¥ë˜ì–´ ìœ í‹¸ë¦¬í‹°ë¥¼ ë§Œë“¬
  *
  * @author  Yonhgwhan, Roh (fixbrain@gmail.com)
  * @date    09/14/2025 12:27 Created.
@@ -12,7 +12,7 @@
 #include "_MyLib/src/log.h"
 #include "_MyLib/src/AirCrypto.h"
 
-/// @brief OpenSSL Á¤Àû ¸Ş¸ğ¸®¸¦ ¹«½ÃÇÏ´Â ¸Ş¸ğ¸® ´©¼ö °Ë»ç±â
+/// @brief OpenSSL ì •ì  ë©”ëª¨ë¦¬ë¥¼ ë¬´ì‹œí•˜ëŠ” ë©”ëª¨ë¦¬ ëˆ„ìˆ˜ ê²€ì‚¬ê¸°
 class OpenSSLMemoryLeakChecker
 {
 private:
@@ -20,18 +20,18 @@ private:
     bool m_baseline_set = false;
 
 public:
-    /// @brief OpenSSL Á¤Àû ¸Ş¸ğ¸® ÇÒ´ç ¿Ï·á ÈÄ ±âÁØÁ¡ ¼³Á¤
+    /// @brief OpenSSL ì •ì  ë©”ëª¨ë¦¬ í• ë‹¹ ì™„ë£Œ í›„ ê¸°ì¤€ì  ì„¤ì •
     void set_baseline_after_openssl_init()
     {
         _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-        // OpenSSL Ã¹ È£Ãâ·Î Á¤Àû ¸Ş¸ğ¸® ÇÒ´ç ¿Ï·á
+        // OpenSSL ì²« í˜¸ì¶œë¡œ ì •ì  ë©”ëª¨ë¦¬ í• ë‹¹ ì™„ë£Œ
         const char* dummy_key = "baseline_key_123456";
         const char* dummy_data = "baseline_data";
         unsigned char* dummy_output = nullptr;
         uint32_t dummy_size = 0;
 
-        // »õ·Î¿î ÇÔ¼ö·Îµµ È£Ãâ (Á¤Àû ¸Ş¸ğ¸® ¿ÏÀü ÃÊ±âÈ­)
+        // ìƒˆë¡œìš´ í•¨ìˆ˜ë¡œë„ í˜¸ì¶œ (ì •ì  ë©”ëª¨ë¦¬ ì™„ì „ ì´ˆê¸°í™”)
         dummy_output = nullptr;
         if (aes256_crypt_buffer_v2((const unsigned char*)dummy_key,
                                    (uint32_t)strlen(dummy_key),
@@ -44,12 +44,12 @@ public:
             free_and_nil(dummy_output);
         }
 
-        // ±âÁØÁ¡ ¸Ş¸ğ¸® »óÅÂ ÀúÀå
+        // ê¸°ì¤€ì  ë©”ëª¨ë¦¬ ìƒíƒœ ì €ì¥
         _CrtMemCheckpoint(&m_baseline_state);
         m_baseline_set = true;
     }
 
-    /// @brief ÇöÀç ¸Ş¸ğ¸® »óÅÂ¿Í ±âÁØÁ¡ ºñ±³
+    /// @brief í˜„ì¬ ë©”ëª¨ë¦¬ ìƒíƒœì™€ ê¸°ì¤€ì  ë¹„êµ
     bool check_for_leaks(const char* test_name)
     {
         if (!m_baseline_set)

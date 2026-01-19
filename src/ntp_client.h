@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * @file    NTP client
  * @brief
  * @ref
@@ -17,7 +17,7 @@
 
 #define NTP_TIMESTAMP_DELTA         2208988800ull
 
-// NTP ÆĞÅ¶ ±¸Á¶Ã¼
+// NTP íŒ¨í‚· êµ¬ì¡°ì²´
 #pragma pack(1)
 
 struct ntp_packet {
@@ -52,9 +52,9 @@ struct ntp_packet {
 #pragma pack()
 
 
-/// @brief  ½Ã½ºÅÛÀÇ ½Ã°¢°ú NTP ¼­¹öÀÇ ½Ã°¢ÀÇ Â÷ÀÌ(delta)°ªÀ» ÃÊ ´ÜÀ§·Î °è»êÇÑ´Ù.
-/// @remark NTP ÀÇ Å¸ÀÓ½ºÅÆÇÁ´Â UNIX timestamp ¸¦ »ç¿ëÇÏ±â ¶§¹®¿¡ ÃÊ ÀÌÇÏÀÇ °ªÀ» 
-///         °è»ê ÇÏ´Â°ÍÀº ÀÇ¹Ì¾ø´Ù.
+/// @brief  ì‹œìŠ¤í…œì˜ ì‹œê°ê³¼ NTP ì„œë²„ì˜ ì‹œê°ì˜ ì°¨ì´(delta)ê°’ì„ ì´ˆ ë‹¨ìœ„ë¡œ ê³„ì‚°í•œë‹¤.
+/// @remark NTP ì˜ íƒ€ì„ìŠ¤íƒ¬í”„ëŠ” UNIX timestamp ë¥¼ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ì´ˆ ì´í•˜ì˜ ê°’ì„ 
+///         ê³„ì‚° í•˜ëŠ”ê²ƒì€ ì˜ë¯¸ì—†ë‹¤.
 class NTPClient {
 public:
     NTPClient(
@@ -72,8 +72,8 @@ public:
     {
     }
 
-    /// @brief  NTP ¼­¹ö¿¡ ½Ã°£°ªÀ» ¿äÃ»ÇÏ°í ·ÎÄÃ½Ã°£°úÀÇ Â÷ÀÌ°ªÀ» ¾÷µ¥ÀÌÆ®ÇÑ´Ù. 
-    /// @return ¿¡·¯°¡ ¹ß»ıÇÏ°Å³ª ¿äÃ»ÀÌ ½ÇÆĞÇÑ °æ¿ì ¿¹¿Ü¸¦ ¹ß»ı½ÃÅ²´Ù.
+    /// @brief  NTP ì„œë²„ì— ì‹œê°„ê°’ì„ ìš”ì²­í•˜ê³  ë¡œì»¬ì‹œê°„ê³¼ì˜ ì°¨ì´ê°’ì„ ì—…ë°ì´íŠ¸í•œë‹¤. 
+    /// @return ì—ëŸ¬ê°€ ë°œìƒí•˜ê±°ë‚˜ ìš”ì²­ì´ ì‹¤íŒ¨í•œ ê²½ìš° ì˜ˆì™¸ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
     void get_ntp_time()
     {
         boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), _server, "ntp");
@@ -91,7 +91,7 @@ public:
         return &_ntp_time;
     }
 
-    /// @brief  NTP ¼­¹ö¿ÍÀÇ ½Ã°£ Â÷¸¦ ÃÊ ´ÜÀ§·Î ¸®ÅÏÇÑ´Ù.
+    /// @brief  NTP ì„œë²„ì™€ì˜ ì‹œê°„ ì°¨ë¥¼ ì´ˆ ë‹¨ìœ„ë¡œ ë¦¬í„´í•œë‹¤.
     int64_t get_delta_sec()
     {
         return _delta_sec;
@@ -105,8 +105,8 @@ private:
     uint32_t _timeout_sec;
     std::array<uint8_t, 48> _recv_buf;
 
-    FILETIME _ntp_time;             // NTP ¼­¹ö ½Ã°¢
-    int64_t _delta_sec;             // NTP ¼­¹ö¿Í Localtime ÀÇ Â÷ÀÌ (ÃÊ ´ÜÀ§)
+    FILETIME _ntp_time;             // NTP ì„œë²„ ì‹œê°
+    int64_t _delta_sec;             // NTP ì„œë²„ì™€ Localtime ì˜ ì°¨ì´ (ì´ˆ ë‹¨ìœ„)
 
 private:
     void on_resolve(
@@ -136,7 +136,7 @@ private:
     {
         if (!err)
         {
-            // NTP ÆĞÅ¶ ÃÊ±âÈ­
+            // NTP íŒ¨í‚· ì´ˆê¸°í™”
             ntp_packet packet;
             memset(&packet, 0, sizeof(packet));
             packet.li_vn_mode = (0x3 << 6) | (4 << 3) | 3; // 0b11100011
@@ -185,10 +185,10 @@ private:
         {
             _timeout.cancel();
 
-            // ÇöÀç ½Ã°£ ±â·Ï
+            // í˜„ì¬ ì‹œê°„ ê¸°ë¡
             FILETIME ft_recv = now_as_filetime();
 
-            // ½Ã°£ ÃßÃâ & ¹ÙÀÌÆ® ¿À´õ º¯È¯
+            // ì‹œê°„ ì¶”ì¶œ & ë°”ì´íŠ¸ ì˜¤ë” ë³€í™˜
             auto* resp = reinterpret_cast<ntp_packet*>(_recv_buf.data());
 
             //  These two fields contain the time-stamp seconds as the packet left the NTP
@@ -205,20 +205,20 @@ private:
             // (1900)---------(1970)**********(Time Packet Left the Server)
             const uint32_t ntp_time = resp->transmited_timestamp_sec - NTP_TIMESTAMP_DELTA;
 
-            //  resp->transmited_timestamp_sec  : t1, NTP ¼­¹ö°¡ ÆĞÅ¶À» Àü¼ÛÇÑ ½Ã°£
-            //  recv_time                       : t2, NTP ÀÀ´äÀ» ¹ŞÀº ½Ã°£
+            //  resp->transmited_timestamp_sec  : t1, NTP ì„œë²„ê°€ íŒ¨í‚·ì„ ì „ì†¡í•œ ì‹œê°„
+            //  recv_time                       : t2, NTP ì‘ë‹µì„ ë°›ì€ ì‹œê°„
             // 
-            //  t2 - t1 ÇÑ °ªÀ» ´õÇØÁÖ¾î ½Ã°£ °ªÀ» º¸Á¤ÇÑ´Ù. (½Ã°£Â÷ÀÌ´Â ¹ß»ıÇÒ ¼ö ÀÖ´Ù)        
+            //  t2 - t1 í•œ ê°’ì„ ë”í•´ì£¼ì–´ ì‹œê°„ ê°’ì„ ë³´ì •í•œë‹¤. (ì‹œê°„ì°¨ì´ëŠ” ë°œìƒí•  ìˆ˜ ìˆë‹¤)        
             //  
-            //  1) ntp time Àº unix timestamp ÀÌ¹Ç·Î FILETIME À¸·Î º¯È¯ÇÑ´Ù.
-            //  2) ntp time °ú recv time ÀÇ Â÷¸¦ ¹Ğ¸®¼¼ÄÁµå ´ÜÀ§·Î °è»êÇÑ´Ù. (À½¼ö°¡ ³ª¿Ã ¼öµµ ÀÖ´Ù.)
-            //  3) ntp time °ú recv time ÀÇ Â÷¸¦ ÃÊ·Î º¯È¯ÇÏ°í, ÃÊ ´ÜÀ§ ÀÌÇÏ °ªÀÌ 0.5ÃÊ(500 ¹Ğ¸®¼¼ÄÁµå)
-            //     ÀÌ»ó Â÷ÀÌ°¡ ³ª´Â °æ¿ì +1 ÃÊ ÇÑ´Ù. (ntp time Àº ÃÊ´ÜÀ§ ÀÌÁö¸¸, recv time Àº FILETIME ÀÌ¹Ç·Î
-            //     ÀÌ·± »óÈ²ÀÌ ¹ß»ıÇÒ ¼öµµ ÀÖ´Ù)        
+            //  1) ntp time ì€ unix timestamp ì´ë¯€ë¡œ FILETIME ìœ¼ë¡œ ë³€í™˜í•œë‹¤.
+            //  2) ntp time ê³¼ recv time ì˜ ì°¨ë¥¼ ë°€ë¦¬ì„¸ì»¨ë“œ ë‹¨ìœ„ë¡œ ê³„ì‚°í•œë‹¤. (ìŒìˆ˜ê°€ ë‚˜ì˜¬ ìˆ˜ë„ ìˆë‹¤.)
+            //  3) ntp time ê³¼ recv time ì˜ ì°¨ë¥¼ ì´ˆë¡œ ë³€í™˜í•˜ê³ , ì´ˆ ë‹¨ìœ„ ì´í•˜ ê°’ì´ 0.5ì´ˆ(500 ë°€ë¦¬ì„¸ì»¨ë“œ)
+            //     ì´ìƒ ì°¨ì´ê°€ ë‚˜ëŠ” ê²½ìš° +1 ì´ˆ í•œë‹¤. (ntp time ì€ ì´ˆë‹¨ìœ„ ì´ì§€ë§Œ, recv time ì€ FILETIME ì´ë¯€ë¡œ
+            //     ì´ëŸ° ìƒí™©ì´ ë°œìƒí•  ìˆ˜ë„ ìˆë‹¤)        
             _ntp_time = unixtime_to_filetime(ntp_time);
             const int64_t ms_delta = (int64_t)((int64_t)file_time_to_int(&ft_recv) - (int64_t)file_time_to_int(&_ntp_time)) / _file_time_to_msec;
 
-            _delta_sec = ms_delta / 1000;          // ÃÊ
+            _delta_sec = ms_delta / 1000;          // ì´ˆ
             if (ms_delta % 1000 >= 500)
             {
                 _delta_sec += 1;
@@ -248,7 +248,7 @@ private:
     }
 };
 
-/// @brief  NTP ¼­¹ö¿ÍÀÇ ½Ã°£ Â÷¸¦ ÃÊ ´ÜÀ§·Î ¸®ÅÏÇÑ´Ù.
+/// @brief  NTP ì„œë²„ì™€ì˜ ì‹œê°„ ì°¨ë¥¼ ì´ˆ ë‹¨ìœ„ë¡œ ë¦¬í„´í•œë‹¤.
 int64_t 
 get_ntp_time_delta(
     _In_ const std::string& server,

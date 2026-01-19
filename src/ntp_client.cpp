@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * @file    NTP client
  * @brief
  * @ref
@@ -9,7 +9,7 @@
 #include "stdafx.h"
 #include "_MyLib/src/ntp_client.h"
 
-/// @brief  NTP ¼­¹ö¿ÍÀÇ ½Ã°£ Â÷¸¦ ÃÊ ´ÜÀ§·Î ¸®ÅÏÇÑ´Ù.
+/// @brief  NTP ì„œë²„ì™€ì˜ ì‹œê°„ ì°¨ë¥¼ ì´ˆ ë‹¨ìœ„ë¡œ ë¦¬í„´í•œë‹¤.
 int64_t 
 get_ntp_time_delta(
     _In_ const std::string& server, 
@@ -32,8 +32,8 @@ get_ntp_time_delta(
     {
         log_err "can not adjust ntp time delta, e=%s", e.what() log_end;
         
-        //  ¿¡·¯°¡ ¹ß»ıÇÑ °æ¿ì ½Ã½ºÅÛ ·ÎÄÃ Å¸ÀÓÀ» ±×´ë·Î »ç¿ëÇØ¾ß ÇÏ¹Ç·Î
-        //  0 À» ¸®ÅÏÇÑ´Ù.
+        //  ì—ëŸ¬ê°€ ë°œìƒí•œ ê²½ìš° ì‹œìŠ¤í…œ ë¡œì»¬ íƒ€ì„ì„ ê·¸ëŒ€ë¡œ ì‚¬ìš©í•´ì•¼ í•˜ë¯€ë¡œ
+        //  0 ì„ ë¦¬í„´í•œë‹¤.
         return 0ll;
     }
 }
