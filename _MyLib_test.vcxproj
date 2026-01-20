@@ -115,7 +115,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/D "MYLIB_TEST" /I "../"</AdditionalOptions>
+      <AdditionalOptions>/D "MYLIB_TEST" /I $(SolutionDir)</AdditionalOptions>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -125,12 +125,17 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <AdditionalOptions>/LIBPATH:$(TargetDir) liblogging.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>echo "copy [$(TargetPath)] to debuggee..."
 copy $(TargetPath) x:\
 echo "done." </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>echo copy liblogging.lib to OutDir
+copy $(ProjectDir)..\liblogging\msvc\x86_debug\liblogging.lib $(OutDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -138,7 +143,7 @@ echo "done." </Command>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/D "MYLIB_TEST" /I "../"</AdditionalOptions>
+      <AdditionalOptions>/D "MYLIB_TEST" /I $(SolutionDir)</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <EnablePREfast>false</EnablePREfast>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -152,12 +157,17 @@ echo "done." </Command>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <AdditionalOptions>/LIBPATH:$(TargetDir) liblogging.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>echo "copy [$(TargetPath)] to debuggee..."
 copy $(TargetPath) x:\
 echo "done." </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>echo copy liblogging.lib to OutDir
+copy $(ProjectDir)..\liblogging\msvc\x64_debug\liblogging.lib $(OutDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -167,7 +177,7 @@ echo "done." </Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/D "MYLIB_TEST" /I "../"</AdditionalOptions>
+      <AdditionalOptions>/D "MYLIB_TEST" /I $(SolutionDir)</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -178,12 +188,17 @@ echo "done." </Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <AdditionalOptions>/LIBPATH:$(TargetDir) liblogging.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>echo "copy [$(TargetPath)] to debuggee..."
 copy $(TargetPath) x:\
 echo "done." </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>echo copy liblogging.lib to OutDir
+copy $(ProjectDir)..\liblogging\msvc\x86_release\liblogging.lib $(OutDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -193,7 +208,7 @@ echo "done." </Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>/D "MYLIB_TEST" /I "../"</AdditionalOptions>
+      <AdditionalOptions>/D "MYLIB_TEST" /I $(SolutionDir)</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -204,12 +219,17 @@ echo "done." </Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <AdditionalOptions>/LIBPATH:$(TargetDir) liblogging.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>echo "copy [$(TargetPath)] to debuggee..."
 copy $(TargetPath) x:\
 echo "done." </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>echo copy liblogging.lib to OutDir
+copy $(ProjectDir)..\liblogging\msvc\x64_release\liblogging.lib $(OutDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -228,8 +248,6 @@ echo "done." </Command>
     <ClInclude Include="src\GeneralHashFunctions.h" />
     <ClInclude Include="src\gpt_partition_guid.h" />
     <ClInclude Include="src\LeakWatcher.h" />
-    <ClInclude Include="src\log.h" />
-    <ClInclude Include="src\log_rotated_file.h" />
     <ClInclude Include="src\machine_id.h" />
     <ClInclude Include="src\md5.h" />
     <ClInclude Include="src\net_util.h" />
@@ -274,8 +292,6 @@ echo "done." </Command>
     <ClCompile Include="src\FileIoHelper.cpp" />
     <ClCompile Include="src\FileIoHelperClass.cpp" />
     <ClCompile Include="src\GeneralHashFunctions.cpp" />
-    <ClCompile Include="src\log.cpp" />
-    <ClCompile Include="src\log_rotated_file.cpp" />
     <ClCompile Include="src\machine_id.cpp" />
     <ClCompile Include="src\match.cpp" />
     <ClCompile Include="src\md5.cpp" />

@@ -46,7 +46,7 @@
 #include <crtdbg.h>
 
 #include <strsafe.h>
-#include "_MyLib/src/log.h"
 #include "_MyLib/src/Win32Utils.h"
 #include "_MyLib/mini_test.h"
+#include "liblogging/include/liblogging/log.h"
 

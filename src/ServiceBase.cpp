@@ -19,7 +19,6 @@
 #include "stdafx.h"
 #include <Dbt.h>
 #include "ServiceBase.h"
-#include "log.h"
 
 
 #pragma region Static Members

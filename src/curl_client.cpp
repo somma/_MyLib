@@ -8,10 +8,10 @@
 **/
 
 #include "stdafx.h"
-#include "_MyLib/src/log.h"
 #include "_MyLib/src/md5.h"
 #include "_MyLib/src/sha2.h"
 #include "_MyLib/src/curl_client.h"
+#include "_MyLib/src/Win32Utils.h"
 
 #define _def_conn_timeout	10			// 10초
 #define _def_read_timeout	60 * 5		// 5분

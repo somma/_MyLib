@@ -9,7 +9,6 @@
 
 #include "stdafx.h"
 #include "_MyLib/src/sched_client.h"
-#include "_MyLib/src/log.h"
 
 typedef struct _task_list {
 	const wchar_t* task_name;

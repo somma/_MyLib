@@ -13,7 +13,6 @@
 #include <chrono>
 
 #include "_MyLib/src/Win32Utils.h"
-#include "_MyLib/src/log.h"
 
 #define NTP_TIMESTAMP_DELTA         2208988800ull
 

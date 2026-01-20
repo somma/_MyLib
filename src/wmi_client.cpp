@@ -10,7 +10,6 @@
 **/
 #include "stdafx.h"
 
-#include "_MyLib/src/log.h"
 #include "_MyLib/src/Win32Utils.h"
 #include "_MyLib/src/wmi_client.h"
 

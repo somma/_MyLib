@@ -7,7 +7,6 @@
  * @copyright All rights reserved by Yonghwan, Roh.
 **/
 #include "stdafx.h"
-#include "_MyLib/src/log.h"
 #include "_MyLib/src/Win32Utils.h"
 
 #include <boost/asio.hpp>

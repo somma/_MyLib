@@ -9,7 +9,6 @@
 #include "stdafx.h"
 #include "_MyLib/src/curl_client_support.h"
 #include "_MyLib/src/Win32Utils.h"
-#include "_MyLib/src/log.h"
 
 
 /// @brief	Constructor

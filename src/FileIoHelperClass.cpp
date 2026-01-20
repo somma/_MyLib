@@ -10,7 +10,6 @@
 **/
 #include "stdafx.h"
 
-#include "log.h"
 #include "Win32Utils.h"
 #include "FileIoHelperClass.h"
 

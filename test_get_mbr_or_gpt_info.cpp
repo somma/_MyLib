@@ -7,7 +7,6 @@
  * @copyright (C)Somma, Inc. All rights reserved.
 **/
 #include "stdafx.h"
-#include "_MyLib/src/log.h"
 
 #pragma pack(push, 1)
 

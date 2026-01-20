@@ -9,7 +9,6 @@
 #include "stdafx.h"
 #include <sddl.h>
 #include "account_info.h"
-#include "_MyLib/src/log.h"
 #include "_MyLib/src/Win32Utils.h"
 
 #include <LM.h>

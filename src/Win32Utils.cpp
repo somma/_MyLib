@@ -52,7 +52,6 @@
 #include "ResourceHelper.h"
 #include "gpt_partition_guid.h"
 #include "process_tree.h"
-#include "log.h"
 
 
 char _int_to_char_table[] = {

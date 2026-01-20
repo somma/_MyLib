@@ -11,7 +11,6 @@
 #include "stdafx.h"
 #include "ProcessLauncher.h"
 #include "process_tree.h"
-#include "log.h"
 
 #include <UserEnv.h>
 #include <WtsApi32.h>

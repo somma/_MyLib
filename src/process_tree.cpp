@@ -11,7 +11,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include "_MyLib/src/log.h"
 #include "_MyLib/src/Win32Utils.h"
 #include "_MyLib/src/process_tree.h"
 

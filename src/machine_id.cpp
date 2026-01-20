@@ -7,7 +7,6 @@
  * @copyright (C)Somma, Inc. All rights reserved.
 **/
 #include "stdafx.h"
-#include "log.h"
 #include "machine_id.h"
 #include "net_util.h"
 #include "md5.h"

@@ -8,7 +8,6 @@
  * 2014:1:25 14:54 created
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
-#include "_MyLib/src/log.h"
 #include "_MyLib/src/Win32Utils.h"
 #include <iostream>
 #include <map>

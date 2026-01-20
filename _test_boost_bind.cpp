@@ -8,7 +8,6 @@
  * 2014:1:25 14:45 created
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
-#include "_MyLib/src/log.h"
 #include "_MyLib/src/Win32Utils.h"
 #include "boost/bind/bind.hpp"
 

@@ -162,12 +162,6 @@
     <ClInclude Include="src\openssl_leak_checker.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\log_rotated_file.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\log.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\ProcessLauncher.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -372,12 +366,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ntp_client.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\log_rotated_file.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\log.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\ProcessLauncher.cpp">

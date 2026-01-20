@@ -12,6 +12,7 @@
 **---------------------------------------------------------------------------*/
 #include "stdafx.h"
 #include "CStream.h"
+#include "Win32Utils.h"
 
 
 /// @brief	Constructor

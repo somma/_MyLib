@@ -11,7 +11,6 @@
 #include <queue>
 #include <thread>
 #include <mutex>
-#include "_Mylib/src/log.h"
 
 /// @brief thread pool implementation
 /// @see test_thread_pool()

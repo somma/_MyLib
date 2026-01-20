@@ -8,7 +8,6 @@
 **/
 #include "stdafx.h"
 #include "net_util.h"
-#include "log.h"
 #include <regex>
 
 

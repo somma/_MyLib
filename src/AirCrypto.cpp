@@ -18,7 +18,6 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 
-#include "_MyLib/src/log.h"
 #include "_MyLib/src/Win32Utils.h"
 #include "_MyLib/src/AirCrypto.h"
 

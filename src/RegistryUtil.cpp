@@ -11,7 +11,6 @@
 
 #include "stdafx.h"
 #include <crtdbg.h>
-#include "log.h"
 #include "RegistryUtil.h"
 #include "CStream.h"
 #include "Wow64Util.h"

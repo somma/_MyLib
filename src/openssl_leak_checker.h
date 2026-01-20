@@ -9,7 +9,6 @@
 **/
 #pragma once
 #include <crtdbg.h>
-#include "_MyLib/src/log.h"
 #include "_MyLib/src/AirCrypto.h"
 
 /// @brief OpenSSL 정적 메모리를 무시하는 메모리 누수 검사기

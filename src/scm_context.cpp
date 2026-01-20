@@ -9,7 +9,6 @@
 
 #include "stdafx.h"
 #include "scm_context.h"
-#include "log.h"
 #include <memory>				// std::shared_ptr
 
 #include "RegistryUtil.h"
