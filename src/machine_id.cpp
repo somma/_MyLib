@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    machine_id.h
  * @brief	This module generates an almost unique hardware id.
  *

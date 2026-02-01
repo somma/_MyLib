@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    test_machine_id.cpp
  * @brief
  *
