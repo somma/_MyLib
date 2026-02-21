@@ -996,6 +996,7 @@ void clear_console();
 #define IT_EXE_BOOT	4		// boot app
 #define IT_NATIVE_APP	5	// ntoskrnl.exe, win32k.sys, csrss.exe
 
+// refac: libfilecache::ImageType 으로 대체 예정
 typedef uint32_t IMAGE_TYPE;
 IMAGE_TYPE get_image_type(_In_ const wchar_t* path);
 IMAGE_TYPE get_image_type(_In_ HANDLE file_handle);
