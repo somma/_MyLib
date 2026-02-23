@@ -89,7 +89,7 @@ CMemoryStream::IncreseSize(
 
 	if (0 == newSize)
 	{
-		if (nullptr == m_pMemory)
+		if (nullptr != m_pMemory)
 		{
 			free(m_pMemory); 
 			m_pMemory = nullptr;
