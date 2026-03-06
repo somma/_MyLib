@@ -526,17 +526,21 @@ namespace
 		bool token_acquired = false;
 
 		// Find process in target session
+		//
+		// find_process() 콜백 규약:
+		//   return true  -> 계속 탐색
+		//   return false -> 탐색 중단
+		//
 		pt.find_process(process_name,
 			[&](_In_ const process* const proc_info) -> bool
 			{
-				if (proc_info == nullptr) return false;
+				if (proc_info == nullptr) return true;
 
 				// Check session ID
 				DWORD proc_session_id = 0;
-				if (!ProcessIdToSessionId(proc_info->pid(), &proc_session_id) ||
-					proc_session_id != target_session_id)
+				if (proc_info->session_id() != target_session_id)
 				{
-					return false; // Continue searching
+					return true; // Continue searching
 				}
 
 				// Open process
@@ -545,7 +549,7 @@ namespace
 				{
 					log_warn "OpenProcess() failed for %ws. pid=%u, gle=%u",
 						process_name, proc_info->pid(), GetLastError() log_end;
-					return false;
+					return true; // Continue searching
 				}
 
 				// Open process token
@@ -554,7 +558,7 @@ namespace
 				{
 					log_warn "OpenProcessToken() failed for %ws. pid=%u, gle=%u",
 						process_name, proc_info->pid(), GetLastError() log_end;
-					return false;
+					return true; // Continue searching
 				}
 
 				// Handle based on privilege level
@@ -567,23 +571,28 @@ namespace
 					if (GetTokenInformation(proc_token.get(), TokenLinkedToken, &linked_token, size, &size))
 					{
 						// Duplicate linked token
-						if (DuplicateTokenEx(
-							linked_token.LinkedToken,
-							MAXIMUM_ALLOWED,
-							nullptr,
-							SecurityImpersonation,
-							TokenPrimary,
-							out_token))
+						if (DuplicateTokenEx(linked_token.LinkedToken,
+											 MAXIMUM_ALLOWED,
+											 nullptr,
+											 SecurityImpersonation,
+											 TokenPrimary,
+											 out_token))
 						{
 							CloseHandle(linked_token.LinkedToken);
 							token_acquired = true;
-							log_info "Acquired linked (elevated) token from %ws. pid=%u, session=%u",
-								process_name, proc_info->pid(), target_session_id log_end;
-							return true; // Stop searching
+							log_info 
+								"Acquired linked (elevated) token from %ws. pid=%u, session=%u",
+								process_name, proc_info->pid(), target_session_id 
+								log_end;
+							
+							return false; // Stop searching
 						}
 						else
 						{
-							log_warn "DuplicateTokenEx() for linked token failed. gle=%u", GetLastError() log_end;
+							log_warn 
+								"DuplicateTokenEx() for linked token failed. gle=%u", 
+								GetLastError() 
+								log_end;
 							CloseHandle(linked_token.LinkedToken);
 						}
 					}
@@ -595,34 +604,50 @@ namespace
 
 					// Linked token not available - don't fall back to regular token
 					// for administrator_privilege level
-					return false;
+					return true; // Continue searching
 				}
 				else
 				{
 					// user_privilege or fallback: duplicate standard token
-					if (DuplicateTokenEx(
-						proc_token.get(),
-						MAXIMUM_ALLOWED,
-						nullptr,
-						SecurityIdentification,
-						TokenPrimary,
-						out_token))
+					if (DuplicateTokenEx(proc_token.get(),
+										 MAXIMUM_ALLOWED,
+										 nullptr,
+										 SecurityIdentification,
+										 TokenPrimary,
+										 out_token))
 					{
 						// Set session ID on token
-						SetTokenInformation(*out_token, TokenSessionId, &target_session_id, sizeof(DWORD));
+						if (!SetTokenInformation(*out_token,
+												TokenSessionId,
+												&target_session_id,
+												sizeof(DWORD)))
+						{
+							log_err
+								"SetTokenInformation() failed. src process=%ws, pid=%u, session=%u, gle=%u",
+								process_name, proc_info->pid(), target_session_id,
+								GetLastError()
+								log_end;
+
+							return true; // Continue searching
+						}
 
 						token_acquired = true;
-						log_info "Acquired standard token from %ws. pid=%u, session=%u",
-							process_name, proc_info->pid(), target_session_id log_end;
-						return true; // Stop searching
+						log_info 
+							"Acquired standard token from %ws. pid=%u, session=%u",
+							process_name, proc_info->pid(), target_session_id 
+							log_end;
+						return false; // Stop searching
 					}
 					else
 					{
-						log_warn "DuplicateTokenEx() for standard token failed. gle=%u", GetLastError() log_end;
+						log_warn 
+							"DuplicateTokenEx() for standard token failed. gle=%u", 
+							GetLastError() 
+							log_end;
 					}
 				}
 
-				return false; // Continue searching
+				return true; // Continue searching
 			});
 
 		return token_acquired;

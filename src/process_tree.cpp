@@ -153,6 +153,46 @@ void cprocess_tree::clear_process_tree()
 }
 
 
+/// @brief	실행 파일 이미지가 없는 시스템 프로세스인지 확인
+/// @param	pid 프로세스 ID
+/// @param	process_name 프로세스 이름
+/// @return	이미지 없는 시스템 프로세스이면 true
+bool
+cprocess_tree::is_imageless_system_process(
+	_In_ DWORD pid,
+	_In_ const wchar_t* process_name
+)
+{
+	//
+	// PID 기반 판별: System Idle Process (0), System (4)
+	//
+	if (_pt_idle_proc_pid == pid || _pt_system_proc_pid == pid)
+	{
+		return true;
+	}
+
+	//
+	// 이름 기반 판별: 실행 파일 이미지가 없는 커널/가상 프로세스
+	//
+	// - Registry: Windows 10 1803+, 레지스트리 하이브 메모리 매핑
+	// - MemCompression: Windows 10+, 메모리 압축 담당
+	// - Secure System: VBS(Virtualization-Based Security) 격리 커널
+	// - vmmem: WSL2/Hyper-V VM 메모리 할당 추적용 가상 프로세스
+	//
+	if (nullptr != process_name)
+	{
+		if (0 == _wcsicmp(process_name, _pt_registry_proc_) ||
+			0 == _wcsicmp(process_name, _pt_memcomp_proc_) ||
+			0 == _wcsicmp(process_name, _pt_secure_system_proc_) ||
+			0 == _wcsicmp(process_name, _pt_vmmem_proc_))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 /**
  * @brief
  * @param
@@ -219,9 +259,11 @@ cprocess_tree::build_process_tree(_In_ bool enable_debug_priv)
 			std::wstring full_path(_null_stringw);
 
 			//
-			// System Idle Process, System Process
+			// 실행 파일 이미지가 없는 시스템 프로세스는
+			// OpenProcess() 호출을 스킵하고 기본값을 사용한다.
 			//
-			if (0 == proc_entry.th32ProcessID || 4 == proc_entry.th32ProcessID)
+			if (is_imageless_system_process(proc_entry.th32ProcessID,
+										   proc_entry.szExeFile))
 			{
 				// already initialized with default values.
 				// 
