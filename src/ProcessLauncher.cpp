@@ -399,7 +399,32 @@ bool has_linked_token(
 	return true;
 }
 
-/// @brief Create user environment block for session
+/// @brief Create user environment block using existing token
+bool create_user_environment_for_session(
+	_In_ HANDLE user_token,
+	_In_ uint32_t session_id,
+	_Out_ LPVOID* env_block
+)
+{
+	_ASSERTE(user_token != nullptr && env_block != nullptr);
+	if (user_token == nullptr || env_block == nullptr)
+	{
+		return false;
+	}
+
+	*env_block = nullptr;
+
+	if (!CreateEnvironmentBlock(env_block, user_token, TRUE))
+	{
+		log_err "CreateEnvironmentBlock() failed. gle=%u", GetLastError() log_end;
+		return false;
+	}
+
+	log_dbg "User environment block created for session %u", session_id log_end;
+	return true;
+}
+
+/// @brief Create user environment block for session (acquires token internally)
 bool create_user_environment_for_session(
 	_In_ uint32_t session_id,
 	_Out_ LPVOID* env_block
@@ -413,14 +438,12 @@ bool create_user_environment_for_session(
 
 	*env_block = nullptr;
 
-	// Validate session ID
 	uint32_t target_session = 0;
 	if (!validate_session_id(session_id, target_session))
 	{
 		return false;
 	}
 
-	// Get token from explorer.exe in target session
 	scoped_handle user_token;
 	if (!get_token_from_session_process(
 		L"explorer.exe",
@@ -432,15 +455,7 @@ bool create_user_environment_for_session(
 		return false;
 	}
 
-	// Create environment block from user token
-	if (!CreateEnvironmentBlock(env_block, user_token.get(), TRUE))
-	{
-		log_err "CreateEnvironmentBlock() failed. gle=%u", GetLastError() log_end;
-		return false;
-	}
-
-	log_dbg "User environment block created for session %u", target_session log_end;
-	return true;
+	return create_user_environment_for_session(user_token.get(), target_session, env_block);
 }
 
 /// @brief Create LocalSystem token bound to target session
@@ -1043,7 +1058,7 @@ bool launch_process(
 				: request.sys_options.user_env_session_id;
 
 			LPVOID user_env = nullptr;
-			if (create_user_environment_for_session(env_session, &user_env))
+			if (create_user_environment_for_session(exec_token.get(), env_session, &user_env))
 			{
 				env_block = scoped_environment(user_env);
 				log_dbg "Using user environment from session %u", env_session log_end;
@@ -1066,7 +1081,7 @@ bool launch_process(
 	{
 		// For user/admin privilege, create user environment block
 		LPVOID user_env = nullptr;
-		if (create_user_environment_for_session(target_session, &user_env))
+		if (create_user_environment_for_session(exec_token.get(), target_session, &user_env))
 		{
 			env_block = scoped_environment(user_env);
 		}
