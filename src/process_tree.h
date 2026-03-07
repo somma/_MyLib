@@ -23,17 +23,18 @@
 constexpr DWORD _pt_idle_proc_pid = 0;		///< System Idle Process (CPU idle 시간 추적)
 constexpr DWORD _pt_system_proc_pid = 4;	///< System (커널 스레드 호스트)
 
-/// Well-known process names
+/// 실행 파일 이미지가 없는 커널/가상 프로세스
 constexpr const wchar_t* _pt_idle_proc_ = L"System Idle Process";
 constexpr const wchar_t* _pt_system_proc_ = L"System";
+constexpr const wchar_t* _pt_registry_proc_ = L"Registry";				///< 레지스트리 하이브 메모리 매핑 (Win10 1803+)
+constexpr const wchar_t* _pt_memcomp_proc_ = L"MemCompression";			///< 메모리 페이지 압축 (Win10+)
+constexpr const wchar_t* _pt_secure_system_proc_ = L"Secure System";	///< VBS 격리 커널 (Win10+, VBS 활성화 시)
+constexpr const wchar_t* _pt_vmmem_proc_ = L"vmmem";					///< VM 메모리 할당 추적 (WSL2/Hyper-V)
+
+/// Well-known process names
 constexpr const wchar_t* _pt_explorer_proc_ = L"explorer.exe";	///< Windows Shell
 constexpr const wchar_t* _pt_winlogon_proc = L"winlogon.exe";	///< 로그온 세션 관리
 
-/// 실행 파일 이미지가 없는 커널/가상 프로세스
-constexpr const wchar_t* _pt_registry_proc_ = L"Registry";				///< 레지스트리 하이브 메모리 매핑 (Win10 1803+)
-constexpr const wchar_t* _pt_memcomp_proc_ = L"MemCompression";		///< 메모리 페이지 압축 (Win10+)
-constexpr const wchar_t* _pt_secure_system_proc_ = L"Secure System";	///< VBS 격리 커널 (Win10+, VBS 활성화 시)
-constexpr const wchar_t* _pt_vmmem_proc_ = L"vmmem";					///< VM 메모리 할당 추적 (WSL2/Hyper-V)
 
 /// @brief	class for running process
 typedef class process
