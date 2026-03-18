@@ -552,7 +552,6 @@ namespace
 				if (proc_info == nullptr) return true;
 
 				// Check session ID
-				DWORD proc_session_id = 0;
 				if (proc_info->session_id() != target_session_id)
 				{
 					return true; // Continue searching
