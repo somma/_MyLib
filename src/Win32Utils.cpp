@@ -1625,7 +1625,7 @@ HANDLE open_file_to_write(_In_ const wchar_t* file_path)
 
 	HANDLE hFile = CreateFileW(file_path,
 							   GENERIC_READ|GENERIC_WRITE,
-							   FILE_SHARE_READ,
+							   FILE_SHARE_READ | FILE_SHARE_DELETE,
 							   NULL,
 							   OPEN_ALWAYS,
 							   FILE_ATTRIBUTE_NORMAL,
