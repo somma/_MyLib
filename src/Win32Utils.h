@@ -45,14 +45,14 @@ typedef struct _continuous_memory
 #define _set_bit(val, pos) (val |= (1 << pos))
 #define _clear_bit(val, pos) (val &= ~(1 << pos))
 
-// minwindef.h
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
+// Remove Windows min/max macros to avoid conflicts with std::min/std::max
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
 #endif
 
-#ifndef min
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
 
 
 

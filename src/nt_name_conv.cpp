@@ -457,7 +457,7 @@ NameConverter::get_drive_letter_by_device_name(
 			++back_slash_count;
 		}
 	}
-	compare_count = min(max_count, compare_count);
+	compare_count = std::min(max_count, compare_count);
 
  	if (back_slash_count < 2 || compare_count < 0)
 	{

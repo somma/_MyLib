@@ -73,7 +73,7 @@ file_copy_mmio(
 		//	min() 이 리턴하는 값은 항상 uint32_t 범위내의 값이므로 
 		//	강제 캐스팅해도 괜찮다.
 		//
-		uint32_t map_size = (uint32_t)min(block_size, file_size - pos);
+		uint32_t map_size = (uint32_t)std::min((uint64_t)block_size, file_size - pos);
 		uint8_t* dst_ptr = dstFile.GetFilePointer(false, pos, map_size);
 
 		if (true != srcFile.ReadFromFile(pos, map_size, dst_ptr))

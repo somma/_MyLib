@@ -2713,7 +2713,7 @@ get_file_hash_by_filehandle(
 		{
 			if (err) break;
 						
-			uint32_t size = (uint32_t)min(fio.GetOptimizedBlockSize(), file_size - pos);
+			uint32_t size = (uint32_t)std::min((uint64_t)fio.GetOptimizedBlockSize(), file_size - pos);
 			uint8_t* ptr = fio.GetFilePointer(true, pos, size);
 
 			if (nullptr != ctx_md5) { MD5Update(ctx_md5, ptr, size); }
@@ -4008,7 +4008,7 @@ is_same_string(
 	_ASSERTE(nullptr != rhs);
 	if (nullptr == lhs || nullptr == rhs) return false;
 
-	size_t len = max(wcslen(lhs), wcslen(rhs));
+	size_t len = std::max(wcslen(lhs), wcslen(rhs));
 	if (true == case_insensitive)
 	{
 		return (0 == _wcsnicmp(lhs, rhs, len)) ? true : false;
@@ -4637,7 +4637,7 @@ copy_wstring_to_buf_with_null(
 	_ASSERTE(cb_buf > 0);
 	if (src.empty()|| nullptr == buf || !(cb_buf >0)) return 0;
 
-	size_t cc_target = min(src.size(),
+	size_t cc_target = std::min(src.size(),
 						   cb_buf /sizeof(wchar_t) - sizeof(wchar_t));
 	size_t cc_copied = src.copy(buf, cc_target, 0);
 	_ASSERTE(cc_target == cc_copied);
@@ -4658,7 +4658,7 @@ copy_string_to_buf_with_null(
 	_ASSERTE(cb_buf > 0);
 	if (src.empty() || nullptr == buf || !(cb_buf > 0)) return 0;
 
-	size_t cc_target = min(src.size(),
+	size_t cc_target = std::min(src.size(),
 						   cb_buf / sizeof(char) - sizeof(char));
 	size_t cc_copied = src.copy(buf, cc_target, 0);
 	_ASSERTE(cc_target == cc_copied);
