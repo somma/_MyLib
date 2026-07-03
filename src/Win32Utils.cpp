@@ -8723,6 +8723,9 @@ bool str_to_uint64(_In_ const char* uint64_string, _Out_ uint64_t& uint64_val)
 	return true;
 }
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
+
 bool wstr_to_int32(_In_ const wchar_t* int32_string, _Out_ int32_t& int32_val)
 {
 	if (NULL == int32_string) return false;
@@ -8752,6 +8755,8 @@ bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ uint64_t& uint64_va
 	if (NULL == uint64_string) return false;
 	return str_to_uint64(WcsToMbsEx(uint64_string).c_str(), uint64_val);
 }
+
+#pragma warning(pop)
 
 /**
 * @brief	cpu 정보를 수집한다.

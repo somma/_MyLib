@@ -1045,17 +1045,27 @@ bin_to_hexw(
 	_Out_ std::wstring& hex_string
 	);
 
+[[deprecated("Deprecated: use libutil::convert::to_int32() instead")]]
 bool str_to_int32(_In_ const char* int32_string, _Out_ int32_t& int32_val);
+[[deprecated("Deprecated: use libutil::convert::to_uint16() instead")]]
 bool str_to_uint16(_In_ const char* uint16_string, _Out_ uint16_t& uint16_val);
+[[deprecated("Deprecated: use libutil::convert::to_uint32() instead")]]
 bool str_to_uint32(_In_ const char* uint32_string, _Out_ uint32_t& uint32_val);
+[[deprecated("Deprecated: use libutil::convert::to_int64() instead")]]
 bool str_to_int64(_In_ const char* int64_string, _Out_ int64_t& int64_val);
+[[deprecated("Deprecated: use libutil::convert::to_uint64() instead")]]
 bool str_to_uint64(_In_ const char* uint64_string, _Out_ uint64_t& uint64_val);
-    
 
+
+[[deprecated("Deprecated: use libutil::convert::win::to_int32() instead")]]
 bool wstr_to_int32(_In_ const wchar_t* int32_string, _Out_ int32_t& int32_val);
+[[deprecated("Deprecated: use libutil::convert::win::to_uint16() instead")]]
 bool wstr_to_uint16(_In_ const wchar_t* uint16_string, _Out_ uint16_t& uint16_val);
+[[deprecated("Deprecated: use libutil::convert::win::to_uint32() instead")]]
 bool wstr_to_uint32(_In_ const wchar_t* uint32_string, _Out_ uint32_t& uint32_val);
+[[deprecated("Deprecated: use libutil::convert::win::to_int64() instead")]]
 bool wstr_to_int64(_In_ const wchar_t* int64_string, _Out_ int64_t& int64_val);
+[[deprecated("Deprecated: use libutil::convert::win::to_uint64() instead")]]
 bool wstr_to_uint64(_In_ const wchar_t* uint64_string, _Out_ uint64_t& uint64_val);
 
 inline uint16_t swap_endian_16(_In_ uint16_t value)
