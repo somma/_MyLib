@@ -759,9 +759,12 @@ public:
 
 } *psid_info;
 
+[[deprecated("Deprecated: use libutil::win::security::get_sid_info() instead")]]
 psid_info get_sid_info(_In_ PSID sid);
 
+[[deprecated("Deprecated: use libutil::win::security::get_process_user() instead")]]
 psid_info get_process_user(_In_ DWORD pid);
+[[deprecated("Deprecated: use libutil::win::security::get_process_user() instead")]]
 psid_info get_process_user(_In_ HANDLE process_query_token);
 
 psid_info get_file_owner(_In_ const wchar_t* file_name);
@@ -794,7 +797,9 @@ public:
 	DWORD _attribute;
 }*pgroup_sid_info;
 
+[[deprecated("Deprecated: use libutil::win::security::get_process_group() instead")]]
 bool get_process_group(_In_ DWORD pid, _Out_ std::list<pgroup_sid_info>& group);
+[[deprecated("Deprecated: use libutil::win::security::get_process_group() instead")]]
 bool get_process_group(_In_ HANDLE process_query_token, _Out_ std::list<pgroup_sid_info>& group);
 
 typedef class privilege_info
@@ -815,13 +820,16 @@ public:
 	DWORD _attribute;
 } *pprivilege_info;
 
+[[deprecated("Deprecated: use libutil::win::security::get_privilege_info() instead")]]
 pprivilege_info get_privilege_info(_In_ LUID_AND_ATTRIBUTES privileges);
 
+[[deprecated("Deprecated: use libutil::win::security::get_process_privilege() instead")]]
 bool
 get_process_privilege(
 	_In_ DWORD pid,
 	_Out_ std::list<pprivilege_info>& privileges
 	);
+[[deprecated("Deprecated: use libutil::win::security::get_process_privilege() instead")]]
 bool
 get_process_privilege(
 	_In_ HANDLE process_query_token,

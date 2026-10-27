@@ -2,6 +2,9 @@
 #include "_MyLib/src/process_tree.h"
 
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
+
 bool test_process_token()
 {
 	cprocess_tree proc_tree;
@@ -97,3 +100,5 @@ bool test_process_token()
 	return true;
 
 }
+
+#pragma warning(pop)

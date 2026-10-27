@@ -6997,6 +6997,9 @@ get_sid_info(
 						sid_name_use);
 }
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
+
 /// @brief	pid 프로세스의 사용자 정보를 구한다. 
 psid_info
 get_process_user(
@@ -7364,6 +7367,8 @@ get_process_privilege(
 
 	return true;
 }
+
+#pragma warning(pop)
 
 /// @brief 프로세스 integrity level을 가져온다.
 bool
@@ -7884,6 +7889,9 @@ get_installed_programs(
 	return true;
 }
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
+
 /// @brief	파일의 보안 정보를 구한다. 
 ///			(반환 된 psid_info는 반드시 해지해야한다.)
 psid_info
@@ -7957,6 +7965,8 @@ get_file_owner(
 
 	return get_sid_info(owner_sid);
 }
+
+#pragma warning(pop)
 
 /// @brief	 Windows Error Reporting 환경 설정
 bool setup_wer(_In_ const wchar_t* dump_dir)

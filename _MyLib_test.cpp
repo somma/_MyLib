@@ -4032,6 +4032,9 @@ bool test_print_percent()
 }
 
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
+
 bool ptcb_get_proc_extinfo(_In_ const process* const process_info)
 {
 	bool succeeded = false;
@@ -4135,6 +4138,8 @@ bool ptcb_get_proc_extinfo(_In_ const process* const process_info)
 
 	return true;		//<!
 }
+
+#pragma warning(pop)
 
 bool test_get_sid()
 {
