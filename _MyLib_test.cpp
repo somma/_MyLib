@@ -2800,6 +2800,9 @@ private:
 	int _v2;
 };
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
+
 bool test_create_guid()
 {
 	GUID guid;
@@ -2816,6 +2819,8 @@ bool test_create_guid()
 		log_end;
 	return true;
 }
+
+#pragma warning(pop)
 
 bool test_is_executable_file_w()
 {

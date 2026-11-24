@@ -662,12 +662,19 @@ typedef std::unique_ptr<std::remove_pointer<SC_HANDLE>::type, void(*)(SC_HANDLE)
  * API wrapper
 ******************************************************************************/
 
+[[deprecated("Deprecated: use libutil::uuid::generate_v4_bytes() + libutil::uuid::win::to_guid() instead")]]
 bool create_guid(_Out_ GUID& guid);
+[[deprecated("Deprecated: use libutil::uuid::generate_v4() instead")]]
 bool create_guid(_Out_ std::string& guid);
+[[deprecated("Deprecated: use libutil::uuid::win::to_wstring(*libutil::uuid::generate_v4_bytes()) instead")]]
 bool create_guid(_Out_ std::wstring& guid);
+[[deprecated("Deprecated: use libutil::uuid::parse() + libutil::uuid::win::to_guid() instead")]]
 bool string_to_guid(_In_ const char* guid_string, _Out_ const GUID& guid);
+[[deprecated("Deprecated: use libutil::uuid::win::parse() + libutil::uuid::win::to_guid() instead")]]
 bool wstring_to_guid(_In_ const wchar_t* guid_string, _Out_ const GUID& guid);
+[[deprecated("Deprecated: use libutil::uuid::to_string(libutil::uuid::win::from_guid()) instead")]]
 std::string guid_to_string(_In_ const GUID& guid);
+[[deprecated("Deprecated: use libutil::uuid::win::to_wstring(libutil::uuid::win::from_guid()) instead")]]
 std::wstring guid_to_stringw(_In_ const GUID& guid);
 
 
