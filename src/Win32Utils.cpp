@@ -5259,6 +5259,9 @@ std::string directory_from_file_patha(_In_ const char* file_path)
 
 #define guid_cch_without_brace	36
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
+
 /// @brief	GUID 를 생성한다. 
 bool create_guid(_Out_ GUID& guid)
 {
@@ -5350,6 +5353,8 @@ guid_to_stringw(
 		return to_lower_string(guid_string);
 	}
 }
+
+#pragma warning(pop)
 
 /**
  * @brief
